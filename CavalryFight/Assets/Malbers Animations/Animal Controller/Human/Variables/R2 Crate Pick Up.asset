@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da6939f233f2d8149b48ff278ca3a09c, type: 3}
+  m_Name: R2 Crate Pick Up
+  m_EditorClassIdentifier: 
+  reaction:
+    reactions:
+    - rid: 5016934661773852750
+    - rid: 5016934661773852751
+    - rid: 5016934661773852752
+    - rid: 5016934661773852753
+    - rid: 5016934661773852755
+  references:
+    version: 2
+    RefIds:
+    - rid: 5016934661773852750
+      type: {class: ModeEnableReaction, ns: MalbersAnimations.Reactions, asm: MalbersAnimations}
+      data:
+        desc: 
+        Active: 1
+        useLocal: 0
+        localTarget: {fileID: 0}
+        delay: 0
+        TemporalEnable: 1
+        modes:
+        - ID: {fileID: 11400000, guid: 1286867ad3c4cdd4baacac3373aff92c, type: 2}
+          enable: 0
+        - ID: {fileID: 11400000, guid: 4dc5ca673dc60d346a62529c8a9bd8ff, type: 2}
+          enable: 0
+        - ID: {fileID: 11400000, guid: 7888596ce3530b145bc15622fac8a6c4, type: 2}
+          enable: 0
+    - rid: 5016934661773852751
+      type: {class: StateEnableReaction, ns: MalbersAnimations.Reactions, asm: MalbersAnimations}
+      data:
+        desc: 
+        Active: 1
+        useLocal: 0
+        localTarget: {fileID: 0}
+        delay: 0
+        states:
+        - ID: {fileID: 11400000, guid: 9ae07cd2f8f4c054687fecf634f8e5b3, type: 2}
+          enable: 0
+        - ID: {fileID: 11400000, guid: 975403cc10f8cec46a3caa6ed4e3d6c5, type: 2}
+          enable: 0
+        - ID: {fileID: 11400000, guid: 3fbb696c31f7ed846b7ec9b2f76fd0e5, type: 2}
+          enable: 0
+        - ID: {fileID: 11400000, guid: c44e7e8d6840aa243b6c33ec85052763, type: 2}
+          enable: 0
+    - rid: 5016934661773852752
+      type: {class: StanceReaction, ns: MalbersAnimations.Reactions, asm: MalbersAnimations}
+      data:
+        desc: 
+        Active: 1
+        useLocal: 0
+        localTarget: {fileID: 0}
+        delay: 0
+        action: 0
+        ID: {fileID: 11400000, guid: 87ae38bfe93fc3f449ecd25863e2a6fe, type: 2}
+    - rid: 5016934661773852753
+      type: {class: SpeedReaction, ns: MalbersAnimations.Reactions, asm: MalbersAnimations}
+      data:
+        desc: 
+        Active: 1
+        useLocal: 0
+        localTarget: {fileID: 0}
+        delay: 0
+        type: 3
+        SpeedSet: Ground
+        Index: 1
+        Value: 1
+        animatorSpeed: 1
+    - rid: 5016934661773852755
+      type: {class: IKReaction, ns: MalbersAnimations.IK, asm: MalbersAnimations}
+      data:
+        desc: 
+        Active: 1
+        useLocal: 0
+        localTarget: {fileID: 0}
+        delay: 0
+        action: 0
+        IKSet:
+          UseConstant: 1
+          ConstantValue: Carry Box
+          Variable: {fileID: 0}
+        targets: []

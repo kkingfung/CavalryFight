@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: a585ea739537dc340acceaa41c77f52c
+labels:
+- AllCreature
+AssetOrigin:
+  serializedVersion: 1
+  productId: 79902
+  packageName: Horse Animset Pro (Riding System)
+  packageVersion: 4.4.4c
+  assetPath: Assets/Malbers Animations/Common/Shaders/Fur.shader
+  uploadId: 667313
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
