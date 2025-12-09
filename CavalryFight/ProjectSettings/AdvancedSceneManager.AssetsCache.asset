@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12b2193d7bc6f5c4caf5b3414a45636b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.ASMAssetsCache
-  m_sceneHelper: {fileID: 0}
+  m_sceneHelper: {fileID: 11400000, guid: 76b7bbebc13f0914d9760382f86bf158, type: 2}
   m_profiles: []
   m_scenes: []
   m_collectionTemplates: []
