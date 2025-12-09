@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="AutoScene" style="flex-grow: 1; flex-direction: row; padding-right: 4px; padding-left: 4px; padding-bottom: 4px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 4px; flex-shrink: 1; height: 28px;">
+        <AdvancedSceneManager.Editor.SceneField style="flex-grow: 1; flex-shrink: 1; align-self: center; margin-top: 0; margin-right: 4px; margin-bottom: 0; margin-left: 0;" />
+        <ui:EnumField value="Center" type="AdvancedSceneManager.Models.Enums.AutoSceneOption, AdvancedSceneManager" style="flex-shrink: 1; flex-grow: 0; align-self: center; height: 22px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; width: 120px;" />
+    </ui:VisualElement>
+</ui:UXML>

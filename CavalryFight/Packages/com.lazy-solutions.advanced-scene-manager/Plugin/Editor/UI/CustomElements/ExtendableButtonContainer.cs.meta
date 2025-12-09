@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 7c0f5ce2132d2394e959c6cc35bf8125
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/CustomElements/ExtendableButtonContainer.cs
+  uploadId: 814596

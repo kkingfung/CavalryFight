@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 8b89e0ff0e642274284867c6d098aff0
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/ViewModels/Popups/DiagPopup.cs
+  uploadId: 814596

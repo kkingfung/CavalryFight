@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: f292b0c8ee7f33348a4739bee922a12e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/PackageSupport/PlayMaker/ASMAction.cs
+  uploadId: 814596

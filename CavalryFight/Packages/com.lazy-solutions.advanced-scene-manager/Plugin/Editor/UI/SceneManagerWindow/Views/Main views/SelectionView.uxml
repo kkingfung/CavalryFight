@@ -1,0 +1,18 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <engine:VisualElement style="flex-grow: 1; margin-bottom: 2px;">
+        <engine:GroupBox name="group-collections" style="flex-direction: row; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 8px;">
+            <engine:Label name="count-collections" />
+            <engine:Label text="collections selected" name="label-collections" style="text-overflow: ellipsis; flex-shrink: 1; overflow: hidden; flex-grow: 1;" />
+            <engine:Button text="View..." name="button-view" tooltip="View in project view" />
+            <engine:Button text="Create template" name="button-create-template" tooltip="Create a collection template selected collection" />
+            <engine:Button text="" name="button-remove" tooltip="Remove selected collections" style="-unity-font-definition: url(&quot;project://database/Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Fonts/Font%20Awesome%206%20Free-Solid-900.otf?fileID=12800000&amp;guid=0ba460244a244ed449201ed8e8680e50&amp;type=3#Font Awesome 6 Free-Solid-900&quot;);" />
+        </engine:GroupBox>
+        <engine:GroupBox name="group-scenes" style="flex-direction: row; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 4px; padding-bottom: 4px; padding-left: 8px; padding-right: 4px;">
+            <engine:Label name="count-scenes" style="margin-right: 2px;" />
+            <engine:Label text="scenes selected" name="label-scenes" style="text-overflow: ellipsis; flex-shrink: 1; overflow: hidden; flex-grow: 1;" />
+            <engine:Button text="Bake lightmaps" name="button-bake" tooltip="Bake lightmaps for selected scenes" />
+            <engine:Button text="Merge scenes" name="button-merge" tooltip="Merge selected scenes" />
+            <engine:Button text="" name="button-remove" tooltip="Removed selected scenes" style="-unity-font-definition: url(&quot;project://database/Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Fonts/Font%20Awesome%206%20Free-Solid-900.otf?fileID=12800000&amp;guid=0ba460244a244ed449201ed8e8680e50&amp;type=3#Font Awesome 6 Free-Solid-900&quot;);" />
+        </engine:GroupBox>
+    </engine:VisualElement>
+</engine:UXML>

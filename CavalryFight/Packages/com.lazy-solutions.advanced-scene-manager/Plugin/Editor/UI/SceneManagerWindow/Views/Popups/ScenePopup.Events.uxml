@@ -1,0 +1,13 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:GroupBox>
+        <uie:PropertyField name="property-OnOpen" binding-path="m_events.OnOpen" />
+        <uie:PropertyField name="property-OnClose" binding-path="m_events.OnClose" style="margin-top: 12px;" />
+        <uie:PropertyField name="property-OnPreload" binding-path="m_events.OnPreload" style="margin-top: 12px;" />
+        <uie:PropertyField name="property-OnPreloadFinished" binding-path="m_events.OnPreloadFinished" style="margin-top: 12px;" />
+        <ui:VisualElement name="separator" style="flex-grow: 1; height: 1px; background-color: rgba(255, 255, 255, 0.2); margin-top: 22px; margin-right: 22px; margin-bottom: 22px; margin-left: 22px;" />
+        <uie:PropertyField name="property-OnCollectionOpened" binding-path="m_events.OnCollectionOpened" />
+        <uie:PropertyField name="property-OnCollectionClosed" binding-path="m_events.OnCollectionClosed" style="margin-top: 12px;" />
+        <ui:VisualElement name="separator" style="flex-grow: 1; height: 1px; background-color: rgba(255, 255, 255, 0.2); margin-top: 22px; margin-right: 22px; margin-bottom: 22px; margin-left: 22px;" />
+        <uie:PropertyField name="property-OnCollectionOpened" binding-path="m_events.OnOpenChanged" />
+    </ui:GroupBox>
+</ui:UXML>

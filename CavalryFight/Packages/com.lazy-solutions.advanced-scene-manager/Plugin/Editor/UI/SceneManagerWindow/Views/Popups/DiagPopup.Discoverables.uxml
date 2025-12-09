@@ -1,0 +1,12 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement name="header" style="flex-grow: 1; flex-direction: row-reverse; right: 0; position: relative; margin-right: 8px; display: none;">
+        <ui:DropdownField name="dropdown-filter" />
+        <ui:Toggle label="Show ASM" name="toggle-filter-asm" view-data-key="toggle-filter-asm" style="margin-top: 4px;" />
+    </ui:VisualElement>
+    <ui:GroupBox name="group-discoverables" style="padding-top: 4px; padding-right: 4px; padding-bottom: 0; padding-left: 4px; flex-shrink: 1; min-height: 120px;">
+        <ui:MultiColumnListView name="list-discoverables" allow-add="false" allow-remove="false" horizontal-scrolling="false" selection-type="None" show-border="false" show-bound-collection-size="false" />
+        <ui:VisualElement name="progress-spinner" style="flex-grow: 1; top: 0; bottom: 0; left: 0; right: 0; position: absolute; align-content: center; justify-content: center; background-color: rgba(0, 0, 0, 0.39); border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px;">
+            <AdvancedSceneManager.Editor.ProgressSpinner style="width: 22px; height: 22px; align-self: center; align-content: center;" />
+        </ui:VisualElement>
+    </ui:GroupBox>
+</ui:UXML>

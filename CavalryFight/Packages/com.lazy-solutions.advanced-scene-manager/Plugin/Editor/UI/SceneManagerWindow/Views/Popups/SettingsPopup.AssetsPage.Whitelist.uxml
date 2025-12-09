@@ -1,0 +1,7 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:GroupBox text="Whitelisted scenes:" name="group-whitelist">
+        <ui:Label tabindex="-1" text="Only scene paths that match any items in this list will show up in import popup.&#10;&#10;Whitelist is disabled if empty." display-tooltip-when-elided="true" class="description" style="margin-bottom: 6px; white-space: normal;" />
+        <ui:ListView focusable="true" binding-path="m_whitelist.list" show-bound-collection-size="false" show-add-remove-footer="true" show-border="true" name="list-whitelist" fixed-item-height="26" style="min-height: 0;" />
+        <ui:Label tabindex="-1" text="* paths are case insensitive &#10;* paths must be prefixed by assets/&#10;* paths may point to a folder, or a .unity file" parse-escape-sequences="true" display-tooltip-when-elided="true" picking-mode="Ignore" style="white-space: normal; opacity: 0.6; margin-top: -12px;" />
+    </ui:GroupBox>
+</ui:UXML>

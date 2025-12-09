@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: ca7a52dd88d40414ba7a9323997c513b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Assets/Default
+    scenes/IconBounce/IconStencil.mat
+  uploadId: 814596

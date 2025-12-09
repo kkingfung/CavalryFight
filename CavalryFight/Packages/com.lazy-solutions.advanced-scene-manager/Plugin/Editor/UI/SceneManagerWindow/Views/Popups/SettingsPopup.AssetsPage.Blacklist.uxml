@@ -1,0 +1,7 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:GroupBox text="Blacklisted scenes:" name="group-blocklist">
+        <ui:Label tabindex="-1" text="The scene paths that match any items in this list will not be automatically imported, and they won&apos;t show up in import popup." display-tooltip-when-elided="true" class="description" style="white-space: normal; margin-bottom: 6px;" />
+        <ui:ListView focusable="true" binding-path="m_blacklist.list" show-bound-collection-size="false" show-add-remove-footer="true" show-border="true" name="list-blacklist" fixed-item-height="26" style="min-height: 0;" />
+        <ui:Label tabindex="-1" text="* paths are case insensitive &#10;* paths must be prefixed by assets/&#10;* paths may point to a folder, or a .unity file" parse-escape-sequences="true" display-tooltip-when-elided="true" picking-mode="Ignore" style="white-space: normal; opacity: 0.6; margin-top: -12px; margin-bottom: 6px;" />
+    </ui:GroupBox>
+</ui:UXML>

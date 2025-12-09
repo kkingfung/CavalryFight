@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 83cdf5820ecef4f4bbecb8d3e165571d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Core/Scene
+    loading/SceneUnloaderArgs.cs
+  uploadId: 814596

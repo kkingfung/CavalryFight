@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 137e5d52245562e4e8042a6ea1b37c4a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/ViewModels/Popups/Generic/ConfirmPopup.cs
+  uploadId: 814596

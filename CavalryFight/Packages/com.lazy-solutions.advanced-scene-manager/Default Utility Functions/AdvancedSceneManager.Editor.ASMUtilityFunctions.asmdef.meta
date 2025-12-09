@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a2f906d991928ea4399df7add405116f
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Default Utility Functions/AdvancedSceneManager.Editor.ASMUtilityFunctions.asmdef
+  uploadId: 814596

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 02a74622b75447f48a832d6c967d7517
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Utility/CrossSceneReferences/Editor/Editor.cs
+  uploadId: 814596

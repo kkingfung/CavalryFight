@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 4eda004e4dfdf524ea31fb8cd1aa2d1c
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Assets/EmptyScene/Scene.unity
+  uploadId: 814596

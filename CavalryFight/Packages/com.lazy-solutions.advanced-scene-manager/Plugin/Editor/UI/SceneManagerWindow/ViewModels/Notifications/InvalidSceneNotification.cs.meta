@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 41cb207afec2631418dd9be6e42d14e4
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/ViewModels/Notifications/InvalidSceneNotification.cs
+  uploadId: 814596

@@ -1,0 +1,27 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement style="flex-grow: 1; margin-top: 12px; margin-right: 22px; margin-bottom: 22px; margin-left: 22px;">
+        <ui:ScrollView name="group-force" style="margin-top: 0;">
+            <ui:Label text="🔒 Force Profile Enabled: Another team member has set a force profile for this project." name="header" style="white-space: normal; -unity-font-style: bold; font-size: 14px; margin-top: 0;" />
+            <ui:Label text="ASM uses profiles to define scene collections and settings for different workflows or environments. In this project, a force profile has been set to ensure everyone works with the same configuration." style="white-space: normal; margin-top: 8px;" />
+            <ui:Label text="You won’t be able to switch profiles unless the force profile is removed in project settings." style="white-space: normal; margin-top: 8px;" />
+            <ui:Label text="Press continue to activate the assigned profile." style="white-space: normal; margin-top: 8px;" />
+            <ui:GroupBox style="flex-shrink: 0; flex-grow: 0; margin-top: 8px; margin-right: 0; margin-bottom: 0; margin-left: 0;">
+                <uie:PropertyField data-source-type="AdvancedSceneManager.Models.ASMSettings, AdvancedSceneManager" data-source-path="m_forceProfile" name="property-force-profile" enabled="false" binding-path="m_forceProfile" style="min-height: 20px; margin-top: 8px;" />
+            </ui:GroupBox>
+        </ui:ScrollView>
+        <ui:VisualElement name="group-select" style="flex-grow: 1; margin-top: 0;">
+            <ui:Label text="ASM uses profiles to manage different scene configurations." name="header" style="white-space: normal; -unity-font-style: bold; font-size: 14px;" />
+            <ui:Label text="Profiles let you easily switch between different setups for collections and settings." style="white-space: normal; margin-top: 8px;" />
+            <ui:Label text="Profile Selection" style="white-space: normal; -unity-font-style: bold; font-size: 14px; margin-top: 8px; display: none;" />
+            <ui:Label text="Select a profile to use, then press continue to activate it." style="white-space: normal; margin-top: 8px;" />
+            <ui:Label text="You can create a new profile using the button below. Profiles can be deleted after the wizard is complete." style="white-space: normal; margin-top: 8px;" />
+            <uie:ObjectField label="Selected profile:" allow-scene-objects="false" type="AdvancedSceneManager.Models.Profile, AdvancedSceneManager" enabled="false" name="picker-profile" style="margin-top: 8px;" />
+            <ui:GroupBox style="flex-shrink: 1; flex-grow: 1; margin-top: 8px; margin-right: 0; margin-bottom: 0; margin-left: 0;">
+                <AdvancedSceneManager.Editor.ASMListView name="list-profiles" no-items-text="-- No profiles found. You can create one below. --" style="flex-shrink: 1; flex-grow: 1; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;" />
+            </ui:GroupBox>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="footer" style="flex-grow: 1; align-self: flex-end; display: none;">
+        <ui:Button text="Create" name="button-create" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0b3e52b1f04fd8241ac54e8efe137216
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Fonts/LICENSE.txt
+  uploadId: 814596

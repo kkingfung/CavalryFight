@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 2b472a3dcf106a74cbf2ad7d22652342
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Core/Callbacks/CallbackTypes.Editor.cs
+  uploadId: 814596

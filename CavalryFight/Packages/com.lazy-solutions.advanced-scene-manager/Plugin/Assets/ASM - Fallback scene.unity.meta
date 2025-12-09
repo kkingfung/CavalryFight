@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8e855e5b4282732468a517da6bb95020
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Assets/ASM
+    - Fallback scene.unity
+  uploadId: 814596

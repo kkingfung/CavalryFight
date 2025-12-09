@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: f096336223d6edf48a9d6693a44339d5
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/ViewModels/Notifications/WelcomeNotification.cs
+  uploadId: 814596

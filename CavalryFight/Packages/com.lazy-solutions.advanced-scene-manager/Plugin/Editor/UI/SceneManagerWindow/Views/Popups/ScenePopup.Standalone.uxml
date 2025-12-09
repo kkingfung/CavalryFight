@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:compat="AdvancedSceneManager.Editor.UI.Compatibility" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:GroupBox name="group-startup">
+        <ui:Toggle label="Open at startup" name="toggle-startup" binding-path="m_openOnStartup" />
+        <ui:Toggle label="Open when entering play mode" name="toggle-playmode-open" binding-path="m_openOnPlayMode" />
+    </ui:GroupBox>
+    <ui:GroupBox name="group-input-bindings" text="Input bindings">
+        <AdvancedSceneManager.Editor.InputBindingField binding-path="m_inputBindings" />
+        <AdvancedSceneManager.Editor.ScenePicker name="picker-input-loading-scene" label="Loading scene:" binding-path="m_inputBindingsLoadingScene" style="margin-top: 12px;" />
+        <ui:ListView name="list-input-bindings-ignore" reorderable="true" reorder-mode="Animated" binding-path="m_ignoreInputBindingsForScenes" show-bound-collection-size="false" show-border="false" show-add-remove-footer="true" show-foldout-header="true" header-title="Scenes to ignore" virtualization-method="DynamicHeight" />
+    </ui:GroupBox>
+</ui:UXML>

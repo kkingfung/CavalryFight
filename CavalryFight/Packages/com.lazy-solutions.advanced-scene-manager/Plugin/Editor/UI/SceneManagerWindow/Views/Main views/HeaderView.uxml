@@ -1,0 +1,27 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Styles/Base.uss?fileID=7433441132597879392&amp;guid=8c978e9125bc4004586816a89051e397&amp;type=3#Base" />
+    <ui:VisualElement name="header" style="flex-direction: row; align-items: center; flex-shrink: 1; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; flex-grow: 1; max-height: 52px; min-height: 36px; height: 100%; padding-left: 8px; padding-right: 8px;">
+        <ui:Button display-tooltip-when-elided="true" name="button-play" class="border" style="color: rgb(0, 128, 0); justify-content: center; flex-grow: 1; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; align-items: center; -unity-font-definition: url(&quot;project://database/Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Fonts/Font%20Awesome%206%20Free-Solid-900%20SDF.asset?fileID=11400000&amp;guid=747dc63c4036f3945ba6f469bbed12b3&amp;type=2#Font Awesome 6 Free-Solid-900 SDF&quot;); border-top-width: 0.5px; border-right-width: 0.5px; border-bottom-width: 0.5px; border-left-width: 0.5px; flex-shrink: 1; max-height: 36px; max-width: 36px; min-height: 28px; min-width: 22px; width: 100%; height: 75%;">
+            <ui:Label text="" name="label-play" picking-mode="Ignore" class="fontAwesome" style="transition-property: opacity; transition-duration: 0.25s;" />
+            <ui:VisualElement picking-mode="Ignore" style="flex-grow: 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; flex-shrink: 0; align-self: center; align-content: center; justify-content: center;">
+                <AdvancedSceneManager.Editor.ProgressSpinner picking-mode="Ignore" rotations-per-minute="180" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; width: 18px; height: 18px; flex-shrink: 0; align-content: center; align-self: center;" />
+            </ui:VisualElement>
+        </ui:Button>
+        <ui:Button name="button-diag" style="flex-shrink: 1; justify-content: center; align-content: center; margin-left: 8px;">
+            <ui:Label text="5 operations running - 1 waiting" name="text-operation-info" picking-mode="Ignore" style="font-size: 11.5px; text-overflow: ellipsis; overflow: hidden;" />
+            <ui:Label text="4 scenes opening" name="text-scene-load-info" picking-mode="Ignore" style="overflow: hidden; font-size: 11.5px; text-overflow: ellipsis;" />
+            <ui:Label text="View diagnostics" name="text-view-diag" picking-mode="Ignore" style="overflow: hidden; font-size: 11.5px; text-overflow: ellipsis;" />
+        </ui:Button>
+        <AdvancedSceneManager.Editor.ExtendableButtonContainer name="extendable-button-container" auto-initialize="true" is-overflow-supported="true" style="opacity: 0.6; flex-direction: row-reverse; overflow: hidden; flex-grow: 1; flex-shrink: 0;" />
+        <ui:VisualElement name="menu-buttons" style="flex-direction: row; align-self: center; align-items: center; flex-shrink: 0; flex-wrap: nowrap;">
+            <ui:VisualElement name="notifications" style="flex-grow: 1;">
+                <ui:Button display-tooltip-when-elided="true" name="button-notifications" text="\uf0f3" parse-escape-sequences="true" class="icon-settings fontAwesome" style="padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; width: 26px; height: 26px; margin-left: 12px; margin-right: 0; margin-top: 0; margin-bottom: 0;" />
+                <ui:VisualElement name="bubble-notifications" picking-mode="Ignore" style="flex-grow: 0; background-color: rgb(0, 122, 255); border-top-left-radius: 50%; border-top-right-radius: 50%; border-bottom-right-radius: 50%; border-bottom-left-radius: 50%; position: absolute; flex-shrink: 0; bottom: -7px; left: 5px; align-items: center; align-content: center; width: 16px; height: 16px;">
+                    <ui:Label text="5" name="label-notifications" style="font-size: 11.5px; margin-top: 4px; margin-right: 4px; margin-bottom: 4px; margin-left: 4px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center; -unity-font-style: bold;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Button display-tooltip-when-elided="true" name="button-settings" tooltip="Settings" text="" class="icon-settings fontAwesome" style="padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; width: 26px; height: 26px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;" />
+            <ui:Button text="" display-tooltip-when-elided="true" name="button-menu" tooltip="Menu" class="fontAwesome" style="width: 26px; height: 26px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

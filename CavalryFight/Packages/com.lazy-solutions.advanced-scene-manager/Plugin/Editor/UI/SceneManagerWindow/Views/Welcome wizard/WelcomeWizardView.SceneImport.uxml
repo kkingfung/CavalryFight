@@ -1,0 +1,21 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="header" style="flex-grow: 0; display: none; flex-shrink: 0; align-self: flex-end;">
+        <ui:VisualElement name="import-option-field" style="flex-grow: 0; flex-direction: row; flex-shrink: 0; margin-top: 0;">
+            <ui:Label tabindex="-1" text="Auto import:" display-tooltip-when-elided="true" name="label-enum" style="height: 100%; -unity-text-align: middle-right; margin-left: 0; margin-right: 6px; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; flex-grow: 0;" />
+            <ui:EnumField type="AdvancedSceneManager.Models.Enums.SceneImportOption, AdvancedSceneManager" name="enumfield-import-option" binding-path="m_sceneImportOption" style="flex-shrink: 0; flex-grow: 0; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; height: 28px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement style="flex-grow: 1; margin-top: 12px; margin-right: 22px; margin-bottom: 22px; margin-left: 22px;">
+        <ui:Label text="In ASM, scenes must be imported before they can be used." name="header" style="-unity-font-style: bold; white-space: normal; margin-bottom: 8px; font-size: 14px;" />
+        <ui:Label text="This allows ASM to track them properly, provide drag-and-drop support, and store scene metadata like persistence and load settings." style="white-space: normal;" />
+        <ui:GroupBox style="margin-top: 8px; margin-right: 0; margin-bottom: 0; margin-left: 0; flex-shrink: 1; flex-grow: 1;">
+            <ui:Label text="Scenes can be blacklisted or whitelisted via the context menu." name="header" style="font-size: 12px; -unity-font-style: bold; white-space: normal;" />
+            <ui:Label text="Blacklist settings can be changed later, and non-blacklisted scenes are always importable." style="white-space: normal; margin-top: 8px; -unity-font-style: normal;" />
+            <ui:Label text="Press the import button in the footer to import the selected scenes." style="margin-top: 12px; white-space: normal;" />
+            <AdvancedSceneManager.Editor.ASMListView allow-add="false" allow-remove="false" show-bound-collection-size="false" display-toggle="true" display-all-toggle="true" use-checkboxes="true" no-items-text="-- No more scenes available for import. You&apos;re done. --" style="margin-top: 6px; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; flex-shrink: 1; flex-grow: 1;" />
+        </ui:GroupBox>
+    </ui:VisualElement>
+    <ui:VisualElement name="footer" style="flex-grow: 0; flex-shrink: 0; align-self: flex-end; display: none;">
+        <ui:Button text="Import" name="button-import" />
+    </ui:VisualElement>
+</ui:UXML>

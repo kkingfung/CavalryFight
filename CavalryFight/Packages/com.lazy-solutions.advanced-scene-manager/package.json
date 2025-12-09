@@ -1,0 +1,49 @@
+{
+  "name": "com.lazy-solutions.advanced-scene-manager",
+  "version": "3.1.4",
+  "displayName": "Advanced Scene Manager",
+  "description": "The Ultimate Unity Scene Manager!\n\nStreamline your Unity scene management and unlock new possibilities with Advanced Scene Manager. This actively supported asset is continuously updated to provide you with the best experience, saving you valuable time and simplifying your workflows. \n\nA good workflow is important for healthy development. We offer a complete, organized, easy-to-use, and time-saving scene management system to assist you in every need.",
+  "changelog": "3.1.4\n- Fixed issue where collection hover buttons would be visible when no profile was active.\n\n3.1.3\n- Fixed stuck notification after SceneAsset moved.\n\n3.1.2 (asset store only patch)\n- Fixed some issues with assets cache.\n\n3.1.1\n- Fixed issue in welcome wizard scene import where empty string paths could be persisted and passed for import. Added guard against invalid paths in scene import.",
+  "documentationUrl": "https://github.com/Lazy-Solutions/AdvancedSceneManager/tree/main/docs",
+  "changelogUrl": "https://github.com/Lazy-Solutions/AdvancedSceneManager/releases",
+  "samples": [
+    {
+      "displayName": "Default ASM Scenes",
+      "description": "Contains default scenes for loading screens and similar.",
+      "path": "Samples~/Default ASM Scenes"
+    },
+    {
+      "displayName": "Example Scripts",
+      "description": "Code examples showcasing how to use ASM.",
+      "path": "Samples~/Example Scripts"
+    },
+    {
+      "displayName": "Level Select [Link]",
+      "description": "A sample project for setting up level select using ASM.",
+      "path": "Samples~/Level Select"
+    },
+    {
+      "displayName": "Netcode [Link]",
+      "description": "A sample project for setting up netcode using ASM.",
+      "path": "Samples~/Netcode"
+    },
+    {
+      "displayName": "Preloading [Link]",
+      "description": "A sample project for setting up preloading using ASM.",
+      "path": "Samples~/Preloading"
+    },
+    {
+      "displayName": "Scene Streaming [Link]",
+      "description": "A sample project for setting up scene streaming using ASM.",
+      "path": "Samples~/Scene Streaming"
+    }
+  ],
+  "author": {
+    "name": "Lazy Solutions",
+    "email": "nuwn@hotmail.com",
+    "url": "https://github.com/Lazy-Solutions/AdvancedSceneManager/tree/main"
+  },
+  "dependencies": {
+    "com.unity.editorcoroutines": "1.0.0"
+  }
+}

@@ -1,0 +1,46 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <engine:GroupBox style="margin-bottom: 12px;">
+        <engine:Label text="Extendable UI lets you add custom elements to the ASM window using the &lt;b&gt;[ASMWindowElement]&lt;/b&gt; API. You can enable, disable, or reorder them here." parse-escape-sequences="true" style="overflow: hidden; white-space: normal;" />
+    </engine:GroupBox>
+    <engine:VisualElement name="section-elements" style="flex-grow: 1;">
+        <engine:VisualElement style="flex-grow: 1; flex-direction: row; overflow: hidden; flex-wrap: wrap;">
+            <engine:Label text="Header elements" style="flex-grow: 0; font-size: 16px; margin-left: 4px; -unity-text-align: lower-left;" />
+            <engine:Label text="Click to toggle visibility&lt;br&gt;Drag and drop to re-order" name="label-instructions" style="opacity: 0.4; -unity-text-align: upper-right; margin-right: 4px; flex-grow: 1; overflow: hidden; white-space: normal;" />
+        </engine:VisualElement>
+        <engine:GroupBox name="group-buttons-header" style="padding-top: 6px; padding-right: 6px; padding-bottom: 6px; padding-left: 6px; flex-direction: row-reverse;">
+            <engine:ScrollView name="scroll-extendable-buttons" mode="Horizontal">
+                <AdvancedSceneManager.Editor.ExtendableButtonContainerEditor auto-initialize="true" is-settings-page="true" style="flex-direction: row-reverse; opacity: 0.6;" />
+            </engine:ScrollView>
+        </engine:GroupBox>
+        <engine:Label text="Collection elements" style="font-size: 16px; margin-top: 12px; margin-bottom: 0; margin-left: 4px;" />
+        <engine:GroupBox name="group-buttons-collection" style="padding-top: 6px; padding-right: 6px; padding-bottom: 6px; padding-left: 6px;">
+            <engine:ScrollView name="scroll-extendable-buttons" mode="Horizontal">
+                <engine:VisualElement style="flex-grow: 1; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; flex-direction: row;">
+                    <AdvancedSceneManager.Editor.ExtendableButtonContainerEditor auto-initialize="true" location="CollectionLeft" name="extendable-buttons-container-left" is-settings-page="true" style="opacity: 0.6; flex-direction: row; flex-shrink: 0;" />
+                    <engine:GroupBox tooltip="Collection" style="margin-top: 0; margin-bottom: 0; margin-right: 6px; margin-left: 6px; flex-grow: 1;">
+                        <engine:Label text="- Collection title -" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; -unity-text-align: middle-center; opacity: 0.6;" />
+                    </engine:GroupBox>
+                    <AdvancedSceneManager.Editor.ExtendableButtonContainerEditor auto-initialize="true" location="CollectionRight" name="extendable-buttons-container-right" style="opacity: 0.6; flex-direction: row-reverse; flex-shrink: 0;" />
+                </engine:VisualElement>
+            </engine:ScrollView>
+        </engine:GroupBox>
+        <engine:Label text="Scene elements" style="font-size: 16px; margin-top: 12px; margin-bottom: 0; margin-left: 4px;" />
+        <engine:GroupBox name="group-buttons-scene" style="padding-top: 6px; padding-right: 6px; padding-bottom: 6px; padding-left: 6px;">
+            <engine:ScrollView name="scroll-extendable-buttons" mode="Horizontal">
+                <engine:VisualElement style="flex-grow: 1; padding-top: 5px; padding-right: 5px; padding-bottom: 5px; padding-left: 5px; flex-direction: row; flex-shrink: 0;">
+                    <AdvancedSceneManager.Editor.ExtendableButtonContainerEditor auto-initialize="true" location="SceneLeft" name="extendable-buttons-container-left" is-settings-page="true" style="opacity: 0.6; flex-direction: row; flex-shrink: 0; align-self: center;" />
+                    <engine:GroupBox tooltip="Scene" style="margin-right: 6px; margin-left: 6px; margin-bottom: 0; margin-top: 0; flex-grow: 1;">
+                        <engine:Label text="- Scene field -" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; -unity-text-align: middle-center; opacity: 0.6;" />
+                    </engine:GroupBox>
+                    <AdvancedSceneManager.Editor.ExtendableButtonContainerEditor auto-initialize="true" location="SceneRight" name="extendable-buttons-container-right" is-settings-page="true" style="opacity: 0.6; flex-direction: row-reverse; flex-shrink: 0; align-self: center;" />
+                </engine:VisualElement>
+            </engine:ScrollView>
+        </engine:GroupBox>
+        <engine:Label text="Footer elements" style="font-size: 16px; margin-top: 12px; margin-bottom: 0; margin-left: 4px;" />
+        <engine:GroupBox name="group-buttons-footer" style="padding-top: 6px; padding-right: 6px; padding-bottom: 6px; padding-left: 6px; flex-direction: row-reverse;">
+            <engine:ScrollView name="scroll-extendable-buttons" mode="Horizontal">
+                <AdvancedSceneManager.Editor.ExtendableButtonContainerEditor location="Footer" auto-initialize="true" is-settings-page="true" style="flex-direction: row-reverse; opacity: 0.6;" />
+            </engine:ScrollView>
+        </engine:GroupBox>
+    </engine:VisualElement>
+</engine:UXML>

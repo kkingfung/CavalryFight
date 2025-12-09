@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: c83568b2a09eb7e48a23ffd51f3ac53a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/CustomElements/InputBindingField.cs
+  uploadId: 814596

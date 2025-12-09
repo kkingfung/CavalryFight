@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 7392e2826d982a8429c3635c06c3ff76
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/ViewModels/Popups/SettingsPopup.WhitelistPage.cs
+  uploadId: 814596

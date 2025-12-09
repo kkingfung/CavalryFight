@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: a39be83930563e645abad3a3fda57324
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/ViewModels/Popups/CollectionPopup.EventsPage.cs
+  uploadId: 814596

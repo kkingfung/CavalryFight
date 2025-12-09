@@ -1,0 +1,8 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; margin-top: 22px; margin-right: 22px; margin-bottom: 22px; margin-left: 22px;">
+        <ui:Label text="Welcome to Advanced Scene Manager" style="-unity-font-style: bold; font-size: 18px; white-space: normal;" />
+        <ui:Label text="Advanced Scene Manager (ASM) makes scene management in Unity simple, scalable, and reliable." style="white-space: normal; margin-top: 8px; margin-bottom: 8px;" />
+        <ui:Label text="This quick setup wizard will walk you through a few first-time steps. Any page can be skipped, and can be configured at a later time." style="white-space: normal; margin-bottom: 8px;" />
+        <ui:Label text="Press continue to move to the next page." style="margin-top: 8px;" />
+    </ui:VisualElement>
+</ui:UXML>

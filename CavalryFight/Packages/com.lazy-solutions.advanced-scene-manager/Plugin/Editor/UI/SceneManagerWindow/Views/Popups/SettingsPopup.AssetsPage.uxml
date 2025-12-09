@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:compat="AdvancedSceneManager.Editor.UI.Compatibility" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <AdvancedSceneManager.Editor.NavigationButton text="Blacklisted scenes" name="navigate-blacklist" navigate-to="AdvancedSceneManager.Editor.UI.Views.Popups.SettingsPopup+BlacklistPage, AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" icon-left="\uf0ae" />
+    <AdvancedSceneManager.Editor.NavigationButton text="Whitelisted scenes" name="navigate-whitelist" navigate-to="AdvancedSceneManager.Editor.UI.Views.Popups.SettingsPopup+WhitelistPage, AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" icon-left="\uf0ae" />
+    <ui:GroupBox text="Scene import:" name="group-scene-import">
+        <ui:Label tabindex="-1" text="In order to use a scene in ASM, it must first be imported.&#10;You have a couple of options of when this should happen.&#10;&#10;&lt;b&gt;Manual&lt;/b&gt;: Only import scenes from import popup.&#10;&lt;b&gt;SceneCreated:&lt;/b&gt; Automatically import a scene when it is created." display-tooltip-when-elided="true" class="description" />
+        <ui:EnumField type="AdvancedSceneManager.Models.Enums.SceneImportOption, AdvancedSceneManager" binding-path="m_sceneImportOption" name="enum-scene-import" style="margin-top: 12px;" />
+    </ui:GroupBox>
+    <ui:GroupBox name="group-settings-location" style="margin-bottom: 4px;">
+        <ui:Label tabindex="-1" text="Generate profiles and scenes to:" display-tooltip-when-elided="true" style="margin-bottom: 4px; margin-top: 4px; font-size: 14px;" />
+        <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); flex-direction: row; flex-shrink: 0; margin-top: 8px;">
+            <ui:TextField focusable="true" name="text-path" style="flex-grow: 1;" />
+            <ui:Button text="\uf0e2" display-tooltip-when-elided="true" name="button-cancel" parse-escape-sequences="true" tooltip="Cancel" class="fontAwesome" />
+            <ui:Button text="\uf00c" display-tooltip-when-elided="true" name="button-apply" enable-rich-text="true" parse-escape-sequences="true" tooltip="Move assets" class="fontAwesome" />
+        </ui:VisualElement>
+    </ui:GroupBox>
+</ui:UXML>

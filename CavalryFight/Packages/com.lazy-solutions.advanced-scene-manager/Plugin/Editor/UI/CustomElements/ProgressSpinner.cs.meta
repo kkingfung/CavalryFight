@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 454723eb544b73c4b99afc5d189a6bc8
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/CustomElements/ProgressSpinner.cs
+  uploadId: 814596

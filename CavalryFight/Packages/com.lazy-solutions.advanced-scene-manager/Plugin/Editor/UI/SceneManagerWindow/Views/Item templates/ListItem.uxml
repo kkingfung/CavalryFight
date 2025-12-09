@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="list-item" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); flex-direction: row;">
+        <ui:Button display-tooltip-when-elided="true" name="button-main" style="flex-grow: 1; -unity-text-align: middle-left; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; width: 28px; height: 28px; text-overflow: ellipsis; padding-left: 8px; flex-direction: row; align-items: center; align-content: center; padding-top: 0; padding-right: 0; padding-bottom: 0;">
+            <ui:Toggle name="toggle-check" style="margin-left: 0; margin-top: 0; margin-right: 0; margin-bottom: 2px; align-self: center;" />
+            <ui:Label picking-mode="Ignore" name="label-text" style="flex-grow: 1; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; margin-right: 4px; margin-left: 6px;" />
+            <ui:VisualElement name="container" style="flex-grow: 0; flex-direction: row; flex-shrink: 0;" />
+            <ui:Button display-tooltip-when-elided="true" name="button-menu" tooltip="View more options" style="height: 28px; width: 28px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
+                <ui:Label text="\uf142" parse-escape-sequences="true" picking-mode="Ignore" class="fontAwesome" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+            </ui:Button>
+        </ui:Button>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: ad2379b5ab65a8a4e8abc7a3c1f022c1
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/ViewModels/Popups/SettingsPopup.ExtensionsPage.cs
+  uploadId: 814596

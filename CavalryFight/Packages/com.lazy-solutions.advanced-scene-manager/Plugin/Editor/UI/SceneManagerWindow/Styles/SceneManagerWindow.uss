@@ -1,0 +1,529 @@
+﻿.notification #button-container Label {
+}
+
+.notification Button:active {
+    background-color: #003d79;
+}
+
+.notification Button:hover {
+    background-color: rgb(0, 76, 137);
+}
+
+.notification Button:active {
+    background-color: rgb(0, 60, 108);
+}
+
+.notification.allowTextClippingIntoMenuButton #button-container {
+    position: absolute;
+}
+
+/* Base notification styles */
+.notification {
+    background-color: #007bff;
+}
+
+.notification:hover {
+    background-color: #0056b3;
+}
+
+.notification:active {
+    background-color: #003d79;
+}
+
+/* Info Notification */
+.notification.info {
+    background-color: #007BFF;
+}
+
+.notification.info:hover {
+    background-color: #0056b3; /* Darker blue for hover */
+}
+
+.notification.info:active {
+    background-color: #003d79; /* Even darker for active */
+}
+
+/* Warning Notification */
+.notification.fixup {
+    background-color: #BF360C; /* Much darker orange */
+}
+
+.notification.fixup:hover {
+    background-color: #A52A00; /* Even darker for hover */
+}
+
+.notification.fixup:active {
+    background-color: #8B2200; /* Darkest for active */
+}
+
+/* Warning Notification */
+.notification.scene {
+    background-color: #BF360C; /* Much darker orange */
+}
+
+.notification.scene:hover {
+    background-color: #A52A00; /* Even darker for hover */
+}
+
+.notification.scene:active {
+    background-color: #8B2200; /* Darkest for active */
+}
+
+/* Link Notification */
+.notification.link {
+    background-color: #007BFF;
+}
+
+.notification.link:hover {
+    background-color: #0056b3; /* Same darker blue for hover as info */
+}
+
+.notification.link:active {
+    background-color: #003d79; /* Same darker blue for active as info */
+}
+
+.notification.muted {
+    opacity: 0.5;
+}
+
+.notification.muted:hover {
+    opacity: 1;
+}
+
+#template-import-scene > Label:hover {
+    cursor: link;
+}
+
+#template-import-scene Toggle:hover {
+    background-color: transparent;
+}
+
+#list-notifications Button > Button {
+    height: 22px;
+    width: 22px;
+}
+
+#group-search RadioButton Label {
+    min-width: 0px;
+}
+
+#popup-upgrade .header {
+    font-size: 18px;
+}
+
+#popup-upgrade > Label {
+    margin-left: 22px;
+    margin-right: 22px;
+}
+
+#OverviewPopup Foldout > Toggle {
+    margin: 0;
+}
+
+#menu-buttons Button {
+    opacity: 0.6;
+}
+
+#menu-buttons Button:hover {
+    opacity: 1;
+}
+
+#button-notifications.open {
+    background-color: var(--button-hover);
+    opacity: 1;
+}
+
+#button-scene-helper {
+    opacity: 0.4;
+}
+
+#button-scene-helper:hover {
+    opacity: 1;
+}
+
+#button-settings:disabled {
+    color: gray;
+}
+
+#button-search:disabled {
+    color: gray;
+}
+
+#list-undo TemplateContainer:hover {
+    background-color: transparent;
+}
+
+#template-import-scene:hover {
+    cursor: link;
+    background-color: var(--button-hover);
+}
+
+#label-placeholder {
+    padding-left: 2px;
+    padding-top: 2px;
+}
+
+#button-lock > #icon {
+    background-image: resource("Unlocked@2x");
+}
+
+#button-unlock > #icon {
+    background-image: resource("Locked@2x");
+}
+
+.extendable-element-toggle {
+    padding: 0;
+    border-bottom-width: 2px;
+    border-bottom-color: transparent;
+}
+
+.extendable-element-toggle.enabled
+{
+    border-bottom-color: green;
+}
+
+.extendable-element-toggle.enabled.forced
+{
+    border-bottom-color: white;
+}
+
+.extendable-element-toggle:hover {
+    opacity: 1;
+}
+
+.extendable-element
+{
+    margin: 0;
+    width: 20px;
+    height: 20px;
+    align-self: center;
+    background-size: 16px;
+    opacity: 1;
+}
+    
+#HeaderView .extendable-element
+{
+    width: auto;
+    height: auto;
+    align-self: center;
+    margin: 1px;
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+#HeaderView #text-info Label {
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+#HeaderView #text-info Label.visible {
+    opacity: 0.6;
+}
+
+#FooterView .extendable-element
+{
+    width: auto;
+    height: auto;
+    align-self: center;
+    margin: 1px;
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+Label.extendable-element
+{
+    width: auto;
+    height: 20px;
+    padding: 1px 6px;
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+Toggle.extendable-element {
+    margin: 0;
+    padding: 0;
+}
+
+.extendable-element.hidden
+{
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+ListView ScrollView {
+    border-radius: 3px;
+}
+
+ListView .unity-list-view__item {
+    border-radius: 3px;
+}
+
+InputBindingField .unity-list-view__item VisualElement {
+    cursor: link;
+}
+
+InputBindingField .unity-list-view__item Label {
+    cursor: link;
+}
+
+InputBindingField .unity-list-view__item:hover {
+    background-color: #2C5D87;
+}
+
+#list-auto-open-scenes .unity-list-view__item:hover {
+    background-color: #2C5D87;
+}
+
+InputBindingField EnumField {
+    margin: 2px;
+}
+
+InputBindingField .unity-list-view__item Button {
+    margin: 2px;
+    margin-right: 0px;
+}
+
+.unity-list-view__footer {
+    border-width: 0;
+    background-color: #464646;
+    padding: 0;
+}
+
+.unity-list-view__footer Button {
+    padding: 2px;
+}
+
+ListView > ScrollView {
+    border-width: 0;
+}
+
+#list-auto-open-scenes SceneField {
+    margin: 0px;
+    padding: 2px;
+    padding-top: 10px;
+    align-items: center;
+    border-radius: 3px;
+}
+
+#list-auto-open-scenes SceneField VisualElement {
+    margin-top: 2px;
+}
+
+#list-auto-open-scenes ScrollView {
+    border-radius: 3px;
+    padding: 0;
+}
+
+#list-auto-open-scenes {
+    min-height: 48px;
+}
+
+#CollectionPopup #button-container {
+    opacity: 0;
+    transition: opacity .05s ease;
+}
+
+#CollectionPopup #button-container:hover {
+    opacity: 1;
+}
+
+#ScenePopup #toggle-open-with-collection Label {
+    flex-shrink: 1;
+}
+
+#ScenePopup #button-container {
+    opacity: 0;
+    transition: opacity .05s ease;
+}
+
+#ScenePopup #button-container:hover {
+    opacity: 1;
+}
+
+#DynamicCollectionPopup #button-container {
+    opacity: 0;
+    transition: opacity .05s ease;
+}
+
+#DynamicCollectionPopup #button-container:hover {
+    opacity: 1;
+}
+
+#button-play:disabled {
+    opacity: 1;
+    background-color: transparent;
+}
+
+#button-diag #text-view-diag {
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+#button-diag:hover #text-view-diag {
+    opacity: 1;
+}
+
+PopupHeader 
+{
+    flex-direction: row;
+}
+
+PopupHeader #label-title {
+    margin: 6px 4px 6px 6px;
+    font-size: 18px;
+    flex-shrink: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+PopupHeader #container {
+    flex-shrink: 0;
+    flex-grow: 1;
+    align-self: center;
+}
+
+PopupHeader #button-back {
+    width: 22px;
+    height: 22px;
+    align-self: center;
+}
+
+PopupHeader #button-close {
+    width: 22px;
+    height: 22px;
+}
+
+.fadeOut {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.fadeIn {
+    opacity: 1;
+    transition: opacity 0.25s ease;
+}
+
+#welcome-wizard #button-install {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+#welcome-wizard #button-install:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+#welcome-wizard #button-install:active {
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+#list-item Button Button {
+    opacity: 0.3;
+}
+
+#list-item:hover Button Button {
+    opacity: 1;
+}
+
+#list-item Button Button:active {
+    opacity: 1;
+}
+
+ASMListView #label-no-items {
+    margin-top: 8px;
+    opacity: 0.75;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+ASMListView > #toggle-all {
+    margin-bottom: 0;
+    margin-left: 2px;
+}
+
+ASMListView > #toggle-all Label {
+    margin-left: 6px;
+    opacity: 0.5;
+    cursor: link;
+}
+
+#SelectionView {
+    flex-shrink: 0;
+}
+
+#UndoView {
+    flex-shrink: 0;
+}
+
+#UndoView.useSpacing #group-collections {
+    margin-bottom: 2px;
+}
+
+#UndoView.useSpacing #group-scenes {
+    margin-top: 2px;
+}
+
+#UndoView .unity-progress-bar__background {
+    border-width: 0;
+    background-color: #2F2F2F;
+    border-radius: var(--border-radius);
+}
+
+#UndoView .unity-progress-bar__progress {
+    border-radius: var(--border-radius);
+    background-color: ##A83219;
+}
+
+#MainView > TemplateContainer {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    margin-right: 8px;
+    margin-left: 8px;
+}
+
+#NotificationView {
+    flex-shrink: 0;
+}
+
+#unity-multi-column-view__header-container {
+    border-radius: var(--border-radius);
+    border-color: transparent;
+}
+
+MultiColumnHeaderColumn {
+    border-color: transparent;
+    align-items: center;
+    cursor: link;
+}
+
+MultiColumnHeaderColumn #unity-multi-column-header-column-title {
+    -unity-font-style: bold;
+    cursor: link;
+    padding: 0;
+}
+
+MultiColumnHeaderColumn .unity-multi-column-header__column__content-container {
+    cursor: link;
+}
+
+MultiColumnHeaderColumn .unity-multi-column-header__column__default-content {
+    padding: 0;
+    cursor: link;
+}
+
+.unity-multi-column-view__cell {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+#label-no-profile {
+    display: none;
+}
+
+#label-no-profile:disabled {
+    display: flex;
+}
+
+#AutoScene EnumField > VisualElement {
+    padding: 0;
+    padding-left: 6px;
+    padding-right: 6px;
+}

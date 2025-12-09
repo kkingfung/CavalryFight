@@ -1,0 +1,39 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement name="header" style="flex-grow: 1; flex-direction: row-reverse; display: none; flex-shrink: 1;">
+        <ui:Toggle label="Open with collection" name="toggle-open-with-collection" tooltip="Specifies if this scene should automatically open with the parent collection or not." style="flex-shrink: 0;" />
+        <ui:VisualElement name="button-container" style="flex-grow: 1; flex-shrink: 0; flex-direction: row;">
+            <ui:Button text="" name="button-rename" tooltip="Rename" class="lockable" style="-unity-font-definition: url(&quot;project://database/Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Fonts/Font%20Awesome%206%20Free-Solid-900.otf?fileID=12800000&amp;guid=0ba460244a244ed449201ed8e8680e50&amp;type=3#Font Awesome 6 Free-Solid-900&quot;); flex-shrink: 0;" />
+        </ui:VisualElement>
+        <ui:Label text="collection" name="label-collection-title" style="opacity: 0.6; margin-top: 4px; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis;" />
+    </ui:VisualElement>
+    <AdvancedSceneManager.Editor.SceneLoaderPicker style="flex-direction: row;" />
+    <AdvancedSceneManager.Editor.NavigationButton text="Events" icon-left="\ue55f" name="navigate-events" navigate-to="AdvancedSceneManager.Editor.UI.Views.Popups.ScenePopup+EventsPage, AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <AdvancedSceneManager.Editor.NavigationButton text="Standalone scene settings" icon-left="\ue049" name="navigate-standalone" navigate-to="AdvancedSceneManager.Editor.UI.Views.Popups.ScenePopup+StandalonePage, AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" icon-left-font-awesome-class-name="fontAwesomeBrands" style="display: none;" />
+    <ui:GroupBox name="group-persistent" text="Persistence" style="padding-top: 12px; padding-right: 12px; padding-bottom: 12px; padding-left: 12px;">
+        <ui:Toggle label="Keep scene open on collection close (persistent)" name="toggle-persistent" binding-path="m_keepOpenWhenCollectionsClose" style="margin-top: -6px;" />
+        <ui:VisualElement style="flex-grow: 1; flex-direction: row; margin-top: 2px; margin-bottom: 4px; flex-wrap: wrap;">
+            <ui:Label text="When collection opens scene, but it is already open:" enable-rich-text="true" style="flex-grow: 1; flex-shrink: 1; margin-right: 8px; overflow: hidden; text-overflow: clip; white-space: normal; margin-left: 3px; -unity-text-align: middle-left;" />
+            <ui:DropdownField choices="Re-open,Remain open" name="dropdown-half-persistent" style="align-items: center;" />
+        </ui:VisualElement>
+    </ui:GroupBox>
+    <ui:GroupBox name="group-editor" text="Editor:" style="padding-top: 12px; padding-right: 12px; padding-bottom: 12px; padding-left: 12px;">
+        <ui:Label tabindex="-1" text="Open scene outside of play-mode automatically:" display-tooltip-when-elided="true" style="margin-top: -4px; margin-bottom: 8px; margin-left: 5px; margin-right: 10px;" />
+        <ui:EnumField type="AdvancedSceneManager.Models.Enums.EditorPersistentOption, AdvancedSceneManager" binding-path="m_autoOpenInEditor" name="enum-auto-open-in-editor" />
+        <ui:ListView focusable="true" name="list-auto-open-scenes" binding-path="m_autoOpenInEditorScenes" show-bound-collection-size="false" reorderable="true" show-add-remove-footer="true" show-border="true" fixed-item-height="26" virtualization-method="FixedHeight" />
+        <ui:Foldout text="Auto scenes" style="margin-top: 0; margin-right: -4px; margin-bottom: -4px; margin-left: -4px;">
+            <ui:Label text="Auto scenes are scenes that will open and close automatically when parent scene does." style="opacity: 0.6; overflow: hidden; white-space: normal; margin-top: -8px; margin-bottom: 8px;" />
+            <ui:ListView name="list-auto-scenes" show-border="true" show-bound-collection-size="false" reorderable="true" show-foldout-header="false" show-add-remove-footer="true" reorder-mode="Animated" virtualization-method="DynamicHeight" item-template="project://database/Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Views/Item%20templates/AutoSceneItem.uxml?fileID=9197481963319205126&amp;guid=9b12519087d0fb645be7ac0203ba1dcb&amp;type=3#AutoSceneItem" />
+        </ui:Foldout>
+    </ui:GroupBox>
+    <ui:GroupBox name="group-loading" text="Loading">
+        <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); flex-direction: row;">
+            <ui:Label tabindex="-1" text="Load priority:" display-tooltip-when-elided="true" />
+            <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
+            <ui:EnumField name="enum-loading-priority" binding-path="m_loadPriority" />
+            <ui:Button text="Read more" name="button-loading-priority-description" style="align-self: center; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; margin-top: -2px;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="description" style="flex-grow: 0; flex-shrink: 0; margin-top: 0; background-color: rgb(38, 38, 38); border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; margin-right: 2px; margin-bottom: 8px; margin-left: 0; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; display: none;">
+            <ui:Label text="Load priority will set the &lt;b&gt;ThreadPriority&lt;/b&gt; to use when opening the scene.&#10;&#10;Lower means slower loading, but faster means more lag when attempting to do other stuff, such as gameplay.&#10;&lt;b&gt;BelowNormal&lt;/b&gt; is unity default.&#10;&#10;&lt;b&gt;Auto&lt;/b&gt; means that ASM will use either collection setting or operation setting. If none are set, then unity default will be used." style="white-space: normal; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; opacity: 1; padding-top: 8px; padding-right: 8px; padding-bottom: 0; padding-left: 8px;" />
+        </ui:VisualElement>
+    </ui:GroupBox>
+</ui:UXML>

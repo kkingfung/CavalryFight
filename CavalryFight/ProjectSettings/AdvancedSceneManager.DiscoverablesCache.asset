@@ -1,0 +1,190 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 53
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0cd5352bb052f544833fae302209418, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.DiscoverablesCache
+  m_cachedDiscoverables:
+  - ctor:AdvancedSceneManager.Editor.Utility.IndicatorUtility, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.ctor|
+  - field:AdvancedSceneManager.Editor.UI.Notifications.UpdateNotification, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.updateService
+  - field:AdvancedSceneManager.Editor.UI.PersistentNotification, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.notificationService
+  - field:AdvancedSceneManager.Editor.UI.PersistentNotification, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.persistentNotificationService
+  - field:AdvancedSceneManager.Editor.UI.Views.FooterView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.profileBindingService
+  - field:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.profileBindingService
+  - field:AdvancedSceneManager.Editor.UI.Views.ItemTemplates.CollectionItem, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.searchService
+  - field:AdvancedSceneManager.Editor.UI.Views.ItemTemplates.CollectionItem, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.selectionService
+  - field:AdvancedSceneManager.Editor.UI.Views.ItemTemplates.SceneItem, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.searchService
+  - field:AdvancedSceneManager.Editor.UI.Views.ItemTemplates.SceneItem, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.selectionService
+  - field:AdvancedSceneManager.Editor.UI.Views.Popups.CollectionPopup+MainPage, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.dialogService
+  - field:AdvancedSceneManager.Editor.UI.Views.Popups.DynamicCollectionPopup, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.dialogService
+  - field:AdvancedSceneManager.Editor.UI.Views.Popups.ScenePopup+MainPage, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.dialogService
+  - field:AdvancedSceneManager.Editor.UI.Views.Popups.SettingsPopup+UpdatesPage,
+    AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.updateService
+  - field:AdvancedSceneManager.Editor.UI.Views.Popups.UpdatePopup, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.updateService
+  - field:AdvancedSceneManager.Editor.UI.Views.SearchView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.profileBindingService
+  - field:AdvancedSceneManager.Editor.UI.Views.SearchView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.searchService
+  - method:AdvancedSceneManager.Callbacks.CallbackUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.InitializeCache|
+  - method:AdvancedSceneManager.Callbacks.CallbackUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.IntitializeCacheRuntime|
+  - method:AdvancedSceneManager.Core.Runtime, AdvancedSceneManager, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null.CheckAllScenesClosed|
+  - method:AdvancedSceneManager.Core.Runtime, AdvancedSceneManager, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null.InitializeSceneLoaders|
+  - method:AdvancedSceneManager.Editor.EditorSceneLoader, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.Initialize|
+  - method:AdvancedSceneManager.Editor.ExtendableButtonContainer, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.InitializeExtendableButtons|
+  - method:AdvancedSceneManager.Editor.UI.ASMUtilityFunctionsWindow, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.Button|
+  - method:AdvancedSceneManager.Editor.UI.ASMUtilityFunctionsWindow, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.Initialize|
+  - method:AdvancedSceneManager.Editor.UI.SceneManagerWindow, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OnLoad|
+  - method:AdvancedSceneManager.Editor.UI.Utility.BindingUtility, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OnEnableLocking|
+  - method:AdvancedSceneManager.Editor.UI.Views.FooterView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.SceneHelperButton|
+  - method:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.BuildProfiles|
+  - method:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.DevBuild|
+  - method:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OpenEditor|
+  - method:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OpenOverview|
+  - method:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OpenUnitySearch|
+  - method:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.ProjectSettings|
+  - method:AdvancedSceneManager.Editor.UI.Views.SearchView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OpenSearch|
+  - method:AdvancedSceneManager.Editor.Utility.CollectionButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.IncludeToggle|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.CollectionButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OpenAdditive|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.CollectionButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OpenNonAdditive|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.CollectionButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.Play|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.CollectionOverlay, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OnLoad|
+  - method:AdvancedSceneManager.Editor.Utility.IndicatorUtility, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.AddSceneContextMenuItems|
+  - method:AdvancedSceneManager.Editor.Utility.LockUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.AddSceneContextMenuItems|
+  - method:AdvancedSceneManager.Editor.Utility.LockUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.CollectionButton|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.SceneButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.DoNotOpenIndicator|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.SceneButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.InputBindingIndicator|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.SceneButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.LoaderIndicator|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.SceneButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OpenAdditive|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.SceneButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OpenNonAdditive|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Editor.Utility.SceneButtons, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.PersistentIndicator|AdvancedSceneManager.Editor.UI.ViewModelContext,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - method:AdvancedSceneManager.Models.ASMSettings, AdvancedSceneManager, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null.UpdateSplashScreen|
+  - method:AdvancedSceneManager.Utility.AutoSceneUtility, AdvancedSceneManager, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null.OnLoad|
+  - method:AdvancedSceneManager.Utility.CrossSceneReferences.CrossSceneReferenceUtility,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OnLoad|
+  - method:AdvancedSceneManager.Utility.SceneBindingUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.OnLoadEditor|
+  - method:AdvancedSceneManager.Utility.SceneBindingUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.SetupTracking|
+  - method:AdvancedSceneManager.Utility.SceneBindingUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.StartListener|
+  - method:AdvancedSceneManager.Utility.SceneUtility, AdvancedSceneManager, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null.OnLoad|
+  - prop:AdvancedSceneManager.Editor.UI.Notifications.NotifyProfileNotification,
+    AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.notificationService|
+  - prop:AdvancedSceneManager.Editor.UI.Views.CollectionView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.profileBindingsService|
+  - prop:AdvancedSceneManager.Editor.UI.Views.CollectionView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.searchService|
+  - prop:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.collectionView|
+  - prop:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.notificationService|
+  - prop:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.persistentNotificationService|
+  - prop:AdvancedSceneManager.Editor.UI.Views.HeaderView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.undoService|
+  - prop:AdvancedSceneManager.Editor.UI.Views.NotificationView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.notificationService|
+  - prop:AdvancedSceneManager.Editor.UI.Views.Popups.MenuPopup, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.persistentNotificationService|
+  - prop:AdvancedSceneManager.Editor.UI.Views.SelectionView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.selectionService|
+  - prop:AdvancedSceneManager.Editor.UI.Views.UndoView, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.undoService|
+  - type:AdvancedSceneManager.Core.RuntimeSceneLoader, AdvancedSceneManager, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.UI.ICollectionViewService, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.UI.IDialogService, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.UI.INotificationService, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.UI.IPersistentNotificationService, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.UI.IProfileBindingsService, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.UI.ISearchService, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.UI.ISelectionService, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.UI.IUndoService, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.Utility.ASMModelFolderIndicator, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.Utility.CollectionOverlay, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Editor.Utility.HierarchyGUIUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Services.UpdateService, AdvancedSceneManager.Editor,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Utility.Discoverability.DiscoverabilityCompilationWatcher,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.Utility.FallbackSceneUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

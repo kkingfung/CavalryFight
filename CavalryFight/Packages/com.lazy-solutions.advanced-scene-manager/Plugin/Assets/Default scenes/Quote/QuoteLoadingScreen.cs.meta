@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 116a88982852f8e4b958329207a34dd4
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Assets/Default
+    scenes/Quote/QuoteLoadingScreen.cs
+  uploadId: 814596

@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <AdvancedSceneManager.Editor.PopupHeader title="Dynamic collection">
+        <ui:VisualElement name="button-container" style="flex-grow: 1; flex-shrink: 0; flex-direction: row;">
+            <ui:Button text="" name="button-rename" tooltip="Rename" class="lockable" style="-unity-font-definition: url(&quot;project://database/Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Fonts/Font%20Awesome%206%20Free-Solid-900.otf?fileID=12800000&amp;guid=0ba460244a244ed449201ed8e8680e50&amp;type=3#Font Awesome 6 Free-Solid-900&quot;); flex-shrink: 0;" />
+        </ui:VisualElement>
+    </AdvancedSceneManager.Editor.PopupHeader>
+    <ui:ScrollView name="scroll-dynamic-collection-popup">
+        <ui:GroupBox>
+            <ui:Label tabindex="-1" text="Dynamic collections guarantee that all scenes contained in a folder (and subfolders) are included in build, even if blacklisted.&#10;&#10;Scenes do not have to be imported into ASM." display-tooltip-when-elided="true" class="wrap" style="margin-bottom: 12px; white-space: normal;" />
+            <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+                <ui:TextField picking-mode="Ignore" label="Path:" name="text-path" style="flex-grow: 1; flex-shrink: 1;" />
+                <ui:Button text="Pick..." parse-escape-sequences="true" display-tooltip-when-elided="true" name="button-pick" />
+            </ui:VisualElement>
+            <ui:Label tabindex="-1" text="* paths are case insensitive &#10;* paths must be prefixed by assets/&#10;* paths may point to a folder, or a .unity file" parse-escape-sequences="true" display-tooltip-when-elided="true" style="opacity: 0.6;" />
+        </ui:GroupBox>
+    </ui:ScrollView>
+</ui:UXML>

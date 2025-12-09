@@ -1,0 +1,24 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:GroupBox name="group-profiles">
+        <uie:ObjectField label="Force profile" type="AdvancedSceneManager.Models.Profile, AdvancedSceneManager" binding-path="m_forceProfile" name="profile-force" tooltip="When assigned, profile will be forced for everyone on this project." />
+        <uie:ObjectField label="Default profile" binding-path="m_defaultProfile" type="AdvancedSceneManager.Models.Profile, AdvancedSceneManager" name="profile-default" tooltip="If profile is unset when ASM is initialized, it will default to profile. No effect if force profile is assigned." />
+        <ui:Toggle label="Try open collection instead of scene" name="toggle-open-collection-on-scene-asset-open" binding-path="m_openCollectionOnSceneAssetOpen" tooltip="Double-clicking a SceneAsset in the Project window opens its first containing collection instead of the scene. If none exists, the scene opens normally." style="margin-top: 6px;" />
+    </ui:GroupBox>
+    <ui:GroupBox name="group-build-settings" text="Build settings">
+        <ui:Toggle label="Automatically manage build scene list" tooltip="Specifies whatever ASM should automatically manage build scene list" binding-path="m_autoUpdateBuildScenes" name="toggle-autoUpdateBuildScenes" />
+        <ui:Toggle label="Prevent assignment if null and Unity has an active Build Profile" tooltip="Determines whether ASM should still write the build scene list when no Build Profile is linked and Unity has an active Build Profile. When disabled, ASM will write to Unity’s active Build Profile instead of the global list, a behavior caused by Unity’s API design." binding-path="m_preventAssignmentIfNullAndUnityHasABuildProfileActive" name="toggle-active-build-profile-option" />
+        <uie:ObjectField label="Unity build profile" name="picker-build-profile" binding-path="m_unityBuildProfile" tooltip="Specifies the build profile to write scene list to. Set to null to write to global list." type="UnityEditor.Build.Profile.BuildProfile, UnityEditor.CoreModule" allow-scene-objects="false" />
+    </ui:GroupBox>
+    <ui:GroupBox name="group-playmode" text="Enter play mode">
+        <ui:Toggle label="Run ASM startup process when using collection play button" name="toggle-startup-process-on-collection-play" binding-path="m_startupProcessOnCollectionPlay" />
+        <ui:Toggle label="Auto save scenes when using ASM play button" name="toggle-auto-save-scenes-when-entering-play-mode" binding-path="m_alwaysSaveScenesWhenEnteringPlayMode" />
+        <ui:Toggle label="Clear open collection when entering play mode" binding-path="m_clearCollectionWhenEnteringPlayMode" name="toggle-clear-collection-on-play-mode" />
+        <ui:Label text="Configurable enter play mode" style="margin-top: 8px; margin-bottom: 4px;" />
+        <ui:DropdownField name="enum-play-mode-option" choices="Reload Domain and Scene,Reload Scene only,Reload Domain only,Do not reload Domain or Scene" index="0" tooltip="Configurable play mode can be used to greatly reduce lengthy delays when entering play mode.  Note that choosing to reload scene may cause double scene reload when using ASM play button, due to startup process.  May not be compatible with all assets or packages." style="flex-shrink: 1;" />
+    </ui:GroupBox>
+    <ui:GroupBox name="group-locking" style="margin-bottom: 4px;">
+        <ui:Toggle label="Allow locking collections" name="toggle-collection-lock" binding-path="m_allowCollectionLocking" tooltip="Allows collections to be locked. Only has an effect in editor." />
+        <ui:Toggle label="Allow locking scenes" name="toggle-scene-lock" binding-path="m_allowSceneLocking" tooltip="Allows scenes to be locked. Prevents saving, and will prompt for either discard or to save as a new scene instead.  Only has an effect in editor." />
+    </ui:GroupBox>
+    <AdvancedSceneManager.Editor.NavigationButton name="navigate-logging" text="Logging" navigate-to="AdvancedSceneManager.Editor.UI.Views.Popups.SettingsPopup+LoggingPage, AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" icon-left="\uf15c" />
+</ui:UXML>

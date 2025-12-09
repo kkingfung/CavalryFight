@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: eaad21b8e7d52d3429c46786eee8da92
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Models/Interfaces/ILockable.cs
+  uploadId: 814596

@@ -1,0 +1,14 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; margin-top: 12px; margin-right: 22px; margin-bottom: 22px; margin-left: 22px;">
+        <ui:Label text="A quick reminder before diving in:" style="white-space: normal;" />
+        <ui:Label text="✅ Unity’s UserSettings folder should be git-ignored" name="header" style="font-size: 16px; -unity-font-style: bold; white-space: normal; margin-top: 8px; margin-bottom: 4px;" />
+        <ui:Label text="This folder stores machine-specific settings like your ASM profile selection. You don’t want these shared between team members or committed to version control. Most Unity gitignore templates already exclude this by default." style="white-space: normal;" />
+        <ui:Label text="ASM also uses this folder for user settings." style="margin-top: 8px;" />
+        <ui:Label text="🚫 Please don’t upload ASM or other assets to public repositories" name="header" style="font-size: 16px; -unity-font-style: bold; white-space: normal; margin-top: 16px; margin-bottom: 4px;" />
+        <ui:Label text="ASM is a paid asset, and like all assets, it is covered by the Unity Asset Store EULA. Uploading it or any other paid package to a public repo makes it freely downloadable, which violates licensing terms and may result in takedown requests. To respect the EULA and protect your projects, please keep your repositories private or exclude paid assets before publishing." style="white-space: normal;" />
+        <ui:Label text="🔄 Want to share a project publicly?" name="header" style="font-size: 16px; -unity-font-style: bold; white-space: normal; margin-top: 16px; margin-bottom: 4px;" />
+        <ui:Label text="Consider using the ASM Trial version. It has some limitations (like blocking builds), but it&apos;s safe and allowed to include in public repositories." style="white-space: normal;" />
+        <ui:Label text="Learn more about ASM Trial" tooltip="https://github.com/Lazy-Solutions/AdvancedSceneManager/blob/main/trial/README.md" name="link-trial" class="label-link" style="white-space: normal; margin-top: 4px; margin-bottom: 4px; align-self: flex-start;" />
+        <ui:Label text="Thanks for helping keep the asset safe and sustainable!" style="white-space: normal; margin-top: 12px;" />
+    </ui:VisualElement>
+</ui:UXML>

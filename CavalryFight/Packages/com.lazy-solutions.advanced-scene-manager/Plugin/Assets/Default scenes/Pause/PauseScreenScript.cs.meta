@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: ab0c2790808b9eb4ba643538b4163d6a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Assets/Default
+    scenes/Pause/PauseScreenScript.cs
+  uploadId: 814596

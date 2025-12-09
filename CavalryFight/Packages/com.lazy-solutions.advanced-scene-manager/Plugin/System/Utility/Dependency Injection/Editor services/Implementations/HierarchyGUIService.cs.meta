@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 3cb68d23428084843943430ab0c510a9
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Utility/Dependency
+    Injection/Editor services/Implementations/HierarchyGUIService.cs
+  uploadId: 814596

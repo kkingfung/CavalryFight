@@ -1,0 +1,8 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <AdvancedSceneManager.Editor.PopupHeader title="Unreferenced collctions:" />
+    <ui:ScrollView name="scroll" />
+    <ui:VisualElement name="footer" style="flex-grow: 0; flex-shrink: 0; flex-direction: row-reverse; margin-top: 12px;">
+        <ui:Button text="Clean up selected" name="button-cleanup" />
+        <ui:Button text="Cancel" name="button-cancel" />
+    </ui:VisualElement>
+</ui:UXML>

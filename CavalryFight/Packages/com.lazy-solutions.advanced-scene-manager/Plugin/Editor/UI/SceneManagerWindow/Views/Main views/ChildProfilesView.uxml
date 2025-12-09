@@ -1,0 +1,3 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <AdvancedSceneManager.Editor.ASMListView binding-path="m_childProfiles" no-items-text="No child profiles added. You may add some via the profile selector." class="ASM_CHILD_PROFILES" style="display: none;" />
+</ui:UXML>

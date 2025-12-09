@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 955f9980a968bdb4a9536ebbe2760a99
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Utility/StopwatchUtility.cs
+  uploadId: 814596

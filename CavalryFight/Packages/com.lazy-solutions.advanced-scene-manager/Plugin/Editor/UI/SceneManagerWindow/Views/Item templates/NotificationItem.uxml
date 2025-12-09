@@ -1,0 +1,15 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="notification" style="flex-grow: 0; flex-direction: row; margin-top: 2px; margin-right: 0; margin-bottom: 2px; margin-left: 0; flex-shrink: 0; min-height: 36px;">
+        <ui:VisualElement style="flex-grow: 0; background-color: rgb(31, 31, 31); flex-shrink: 0; border-top-left-radius: 3px; border-bottom-left-radius: 3px; align-content: center; align-items: center; justify-content: center; width: 32px;">
+            <ui:Label text="\uf1f8" parse-escape-sequences="true" name="icon-info" class="fontAwesome" style="margin-top: 6px; margin-right: 6px; margin-bottom: 6px; margin-left: 6px;" />
+        </ui:VisualElement>
+        <ui:Button name="button-main" class="notification" style="flex-direction: row; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; border-top-left-radius: 0; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 0; flex-shrink: 1; flex-grow: 1;">
+            <ui:Label text="Welcome to Advanced Scene Manager, it is strongly recommended to check out quick start guides before getting started. Click here to do so." name="label-text" picking-mode="Ignore" style="white-space: normal; flex-grow: 1; flex-shrink: 1; margin-top: 8px; margin-bottom: 8px; margin-left: 8px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; margin-right: 8px;" />
+            <ui:VisualElement name="button-container" style="flex-grow: 0; flex-shrink: 0; flex-direction: row; align-self: flex-start; right: 4px; top: 4px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
+                <ui:Label text="\uf0da" parse-escape-sequences="true" name="icon-collapsed" picking-mode="Ignore" class="fontAwesome" style="display: none; margin-left: 4px;" />
+                <ui:Label text="\uf0d7" parse-escape-sequences="true" name="icon-expanded" picking-mode="Ignore" class="fontAwesome" style="display: none; margin-left: 2px;" />
+                <ui:Button text="\uf142" parse-escape-sequences="true" name="button-menu" class="fontAwesome" style="width: 26px; height: 26px;" />
+            </ui:VisualElement>
+        </ui:Button>
+    </ui:VisualElement>
+</ui:UXML>

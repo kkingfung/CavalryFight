@@ -1,0 +1,24 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:ScrollView name="CollectionScroll" style="flex-shrink: 1; flex-grow: 1;">
+        <ui:VisualElement style="flex-grow: 0; background-color: rgba(0, 0, 0, 0); display: flex; padding-top: 0; padding-right: 8px; padding-bottom: 0; padding-left: 8px;">
+            <ui:Label tabindex="-1" text="No active profile, you can select, or create, one below!" display-tooltip-when-elided="true" name="label-no-profile" style="align-self: center; margin-top: 0; position: absolute;" />
+            <ui:ListView focusable="true" name="list-collections" reorderable="true" reorder-mode="Animated" selection-type="None" show-bound-collection-size="false" virtualization-method="DynamicHeight" binding-path="m_collections" fixed-item-height="22" item-template="project://database/Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Views/Item%20templates/CollectionItem.uxml?fileID=9197481963319205126&amp;guid=a022e7288f708a64b851ab82bd9dec00&amp;type=3#CollectionItem" allow-add="false" allow-remove="false" style="padding-right: 0; flex-grow: 1; flex-shrink: 1; max-height: none; min-height: auto;" />
+            <ui:VisualElement name="row-add" style="flex-grow: 1; flex-direction: row-reverse; margin-top: 2px; height: 26px; margin-bottom: 0;">
+                <ui:Button text="\uf5fd" parse-escape-sequences="true" tooltip="Create from template" name="button-templates" class="fontAwesome" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 2px; width: 26px; height: 26px;" />
+                <ui:Label text="\uf067" parse-escape-sequences="true" picking-mode="Ignore" name="fake-label-button-create-collection" class="fontAwesome" style="position: absolute; right: 0; left: 0; top: 0; bottom: 0; -unity-text-align: middle-center;" />
+                <ui:Button name="button-create-collection" parse-escape-sequences="true" tooltip="Create new collection" style="flex-grow: 1; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="line" style="height: 1px; background-color: rgba(100, 100, 100, 0.59); margin-top: 6px; margin-bottom: 32px; margin-left: 0; margin-right: 0; width: 120px; align-self: center; flex-shrink: 0; flex-grow: 0;" />
+            <ui:VisualElement name="item-standalone-collection" style="flex-grow: 1;" />
+            <ui:VisualElement name="item-asm-default-scenes-collection" style="flex-grow: 1;" />
+            <ui:ListView focusable="true" name="list-dynamic-collections" reorderable="true" selection-type="None" show-bound-collection-size="false" virtualization-method="DynamicHeight" binding-path="m_dynamicCollectionsList" item-template="project://database/Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/SceneManagerWindow/Views/Item%20templates/CollectionItem.uxml?fileID=9197481963319205126&amp;guid=a022e7288f708a64b851ab82bd9dec00&amp;type=3#CollectionItem" reorder-mode="Animated" allow-add="false" allow-remove="false" style="padding-right: 0; flex-shrink: 1; flex-grow: 1; margin-bottom: 0; max-height: none; min-height: auto;" />
+            <ui:VisualElement name="row-add" style="flex-grow: 1; flex-direction: row-reverse; margin-top: 2px; height: 26px;">
+                <ui:Button parse-escape-sequences="false" name="button-dynamic-menu" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 2px; width: 26px; height: 26px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
+                    <ui:Label text="" picking-mode="Ignore" class="fontAwesome" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center; position: absolute; top: 0; right: 0; bottom: 0; left: 0;" />
+                </ui:Button>
+                <ui:Label text="\uf067" parse-escape-sequences="true" picking-mode="Ignore" name="fake-label-button-create-dynamic-collection" class="fontAwesome" style="position: absolute; right: 0; left: 0; top: 0; bottom: 0; -unity-text-align: middle-center;" />
+                <ui:Button name="button-create-dynamic" parse-escape-sequences="true" tooltip="Create new dynamic collection" style="flex-grow: 1; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:ScrollView>
+</ui:UXML>

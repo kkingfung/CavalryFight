@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed1a744a21f23374aaa784effa3d8fc9, type: 3}
+  m_Name: FeatureFlags
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Core.FeatureFlags
+  m_styleSheet_dev: {fileID: 7433441132597879392, guid: 0886c35644da9674f8d79882bb470a4d, type: 3}
+  m_styleSheet_prod: {fileID: 7433441132597879392, guid: 63435dba7b3ab2c4590761ea3bbef441, type: 3}
+  flags:
+  - name: ASM_CHILD_PROFILES
+    enabled: 1

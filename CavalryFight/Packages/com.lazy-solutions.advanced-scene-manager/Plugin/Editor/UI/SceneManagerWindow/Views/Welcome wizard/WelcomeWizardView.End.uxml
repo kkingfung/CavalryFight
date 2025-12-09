@@ -1,0 +1,14 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement style="flex-grow: 1; margin-top: 12px; margin-right: 22px; margin-bottom: 22px; margin-left: 22px;">
+        <ui:Label text="Wizard complete" style="-unity-font-style: bold; font-size: 16px; white-space: normal;" />
+        <ui:Label text="And with that, the setup is done!" style="white-space: normal; margin-top: 8px; -unity-font-style: italic;" />
+        <ui:Label text="Whether you went through each step or simply continued through, you&apos;re now ready to start working with Advanced Scene Manager. Everything shown here can be configured later in the ASM window whenever it&apos;s needed." style="margin-top: 8px; white-space: normal;" />
+        <ui:VisualElement style="flex-grow: 1; margin-top: 22px; margin-bottom: 22px;">
+            <ui:Label text="Remember to check out our documentation over at:" name="Label" style="white-space: normal; margin-top: 0;" />
+            <ui:Label text="https://github.com/Lazy-Solutions/AdvancedSceneManager" name="link" tooltip="https://github.com/Lazy-Solutions/AdvancedSceneManager/blob/main/docs/README.md" class="label-link" style="white-space: normal; margin-top: 2px;" />
+            <ui:Label text="You can also find a link to the documentation in the ASM menu, accessible from the header once the wizard is complete." style="white-space: normal; margin-top: 4px;" />
+            <ui:Label text="(Documentation is a continuous effort - contributions are always welcome!)" style="white-space: normal; font-size: 11.5px; margin-top: 4px; -unity-font-style: italic; opacity: 0.5; margin-bottom: 0;" />
+        </ui:VisualElement>
+        <ui:Label text="Thanks for using ASM - and good luck with your project!" style="white-space: normal; -unity-font-style: bold;" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True" asm="AdvancedSceneManager.Editor.UI">
+    <ui:GroupBox name="group-search" style="padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; margin-top: 0; margin-right: 0; margin-bottom: 5px; margin-left: 0;">
+        <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+            <ui:TextField picking-mode="Ignore" name="text-search" placeholder-text="Search..." select-all-on-mouse-up="false" select-all-on-focus="false" style="opacity: 0.6; margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px; flex-grow: 1; flex-shrink: 1;" />
+            <ui:Button text="\uf02e" parse-escape-sequences="true" display-tooltip-when-elided="true" tooltip="Save search" name="button-save-search" class="fontAwesome fontAwesomeRegular" style="opacity: 0.6; margin-top: 0; margin-right: 5px; margin-bottom: 0; margin-left: 0; width: 22px; height: 22px; align-content: center; align-self: center;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="list-saved" style="align-items: flex-start; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-self: flex-start; flex-grow: 1; margin-top: 0; margin-bottom: 2px;" />
+    </ui:GroupBox>
+</ui:UXML>

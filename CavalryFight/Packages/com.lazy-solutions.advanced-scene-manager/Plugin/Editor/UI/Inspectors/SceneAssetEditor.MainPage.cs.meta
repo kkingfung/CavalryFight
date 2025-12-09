@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: c66e7e8b12860b74ab63d9c23e6bca2d
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/UI/Inspectors/SceneAssetEditor.MainPage.cs
+  uploadId: 814596

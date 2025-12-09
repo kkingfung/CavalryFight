@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement style="background-color: rgba(255, 165, 0, 0.56); flex-direction: row; align-items: center; padding-left: 0; padding-right: 4px; border-top-left-radius: 3px; border-bottom-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; margin-left: 0; margin-right: 0; margin-top: 2px; margin-bottom: 2px; padding-top: 0; padding-bottom: 0; flex-shrink: 0; height: 40px; overflow: hidden;">
+        <ui:ProgressBar value="0" high-value="1" class="background-transparent" style="position: absolute; left: 25px; right: 0; bottom: 0; top: 0; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;" />
+        <ui:VisualElement style="flex-grow: 0; background-color: rgb(31, 31, 31); flex-shrink: 0; height: 100%; border-top-left-radius: 3px; border-bottom-left-radius: 3px; align-content: center; align-items: center; justify-content: center; width: 32px;">
+            <ui:Label text="\uf1f8" parse-escape-sequences="true" class="fontAwesome" style="margin-top: 6px; margin-right: 6px; margin-bottom: 6px; margin-left: 6px;" />
+        </ui:VisualElement>
+        <ui:Label tabindex="-1" text="name" display-tooltip-when-elided="true" name="label-name" style="margin-left: 8px; margin-top: 0; margin-right: 0; margin-bottom: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; flex-grow: 1;" />
+        <ui:VisualElement name="spacer" style="flex-grow: 1; flex-shrink: 0;" />
+        <ui:Button text="Undo" display-tooltip-when-elided="true" name="button-undo" />
+        <ui:Button text="Delete" display-tooltip-when-elided="true" name="button-delete" />
+    </ui:VisualElement>
+</ui:UXML>

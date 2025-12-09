@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 6315ba3da27fec64ba8c7034f6033cfd
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Assets/Default
+    scenes/IconBounce/BackgroundStencil.mat
+  uploadId: 814596

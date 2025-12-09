@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 7209a3d4f1d50c94f8a5c0b217008be9
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Models/Enums/AutoSceneOption.cs
+  uploadId: 814596

@@ -1,0 +1,6 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:GroupBox name="group-input-bindings" text="Input bindings" class="lockable">
+        <AdvancedSceneManager.Editor.InputBindingField binding-path="m_inputBindings" />
+        <ui:ListView name="list-input-bindings-ignore" reorderable="true" reorder-mode="Animated" binding-path="m_ignoreInputBindingsForScenes" show-bound-collection-size="false" show-border="false" show-add-remove-footer="true" show-foldout-header="true" header-title="Scenes to ignore:" virtualization-method="DynamicHeight" />
+    </ui:GroupBox>
+</ui:UXML>

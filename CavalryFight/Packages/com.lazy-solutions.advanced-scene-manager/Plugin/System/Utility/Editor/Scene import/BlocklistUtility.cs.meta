@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 09a6cb1bdfa6f63469d9a54989ea681c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Utility/Editor/Scene
+    import/BlocklistUtility.cs
+  uploadId: 814596

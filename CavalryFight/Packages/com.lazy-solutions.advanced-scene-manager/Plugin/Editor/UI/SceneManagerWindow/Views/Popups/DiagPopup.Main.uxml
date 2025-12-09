@@ -1,0 +1,11 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:GroupBox name="group" style="margin-bottom: 4px;">
+        <ui:Label text="No scenes open" name="text-scene-info" />
+        <ui:Label text="No services registered" name="text-services-info" />
+        <ui:Label text="No initialization info to display" name="text-startup-time" style="margin-top: 8px;" />
+        <ui:Label text="No discoverables found" name="text-discoverables-info" />
+    </ui:GroupBox>
+    <AdvancedSceneManager.Editor.NavigationButton navigate-to="AdvancedSceneManager.Editor.UI.Views.Popups.DiagPopup+Coroutines, AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" text="Coroutines" icon-left="\uf074" name="navigate-coroutines" />
+    <AdvancedSceneManager.Editor.NavigationButton navigate-to="AdvancedSceneManager.Editor.UI.Views.Popups.DiagPopup+DiscoverablesPage, AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" text="Discoverables" icon-left="\ue521" name="navigate-discoverables" />
+    <AdvancedSceneManager.Editor.NavigationButton navigate-to="AdvancedSceneManager.Editor.UI.Views.Popups.DiagPopup+ServicesPage, AdvancedSceneManager.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" text="Services" icon-left="\ue55b" name="navigate-services" />
+</ui:UXML>

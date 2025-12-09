@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 131ac1cc4f2544e438ae2bfac776aacc
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/Editor/Utility/CollectionButtons.cs
+  uploadId: 814596

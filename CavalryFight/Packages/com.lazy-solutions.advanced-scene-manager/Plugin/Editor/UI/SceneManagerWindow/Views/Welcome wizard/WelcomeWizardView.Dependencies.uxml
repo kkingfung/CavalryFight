@@ -1,0 +1,70 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; margin-top: 12px; margin-right: 22px; margin-bottom: 22px; margin-left: 22px;">
+        <ui:Label text="Some features in ASM can integrate with optional Unity packages. These aren’t required, but installing them unlocks additional functionality." style="white-space: normal;" />
+        <ui:VisualElement name="group-editor-coroutines" style="flex-grow: 1;">
+            <ui:VisualElement style="flex-grow: 1;" />
+            <ui:Label text="Editor Coroutines" name="header" style="font-size: 16px; -unity-font-style: bold; white-space: normal; margin-top: 8px; margin-bottom: 4px;" />
+            <ui:Label text="To open and close scenes outside of play mode, ASM requires Unity’s Editor Coroutines package. Most other features work without it, but you&apos;ll miss scene operations outside of play mode." style="white-space: normal;" />
+            <ui:VisualElement style="flex-grow: 1; margin-top: 8px;">
+                <ui:Label text="✅ Package is installed" name="label-installed" />
+                <ui:VisualElement name="container-install" style="flex-grow: 1; flex-direction: row;">
+                    <ui:Button text="Install" name="button-install" />
+                    <ui:Label text="Package is not installed" />
+                </ui:VisualElement>
+                <ui:VisualElement name="container-checking" enabled="false" style="flex-grow: 1; flex-direction: row;">
+                    <AdvancedSceneManager.Editor.ProgressSpinner name="progress-checking" rotations-per-minute="120" style="width: 16px; height: 16px; margin-top: 4px; margin-right: 4px; margin-bottom: 4px; margin-left: 4px;" />
+                    <ui:Label text="Checking if package is installed..." />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="group-input-system" style="flex-grow: 1; margin-top: 8px;">
+            <ui:Label text="Input system &lt;i&gt;&lt;color=#888888&gt;Optional&lt;/color&gt;&lt;/i&gt;" name="header" style="font-size: 16px; white-space: normal; -unity-font-style: bold; margin-top: 12px; margin-bottom: 4px;" />
+            <ui:Label text="ASM supports input bindings to open scenes or collections at runtime, like toggling UI or debug tools. To use this, Unity’s Input System package is required." style="white-space: normal;" />
+            <ui:VisualElement style="flex-grow: 1; margin-top: 8px;">
+                <ui:Label text="✅ Package is installed" name="label-installed" />
+                <ui:VisualElement name="container-install" style="flex-grow: 1; flex-direction: row;">
+                    <ui:Button text="Install" name="button-install" />
+                    <ui:Label text="Package is not installed" />
+                </ui:VisualElement>
+                <ui:VisualElement name="container-checking" enabled="false" style="flex-grow: 1; flex-direction: row;">
+                    <AdvancedSceneManager.Editor.ProgressSpinner name="progress-checking" rotations-per-minute="120" style="width: 16px; height: 16px; margin-top: 4px; margin-right: 4px; margin-bottom: 4px; margin-left: 4px;" />
+                    <ui:Label text="Checking if package is installed..." />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="group-addressables" style="flex-grow: 1; margin-top: 8px;">
+            <ui:Label text="Addressables &lt;i&gt;&lt;color=#888888&gt;Optional&lt;/color&gt;&lt;/i&gt;" name="header" style="font-size: 16px; white-space: normal; -unity-font-style: bold; margin-top: 12px; margin-bottom: 4px;" />
+            <ui:Label text="ASM can load scenes using Unity’s Addressables system. If your project uses addressables, ASM can support addressable scenes directly, just enable it per scene or collection." style="white-space: normal; text-overflow: ellipsis;" />
+            <ui:VisualElement style="flex-grow: 1; margin-top: 8px;">
+                <ui:Label text="✅ Package is installed" name="label-installed" />
+                <ui:VisualElement name="container-install" style="flex-grow: 1; flex-direction: row;">
+                    <ui:Button text="Install" name="button-install" />
+                    <ui:Label text="Package is not installed" />
+                </ui:VisualElement>
+                <ui:VisualElement name="container-checking" enabled="false" style="flex-grow: 1; flex-direction: row;">
+                    <AdvancedSceneManager.Editor.ProgressSpinner name="progress-checking" rotations-per-minute="120" style="width: 16px; height: 16px; margin-top: 4px; margin-right: 4px; margin-bottom: 4px; margin-left: 4px;" />
+                    <ui:Label text="Checking if package is installed..." />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="group-netcode" style="flex-grow: 1; margin-top: 8px;">
+            <ui:Label text="Netcode for GameObjects &lt;i&gt;&lt;color=#888888&gt;Optional&lt;/color&gt;&lt;/i&gt;" name="header" style="font-size: 16px; white-space: normal; -unity-font-style: bold; margin-top: 12px; margin-bottom: 4px;" />
+            <ui:Label text="ASM includes a plugin to help integrate with Unity’s Netcode for GameObjects (NGO). If you&apos;re building multiplayer projects with NGO, ASM can help manage synced scenes and transitions." style="white-space: normal;" />
+            <ui:GroupBox style="padding-top: 0; padding-right: 8px; padding-bottom: 4px; padding-left: 8px;">
+                <ui:Label text="⚠️ Netcode integration has important limitations, especially on the client side." style="white-space: normal; margin-top: 12px;" />
+                <ui:Label text="Read more about ASM’s Netcode support" tooltip="https://github.com/Lazy-Solutions/AdvancedSceneManager/blob/main/docs/guides/Netcode.md" name="link-netcode" class="label-link" style="white-space: normal; margin-top: 4px; margin-bottom: 4px; align-self: flex-start;" />
+            </ui:GroupBox>
+            <ui:VisualElement style="flex-grow: 1; margin-top: 8px;">
+                <ui:Label text="✅ Package is installed" name="label-installed" />
+                <ui:VisualElement name="container-install" style="flex-grow: 1; flex-direction: row;">
+                    <ui:Button text="Install" name="button-install" />
+                    <ui:Label text="Package is not installed" />
+                </ui:VisualElement>
+                <ui:VisualElement name="container-checking" enabled="false" style="flex-grow: 1; flex-direction: row;">
+                    <AdvancedSceneManager.Editor.ProgressSpinner name="progress-checking" rotations-per-minute="120" style="width: 16px; height: 16px; margin-top: 4px; margin-right: 4px; margin-bottom: 4px; margin-left: 4px;" />
+                    <ui:Label text="Checking if package is installed..." />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

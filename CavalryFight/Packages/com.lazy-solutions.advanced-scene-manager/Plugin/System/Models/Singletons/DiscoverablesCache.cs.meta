@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: b0cd5352bb052f544833fae302209418
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Models/Singletons/DiscoverablesCache.cs
+  uploadId: 814596

@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 047bff71e1d119549ad7901d149fced5, type: 3}
+  m_Name: ViewLocator
+  m_EditorClassIdentifier: 
+  main:
+    progressSpinner: {fileID: 9197481963319205126, guid: d73f5c3cb647eff4f8324fe7fd4527b6, type: 3}
+    header: {fileID: 9197481963319205126, guid: 49c1d2168293ae442b204ace840a76da, type: 3}
+    search: {fileID: 9197481963319205126, guid: 169d6d34bae5ab64598c508d2c97cd42, type: 3}
+    collection: {fileID: 9197481963319205126, guid: 0a8337af24c607c45ab0f0c131505c8b, type: 3}
+    selection: {fileID: 9197481963319205126, guid: 37e9317c5e4c5a044b00819eac76b183, type: 3}
+    notification: {fileID: 9197481963319205126, guid: 06b9ad75880dbd949a59ae08891340b4, type: 3}
+    undo: {fileID: 9197481963319205126, guid: 7fdefbd8fcd93b34cbc45fc372606e0d, type: 3}
+    childProfiles: {fileID: 9197481963319205126, guid: 2ae66e5ee12a2e24d9bcdf8f35a21409, type: 3}
+    footer: {fileID: 9197481963319205126, guid: f159bb07d684fa04a937192bdfe73564, type: 3}
+  popups:
+    root: {fileID: 9197481963319205126, guid: 0b18c0c2bd0b51c49b14fd024cf26484, type: 3}
+    pickName: {fileID: 9197481963319205126, guid: e576dbc64c3c6b3438104f48201bcd91, type: 3}
+    confirm: {fileID: 9197481963319205126, guid: 7fb0d5db4744ba545ba5632d5ce25494, type: 3}
+    importScene: {fileID: 9197481963319205126, guid: a2ce4979b1900ae4fb787e7dae0280cc, type: 3}
+    dynamicCollection: {fileID: 9197481963319205126, guid: 687c4355e0fc3ec4fbbde19c6d00eca9, type: 3}
+    menu: {fileID: 9197481963319205126, guid: ab78dab2b39cfb14489220a75438ee69, type: 3}
+    overview: {fileID: 9197481963319205126, guid: aa872e9f2ea2cc54c91c5bd6fb25bb16, type: 3}
+    list: {fileID: 9197481963319205126, guid: 4fdf56864f4731a428e899a710e2aa1f, type: 3}
+    legacy: {fileID: 9197481963319205126, guid: cd911ec739ec4d747b169dd6f8e4043b, type: 3}
+    update: {fileID: 9197481963319205126, guid: ea142d6391182b74bbcd51bd41bb2da9, type: 3}
+    unreferencedCollections: {fileID: 9197481963319205126, guid: be2a0c73ac92b49449178b1f22d149d4, type: 3}
+    scene:
+      root: {fileID: 9197481963319205126, guid: ce850a8f2f83a40428ec1afd2cc9fdbf, type: 3}
+      main: {fileID: 9197481963319205126, guid: 5c476c38b4a969448aee532a07c7d703, type: 3}
+      events: {fileID: 9197481963319205126, guid: 50f206933b8da294ba94d77c69fe8444, type: 3}
+      standalone: {fileID: 9197481963319205126, guid: 03e4c4c6e99ab3e438bc1f31ab6ba423, type: 3}
+    collection:
+      root: {fileID: 9197481963319205126, guid: e3215b113ce3be84da799ccf8e756918, type: 3}
+      main: {fileID: 9197481963319205126, guid: a33b176d94e88fe468fb0cee3e39db29, type: 3}
+      events: {fileID: 9197481963319205126, guid: b4cb2267c1393384b8e322b9a87c8476, type: 3}
+      inputBindings: {fileID: 9197481963319205126, guid: 176e232370739b94f9a322aa96824401, type: 3}
+    diag:
+      root: {fileID: 9197481963319205126, guid: 1a119cfcc50971a42b55e26d5c4988d2, type: 3}
+      main: {fileID: 9197481963319205126, guid: 111bd7f3422d0504d997eb9bcee5440e, type: 3}
+      coroutines: {fileID: 9197481963319205126, guid: dddd882ada7a714409080fd324062344, type: 3}
+      discoverables: {fileID: 9197481963319205126, guid: 3200a8553e2b5cf4589e62c9e63fd884, type: 3}
+      services: {fileID: 9197481963319205126, guid: f0640b59ec5816344bb1d325000ab08e, type: 3}
+    settings:
+      root: {fileID: 9197481963319205126, guid: e0b561442f8e94e4f912f94840258aba, type: 3}
+      main: {fileID: 9197481963319205126, guid: 803f9bb96285a8743bcb64c3a45d7a8a, type: 3}
+      startup: {fileID: 9197481963319205126, guid: e723d2cccfec1a84d978f8a9809d96ce, type: 3}
+      sceneLoading: {fileID: 9197481963319205126, guid: 0a4c6c68e0f520141ac9d35b65ae1db0, type: 3}
+      network: {fileID: 9197481963319205126, guid: c67932e2ff589214bacaa34c71fe9310, type: 3}
+      updates: {fileID: 9197481963319205126, guid: 90eb61a0e24301040b017ac06b0631c9, type: 3}
+      experimental: {fileID: 9197481963319205126, guid: e6c38d3df58c1904aa6131e0dcf6cdf9, type: 3}
+      extensions: {fileID: 9197481963319205126, guid: 48af713f4ad6fdd4a9a024646510bdaa, type: 3}
+      assets:
+        root: {fileID: 9197481963319205126, guid: 44802e82136a8444e93dd92f366d169c, type: 3}
+        whitelist: {fileID: 9197481963319205126, guid: 21b1a3a08d2496444afa5e7da2388aa0, type: 3}
+        blacklist: {fileID: 9197481963319205126, guid: d8eb0d77a6ce8c1469ea56bea8529594, type: 3}
+      editor:
+        root: {fileID: 9197481963319205126, guid: fc4be4d497e590c408cd4cd903fa4066, type: 3}
+        logging: {fileID: 9197481963319205126, guid: 6dc968e38304e32488d94fe5d83eba6d, type: 3}
+      appearance:
+        root: {fileID: 9197481963319205126, guid: 86c13155009bd544dab6e256dbe51b8e, type: 3}
+        extendableUI: {fileID: 9197481963319205126, guid: b17462a5e84d0594c9d77d4239134c1f, type: 3}
+  welcomeWizard:
+    root: {fileID: 9197481963319205126, guid: 39a282760b1005346911e0c9dacdae3f, type: 3}
+    main: {fileID: 9197481963319205126, guid: 51bd689cac6275d4db0b3515e13c81d3, type: 3}
+    git: {fileID: 9197481963319205126, guid: 4071204d1cd0ad14aae136fac4ae440d, type: 3}
+    dependencies: {fileID: 9197481963319205126, guid: 75aa30c345c58324ca490af587121139, type: 3}
+    sceneImport: {fileID: 9197481963319205126, guid: a9b7e474f36eaf641b932dae2fd306c4, type: 3}
+    profileSelector: {fileID: 9197481963319205126, guid: 2b9778c01a7787648ae6143994aa04e6, type: 3}
+    end: {fileID: 9197481963319205126, guid: 7d0075c9e2133bd4983931cd01fb31cc, type: 3}
+  items:
+    collection: {fileID: 9197481963319205126, guid: a022e7288f708a64b851ab82bd9dec00, type: 3}
+    scene: {fileID: 9197481963319205126, guid: a94d06bd9d35a684ea84f58a684b5c12, type: 3}
+    undo: {fileID: 9197481963319205126, guid: 89a4f38af22cbc4408e9668af47e7c18, type: 3}
+    list: {fileID: 9197481963319205126, guid: ebdfb4f283afece4b9a09524f49d0592, type: 3}
+    importScene: {fileID: 9197481963319205126, guid: 2a47aa9a2f5076c4f8032ac15e5f7f3f, type: 3}
+    notification: {fileID: 9197481963319205126, guid: 02854761106a3624794b6ecfcf127869, type: 3}
+    autoScene: {fileID: 9197481963319205126, guid: 9b12519087d0fb645be7ac0203ba1dcb, type: 3}
+  misc:
+    utilityFunctionsWindow: {fileID: 9197481963319205126, guid: b3b7a965ddb17db45813357ce7cd7764, type: 3}
+  styles:
+    base: {fileID: 7433441132597879392, guid: 8c978e9125bc4004586816a89051e397, type: 3}
+    overrides: {fileID: 7433441132597879392, guid: 87c7679e74299ee4b8508609eae33b4b, type: 3}
+    collectionView: {fileID: 7433441132597879392, guid: cc2916e49a7a6f94a93d7288998a84f0, type: 3}
+    sceneField: {fileID: 7433441132597879392, guid: fc84602dbf791194cafb7cd05d5cb909, type: 3}
+    sceneManagerWindow: {fileID: 7433441132597879392, guid: fa73896c35301284fb7a37e4a03f92ec, type: 3}
+    featureFlags: {fileID: 7433441132597879392, guid: 0886c35644da9674f8d79882bb470a4d, type: 3}
+  fonts:
+    fontAwesomeSolid: {fileID: 11400000, guid: 747dc63c4036f3945ba6f469bbed12b3, type: 2}
+    fontAwesomeRegular: {fileID: 11400000, guid: 8091c5c86b03ec640ad6aa7587a50bc6, type: 2}
+    fontAwesomeBrands: {fileID: 11400000, guid: 7d78a08ea8f9eef439d153ab49166236, type: 2}

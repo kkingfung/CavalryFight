@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 86a6175733c15b2429b44e7fb164bb0c
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Documentation/guides/Quick
+    start.md
+  uploadId: 814596

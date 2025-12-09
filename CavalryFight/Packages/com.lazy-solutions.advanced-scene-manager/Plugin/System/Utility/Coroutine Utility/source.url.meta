@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a7e2f614b6185ee44aa0514b56376cd1
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330926
+  packageName: Advanced Scene Manager 3
+  packageVersion: 3.0.1
+  assetPath: Packages/com.lazy-solutions.advanced-scene-manager/Plugin/System/Utility/Coroutine
+    Utility/source.url
+  uploadId: 814596
