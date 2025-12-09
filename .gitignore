@@ -17,7 +17,12 @@
 [Bb]uild/
 [Bb]uilds/
 [Ll]ogs/
+[Uu]ser[Ss]ettings/
 [Mm]emoryCaptures/
+
+# Explicitly exclude Unity UserSettings (any location)
+**/UserSettings/
+**/UserSettings/**
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
