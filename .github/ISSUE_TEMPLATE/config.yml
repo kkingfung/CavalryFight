@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🏇 CavalryFightコミュニティ
+    url: https://github.com/kkingfung/CavalryFight/discussions
+    about: 質問、アイデア共有、CavalryFightコミュニティとのディスカッション
+  - name: 📚 ドキュメント
+    url: https://github.com/kkingfung/CavalryFight/wiki
+    about: 包括的なドキュメントとガイドを閲覧
+  - name: 📋 コーディング規則
+    url: https://github.com/kkingfung/CavalryFight/blob/main/Docs/CODING_RULES.md
+    about: プロジェクトのコーディング規則とベストプラクティス
