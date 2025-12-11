@@ -104,6 +104,72 @@ namespace CavalryFight.Views.UI
 namespace CavalryFight.Services.Audio
 ```
 
+### 2.4 ファイルとクラスの構成（Unity固有ルール）
+Unityの制約により、1ファイルには1つのクラスのみを定義します。
+
+#### ✅ 推奨：1ファイル = 1クラス
+```csharp
+// IAudioService.cs
+namespace CavalryFight.Services.Audio
+{
+    public interface IAudioService : IService { }
+}
+
+// AudioChangedEventArgs.cs
+namespace CavalryFight.Services.Audio
+{
+    public class AudioChangedEventArgs : EventArgs { }
+}
+
+// VolumeType.cs
+namespace CavalryFight.Services.Audio
+{
+    public enum VolumeType { Master, Bgm, Sfx }
+}
+```
+
+#### ❌ 非推奨：1ファイルに複数のクラス
+```csharp
+// IAudioService.cs（NG: 複数クラスを含む）
+namespace CavalryFight.Services.Audio
+{
+    public interface IAudioService : IService { }
+
+    public class AudioChangedEventArgs : EventArgs { }  // NG: 別ファイルに分離すべき
+
+    public enum VolumeType { Master, Bgm, Sfx }  // NG: 別ファイルに分離すべき
+}
+```
+
+#### 例外：ネストされたクラス
+親クラスの内部でのみ使用される場合は、ネストされたクラスとして定義可能です。
+
+```csharp
+// AudioService.cs
+public class AudioService : IAudioService
+{
+    // 内部でのみ使用されるクラスはネスト可能
+    private class AudioManager : MonoBehaviour
+    {
+        public AudioSource? BgmSource { get; private set; }
+        public AudioSource? SfxSource { get; private set; }
+    }
+}
+```
+
+#### ファイル名の規則
+- ファイル名はクラス名と完全に一致させる
+- 大文字・小文字も厳密に一致させる
+
+```
+✅ PlayerController.cs  →  public class PlayerController
+✅ IAudioService.cs     →  public interface IAudioService
+✅ VolumeType.cs        →  public enum VolumeType
+
+❌ playerController.cs  →  public class PlayerController (大文字小文字不一致)
+❌ Audio.cs             →  public interface IAudioService (名前不一致)
+```
+
 ---
 
 ## 3. 命名規則
@@ -631,6 +697,8 @@ namespace CavalryFight.Views.Player
 - [ ] Nullable参照型が適切に使用されているか
 - [ ] Regionsで整理されているか
 - [ ] Namespaceが正しく設定されているか
+- [ ] 1ファイルに1クラスの原則が守られているか
+- [ ] ファイル名とクラス名が一致しているか
 - [ ] XMLコメントが記述されているか
 - [ ] パフォーマンスへの配慮があるか
 - [ ] 命名規則に従っているか
@@ -642,6 +710,7 @@ namespace CavalryFight.Views.Player
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
+| 1.1.0 | 2025-12-11 | Unity固有ルール追加（1ファイル1クラス原則） |
 | 1.0.0 | 2025-12-09 | 初版作成 |
 
 ---
