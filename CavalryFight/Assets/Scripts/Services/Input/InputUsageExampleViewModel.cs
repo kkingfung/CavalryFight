@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Core.MVVM;
+using CavalryFight.Core.Commands;
 
 namespace CavalryFight.Services.Input
 {
@@ -359,22 +360,18 @@ namespace CavalryFight.Services.Input
         /// <summary>
         /// リソースを破棄します。
         /// </summary>
-        /// <param name="disposing">マネージドリソースを破棄する場合true</param>
-        protected override void Dispose(bool disposing)
+        protected override void OnDispose()
         {
-            if (disposing)
-            {
-                // イベントをアンサブスクライブ
-                _inputService.AttackButtonPressed -= OnAttackButtonPressed;
-                _inputService.AttackButtonReleased -= OnAttackButtonReleased;
-                _inputService.CancelAttackButtonPressed -= OnCancelAttackButtonPressed;
-                _inputService.MountButtonPressed -= OnMountButtonPressed;
-                _inputService.JumpButtonPressed -= OnJumpButtonPressed;
-                _inputService.MenuButtonPressed -= OnMenuButtonPressed;
-                _inputService.PauseButtonPressed -= OnPauseButtonPressed;
-            }
+            // イベントをアンサブスクライブ
+            _inputService.AttackButtonPressed -= OnAttackButtonPressed;
+            _inputService.AttackButtonReleased -= OnAttackButtonReleased;
+            _inputService.CancelAttackButtonPressed -= OnCancelAttackButtonPressed;
+            _inputService.MountButtonPressed -= OnMountButtonPressed;
+            _inputService.JumpButtonPressed -= OnJumpButtonPressed;
+            _inputService.MenuButtonPressed -= OnMenuButtonPressed;
+            _inputService.PauseButtonPressed -= OnPauseButtonPressed;
 
-            base.Dispose(disposing);
+            base.OnDispose();
         }
 
         #endregion
