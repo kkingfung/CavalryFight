@@ -170,6 +170,63 @@ public class AudioService : IAudioService
 ❌ Audio.cs             →  public interface IAudioService (名前不一致)
 ```
 
+### 2.5 制御文の波括弧（必須）
+すべての制御文（if、for、while、foreach等）には、**たとえ1行でも必ず波括弧 `{}` を使用します**。
+
+#### 理由
+- コード修正時の誤りを防止
+- 可読性の向上
+- Appleの「goto fail」バグのような重大なセキュリティ問題を防止
+
+#### ✅ 推奨：常に波括弧を使用
+```csharp
+// 1行でも波括弧を使用
+if (!_inputEnabled)
+{
+    return Vector2.zero;
+}
+
+// 複数行の場合
+if (input.magnitude > 1.0f)
+{
+    input.Normalize();
+}
+
+// else節も同様
+if (IsChargingAttack)
+{
+    ExecuteChargedAttack();
+}
+else
+{
+    ResetCharge();
+}
+
+// forループ
+for (int i = 0; i < count; i++)
+{
+    Debug.Log($"Index: {i}");
+}
+```
+
+#### ❌ 非推奨：波括弧の省略
+```csharp
+// NG: 1行でも波括弧は必須
+if (!_inputEnabled)
+    return Vector2.zero;
+
+// NG: 修正時にバグの原因になる
+if (condition)
+    DoSomething();
+    DoAnotherThing();  // 常に実行される！
+
+// NG: else節でも波括弧は必須
+if (IsChargingAttack)
+    ExecuteChargedAttack();
+else
+    ResetCharge();
+```
+
 ---
 
 ## 3. 命名規則
@@ -710,6 +767,7 @@ namespace CavalryFight.Views.Player
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
+| 1.2.0 | 2025-12-11 | 制御文の波括弧ルール追加（必須化） |
 | 1.1.0 | 2025-12-11 | Unity固有ルール追加（1ファイル1クラス原則） |
 | 1.0.0 | 2025-12-09 | 初版作成 |
 
