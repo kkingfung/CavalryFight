@@ -10,6 +10,7 @@
 |-----------|------|------------|
 | **SceneManagementService** | シーン遷移とロード管理 | `SceneManagement/` |
 | **AudioService** | BGM・SE再生管理 | `Audio/` |
+| **InputService** | プレイヤー入力管理 | `Input/` |
 
 ---
 
@@ -23,6 +24,7 @@
 using CavalryFight.Core.Services;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.Services.Audio;
+using CavalryFight.Services.Input;
 using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
@@ -30,6 +32,7 @@ public class GameBootstrap : MonoBehaviour
     private void Awake()
     {
         // サービスを登録
+        ServiceLocator.Instance.Register<IInputService>(new InputService());
         ServiceLocator.Instance.Register<IAudioService>(new AudioService());
         ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
 
@@ -51,6 +54,8 @@ public class GameBootstrap : MonoBehaviour
 完全な使用例は以下を参照してください：
 
 - **SceneManagement**: `Examples/SceneTransition/SceneTransitionExampleViewModel.cs`
+- **Audio**: `Services/Audio/AudioUsageExampleViewModel.cs`
+- **Input**: `Services/Input/InputUsageExampleViewModel.cs`
 
 ---
 
@@ -66,5 +71,6 @@ public class GameBootstrap : MonoBehaviour
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
+| 0.3.0 | 2025-12-11 | Input サービス追加 |
 | 0.2.0 | 2025-12-11 | Audio サービス追加 |
 | 0.1.0 | 2025-12-10 | SceneManagement サービス追加 |
