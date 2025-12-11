@@ -125,6 +125,8 @@ namespace CavalryFight.Services.SceneManagement
         /// <summary>
         /// SceneLoadEventArgsの新しいインスタンスを初期化します。
         /// </summary>
+        /// <param name="sceneName">ロードされたシーン名</param>
+        /// <param name="duration">ロードにかかった時間（秒）</param>
         public SceneLoadEventArgs(string sceneName, float duration)
         {
             SceneName = sceneName;
@@ -155,6 +157,9 @@ namespace CavalryFight.Services.SceneManagement
         /// <summary>
         /// SceneLoadErrorEventArgsの新しいインスタンスを初期化します。
         /// </summary>
+        /// <param name="sceneName">エラーが発生したシーン名</param>
+        /// <param name="errorMessage">エラーメッセージ</param>
+        /// <param name="exception">発生した例外（オプション）</param>
         public SceneLoadErrorEventArgs(string sceneName, string errorMessage, Exception? exception = null)
         {
             SceneName = sceneName;
