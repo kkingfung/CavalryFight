@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using CavalryFight.Core.Services;
 
 namespace CavalryFight.Services.Replay
 {
@@ -12,7 +13,7 @@ namespace CavalryFight.Services.Replay
     /// 録画されたリプレイの再生を管理します。
     /// ファイルからの読込、再生制御、シーク、ハイライトジャンプ等を提供します。
     /// </remarks>
-    public interface IReplayPlayer
+    public interface IReplayPlayer : IService
     {
         #region Properties
 

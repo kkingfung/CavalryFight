@@ -3,6 +3,7 @@
 using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Input;
+using InputHelper = UnityEngine.Input;
 
 namespace CavalryFight.Services.Replay
 {
@@ -176,10 +177,10 @@ namespace CavalryFight.Services.Replay
             }
 
             // 右クリックでカメラ回転
-            if (Input.GetMouseButton(1))
+            if (InputHelper.GetMouseButton(1))
             {
-                float mouseX = Input.GetAxis("Mouse X") * _lookSensitivity;
-                float mouseY = Input.GetAxis("Mouse Y") * _lookSensitivity;
+                float mouseX = InputHelper.GetAxis("Mouse X") * _lookSensitivity;
+                float mouseY = InputHelper.GetAxis("Mouse Y") * _lookSensitivity;
 
                 _yaw += mouseX;
                 _pitch -= mouseY;
@@ -265,8 +266,8 @@ namespace CavalryFight.Services.Replay
                 return false;
             }
 
-            return Input.GetKey(binding.PrimaryKey) ||
-                   (binding.SecondaryKey.HasValue && Input.GetKey(binding.SecondaryKey.Value));
+            return (binding.PrimaryKey != KeyCode.None && InputHelper.GetKey(binding.PrimaryKey)) ||
+                   (binding.SecondaryKey != KeyCode.None && InputHelper.GetKey(binding.SecondaryKey));
         }
 
         private bool IsDefaultKeyPressed(InputAction action)
@@ -274,14 +275,14 @@ namespace CavalryFight.Services.Replay
             // InputBindingServiceが利用できない場合のフォールバック
             return action switch
             {
-                InputAction.MoveForward => Input.GetKey(KeyCode.W),
-                InputAction.MoveBackward => Input.GetKey(KeyCode.S),
-                InputAction.MoveLeft => Input.GetKey(KeyCode.A),
-                InputAction.MoveRight => Input.GetKey(KeyCode.D),
-                InputAction.Jump => Input.GetKey(KeyCode.Q),
-                InputAction.Mount => Input.GetKey(KeyCode.E),
-                InputAction.Attack => Input.GetKey(KeyCode.LeftShift),
-                InputAction.CancelAttack => Input.GetKey(KeyCode.LeftControl),
+                InputAction.MoveForward => InputHelper.GetKey(KeyCode.W),
+                InputAction.MoveBackward => InputHelper.GetKey(KeyCode.S),
+                InputAction.MoveLeft => InputHelper.GetKey(KeyCode.A),
+                InputAction.MoveRight => InputHelper.GetKey(KeyCode.D),
+                InputAction.Jump => InputHelper.GetKey(KeyCode.Q),
+                InputAction.Mount => InputHelper.GetKey(KeyCode.E),
+                InputAction.Attack => InputHelper.GetKey(KeyCode.LeftShift),
+                InputAction.CancelAttack => InputHelper.GetKey(KeyCode.LeftControl),
                 _ => false
             };
         }
@@ -289,7 +290,7 @@ namespace CavalryFight.Services.Replay
         private void UpdateSpeed()
         {
             // マウススクロールで速度変更
-            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            float scroll = InputHelper.GetAxis("Mouse ScrollWheel");
             if (Mathf.Abs(scroll) > 0.01f)
             {
                 _currentMoveSpeed += scroll * 10f;

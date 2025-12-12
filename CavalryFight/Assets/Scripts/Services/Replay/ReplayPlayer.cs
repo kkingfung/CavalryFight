@@ -26,6 +26,7 @@ namespace CavalryFight.Services.Replay
 
         #region Fields
 
+        private bool _initialized = false;
         private bool _isPlaying = false;
         private bool _isPaused = false;
         private ReplayData? _currentPlayback = null;
@@ -105,6 +106,50 @@ namespace CavalryFight.Services.Replay
         public ReplayPlayer()
         {
             Debug.Log("[ReplayPlayer] Instance created.");
+        }
+
+        #endregion
+
+        #region IService Implementation
+
+        /// <summary>
+        /// サービスを初期化します
+        /// </summary>
+        public void Initialize()
+        {
+            if (_initialized)
+            {
+                Debug.LogWarning("[ReplayPlayer] Already initialized.");
+                return;
+            }
+
+            Debug.Log("[ReplayPlayer] Initializing...");
+            _initialized = true;
+            Debug.Log("[ReplayPlayer] Initialized.");
+        }
+
+        /// <summary>
+        /// サービスを破棄し、リソースを解放します
+        /// </summary>
+        public void Dispose()
+        {
+            Debug.Log("[ReplayPlayer] Disposing...");
+
+            // 再生中の場合は停止
+            if (_isPlaying)
+            {
+                StopPlayback();
+            }
+
+            // イベントハンドラをクリア
+            PlaybackStarted = null;
+            PlaybackStopped = null;
+            PlaybackPaused = null;
+            PlaybackResumed = null;
+            PlaybackTimeChanged = null;
+
+            _initialized = false;
+            Debug.Log("[ReplayPlayer] Disposed.");
         }
 
         #endregion
