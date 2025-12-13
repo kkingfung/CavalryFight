@@ -403,7 +403,7 @@ namespace CavalryFight.Services.Audio
             /// <summary>
             /// 親AudioService
             /// </summary>
-            public AudioService Service { get; }
+            public AudioService? Service { get; private set; }
 
             /// <summary>
             /// BGM用のAudioSource
