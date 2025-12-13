@@ -124,6 +124,8 @@ MonoBehaviour:
     AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - method:AdvancedSceneManager.Models.ASMSettings, AdvancedSceneManager, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null.UpdateSplashScreen|
+  - method:AdvancedSceneManager.PackageSupport.Netcode.NetcodeSceneLoader, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null.Initialize|
   - method:AdvancedSceneManager.Utility.AutoSceneUtility, AdvancedSceneManager, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null.OnLoad|
   - method:AdvancedSceneManager.Utility.CrossSceneReferences.CrossSceneReferenceUtility,
@@ -181,6 +183,8 @@ MonoBehaviour:
   - type:AdvancedSceneManager.Editor.Utility.CollectionOverlay, AdvancedSceneManager.Editor,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - type:AdvancedSceneManager.Editor.Utility.HierarchyGUIUtility, AdvancedSceneManager,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.PackageSupport.Netcode.NetcodeSceneLoader, AdvancedSceneManager,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - type:AdvancedSceneManager.Services.UpdateService, AdvancedSceneManager.Editor,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

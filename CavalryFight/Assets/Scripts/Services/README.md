@@ -17,6 +17,7 @@
 | **ReplayRecorder** | リプレイ録画管理 | `Replay/` |
 | **ReplayPlayer** | リプレイ再生管理 | `Replay/` |
 | **CustomizationService** | キャラクター・騎乗動物カスタマイズ管理 | `Customization/` |
+| **LobbyService** | マルチプレイヤーロビー管理（Unity Netcode + Relay） | `Lobby/` |
 
 ---
 
@@ -35,11 +36,14 @@ using CavalryFight.Services.AI;
 using CavalryFight.Services.GameSettings;
 using CavalryFight.Services.Replay;
 using CavalryFight.Services.Customization;
+using CavalryFight.Services.Lobby;
 using UnityEngine;
 
 [RequireComponent(typeof(ReplayServiceUpdater))]
 public class GameBootstrap : MonoBehaviour
 {
+    [SerializeField] private NetworkLobbyManager? networkLobbyManagerPrefab;
+
     private void Awake()
     {
         // サービスを登録（依存関係の順序に注意）
@@ -56,6 +60,17 @@ public class GameBootstrap : MonoBehaviour
         var mountApplier = new MalbersHorseApplier();
         var customizationService = new CustomizationService(characterApplier, mountApplier);
         ServiceLocator.Instance.Register<ICustomizationService>(customizationService);
+
+        // ロビーサービスを登録
+        var lobbyService = new LobbyService();
+        ServiceLocator.Instance.Register<ILobbyService>(lobbyService);
+
+        // NetworkLobbyManagerを作成してLobbyServiceに設定（マルチプレイヤー使用時のみ）
+        if (networkLobbyManagerPrefab != null)
+        {
+            var networkLobbyManager = Instantiate(networkLobbyManagerPrefab);
+            lobbyService.SetNetworkLobbyManager(networkLobbyManager);
+        }
 
         ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
 
@@ -88,6 +103,7 @@ public class GameBootstrap : MonoBehaviour
 - **GameSettings**: `Examples/SettingsUsage/SettingsUsageExampleViewModel.cs`
 - **Replay**: `Examples/ReplayUsage/ReplayUsageExampleViewModel.cs`
 - **Customization**: `Examples/CustomizationUsage/CustomizationUsageExampleViewModel.cs`
+- **Lobby**: `Examples/LobbyUsage/LobbyUsageExampleViewModel.cs`
 
 ---
 
@@ -103,6 +119,7 @@ public class GameBootstrap : MonoBehaviour
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
+| 0.9.0 | 2025-12-13 | Lobby サービス追加（マルチプレイヤーロビーシステム、Unity Netcode + Relay統合、ホスト/ゲスト対応、CPU追加機能） |
 | 0.8.0 | 2025-12-13 | Customization サービス追加（キャラクター・騎乗動物カスタマイズシステム、P09 & Malbers統合） |
 | 0.7.1 | 2025-12-13 | Replay サービスをReplayRecorderとReplayPlayerに分離（録画と再生を独立したサービスに） |
 | 0.7.0 | 2025-12-12 | Replay サービス追加（リプレイ録画・再生システム） |
