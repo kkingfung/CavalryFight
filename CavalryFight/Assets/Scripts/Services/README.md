@@ -1,92 +1,71 @@
-# Services
+# サービス (Services)
 
 ## 概要
-共通サービスとユーティリティクラス。複数の機能で共有されるロジックを実装します。
+このディレクトリには、CavalryFightプロジェクトのコアサービスが含まれています。
+すべてのサービスは`IService`インターフェースを実装し、`ServiceLocator`を通じて管理されます。
 
-## 責務
-- 共通機能の提供
-- 外部システムとの連携
-- ユーティリティメソッド
-- 依存性注入（DI）対象
+## サービス一覧
 
-## サービスタイプ
-- **データサービス**: セーブ/ロード、データベース操作
-- **ネットワークサービス**: マルチプレイ通信
-- **オーディオサービス**: サウンドエフェクト、BGM管理
-- **入力サービス**: 入力システムの抽象化
-- **ロギングサービス**: デバッグとログ記録
+| サービス名 | 説明 | ディレクトリ |
+|-----------|------|------------|
+| **SceneManagementService** | シーン遷移とロード管理 | `SceneManagement/` |
+| **AudioService** | BGM・SE再生管理 | `Audio/` |
 
-## 命名規則
-- インターフェース: `I{機能名}Service` (例: `IAudioService`)
-- 実装クラス: `{機能名}Service` (例: `AudioService`)
-- Namespace: `CavalryFight.Services.{カテゴリ名}`
+---
 
-## 例
+## サービスの登録
+
+すべてのサービスは、ゲーム開始時にServiceLocatorに登録する必要があります。
+
+### Bootstrap スクリプト例
+
 ```csharp
-#nullable enable
+using CavalryFight.Core.Services;
+using CavalryFight.Services.SceneManagement;
+using CavalryFight.Services.Audio;
+using UnityEngine;
 
-namespace CavalryFight.Services.Audio
+public class GameBootstrap : MonoBehaviour
 {
-    /// <summary>
-    /// オーディオサービスのインターフェース
-    /// </summary>
-    public interface IAudioService
+    private void Awake()
     {
-        /// <summary>
-        /// BGMを再生
-        /// </summary>
-        void PlayBGM(string clipName);
+        // サービスを登録
+        ServiceLocator.Instance.Register<IAudioService>(new AudioService());
+        ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
 
-        /// <summary>
-        /// SEを再生
-        /// </summary>
-        void PlaySE(string clipName, float volume = 1.0f);
-
-        /// <summary>
-        /// BGM音量を設定
-        /// </summary>
-        void SetBGMVolume(float volume);
-    }
-
-    /// <summary>
-    /// オーディオサービスの実装
-    /// </summary>
-    public class AudioService : IAudioService
-    {
-        #region Fields
-        private readonly AudioSource _bgmSource;
-        private readonly AudioSource _seSource;
-        #endregion
-
-        #region Constructor
-        public AudioService(AudioSource bgmSource, AudioSource seSource)
-        {
-            _bgmSource = bgmSource;
-            _seSource = seSource;
-        }
-        #endregion
-
-        #region Public Methods
-        public void PlayBGM(string clipName)
-        {
-            // 実装
-        }
-
-        public void PlaySE(string clipName, float volume = 1.0f)
-        {
-            // 実装
-        }
-
-        public void SetBGMVolume(float volume)
-        {
-            _bgmSource.volume = volume;
-        }
-        #endregion
+        Debug.Log("[GameBootstrap] All services registered.");
     }
 }
 ```
 
-## 注意事項
-- インターフェースを定義してテスタビリティを向上
-- シングルトンの使用は最小限に
-- 依存性注入（DI）の使用を推奨
+### 📌 重要な注意点
+
+1. **Persistent Scene**: Bootstrapスクリプトは、永続シーン（Startup）に配置してください
+
+2. **DontDestroyOnLoad**: ServiceLocatorは自動的にDontDestroyOnLoadになります
+
+---
+
+## サンプルコード
+
+完全な使用例は以下を参照してください：
+
+- **SceneManagement**: `Examples/SceneTransition/SceneTransitionExampleViewModel.cs`
+- **Audio**: `Examples/AudioUsage/AudioUsageExampleViewModel.cs`
+
+---
+
+## 命名規則
+
+- **インターフェース**: `I{機能名}Service` (例: `IAudioService`)
+- **実装クラス**: `{機能名}Service` (例: `AudioService`)
+- **Namespace**: `CavalryFight.Services.{カテゴリ名}`
+
+---
+
+## 更新履歴
+
+| バージョン | 日付 | 変更内容 |
+|-----------|------|---------|
+| 0.2.0 | 2025-12-11 | Audio サービス追加 |
+| 0.1.0 | 2025-12-10 | SceneManagement サービス追加 |
