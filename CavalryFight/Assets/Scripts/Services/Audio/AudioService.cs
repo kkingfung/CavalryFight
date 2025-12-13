@@ -221,6 +221,7 @@ namespace CavalryFight.Services.Audio
             {
                 _audioManager.BgmSource.Stop();
                 _currentBgmName = null;
+                BgmChanged?.Invoke(this, new AudioChangedEventArgs(string.Empty));
             }
 
             Debug.Log("[AudioService] BGM stopped.");
