@@ -55,7 +55,7 @@ public class GameBootstrap : MonoBehaviour
 
 - **SceneManagement**: `Examples/SceneTransition/SceneTransitionExampleViewModel.cs`
 - **Audio**: `Examples/AudioUsage/AudioUsageExampleViewModel.cs`
-- **Input**: `Services/Input/InputUsageExampleViewModel.cs`
+- **Input**: `Services/InputUsage/InputUsageExampleViewModel.cs`
 
 ---
 
