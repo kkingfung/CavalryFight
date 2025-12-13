@@ -43,6 +43,7 @@ namespace CavalryFight.Services.AI
         #region Fields
 
         private readonly List<BlazeAI> _activeAIs;
+        private readonly Dictionary<BlazeAI, BlazeAI.State> _lastKnownStates;
         private Transform? _aiContainer;
 
         #endregion
@@ -69,6 +70,7 @@ namespace CavalryFight.Services.AI
         public BlazeAIService()
         {
             _activeAIs = new List<BlazeAI>();
+            _lastKnownStates = new Dictionary<BlazeAI, BlazeAI.State>();
         }
 
         #endregion
@@ -118,6 +120,50 @@ namespace CavalryFight.Services.AI
 
         #endregion
 
+        #region Update
+
+        /// <summary>
+        /// サービスを更新します（MonoBehaviourのUpdateから呼び出す）
+        /// </summary>
+        /// <remarks>
+        /// AI状態の変更を検出し、AIStateChangedイベントを発火します。
+        /// </remarks>
+        public void Update()
+        {
+            // 各AIの状態をチェック
+            foreach (var ai in _activeAIs)
+            {
+                if (ai == null)
+                {
+                    continue;
+                }
+
+                BlazeAI.State currentState = ai.state;
+
+                // 前回の状態を取得
+                if (_lastKnownStates.TryGetValue(ai, out BlazeAI.State previousState))
+                {
+                    // 状態が変更されたかチェック
+                    if (currentState != previousState)
+                    {
+                        // 状態変更イベントを発火
+                        AIStateChanged?.Invoke(this, new AIStateChangedEventArgs(
+                            ai,
+                            currentState.ToString(),
+                            previousState.ToString()
+                        ));
+
+                        Debug.Log($"[BlazeAIService] AI {ai.name} state changed: {previousState} -> {currentState}");
+                    }
+                }
+
+                // 現在の状態を記録
+                _lastKnownStates[ai] = currentState;
+            }
+        }
+
+        #endregion
+
         #region Spawn Management
 
         /// <summary>
@@ -154,6 +200,9 @@ namespace CavalryFight.Services.AI
                     // リストに追加
                     _activeAIs.Add(ai);
 
+                    // 初期状態を記録
+                    _lastKnownStates[ai] = ai.state;
+
                     // イベントを発火
                     AISpawned?.Invoke(this, new AISpawnedEventArgs(ai, position));
 
@@ -189,6 +238,9 @@ namespace CavalryFight.Services.AI
             {
                 _activeAIs.Remove(ai);
 
+                // 状態トラッキングから削除
+                _lastKnownStates.Remove(ai);
+
                 // イベントを発火
                 AIDied?.Invoke(this, new AIDeathEventArgs(ai, ai.transform.position));
 
@@ -218,6 +270,7 @@ namespace CavalryFight.Services.AI
             }
 
             _activeAIs.Clear();
+            _lastKnownStates.Clear();
 
             Debug.Log("[BlazeAIService] All AIs removed.");
         }
