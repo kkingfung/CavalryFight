@@ -1,20 +1,103 @@
 # サードパーティアセット
 
 ## 概要
-CavalryFightプロジェクトでは、以下の4つのサードパーティアセットを使用して、騎馬戦闘ゲームの開発を効率化します。
+CavalryFightプロジェクトでは、以下のサードパーティアセットとパッケージを使用して、騎馬戦闘ゲームの開発を効率化します。
 
-## アセット一覧
+## パッケージ・アセット一覧
 
-| アセット名 | 主な用途 | CavalryFightでの使用箇所 |
-|----------|---------|---------------------|
-| **Malbers Animations** | 動物コントローラー・騎乗システム | 馬・動物の騎乗、移動、アニメーション |
-| **MasterStylizedProjectiles** | スタイライズされた発射体エフェクト | 矢のビジュアルエフェクト |
-| **P09_Modular_Humanoid** | モジュラー人型キャラクター | プレイヤーキャラクターのカスタマイゼーション |
-| **Febucci Text Animator** | テキストアニメーションシステム | UI文字演出、メニュー、HUD、リザルト画面 |
+| 名前 | 種類 | 主な用途 | CavalryFightでの使用箇所 |
+|------|------|---------|---------------------|
+| **Advanced Scene Manager** | Package | シーン管理システム | シーン遷移、ローディング画面、ゲームフロー管理 |
+| **Malbers Animations** | Asset | 動物コントローラー・騎乗システム | 馬・動物の騎乗、移動、アニメーション |
+| **MasterStylizedProjectiles** | Asset | スタイライズされた発射体エフェクト | 矢のビジュアルエフェクト |
+| **P09_Modular_Humanoid** | Asset | モジュラー人型キャラクター | プレイヤーキャラクターのカスタマイゼーション |
+| **Febucci Text Animator** | Asset | テキストアニメーションシステム | UI文字演出、メニュー、HUD、リザルト画面 |
 
 ---
 
-## 1. Malbers Animations
+## 1. Advanced Scene Manager (ASM)
+
+### 📦 場所
+`Packages/com.lazy-solutions.advanced-scene-manager/` (v3.1.4)
+
+### 📝 概要
+Unityの標準シーン管理を拡張した強力なシーン管理システムです。
+
+### 🎯 CavalryFightでの用途
+- **シーン遷移**: ゲームモード間のスムーズな切り替え
+- **ローディング画面**: シーン読み込み中の演出
+- **シーンコレクション**: 複数のシーンを一括管理
+- **ゲームフロー管理**: メニュー→ゲーム→リザルトの流れを管理
+
+### ✨ 主要機能
+
+#### Scene（シーン）
+- ドラッグ&ドロップで操作可能
+- 個別にロード/アンロード
+
+#### SceneCollection（シーンコレクション）
+- 複数のシーンをグループ化
+- プロファイルで環境切り替え
+
+#### SceneOperation（シーン操作）
+- Fluent APIによる柔軟な操作
+- 非同期ロード対応
+- コールバックシステム
+
+#### Loading Screen（ローディング画面）
+- シーン遷移時の演出
+- 進捗表示
+- カスタマイズ可能
+
+### 📚 MVVMとの統合
+
+`SceneManagementService`を使用してMVVMシステムと統合されています。
+
+```csharp
+// サービスの取得
+var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+
+// シーン遷移
+var arenaCollection = Resources.Load<SceneCollection>("SceneCollections/Arena");
+sceneService.OpenCollection(arenaCollection);
+
+// 非同期でロード
+await sceneService.OpenCollectionAsync(arenaCollection);
+```
+
+### 📂 推奨シーン構成
+
+```
+CavalryFightプロファイル/
+├── Startup (persistent)      # 常駐シーン（サービス初期化）
+├── Main Menu                 # メインメニュー
+├── Game Mode Selection       # ゲームモード選択
+├── Character Customization   # キャラクターカスタマイゼーション
+├── Arena                     # アリーナモード
+├── Score Match              # スコアマッチモード
+├── Training                 # トレーニングモード
+└── Match Result            # 試合結果
+```
+
+### ⚙️ セットアップ
+
+1. **Scene Managerウィンドウを開く**: `File > Scene Manager...`
+2. **プロファイル作成**: 左下のプロファイルセレクターから作成
+3. **シーンコレクション作成**: シーンをグループ化
+4. **シーンをインポート**: 通知からインポート
+
+### ⚠️ 注意事項
+- **Start/Awake**: ASMのロード完了前に呼ばれるため、`[OnCollectionOpen]`属性を使用
+- **DontDestroyOnLoad**: Startup（persistent）を使用すれば不要
+- **ローディング画面**: デフォルトをPackage Managerからインポート
+
+### 🔗 ドキュメント
+- [詳細ドキュメント](SCENE_MANAGEMENT.md)
+- [GitHub - Advanced Scene Manager](https://github.com/Lazy-Solutions/AdvancedSceneManager/tree/main/docs)
+
+---
+
+## 2. Malbers Animations
 
 ### 📦 場所
 `CavalryFight/Assets/Malbers Animations/`
@@ -58,7 +141,7 @@ Service:    RidingService (騎乗システムの管理)
 
 ---
 
-## 2. MasterStylizedProjectiles
+## 3. MasterStylizedProjectiles
 
 ### 📦 場所
 `CavalryFight/Assets/MasterStylizedProjectiles/`
@@ -108,7 +191,7 @@ Service:    ProjectilePoolService (オブジェクトプーリング)
 
 ---
 
-## 3. P09_Modular_Humanoid
+## 4. P09_Modular_Humanoid
 
 ### 📦 場所
 `CavalryFight/Assets/P09_Modular_Humanoid/`
@@ -190,7 +273,7 @@ public void ChangeArmorColor(Color color)
 
 ---
 
-## 4. Febucci Text Animator
+## 5. Febucci Text Animator
 
 ### 📦 場所
 `CavalryFight/Assets/Plugins/Febucci/Text Animator for Unity/`
@@ -363,257 +446,25 @@ public class UIAnimationService : IService
 2. Febucci Text Animatorが正常に動作することを確認
 ```
 
----
-
-## MVVMアーキテクチャとの統合パターン
-
-### 騎乗システムの例
-```csharp
-// Model
-public class RidingModel
-{
-    public bool IsMounted { get; set; }
-    public AnimalType CurrentAnimal { get; set; }
-    public float Speed { get; set; }
-}
-
-// ViewModel
-public class RidingViewModel : ViewModelBase
-{
-    private readonly RidingModel _model;
-    private readonly RidingService _service;
-
-    public bool IsMounted => _model.IsMounted;
-
-    public void Mount(AnimalType animal)
-    {
-        _service.MountAnimal(animal); // Malbers Animal Controller使用
-        _model.IsMounted = true;
-        OnPropertyChanged(nameof(IsMounted));
-    }
-}
-
-// Service
-public class RidingService : IService
-{
-    private MAnimal _currentAnimal;
-    private MRider _rider;
-
-    public void MountAnimal(AnimalType type)
-    {
-        // Malbers Animationsのコンポーネントを使用
-        _currentAnimal = GetAnimalPrefab(type);
-        _rider.Mount(_currentAnimal);
-    }
-}
+### 4. Advanced Scene Managerのセットアップ
 ```
-
-### 矢の発射システムの例
-```csharp
-// Model
-public class ArrowModel
-{
-    public Vector3 Position { get; set; }
-    public Vector3 Velocity { get; set; }
-    public int Damage { get; set; }
-}
-
-// ViewModel
-public class CombatViewModel : ViewModelBase
-{
-    private readonly ProjectilePoolService _poolService;
-
-    public void FireArrow(Vector3 direction, float power)
-    {
-        // MasterStylizedProjectilesのプレハブを使用
-        var arrow = _poolService.GetArrow();
-        arrow.Fire(direction, power);
-    }
-}
-
-// Service
-public class ProjectilePoolService : IService
-{
-    private readonly Queue<GameObject> _arrowPool;
-
-    public GameObject GetArrow()
-    {
-        // MasterStylizedProjectilesのプレハブをプーリング
-        if (_arrowPool.Count > 0)
-        {
-            return _arrowPool.Dequeue();
-        }
-        return InstantiateNewArrow();
-    }
-}
-```
-
-### キャラクターカスタマイゼーションの例
-```csharp
-// Model
-public class CharacterCustomizationModel
-{
-    public HelmetType Helmet { get; set; }
-    public ArmorType Armor { get; set; }
-    public Color PrimaryColor { get; set; }
-}
-
-// ViewModel
-public class CustomizationViewModel : ViewModelBase
-{
-    private readonly CharacterService _service;
-
-    public void ChangeHelmet(HelmetType type)
-    {
-        _model.Helmet = type;
-        _service.UpdateCharacterPart("Helmet", type);
-        OnPropertyChanged(nameof(Helmet));
-    }
-}
-
-// Service
-public class CharacterService : IService
-{
-    // P09_Modular_Humanoidのパーツ管理
-    public void UpdateCharacterPart(string partName, object partType)
-    {
-        // モジュラーキャラクターのパーツを変更
-    }
-}
-```
-
-### UI演出の例
-```csharp
-// ViewModel
-public class MatchResultViewModel : ViewModelBase
-{
-    private readonly UIAnimationService _animationService;
-
-    public async Task ShowMatchResult(MatchResult result)
-    {
-        // Febucci Text Animatorを使用
-        await _animationService.TypewriterDisplay(
-            "<bounce>Victory!</bounce>",
-            typingSpeed: 0.05f
-        );
-
-        await _animationService.PlayTextAnimation(
-            $"<rainbow>Score: {result.Score}</rainbow>",
-            "wave"
-        );
-    }
-}
-
-// Service
-public class UIAnimationService : IService
-{
-    public async Task TypewriterDisplay(string text, float speed)
-    {
-        // Febucci TypewriterComponentを制御
-    }
-
-    public async Task PlayTextAnimation(string text, string effectName)
-    {
-        // Febucci TextAnimatorを制御
-    }
-}
+1. File > Scene Manager... を開く
+2. プロファイルを作成
+3. シーンコレクションを作成
+4. シーンをインポートして配置
 ```
 
 ---
 
-## パフォーマンス考慮事項
+## 依存関係の管理
 
-### オブジェクトプーリング
-```csharp
-// 矢のプーリング (MasterStylizedProjectiles)
-public class ArrowPool : MonoBehaviour
-{
-    [SerializeField] private GameObject arrowPrefab;
-    [SerializeField] private int poolSize = 50;
-
-    private Queue<GameObject> _pool;
-
-    void Start()
-    {
-        _pool = new Queue<GameObject>();
-        for (int i = 0; i < poolSize; i++)
-        {
-            var arrow = Instantiate(arrowPrefab);
-            arrow.SetActive(false);
-            _pool.Enqueue(arrow);
-        }
-    }
-}
-```
-
-### LOD設定
-- **Malbers Animals**: 遠距離の動物はLODを使用
-- **P09_Humanoid**: キャラクターメッシュにLODを設定
-- **MasterProjectiles**: 遠距離の矢は簡易エフェクト
-
-### メモリ管理
-- **キャラクターパーツ**: 使用していないパーツはアンロード
-- **アニメーションクリップ**: 不要なアニメーションは読み込まない
-- **テクスチャ圧縮**: 適切な圧縮形式を使用
-
----
-
-## 注意事項とベストプラクティス
-
-### ライセンス管理
-- すべてのアセットはAsset Storeの利用規約に従う
-- 商用利用可能（Asset Store購入済みの場合）
-- ソースコードの再配布は禁止
-
-### バージョン管理
-- アセットの更新時は必ずテストを実施
-- 互換性の問題がある場合は別ブランチで検証
-- `.gitignore`に不要なファイルを追加
-
-### 依存関係の管理
 ```
 依存関係チェーン:
 lilToon ← P09_Modular_Humanoid
 MagicaCloth2 ← P09_Modular_Humanoid (オプション)
 TextMeshPro ← Febucci Text Animator
+URP ← MasterStylizedProjectiles
 ```
-
-### コーディング規則との整合性
-- アセットのコンポーネントはViewとして扱う
-- アセットとのやり取りはServiceレイヤーを経由
-- ViewModelから直接アセットのコンポーネントを操作しない
-
----
-
-## トラブルシューティング
-
-### Malbers Animations
-**問題**: 馬に乗れない
-**解決策**:
-1. MAnimalコンポーネントが正しく設定されているか確認
-2. MRiderコンポーネントがプレイヤーにアタッチされているか確認
-3. Colliderの設定を確認
-
-### MasterStylizedProjectiles
-**問題**: エフェクトが表示されない
-**解決策**:
-1. URPが有効になっているか確認
-2. Shader Graphがインポートされているか確認
-3. マテリアルが正しいシェーダーを使用しているか確認
-
-### P09_Modular_Humanoid
-**問題**: キャラクターが正しく表示されない
-**解決策**:
-1. lilToonがインストールされているか確認
-2. Featuresが有効化されているか確認 (lilToon > [Settings] Activate Features)
-3. シェーダーのコンパイルエラーを確認
-
-### Febucci Text Animator
-**問題**: アニメーションが動かない
-**解決策**:
-1. TextMeshProがインストールされているか確認
-2. TextAnimator_TMPコンポーネントがアタッチされているか確認
-3. AnimationsDatabaseが正しく設定されているか確認
 
 ---
 
@@ -623,6 +474,9 @@ TextMeshPro ← Febucci Text Animator
 - [Malbers Animations](https://assetstore.unity.com/publishers/14246)
 - [MagicaCloth2](https://assetstore.unity.com/packages/tools/physics/magica-cloth-2-242307)
 - Febucci Text Animator (プロジェクト内ドキュメント参照)
+
+### Package Manager
+- [Advanced Scene Manager - GitHub](https://github.com/Lazy-Solutions/AdvancedSceneManager/tree/main/docs)
 
 ### Unity公式
 - [Universal Render Pipeline](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@latest)
@@ -635,5 +489,5 @@ TextMeshPro ← Febucci Text Animator
 
 | 日付 | 内容 |
 |------|------|
+| 2025-12-10 | Advanced Scene Managerを追加 |
 | 2025-12-10 | 初版作成 - 4つのサードパーティアセットのドキュメント化 |
-
