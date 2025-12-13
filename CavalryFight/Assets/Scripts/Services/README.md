@@ -51,6 +51,7 @@ public class GameBootstrap : MonoBehaviour
 完全な使用例は以下を参照してください：
 
 - **SceneManagement**: `Examples/SceneTransition/SceneTransitionExampleViewModel.cs`
+- **Audio**: `Examples/AudioUsage/AudioUsageExampleViewModel.cs`
 
 ---
 
