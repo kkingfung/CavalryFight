@@ -104,6 +104,129 @@ namespace CavalryFight.Views.UI
 namespace CavalryFight.Services.Audio
 ```
 
+### 2.4 ファイルとクラスの構成（Unity固有ルール）
+Unityの制約により、1ファイルには1つのクラスのみを定義します。
+
+#### ✅ 推奨：1ファイル = 1クラス
+```csharp
+// IAudioService.cs
+namespace CavalryFight.Services.Audio
+{
+    public interface IAudioService : IService { }
+}
+
+// AudioChangedEventArgs.cs
+namespace CavalryFight.Services.Audio
+{
+    public class AudioChangedEventArgs : EventArgs { }
+}
+
+// VolumeType.cs
+namespace CavalryFight.Services.Audio
+{
+    public enum VolumeType { Master, Bgm, Sfx }
+}
+```
+
+#### ❌ 非推奨：1ファイルに複数のクラス
+```csharp
+// IAudioService.cs（NG: 複数クラスを含む）
+namespace CavalryFight.Services.Audio
+{
+    public interface IAudioService : IService { }
+
+    public class AudioChangedEventArgs : EventArgs { }  // NG: 別ファイルに分離すべき
+
+    public enum VolumeType { Master, Bgm, Sfx }  // NG: 別ファイルに分離すべき
+}
+```
+
+#### 例外：ネストされたクラス
+親クラスの内部でのみ使用される場合は、ネストされたクラスとして定義可能です。
+
+```csharp
+// AudioService.cs
+public class AudioService : IAudioService
+{
+    // 内部でのみ使用されるクラスはネスト可能
+    private class AudioManager : MonoBehaviour
+    {
+        public AudioSource? BgmSource { get; private set; }
+        public AudioSource? SfxSource { get; private set; }
+    }
+}
+```
+
+#### ファイル名の規則
+- ファイル名はクラス名と完全に一致させる
+- 大文字・小文字も厳密に一致させる
+
+```
+✅ PlayerController.cs  →  public class PlayerController
+✅ IAudioService.cs     →  public interface IAudioService
+✅ VolumeType.cs        →  public enum VolumeType
+
+❌ playerController.cs  →  public class PlayerController (大文字小文字不一致)
+❌ Audio.cs             →  public interface IAudioService (名前不一致)
+```
+
+### 2.5 制御文の波括弧（必須）
+すべての制御文（if、for、while、foreach等）には、**たとえ1行でも必ず波括弧 `{}` を使用します**。
+
+#### 理由
+- コード修正時の誤りを防止
+- 可読性の向上
+- Appleの「goto fail」バグのような重大なセキュリティ問題を防止
+
+#### ✅ 推奨：常に波括弧を使用
+```csharp
+// 1行でも波括弧を使用
+if (!_inputEnabled)
+{
+    return Vector2.zero;
+}
+
+// 複数行の場合
+if (input.magnitude > 1.0f)
+{
+    input.Normalize();
+}
+
+// else節も同様
+if (IsChargingAttack)
+{
+    ExecuteChargedAttack();
+}
+else
+{
+    ResetCharge();
+}
+
+// forループ
+for (int i = 0; i < count; i++)
+{
+    Debug.Log($"Index: {i}");
+}
+```
+
+#### ❌ 非推奨：波括弧の省略
+```csharp
+// NG: 1行でも波括弧は必須
+if (!_inputEnabled)
+    return Vector2.zero;
+
+// NG: 修正時にバグの原因になる
+if (condition)
+    DoSomething();
+    DoAnotherThing();  // 常に実行される！
+
+// NG: else節でも波括弧は必須
+if (IsChargingAttack)
+    ExecuteChargedAttack();
+else
+    ResetCharge();
+```
+
 ---
 
 ## 3. 命名規則
@@ -631,6 +754,8 @@ namespace CavalryFight.Views.Player
 - [ ] Nullable参照型が適切に使用されているか
 - [ ] Regionsで整理されているか
 - [ ] Namespaceが正しく設定されているか
+- [ ] 1ファイルに1クラスの原則が守られているか
+- [ ] ファイル名とクラス名が一致しているか
 - [ ] XMLコメントが記述されているか
 - [ ] パフォーマンスへの配慮があるか
 - [ ] 命名規則に従っているか
@@ -642,6 +767,8 @@ namespace CavalryFight.Views.Player
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
+| 1.2.0 | 2025-12-11 | 制御文の波括弧ルール追加（必須化） |
+| 1.1.0 | 2025-12-11 | Unity固有ルール追加（1ファイル1クラス原則） |
 | 1.0.0 | 2025-12-09 | 初版作成 |
 
 ---
