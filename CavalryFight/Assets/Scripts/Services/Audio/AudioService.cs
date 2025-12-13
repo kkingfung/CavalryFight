@@ -413,7 +413,8 @@ namespace CavalryFight.Services.Audio
             /// <summary>
             /// AudioManagerを初期化します。
             /// </summary>
-            public void Initialize()
+            /// <param name="service">親となるAudioService</param>
+            public void Initialize(AudioService service)
             {
                 // BGM用AudioSource
                 BgmSource = gameObject.AddComponent<AudioSource>();
