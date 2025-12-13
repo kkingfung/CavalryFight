@@ -25,71 +25,29 @@
 
 すべてのサービスは、ゲーム開始時にServiceLocatorに登録する必要があります。
 
-### Bootstrap スクリプト例
+### Bootstrap セットアップ
 
-```csharp
-using CavalryFight.Core.Services;
-using CavalryFight.Services.SceneManagement;
-using CavalryFight.Services.Audio;
-using CavalryFight.Services.Input;
-using CavalryFight.Services.AI;
-using CavalryFight.Services.GameSettings;
-using CavalryFight.Services.Replay;
-using CavalryFight.Services.Customization;
-using CavalryFight.Services.Lobby;
-using UnityEngine;
+ゲームブートストラップは `Core/Bootstrap/GameBootstrap.cs` で実装されています。
 
-[RequireComponent(typeof(ReplayServiceUpdater))]
-public class GameBootstrap : MonoBehaviour
-{
-    [SerializeField] private NetworkLobbyManager? networkLobbyManagerPrefab;
+**セットアップ手順:**
+1. Startupシーンに空のGameObjectを作成（名前: "GameBootstrap"）
+2. `GameBootstrap`コンポーネントをアタッチ
+3. `ServiceUpdater`が自動的に追加されます
+4. ゲームを実行すると、すべてのサービスが自動的に初期化されます
 
-    private void Awake()
-    {
-        // サービスを登録（依存関係の順序に注意）
-        ServiceLocator.Instance.Register<IInputBindingService>(new InputBindingService());
-        ServiceLocator.Instance.Register<IInputService>(new InputService());
-        ServiceLocator.Instance.Register<IAudioService>(new AudioService());
-        ServiceLocator.Instance.Register<IGameSettingsService>(new GameSettingsService());
-        ServiceLocator.Instance.Register<IBlazeAIService>(new BlazeAIService());
-        ServiceLocator.Instance.Register<IReplayRecorder>(new ReplayRecorder());
-        ServiceLocator.Instance.Register<IReplayPlayer>(new ReplayPlayer());
-
-        // カスタマイズサービスを登録（Applierを設定）
-        var characterApplier = new P09CharacterApplier();
-        var mountApplier = new MalbersHorseApplier();
-        var customizationService = new CustomizationService(characterApplier, mountApplier);
-        ServiceLocator.Instance.Register<ICustomizationService>(customizationService);
-
-        // ロビーサービスを登録
-        var lobbyService = new LobbyService();
-        ServiceLocator.Instance.Register<ILobbyService>(lobbyService);
-
-        // NetworkLobbyManagerを作成してLobbyServiceに設定（マルチプレイヤー使用時のみ）
-        if (networkLobbyManagerPrefab != null)
-        {
-            var networkLobbyManager = Instantiate(networkLobbyManagerPrefab);
-            lobbyService.SetNetworkLobbyManager(networkLobbyManager);
-        }
-
-        ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
-
-        Debug.Log("[GameBootstrap] All services registered.");
-    }
-}
-```
+**詳細は `Core/Bootstrap/README.md` を参照してください。**
 
 ### 📌 重要な注意点
 
-1. **Persistent Scene**: Bootstrapスクリプトは、永続シーン（Startup）に配置してください
+1. **Startup Scene**: GameBootstrapは、最初に読み込まれるシーン（Startup）に配置してください
 
-2. **DontDestroyOnLoad**: ServiceLocatorは自動的にDontDestroyOnLoadになります
+2. **DontDestroyOnLoad**: GameBootstrapとServiceLocatorは自動的にDontDestroyOnLoadになります
 
-3. **ReplayServiceUpdater**: ReplayRecorderまたはReplayPlayerを使用する場合、Bootstrap GameObjectに`ReplayServiceUpdater`コンポーネントを追加してください（録画・再生のUpdate処理に必要）
+3. **ServiceUpdater**: GameBootstrapが自動的にServiceUpdaterを必要とします（RequireComponent）。手動でアタッチ不要です
 
-4. **依存関係の順序**:
-   - InputBindingServiceはInputServiceより先に登録する必要があります
-   - GameSettingsServiceはAudioServiceとInputServiceより後に登録する必要があります（設定適用のため）
+4. **ネットワークマネージャー**: NetworkLobbyManagerとNetworkMatchManagerはブートストラップ時には生成されません。各サービスが必要なタイミングで生成します
+
+5. **依存関係の順序**: GameBootstrap内で自動的に正しい順序で登録されます
 
 ---
 
