@@ -14,6 +14,8 @@
 | **InputBindingService** | キーバインディング管理 | `Input/` |
 | **BlazeAIService** | AI敵管理（Blaze AIラッパー） | `AI/` |
 | **GameSettingsService** | ゲーム設定管理（保存/読込/適用） | `GameSettings/` |
+| **ReplayRecorder** | リプレイ録画管理 | `Replay/` |
+| **ReplayPlayer** | リプレイ再生管理 | `Replay/` |
 
 ---
 
@@ -30,8 +32,10 @@ using CavalryFight.Services.Audio;
 using CavalryFight.Services.Input;
 using CavalryFight.Services.AI;
 using CavalryFight.Services.GameSettings;
+using CavalryFight.Services.Replay;
 using UnityEngine;
 
+[RequireComponent(typeof(ReplayServiceUpdater))]
 public class GameBootstrap : MonoBehaviour
 {
     private void Awake()
@@ -42,6 +46,8 @@ public class GameBootstrap : MonoBehaviour
         ServiceLocator.Instance.Register<IAudioService>(new AudioService());
         ServiceLocator.Instance.Register<IGameSettingsService>(new GameSettingsService());
         ServiceLocator.Instance.Register<IBlazeAIService>(new BlazeAIService());
+        ServiceLocator.Instance.Register<IReplayRecorder>(new ReplayRecorder());
+        ServiceLocator.Instance.Register<IReplayPlayer>(new ReplayPlayer());
         ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
 
         Debug.Log("[GameBootstrap] All services registered.");
@@ -55,7 +61,9 @@ public class GameBootstrap : MonoBehaviour
 
 2. **DontDestroyOnLoad**: ServiceLocatorは自動的にDontDestroyOnLoadになります
 
-3. **依存関係の順序**:
+3. **ReplayServiceUpdater**: ReplayRecorderまたはReplayPlayerを使用する場合、Bootstrap GameObjectに`ReplayServiceUpdater`コンポーネントを追加してください（録画・再生のUpdate処理に必要）
+
+4. **依存関係の順序**:
    - InputBindingServiceはInputServiceより先に登録する必要があります
    - GameSettingsServiceはAudioServiceとInputServiceより後に登録する必要があります（設定適用のため）
 
@@ -66,9 +74,10 @@ public class GameBootstrap : MonoBehaviour
 完全な使用例は以下を参照してください：
 
 - **SceneManagement**: `Examples/SceneTransition/SceneTransitionExampleViewModel.cs`
-- **Audio**: `Services/Audio/AudioUsageExampleViewModel.cs`
-- **Input**: `Services/Input/InputUsageExampleViewModel.cs`
-- **GameSettings**: `Services/GameSettings/SettingsUsageExampleViewModel.cs`
+- **Audio**: `Examples/AudioUsage/AudioUsageExampleViewModel.cs`
+- **Input**: `Examples/InputUsage/InputUsageExampleViewModel.cs`
+- **GameSettings**: `Examples/SettingsUsage/SettingsUsageExampleViewModel.cs`
+- **Replay**: `Examples/ReplayUsage/ReplayUsageExampleViewModel.cs`
 
 ---
 
@@ -84,6 +93,8 @@ public class GameBootstrap : MonoBehaviour
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
+| 0.7.1 | 2025-12-13 | Replay サービスをReplayRecorderとReplayPlayerに分離（録画と再生を独立したサービスに） |
+| 0.7.0 | 2025-12-12 | Replay サービス追加（リプレイ録画・再生システム） |
 | 0.6.0 | 2025-12-12 | GameSettings サービス追加（設定管理システム） |
 | 0.5.0 | 2025-12-11 | BlazeAI サービス追加（AI敵管理） |
 | 0.4.0 | 2025-12-11 | InputBinding サービス追加（キーバインディングシステム） |
