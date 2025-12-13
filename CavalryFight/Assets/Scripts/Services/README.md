@@ -12,6 +12,7 @@
 | **AudioService** | BGM・SE再生管理 | `Audio/` |
 | **InputService** | プレイヤー入力管理 | `Input/` |
 | **InputBindingService** | キーバインディング管理 | `Input/` |
+| **BlazeAIService** | AI敵管理（Blaze AIラッパー） | `AI/` |
 
 ---
 
@@ -26,6 +27,7 @@ using CavalryFight.Core.Services;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.Services.Audio;
 using CavalryFight.Services.Input;
+using CavalryFight.Services.AI;
 using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
@@ -36,6 +38,7 @@ public class GameBootstrap : MonoBehaviour
         ServiceLocator.Instance.Register<IInputBindingService>(new InputBindingService());
         ServiceLocator.Instance.Register<IInputService>(new InputService());
         ServiceLocator.Instance.Register<IAudioService>(new AudioService());
+        ServiceLocator.Instance.Register<IBlazeAIService>(new BlazeAIService());
         ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
 
         Debug.Log("[GameBootstrap] All services registered.");
@@ -75,6 +78,7 @@ public class GameBootstrap : MonoBehaviour
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
+| 0.5.0 | 2025-12-11 | BlazeAI サービス追加（AI敵管理） |
 | 0.4.0 | 2025-12-11 | InputBinding サービス追加（キーバインディングシステム） |
 | 0.3.0 | 2025-12-11 | Input サービス追加 |
 | 0.2.0 | 2025-12-11 | Audio サービス追加 |
