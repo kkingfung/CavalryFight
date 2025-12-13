@@ -30,11 +30,6 @@ namespace CavalryFight.Services.Lobby
         private RoomSettings _currentRoomSettings;
 
         /// <summary>
-        /// プレイヤースロットリスト
-        /// </summary>
-        private List<PlayerSlot> _playerSlots = new List<PlayerSlot>();
-
-        /// <summary>
         /// ローカルプレイヤー情報
         /// </summary>
         private LobbyPlayerInfo? _localPlayerInfo;
@@ -49,29 +44,107 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         private bool _isInRoom = false;
 
+        /// <summary>
+        /// NetworkLobbyManagerへの参照
+        /// </summary>
+        private NetworkLobbyManager? _networkLobbyManager;
+
+        /// <summary>
+        /// NetworkRoomDataへの参照
+        /// </summary>
+        private NetworkRoomData? _networkRoomData;
+
         #endregion
 
         #region Events
 
+        /// <summary>
+        /// ルームが作成された時に発生します
+        /// </summary>
         public event Action<string>? RoomCreated;
+
+        /// <summary>
+        /// ルームに参加した時に発生します
+        /// </summary>
         public event Action? RoomJoined;
+
+        /// <summary>
+        /// ルームから退出した時に発生します
+        /// </summary>
         public event Action? RoomLeft;
+
+        /// <summary>
+        /// ルーム設定が変更された時に発生します
+        /// </summary>
         public event Action<RoomSettings>? RoomSettingsChanged;
+
+        /// <summary>
+        /// プレイヤーがルームに参加した時に発生します
+        /// </summary>
         public event Action<ulong>? PlayerJoined;
+
+        /// <summary>
+        /// プレイヤーがルームから退出した時に発生します
+        /// </summary>
         public event Action<ulong>? PlayerLeft;
+
+        /// <summary>
+        /// プレイヤーの準備状態が変更された時に発生します
+        /// </summary>
         public event Action<ulong, bool>? PlayerReadyChanged;
+
+        /// <summary>
+        /// マッチが開始される時に発生します
+        /// </summary>
         public event Action? MatchStarting;
+
+        /// <summary>
+        /// エラーが発生した時に発生します
+        /// </summary>
         public event Action<string>? ErrorOccurred;
 
         #endregion
 
         #region Properties
 
-        public RoomSettings CurrentRoomSettings => _currentRoomSettings;
-        public IReadOnlyList<PlayerSlot> PlayerSlots => _playerSlots.AsReadOnly();
+        /// <summary>
+        /// 現在のルーム設定を取得します
+        /// </summary>
+        public RoomSettings CurrentRoomSettings => _networkRoomData?.CurrentRoomSettings ?? _currentRoomSettings;
+
+        /// <summary>
+        /// 現在のプレイヤースロットリストを取得します
+        /// </summary>
+        public IReadOnlyList<PlayerSlot> PlayerSlots
+        {
+            get
+            {
+                if (_networkRoomData != null)
+                {
+                    return _networkRoomData.GetAllPlayerSlots();
+                }
+                return Array.Empty<PlayerSlot>();
+            }
+        }
+
+        /// <summary>
+        /// ローカルプレイヤー情報を取得します
+        /// </summary>
         public LobbyPlayerInfo? LocalPlayerInfo => _localPlayerInfo;
+
+        /// <summary>
+        /// ホストかどうかを取得します
+        /// </summary>
         public bool IsHost => NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost;
+
+        /// <summary>
+        /// ルームに参加しているかどうかを取得します
+        /// </summary>
         public bool IsInRoom => _isInRoom;
+
+        /// <summary>
+        /// 現在のジョインコードを取得します
+        /// </summary>
         public string? CurrentJoinCode => _relayManager.CurrentJoinCode;
 
         #endregion
@@ -93,22 +166,42 @@ namespace CavalryFight.Services.Lobby
             // Initialize relay manager (async operation will happen when creating/joining room)
             _ = _relayManager.InitializeAsync();
 
-            // プレイヤースロットを初期化（最大8スロット）
-            _playerSlots = new List<PlayerSlot>();
-            for (int i = 0; i < 8; i++)
-            {
-                _playerSlots.Add(new PlayerSlot(i));
-            }
-
             _initialized = true;
             Debug.Log("[LobbyService] Initialization complete.");
         }
 
+        /// <summary>
+        /// NetworkLobbyManagerの参照を設定します
+        /// </summary>
+        /// <param name="networkLobbyManager">NetworkLobbyManagerインスタンス</param>
+        public void SetNetworkLobbyManager(NetworkLobbyManager networkLobbyManager)
+        {
+            if (_networkLobbyManager != null)
+            {
+                // 既存の参照をクリーンアップ
+                UnsubscribeFromNetworkEvents();
+            }
+
+            _networkLobbyManager = networkLobbyManager;
+            _networkRoomData = networkLobbyManager.NetworkRoomData;
+
+            // ネットワークイベントを購読
+            SubscribeToNetworkEvents();
+
+            Debug.Log("[LobbyService] NetworkLobbyManager reference set.");
+        }
+
+        /// <summary>
+        /// サービスを破棄します
+        /// </summary>
         public void Dispose()
         {
             Debug.Log("[LobbyService] Disposing...");
 
             LeaveRoom();
+
+            // ネットワークイベントを購読解除
+            UnsubscribeFromNetworkEvents();
 
             // イベントハンドラをクリア
             RoomCreated = null;
@@ -124,10 +217,90 @@ namespace CavalryFight.Services.Lobby
             _initialized = false;
         }
 
+        /// <summary>
+        /// ネットワークイベントを購読します
+        /// </summary>
+        private void SubscribeToNetworkEvents()
+        {
+            if (_networkLobbyManager != null)
+            {
+                _networkLobbyManager.PlayerJoined += OnNetworkPlayerJoined;
+                _networkLobbyManager.PlayerLeft += OnNetworkPlayerLeft;
+            }
+
+            if (_networkRoomData != null)
+            {
+                _networkRoomData.RoomSettingsChanged += OnNetworkRoomSettingsChanged;
+                _networkRoomData.PlayerReadyChanged += OnNetworkPlayerReadyChanged;
+            }
+        }
+
+        /// <summary>
+        /// ネットワークイベントを購読解除します
+        /// </summary>
+        private void UnsubscribeFromNetworkEvents()
+        {
+            if (_networkLobbyManager != null)
+            {
+                _networkLobbyManager.PlayerJoined -= OnNetworkPlayerJoined;
+                _networkLobbyManager.PlayerLeft -= OnNetworkPlayerLeft;
+            }
+
+            if (_networkRoomData != null)
+            {
+                _networkRoomData.RoomSettingsChanged -= OnNetworkRoomSettingsChanged;
+                _networkRoomData.PlayerReadyChanged -= OnNetworkPlayerReadyChanged;
+            }
+        }
+
+        /// <summary>
+        /// ネットワークプレイヤー参加イベントハンドラ
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        private void OnNetworkPlayerJoined(ulong playerId)
+        {
+            PlayerJoined?.Invoke(playerId);
+        }
+
+        /// <summary>
+        /// ネットワークプレイヤー退出イベントハンドラ
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        private void OnNetworkPlayerLeft(ulong playerId)
+        {
+            PlayerLeft?.Invoke(playerId);
+        }
+
+        /// <summary>
+        /// ネットワークルーム設定変更イベントハンドラ
+        /// </summary>
+        /// <param name="roomSettings">新しいルーム設定</param>
+        private void OnNetworkRoomSettingsChanged(RoomSettings roomSettings)
+        {
+            _currentRoomSettings = roomSettings;
+            RoomSettingsChanged?.Invoke(roomSettings);
+        }
+
+        /// <summary>
+        /// ネットワークプレイヤー準備状態変更イベントハンドラ
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        /// <param name="isReady">準備完了かどうか</param>
+        private void OnNetworkPlayerReadyChanged(ulong playerId, bool isReady)
+        {
+            PlayerReadyChanged?.Invoke(playerId, isReady);
+        }
+
         #endregion
 
         #region Host Methods
 
+        /// <summary>
+        /// ルームを作成します（ホスト）
+        /// </summary>
+        /// <param name="roomSettings">ルーム設定</param>
+        /// <param name="playerName">プレイヤー名</param>
+        /// <returns>成功した場合はtrue</returns>
         public bool CreateRoom(RoomSettings roomSettings, string playerName)
         {
             if (!_initialized)
@@ -190,13 +363,29 @@ namespace CavalryFight.Services.Lobby
             );
             _localPlayerInfo.IsLocalPlayer = true;
 
-            // 最初のスロットにホストを配置
-            _playerSlots[0] = new PlayerSlot(0, _localPlayerInfo.PlayerId, playerName);
+            // NetworkLobbyManagerにプレイヤー名を登録
+            if (_networkLobbyManager != null)
+            {
+                _networkLobbyManager.RegisterPlayerName(playerName);
+            }
+
+            // NetworkRoomDataの初期設定
+            if (_networkRoomData != null)
+            {
+                _networkRoomData.UpdateRoomSettings(_currentRoomSettings);
+                // ホストを最初のスロットに追加
+                _networkRoomData.AddPlayer(NetworkManager.Singleton.LocalClientId, playerName);
+            }
 
             RoomCreated?.Invoke(joinCode);
             Debug.Log($"[LobbyService] Room created with join code: {joinCode}");
         }
 
+        /// <summary>
+        /// ルーム設定を変更します（ホストのみ）
+        /// </summary>
+        /// <param name="roomSettings">新しいルーム設定</param>
+        /// <returns>成功した場合はtrue</returns>
         public bool UpdateRoomSettings(RoomSettings roomSettings)
         {
             if (!IsHost)
@@ -205,13 +394,25 @@ namespace CavalryFight.Services.Lobby
                 return false;
             }
 
+            if (_networkRoomData == null)
+            {
+                Debug.LogError("[LobbyService] NetworkRoomData not available.");
+                return false;
+            }
+
             _currentRoomSettings = roomSettings;
-            RoomSettingsChanged?.Invoke(_currentRoomSettings);
+            _networkRoomData.UpdateRoomSettings(roomSettings);
 
             Debug.Log("[LobbyService] Room settings updated.");
             return true;
         }
 
+        /// <summary>
+        /// CPUプレイヤーを追加します（ホストのみ）
+        /// </summary>
+        /// <param name="difficulty">AI難易度</param>
+        /// <param name="teamIndex">チームインデックス（-1の場合は未割り当て）</param>
+        /// <returns>成功した場合はtrue</returns>
         public bool AddCPUPlayer(AIDifficulty difficulty, int teamIndex = -1)
         {
             if (!IsHost)
@@ -220,11 +421,19 @@ namespace CavalryFight.Services.Lobby
                 return false;
             }
 
+            if (_networkRoomData == null)
+            {
+                Debug.LogError("[LobbyService] NetworkRoomData not available.");
+                return false;
+            }
+
+            var slots = _networkRoomData.GetAllPlayerSlots();
+
             // 空きスロットを探す
             int emptySlotIndex = -1;
-            for (int i = 0; i < _playerSlots.Count; i++)
+            for (int i = 0; i < slots.Length; i++)
             {
-                if (_playerSlots[i].IsEmpty())
+                if (slots[i].IsEmpty())
                 {
                     emptySlotIndex = i;
                     break;
@@ -242,12 +451,17 @@ namespace CavalryFight.Services.Lobby
             PlayerSlot cpuSlot = new PlayerSlot(emptySlotIndex, aiIndex, difficulty);
             cpuSlot.TeamIndex = teamIndex;
 
-            _playerSlots[emptySlotIndex] = cpuSlot;
+            _networkRoomData.UpdatePlayerSlot(emptySlotIndex, cpuSlot);
 
             Debug.Log($"[LobbyService] CPU player added at slot {emptySlotIndex} with difficulty {difficulty}");
             return true;
         }
 
+        /// <summary>
+        /// CPUプレイヤーを削除します（ホストのみ）
+        /// </summary>
+        /// <param name="slotIndex">スロットインデックス</param>
+        /// <returns>成功した場合はtrue</returns>
         public bool RemoveCPUPlayer(int slotIndex)
         {
             if (!IsHost)
@@ -256,24 +470,39 @@ namespace CavalryFight.Services.Lobby
                 return false;
             }
 
-            if (slotIndex < 0 || slotIndex >= _playerSlots.Count)
+            if (_networkRoomData == null)
+            {
+                Debug.LogError("[LobbyService] NetworkRoomData not available.");
+                return false;
+            }
+
+            var slots = _networkRoomData.GetAllPlayerSlots();
+
+            if (slotIndex < 0 || slotIndex >= slots.Length)
             {
                 Debug.LogError($"[LobbyService] Invalid slot index: {slotIndex}");
                 return false;
             }
 
-            if (!_playerSlots[slotIndex].IsAI)
+            if (!slots[slotIndex].IsAI)
             {
                 Debug.LogError($"[LobbyService] Slot {slotIndex} is not a CPU player.");
                 return false;
             }
 
-            _playerSlots[slotIndex].Clear();
+            var emptySlot = new PlayerSlot(slotIndex);
+            _networkRoomData.UpdatePlayerSlot(slotIndex, emptySlot);
 
             Debug.Log($"[LobbyService] CPU player removed from slot {slotIndex}");
             return true;
         }
 
+        /// <summary>
+        /// CPU難易度を変更します（ホストのみ）
+        /// </summary>
+        /// <param name="slotIndex">スロットインデックス</param>
+        /// <param name="difficulty">新しい難易度</param>
+        /// <returns>成功した場合はtrue</returns>
         public bool ChangeCPUDifficulty(int slotIndex, AIDifficulty difficulty)
         {
             if (!IsHost)
@@ -282,31 +511,50 @@ namespace CavalryFight.Services.Lobby
                 return false;
             }
 
-            if (slotIndex < 0 || slotIndex >= _playerSlots.Count)
+            if (_networkRoomData == null)
+            {
+                Debug.LogError("[LobbyService] NetworkRoomData not available.");
+                return false;
+            }
+
+            var slots = _networkRoomData.GetAllPlayerSlots();
+
+            if (slotIndex < 0 || slotIndex >= slots.Length)
             {
                 Debug.LogError($"[LobbyService] Invalid slot index: {slotIndex}");
                 return false;
             }
 
-            if (!_playerSlots[slotIndex].IsAI)
+            if (!slots[slotIndex].IsAI)
             {
                 Debug.LogError($"[LobbyService] Slot {slotIndex} is not a CPU player.");
                 return false;
             }
 
-            var slot = _playerSlots[slotIndex];
+            var slot = slots[slotIndex];
             slot.AIDifficulty = difficulty;
-            _playerSlots[slotIndex] = slot;
+            _networkRoomData.UpdatePlayerSlot(slotIndex, slot);
 
             Debug.Log($"[LobbyService] CPU difficulty changed to {difficulty} for slot {slotIndex}");
             return true;
         }
 
+        /// <summary>
+        /// プレイヤーをキックします（ホストのみ）
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        /// <returns>成功した場合はtrue</returns>
         public bool KickPlayer(ulong playerId)
         {
             if (!IsHost)
             {
                 Debug.LogError("[LobbyService] Only host can kick players.");
+                return false;
+            }
+
+            if (_networkLobbyManager == null)
+            {
+                Debug.LogError("[LobbyService] NetworkLobbyManager not available.");
                 return false;
             }
 
@@ -316,12 +564,16 @@ namespace CavalryFight.Services.Lobby
                 return false;
             }
 
-            NetworkManager.Singleton.DisconnectClient(playerId);
+            _networkLobbyManager.KickPlayer(playerId);
 
             Debug.Log($"[LobbyService] Player {playerId} kicked.");
             return true;
         }
 
+        /// <summary>
+        /// マッチを開始します（ホストのみ）
+        /// </summary>
+        /// <returns>成功した場合はtrue</returns>
         public bool StartMatch()
         {
             if (!IsHost)
@@ -330,8 +582,16 @@ namespace CavalryFight.Services.Lobby
                 return false;
             }
 
+            if (_networkRoomData == null)
+            {
+                Debug.LogError("[LobbyService] NetworkRoomData not available.");
+                return false;
+            }
+
+            var slots = _networkRoomData.GetAllPlayerSlots();
+
             // すべての人間プレイヤーが準備完了か確認
-            bool allReady = _playerSlots
+            bool allReady = slots
                 .Where(s => !s.IsEmpty() && !s.IsAI)
                 .All(s => s.IsReady);
 
@@ -353,6 +613,13 @@ namespace CavalryFight.Services.Lobby
 
         #region Guest Methods
 
+        /// <summary>
+        /// ジョインコードを使用してルームに参加します（ゲスト）
+        /// </summary>
+        /// <param name="joinCode">ジョインコード</param>
+        /// <param name="playerName">プレイヤー名</param>
+        /// <param name="password">パスワード（必要な場合）</param>
+        /// <returns>成功した場合はtrue</returns>
         public bool JoinRoom(string joinCode, string playerName, string password = "")
         {
             if (!_initialized)
@@ -406,6 +673,12 @@ namespace CavalryFight.Services.Lobby
             );
             _localPlayerInfo.IsLocalPlayer = true;
 
+            // NetworkLobbyManagerにプレイヤー名を登録
+            if (_networkLobbyManager != null)
+            {
+                _networkLobbyManager.RegisterPlayerName(playerName);
+            }
+
             RoomJoined?.Invoke();
             Debug.Log($"[LobbyService] Joined room with code: {joinCode}");
         }
@@ -414,6 +687,9 @@ namespace CavalryFight.Services.Lobby
 
         #region Common Methods
 
+        /// <summary>
+        /// ルームから退出します
+        /// </summary>
         public void LeaveRoom()
         {
             if (!_isInRoom)
@@ -431,16 +707,14 @@ namespace CavalryFight.Services.Lobby
             _isInRoom = false;
             _localPlayerInfo = null;
 
-            // スロットをクリア
-            for (int i = 0; i < _playerSlots.Count; i++)
-            {
-                _playerSlots[i].Clear();
-            }
-
             RoomLeft?.Invoke();
             Debug.Log("[LobbyService] Left room.");
         }
 
+        /// <summary>
+        /// 準備状態を切り替えます
+        /// </summary>
+        /// <param name="isReady">準備完了かどうか</param>
         public void SetReady(bool isReady)
         {
             if (_localPlayerInfo == null)
@@ -449,22 +723,22 @@ namespace CavalryFight.Services.Lobby
                 return;
             }
 
-            int slotIndex = GetSlotIndexByPlayerId(_localPlayerInfo.PlayerId);
-            if (slotIndex == -1)
+            if (_networkRoomData == null)
             {
-                Debug.LogError("[LobbyService] Local player not found in slots.");
+                Debug.LogError("[LobbyService] NetworkRoomData not available.");
                 return;
             }
 
-            var slot = _playerSlots[slotIndex];
-            slot.IsReady = isReady;
-            _playerSlots[slotIndex] = slot;
-
-            PlayerReadyChanged?.Invoke(_localPlayerInfo.PlayerId, isReady);
+            // NetworkRoomDataのServerRPCを呼び出して準備状態を変更
+            _networkRoomData.SetPlayerReadyServerRpc(isReady);
 
             Debug.Log($"[LobbyService] Ready status set to: {isReady}");
         }
 
+        /// <summary>
+        /// カスタマイズプリセットを設定します
+        /// </summary>
+        /// <param name="presetName">プリセット名</param>
         public void SetCustomizationPreset(string presetName)
         {
             if (_localPlayerInfo == null)
@@ -473,40 +747,48 @@ namespace CavalryFight.Services.Lobby
                 return;
             }
 
+            if (_networkRoomData == null)
+            {
+                Debug.LogError("[LobbyService] NetworkRoomData not available.");
+                return;
+            }
+
             _localPlayerInfo.CustomizationPresetName = presetName;
 
-            int slotIndex = GetSlotIndexByPlayerId(_localPlayerInfo.PlayerId);
-            if (slotIndex != -1)
-            {
-                var slot = _playerSlots[slotIndex];
-                slot.CustomizationPresetName = presetName;
-                _playerSlots[slotIndex] = slot;
-            }
+            // NetworkRoomDataのServerRPCを呼び出してカスタマイズプリセットを変更
+            _networkRoomData.SetCustomizationPresetServerRpc(presetName);
 
             Debug.Log($"[LobbyService] Customization preset set to: {presetName}");
         }
 
+        /// <summary>
+        /// プレイヤースロット情報を取得します
+        /// </summary>
+        /// <param name="slotIndex">スロットインデックス</param>
+        /// <returns>プレイヤースロット</returns>
         public PlayerSlot? GetPlayerSlot(int slotIndex)
         {
-            if (slotIndex < 0 || slotIndex >= _playerSlots.Count)
+            if (_networkRoomData == null)
             {
                 return null;
             }
 
-            return _playerSlots[slotIndex];
+            return _networkRoomData.GetPlayerSlot(slotIndex);
         }
 
+        /// <summary>
+        /// プレイヤーIDからスロットインデックスを取得します
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        /// <returns>スロットインデックス（見つからない場合は-1）</returns>
         public int GetSlotIndexByPlayerId(ulong playerId)
         {
-            for (int i = 0; i < _playerSlots.Count; i++)
+            if (_networkRoomData == null)
             {
-                if (_playerSlots[i].PlayerId == playerId)
-                {
-                    return i;
-                }
+                return -1;
             }
 
-            return -1;
+            return _networkRoomData.GetSlotIndexByPlayerId(playerId);
         }
 
         #endregion
@@ -519,7 +801,13 @@ namespace CavalryFight.Services.Lobby
         /// <returns>CPUプレイヤーの数</returns>
         private int CountCPUPlayers()
         {
-            return _playerSlots.Count(s => s.IsAI);
+            if (_networkRoomData == null)
+            {
+                return 0;
+            }
+
+            var slots = _networkRoomData.GetAllPlayerSlots();
+            return slots.Count(s => s.IsAI);
         }
 
         #endregion

@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using Unity.Collections;
 using Unity.Netcode;
 
 namespace CavalryFight.Services.Lobby
@@ -20,7 +21,7 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// ルーム名
         /// </summary>
-        public string RoomName;
+        public FixedString64Bytes RoomName;
 
         /// <summary>
         /// ゲームモード
@@ -38,7 +39,7 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// パスワード（空の場合はパスワードなし）
         /// </summary>
-        public string Password;
+        public FixedString64Bytes Password;
 
         /// <summary>
         /// 公開ルームかどうか
@@ -70,25 +71,29 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// マップ名
         /// </summary>
-        public string MapName;
+        public FixedString64Bytes MapName;
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// デフォルト設定でRoomSettingsを初期化します
+        /// デフォルト設定を取得します
         /// </summary>
-        public RoomSettings()
+        /// <returns>デフォルト設定のRoomSettings</returns>
+        public static RoomSettings CreateDefault()
         {
-            RoomName = "New Room";
-            GameMode = GameMode.Arena;
-            MaxPlayers = 8;
-            Password = string.Empty;
-            IsPublic = false;
-            TimeLimit = 300; // 5分
-            ScoreGoal = 100;
-            MapName = "DefaultArena";
+            return new RoomSettings
+            {
+                RoomName = new FixedString64Bytes("New Room"),
+                GameMode = GameMode.Arena,
+                MaxPlayers = 8,
+                Password = new FixedString64Bytes(),
+                IsPublic = false,
+                TimeLimit = 300, // 5分
+                ScoreGoal = 100,
+                MapName = new FixedString64Bytes("DefaultArena")
+            };
         }
 
         /// <summary>
@@ -99,14 +104,14 @@ namespace CavalryFight.Services.Lobby
         /// <param name="maxPlayers">最大プレイヤー数</param>
         public RoomSettings(string roomName, GameMode gameMode, int maxPlayers)
         {
-            RoomName = roomName;
+            RoomName = new FixedString64Bytes(roomName);
             GameMode = gameMode;
             MaxPlayers = UnityEngine.Mathf.Clamp(maxPlayers, 2, 8);
-            Password = string.Empty;
+            Password = new FixedString64Bytes();
             IsPublic = false;
             TimeLimit = 300;
             ScoreGoal = 100;
-            MapName = "DefaultArena";
+            MapName = new FixedString64Bytes("DefaultArena");
         }
 
         #endregion
@@ -138,7 +143,7 @@ namespace CavalryFight.Services.Lobby
         /// <returns>パスワードが設定されている場合はtrue</returns>
         public readonly bool HasPassword()
         {
-            return !string.IsNullOrEmpty(Password);
+            return Password.Length > 0;
         }
 
         /// <summary>
@@ -153,7 +158,7 @@ namespace CavalryFight.Services.Lobby
                 return true; // パスワード設定なしの場合は常に成功
             }
 
-            return Password == inputPassword;
+            return Password.ToString() == inputPassword;
         }
 
         #endregion

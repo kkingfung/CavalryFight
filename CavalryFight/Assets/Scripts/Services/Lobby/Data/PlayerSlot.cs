@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using Unity.Collections;
 using Unity.Netcode;
 
 namespace CavalryFight.Services.Lobby
@@ -13,7 +14,7 @@ namespace CavalryFight.Services.Lobby
     /// 人間プレイヤーまたはCPUプレイヤーが占有できます。
     /// </remarks>
     [Serializable]
-    public struct PlayerSlot : INetworkSerializable
+    public struct PlayerSlot : INetworkSerializable, IEquatable<PlayerSlot>
     {
         #region Fields
 
@@ -35,7 +36,7 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// プレイヤー名
         /// </summary>
-        public string PlayerName;
+        public FixedString64Bytes PlayerName;
 
         /// <summary>
         /// CPUプレイヤーかどうか
@@ -71,7 +72,7 @@ namespace CavalryFight.Services.Lobby
         /// プレイヤーが選択したカスタマイズプリセット。
         /// マッチ開始時に適用されます。
         /// </remarks>
-        public string CustomizationPresetName;
+        public FixedString64Bytes CustomizationPresetName;
 
         #endregion
 
@@ -85,12 +86,12 @@ namespace CavalryFight.Services.Lobby
         {
             SlotIndex = slotIndex;
             PlayerId = ulong.MaxValue; // 空きスロット
-            PlayerName = string.Empty;
+            PlayerName = new FixedString64Bytes();
             IsAI = false;
             AIDifficulty = AIDifficulty.Normal;
             IsReady = false;
             TeamIndex = -1;
-            CustomizationPresetName = string.Empty;
+            CustomizationPresetName = new FixedString64Bytes();
         }
 
         /// <summary>
@@ -103,12 +104,12 @@ namespace CavalryFight.Services.Lobby
         {
             SlotIndex = slotIndex;
             PlayerId = playerId;
-            PlayerName = playerName;
+            PlayerName = new FixedString64Bytes(playerName);
             IsAI = false;
             AIDifficulty = AIDifficulty.Normal;
             IsReady = false;
             TeamIndex = -1;
-            CustomizationPresetName = string.Empty;
+            CustomizationPresetName = new FixedString64Bytes();
         }
 
         /// <summary>
@@ -121,12 +122,12 @@ namespace CavalryFight.Services.Lobby
         {
             SlotIndex = slotIndex;
             PlayerId = (ulong)aiIndex; // 負の値をulongとして格納
-            PlayerName = $"CPU {-aiIndex}";
+            PlayerName = new FixedString64Bytes($"CPU {-aiIndex}");
             IsAI = true;
             AIDifficulty = difficulty;
             IsReady = true; // CPUは常に準備完了
             TeamIndex = -1;
-            CustomizationPresetName = string.Empty;
+            CustomizationPresetName = new FixedString64Bytes();
         }
 
         #endregion
@@ -167,12 +168,68 @@ namespace CavalryFight.Services.Lobby
         public void Clear()
         {
             PlayerId = ulong.MaxValue;
-            PlayerName = string.Empty;
+            PlayerName = new FixedString64Bytes();
             IsAI = false;
             AIDifficulty = AIDifficulty.Normal;
             IsReady = false;
             TeamIndex = -1;
-            CustomizationPresetName = string.Empty;
+            CustomizationPresetName = new FixedString64Bytes();
+        }
+
+        #endregion
+
+        #region IEquatable Implementation
+
+        /// <summary>
+        /// 指定されたPlayerSlotと等しいかどうかを判断します
+        /// </summary>
+        /// <param name="other">比較対象のPlayerSlot</param>
+        /// <returns>等しい場合はtrue</returns>
+        public bool Equals(PlayerSlot other)
+        {
+            return SlotIndex == other.SlotIndex &&
+                   PlayerId == other.PlayerId &&
+                   PlayerName.Equals(other.PlayerName) &&
+                   IsAI == other.IsAI &&
+                   AIDifficulty == other.AIDifficulty &&
+                   IsReady == other.IsReady &&
+                   TeamIndex == other.TeamIndex &&
+                   CustomizationPresetName.Equals(other.CustomizationPresetName);
+        }
+
+        /// <summary>
+        /// 指定されたオブジェクトと等しいかどうかを判断します
+        /// </summary>
+        /// <param name="obj">比較対象のオブジェクト</param>
+        /// <returns>等しい場合はtrue</returns>
+        public override bool Equals(object obj)
+        {
+            return obj is PlayerSlot other && Equals(other);
+        }
+
+        /// <summary>
+        /// ハッシュコードを取得します
+        /// </summary>
+        /// <returns>ハッシュコード</returns>
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(SlotIndex, PlayerId, PlayerName, IsAI, AIDifficulty, IsReady, TeamIndex, CustomizationPresetName);
+        }
+
+        /// <summary>
+        /// 等値演算子
+        /// </summary>
+        public static bool operator ==(PlayerSlot left, PlayerSlot right)
+        {
+            return left.Equals(right);
+        }
+
+        /// <summary>
+        /// 不等値演算子
+        /// </summary>
+        public static bool operator !=(PlayerSlot left, PlayerSlot right)
+        {
+            return !left.Equals(right);
         }
 
         #endregion
