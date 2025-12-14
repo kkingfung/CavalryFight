@@ -305,7 +305,8 @@ namespace CavalryFight.Services.Match
                 return;
             }
 
-            if (!NetworkManager.Singleton.IsServer)
+            if (NetworkManager.Singleton == null
+                || !NetworkManager.Singleton.IsServer)
             {
                 Debug.LogError("[MatchService] Cannot start match: Only server can start match.");
                 return;
@@ -328,7 +329,8 @@ namespace CavalryFight.Services.Match
                 return;
             }
 
-            if (!NetworkManager.Singleton.IsServer)
+            if (NetworkManager.Singleton == null
+                || !NetworkManager.Singleton.IsServer)
             {
                 Debug.LogError("[MatchService] Cannot end match: Only server can end match.");
                 return;
@@ -351,7 +353,8 @@ namespace CavalryFight.Services.Match
                 return;
             }
 
-            if (!NetworkManager.Singleton.IsServer)
+            if (NetworkManager.Singleton == null
+                || !NetworkManager.Singleton.IsServer)
             {
                 Debug.LogError("[MatchService] Cannot update scoring config: Only server can update config.");
                 return;
