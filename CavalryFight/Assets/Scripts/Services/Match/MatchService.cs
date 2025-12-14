@@ -101,12 +101,19 @@ namespace CavalryFight.Services.Match
             // NetworkMatchManagerが見つかっていない場合は検索
             if (_networkMatchManager == null)
             {
-                _networkMatchManager = NetworkMatchManager.Instance;
-
-                if (_networkMatchManager != null)
+                var newManager = NetworkMatchManager.Instance;
+                if (newManager != null)
                 {
+                    _networkMatchManager = newManager;
                     SubscribeToNetworkEvents();
                 }
+            }
+            else if (_networkMatchManager != NetworkMatchManager.Instance && NetworkMatchManager.Instance != null)
+            {
+                // マネージャーが置き換わった場合
+                UnsubscribeFromNetworkEvents();
+                _networkMatchManager = NetworkMatchManager.Instance;
+                SubscribeToNetworkEvents();
             }
 
             // マッチ開始状態の変化を監視
