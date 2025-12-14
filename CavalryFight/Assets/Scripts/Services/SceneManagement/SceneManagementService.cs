@@ -92,6 +92,10 @@ namespace CavalryFight.Services.SceneManagement
         {
             Debug.Log("[SceneManagementService] Disposing...");
 
+            // ASMのコールバックを登録解除
+            SceneManager.events.UnregisterCallback<SceneOpenPhaseEvent>(OnSceneOpenStarted, When.Before);
+            SceneManager.events.UnregisterCallback<SceneOpenPhaseEvent>(OnSceneOpenCompleted, When.After);
+
             // イベントハンドラをクリア
             SceneLoadStarted = null;
             SceneLoadCompleted = null;
