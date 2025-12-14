@@ -45,6 +45,7 @@ namespace CavalryFight.Services.AI
         private readonly List<BlazeAI> _activeAIs;
         private readonly Dictionary<BlazeAI, BlazeAI.State> _lastKnownStates;
         private Transform? _aiContainer;
+        private bool _isInitialized;
 
         #endregion
 
@@ -82,6 +83,12 @@ namespace CavalryFight.Services.AI
         /// </summary>
         public void Initialize()
         {
+            if (_isInitialized)
+            {
+                Debug.LogWarning("[BlazeAIService] Already initialized.");
+                return;
+            }
+
             Debug.Log("[BlazeAIService] Initializing...");
 
             // AI用のコンテナオブジェクトを作成
@@ -89,6 +96,7 @@ namespace CavalryFight.Services.AI
             GameObject.DontDestroyOnLoad(containerObject);
             _aiContainer = containerObject.transform;
 
+            _isInitialized = true;
             Debug.Log("[BlazeAIService] Initialized.");
         }
 
