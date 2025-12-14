@@ -130,10 +130,10 @@ namespace CavalryFight.Services.Customization
             // 一般的な命名規則: "Horse_Body", "Horse 4", "Horse" など
             if (child.name.Contains("Horse") && !child.name.Contains("Mane") && !child.name.Contains("Tail"))
             {
-                var renderer = child.GetComponent<SkinnedMeshRenderer>();
+                Renderer? renderer = child.GetComponent<SkinnedMeshRenderer>();
                 if (renderer == null)
                 {
-                    renderer = child.GetComponent<MeshRenderer>() as Renderer as SkinnedMeshRenderer;
+                    renderer = child.GetComponent<MeshRenderer>();
                 }
 
                 if (renderer != null)
@@ -204,10 +204,10 @@ namespace CavalryFight.Services.Customization
             // アクティブなたてがみと尻尾にマテリアルを適用
             if ((child.name.StartsWith("Horse_Mane") || child.name.StartsWith("Horse_Tail")) && child.gameObject.activeSelf)
             {
-                var renderer = child.GetComponent<SkinnedMeshRenderer>();
+                Renderer? renderer = child.GetComponent<SkinnedMeshRenderer>();
                 if (renderer == null)
                 {
-                    renderer = child.GetComponent<MeshRenderer>() as Renderer as SkinnedMeshRenderer;
+                    renderer = child.GetComponent<MeshRenderer>();
                 }
 
                 if (renderer != null)
@@ -249,10 +249,10 @@ namespace CavalryFight.Services.Customization
                         var material = ArmorMaterials[armorId];
                         if (material != null)
                         {
-                            var renderer = child.GetComponent<SkinnedMeshRenderer>();
+                            Renderer? renderer = child.GetComponent<SkinnedMeshRenderer>();
                             if (renderer == null)
                             {
-                                renderer = child.GetComponent<MeshRenderer>() as Renderer as SkinnedMeshRenderer;
+                                renderer = child.GetComponent<MeshRenderer>();
                             }
 
                             if (renderer != null)
@@ -277,10 +277,10 @@ namespace CavalryFight.Services.Customization
 
                 if (hasSaddle && SaddleMaterial != null)
                 {
-                    var renderer = child.GetComponent<SkinnedMeshRenderer>();
+                    Renderer? renderer = child.GetComponent<SkinnedMeshRenderer>();
                     if (renderer == null)
                     {
-                        renderer = child.GetComponent<MeshRenderer>() as Renderer as SkinnedMeshRenderer;
+                        renderer = child.GetComponent<MeshRenderer>();
                     }
 
                     if (renderer != null)
