@@ -11,6 +11,7 @@
 | **SceneManagementService** | シーン遷移とロード管理 | `SceneManagement/` |
 | **AudioService** | BGM・SE再生管理 | `Audio/` |
 | **InputService** | プレイヤー入力管理 | `Input/` |
+| **InputBindingService** | キーバインディング管理 | `Input/` |
 
 ---
 
@@ -31,7 +32,8 @@ public class GameBootstrap : MonoBehaviour
 {
     private void Awake()
     {
-        // サービスを登録
+        // サービスを登録（依存関係の順序に注意）
+        ServiceLocator.Instance.Register<IInputBindingService>(new InputBindingService());
         ServiceLocator.Instance.Register<IInputService>(new InputService());
         ServiceLocator.Instance.Register<IAudioService>(new AudioService());
         ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
@@ -46,6 +48,8 @@ public class GameBootstrap : MonoBehaviour
 1. **Persistent Scene**: Bootstrapスクリプトは、永続シーン（Startup）に配置してください
 
 2. **DontDestroyOnLoad**: ServiceLocatorは自動的にDontDestroyOnLoadになります
+
+3. **依存関係の順序**: InputBindingServiceはInputServiceより先に登録する必要があります
 
 ---
 
@@ -71,6 +75,7 @@ public class GameBootstrap : MonoBehaviour
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
+| 0.4.0 | 2025-12-11 | InputBinding サービス追加（キーバインディングシステム） |
 | 0.3.0 | 2025-12-11 | Input サービス追加 |
 | 0.2.0 | 2025-12-11 | Audio サービス追加 |
 | 0.1.0 | 2025-12-10 | SceneManagement サービス追加 |

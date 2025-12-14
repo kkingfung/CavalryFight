@@ -2,6 +2,7 @@
 
 using System;
 using UnityEngine;
+using CavalryFight.Core.Services;
 
 namespace CavalryFight.Services.Input
 {
@@ -71,6 +72,7 @@ namespace CavalryFight.Services.Input
         private float _cameraSensitivity = 1.0f;
         private bool _invertYAxis = false;
         private InputUpdater? _inputUpdater;
+        private IInputBindingService? _bindingService;
 
         #endregion
 
@@ -126,6 +128,13 @@ namespace CavalryFight.Services.Input
         public void Initialize()
         {
             Debug.Log("[InputService] Initializing...");
+
+            // InputBindingServiceを取得
+            _bindingService = ServiceLocator.Instance.Get<IInputBindingService>();
+            if (_bindingService == null)
+            {
+                Debug.LogWarning("[InputService] InputBindingService not found. Using hardcoded bindings.");
+            }
 
             // 入力更新用のGameObjectを作成
             var updaterObject = new GameObject("InputUpdater");
@@ -201,8 +210,42 @@ namespace CavalryFight.Services.Input
                 return Vector2.zero;
             }
 
-            float horizontal = UnityEngine.Input.GetAxisRaw("Horizontal");
-            float vertical = UnityEngine.Input.GetAxisRaw("Vertical");
+            float horizontal = 0f;
+            float vertical = 0f;
+
+            // バインディングサービスが利用可能な場合は、バインディングを使用
+            if (_bindingService != null)
+            {
+                // 前進
+                if (IsActionPressed(InputAction.MoveForward))
+                {
+                    vertical += 1f;
+                }
+
+                // 後退
+                if (IsActionPressed(InputAction.MoveBackward))
+                {
+                    vertical -= 1f;
+                }
+
+                // 右移動
+                if (IsActionPressed(InputAction.MoveRight))
+                {
+                    horizontal += 1f;
+                }
+
+                // 左移動
+                if (IsActionPressed(InputAction.MoveLeft))
+                {
+                    horizontal -= 1f;
+                }
+            }
+            else
+            {
+                // フォールバック: デフォルトの軸を使用
+                horizontal = UnityEngine.Input.GetAxisRaw("Horizontal");
+                vertical = UnityEngine.Input.GetAxisRaw("Vertical");
+            }
 
             return new Vector2(horizontal, vertical);
         }
@@ -222,8 +265,21 @@ namespace CavalryFight.Services.Input
                 return Vector2.zero;
             }
 
-            float horizontal = UnityEngine.Input.GetAxis("Mouse X");
-            float vertical = UnityEngine.Input.GetAxis("Mouse Y");
+            float horizontal;
+            float vertical;
+
+            // バインディングサービスが利用可能な場合は、バインディングを使用
+            if (_bindingService != null)
+            {
+                horizontal = GetActionAxis(InputAction.CameraHorizontal);
+                vertical = GetActionAxis(InputAction.CameraVertical);
+            }
+            else
+            {
+                // フォールバック: デフォルトの軸を使用
+                horizontal = UnityEngine.Input.GetAxis("Mouse X");
+                vertical = UnityEngine.Input.GetAxis("Mouse Y");
+            }
 
             // Y軸反転
             if (_invertYAxis)
@@ -253,7 +309,7 @@ namespace CavalryFight.Services.Input
                 return false;
             }
 
-            return UnityEngine.Input.GetButton("Fire1");
+            return IsActionPressed(InputAction.Attack);
         }
 
         /// <summary>
@@ -270,7 +326,7 @@ namespace CavalryFight.Services.Input
                 return false;
             }
 
-            return UnityEngine.Input.GetButtonDown("Fire1");
+            return IsActionPressedDown(InputAction.Attack);
         }
 
         /// <summary>
@@ -288,7 +344,7 @@ namespace CavalryFight.Services.Input
                 return false;
             }
 
-            return UnityEngine.Input.GetButtonUp("Fire1");
+            return IsActionReleasedUp(InputAction.Attack);
         }
 
         /// <summary>
@@ -306,7 +362,7 @@ namespace CavalryFight.Services.Input
                 return false;
             }
 
-            return UnityEngine.Input.GetButtonDown("Fire2");
+            return IsActionPressedDown(InputAction.CancelAttack);
         }
 
         /// <summary>
@@ -320,8 +376,7 @@ namespace CavalryFight.Services.Input
                 return false;
             }
 
-            // Eキーまたはゲームパッドのボタン
-            return UnityEngine.Input.GetKeyDown(KeyCode.E) || UnityEngine.Input.GetButtonDown("Fire3");
+            return IsActionPressedDown(InputAction.Mount);
         }
 
         /// <summary>
@@ -335,7 +390,7 @@ namespace CavalryFight.Services.Input
                 return false;
             }
 
-            return UnityEngine.Input.GetButtonDown("Jump");
+            return IsActionPressedDown(InputAction.Jump);
         }
 
         #endregion
@@ -357,7 +412,7 @@ namespace CavalryFight.Services.Input
                 return false;
             }
 
-            return UnityEngine.Input.GetKeyDown(KeyCode.Escape);
+            return IsActionPressedDown(InputAction.Menu);
         }
 
         /// <summary>
@@ -371,7 +426,7 @@ namespace CavalryFight.Services.Input
                 return false;
             }
 
-            return UnityEngine.Input.GetButtonDown("Cancel");
+            return IsActionPressedDown(InputAction.Pause);
         }
 
         #endregion
@@ -458,6 +513,183 @@ namespace CavalryFight.Services.Input
             if (GetPauseButtonDown())
             {
                 PauseButtonPressed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        #endregion
+
+        #region Private Helper Methods
+
+        /// <summary>
+        /// 指定されたアクションが押されているかを判定します。
+        /// </summary>
+        /// <param name="action">判定するアクション</param>
+        /// <returns>押されている場合true</returns>
+        private bool IsActionPressed(InputAction action)
+        {
+            if (_bindingService == null)
+            {
+                return false;
+            }
+
+            var binding = _bindingService.GetBinding(action);
+            if (binding == null)
+            {
+                return false;
+            }
+
+            // キーをチェック
+            if (binding.PrimaryKey != KeyCode.None && UnityEngine.Input.GetKey(binding.PrimaryKey))
+            {
+                return true;
+            }
+
+            if (binding.SecondaryKey != KeyCode.None && UnityEngine.Input.GetKey(binding.SecondaryKey))
+            {
+                return true;
+            }
+
+            // ゲームパッドボタンをチェック
+            if (!string.IsNullOrEmpty(binding.GamepadButton))
+            {
+                try
+                {
+                    if (UnityEngine.Input.GetButton(binding.GamepadButton))
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // ボタンが定義されていない場合は無視
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 指定されたアクションが押された瞬間かを判定します。
+        /// </summary>
+        /// <param name="action">判定するアクション</param>
+        /// <returns>押された瞬間の場合true</returns>
+        private bool IsActionPressedDown(InputAction action)
+        {
+            if (_bindingService == null)
+            {
+                return false;
+            }
+
+            var binding = _bindingService.GetBinding(action);
+            if (binding == null)
+            {
+                return false;
+            }
+
+            // キーをチェック
+            if (binding.PrimaryKey != KeyCode.None && UnityEngine.Input.GetKeyDown(binding.PrimaryKey))
+            {
+                return true;
+            }
+
+            if (binding.SecondaryKey != KeyCode.None && UnityEngine.Input.GetKeyDown(binding.SecondaryKey))
+            {
+                return true;
+            }
+
+            // ゲームパッドボタンをチェック
+            if (!string.IsNullOrEmpty(binding.GamepadButton))
+            {
+                try
+                {
+                    if (UnityEngine.Input.GetButtonDown(binding.GamepadButton))
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // ボタンが定義されていない場合は無視
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 指定されたアクションが離された瞬間かを判定します。
+        /// </summary>
+        /// <param name="action">判定するアクション</param>
+        /// <returns>離された瞬間の場合true</returns>
+        private bool IsActionReleasedUp(InputAction action)
+        {
+            if (_bindingService == null)
+            {
+                return false;
+            }
+
+            var binding = _bindingService.GetBinding(action);
+            if (binding == null)
+            {
+                return false;
+            }
+
+            // キーをチェック
+            if (binding.PrimaryKey != KeyCode.None && UnityEngine.Input.GetKeyUp(binding.PrimaryKey))
+            {
+                return true;
+            }
+
+            if (binding.SecondaryKey != KeyCode.None && UnityEngine.Input.GetKeyUp(binding.SecondaryKey))
+            {
+                return true;
+            }
+
+            // ゲームパッドボタンをチェック
+            if (!string.IsNullOrEmpty(binding.GamepadButton))
+            {
+                try
+                {
+                    if (UnityEngine.Input.GetButtonUp(binding.GamepadButton))
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // ボタンが定義されていない場合は無視
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 指定されたアクションの軸入力値を取得します。
+        /// </summary>
+        /// <param name="action">取得するアクション</param>
+        /// <returns>軸入力値</returns>
+        private float GetActionAxis(InputAction action)
+        {
+            if (_bindingService == null)
+            {
+                return 0f;
+            }
+
+            var binding = _bindingService.GetBinding(action);
+            if (binding == null || string.IsNullOrEmpty(binding.GamepadAxis))
+            {
+                return 0f;
+            }
+
+            try
+            {
+                return UnityEngine.Input.GetAxis(binding.GamepadAxis);
+            }
+            catch
+            {
+                // 軸が定義されていない場合は0を返す
+                return 0f;
             }
         }
 
