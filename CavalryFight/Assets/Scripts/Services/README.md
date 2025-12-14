@@ -13,6 +13,7 @@
 | **InputService** | プレイヤー入力管理 | `Input/` |
 | **InputBindingService** | キーバインディング管理 | `Input/` |
 | **BlazeAIService** | AI敵管理（Blaze AIラッパー） | `AI/` |
+| **GameSettingsService** | ゲーム設定管理（保存/読込/適用） | `GameSettings/` |
 
 ---
 
@@ -28,6 +29,7 @@ using CavalryFight.Services.SceneManagement;
 using CavalryFight.Services.Audio;
 using CavalryFight.Services.Input;
 using CavalryFight.Services.AI;
+using CavalryFight.Services.GameSettings;
 using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
@@ -38,6 +40,7 @@ public class GameBootstrap : MonoBehaviour
         ServiceLocator.Instance.Register<IInputBindingService>(new InputBindingService());
         ServiceLocator.Instance.Register<IInputService>(new InputService());
         ServiceLocator.Instance.Register<IAudioService>(new AudioService());
+        ServiceLocator.Instance.Register<IGameSettingsService>(new GameSettingsService());
         ServiceLocator.Instance.Register<IBlazeAIService>(new BlazeAIService());
         ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
 
@@ -52,7 +55,9 @@ public class GameBootstrap : MonoBehaviour
 
 2. **DontDestroyOnLoad**: ServiceLocatorは自動的にDontDestroyOnLoadになります
 
-3. **依存関係の順序**: InputBindingServiceはInputServiceより先に登録する必要があります
+3. **依存関係の順序**:
+   - InputBindingServiceはInputServiceより先に登録する必要があります
+   - GameSettingsServiceはAudioServiceとInputServiceより後に登録する必要があります（設定適用のため）
 
 ---
 
@@ -63,6 +68,7 @@ public class GameBootstrap : MonoBehaviour
 - **SceneManagement**: `Examples/SceneTransition/SceneTransitionExampleViewModel.cs`
 - **Audio**: `Examples/AudioUsage/AudioUsageExampleViewModel.cs`
 - **Input**: `Examples/InputUsage/InputUsageExampleViewModel.cs`
+- **GameSettings**: `Examples/SettingsUsage/SettingsUsageExampleViewModel.cs`
 
 ---
 
@@ -78,6 +84,7 @@ public class GameBootstrap : MonoBehaviour
 
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
+| 0.6.0 | 2025-12-12 | GameSettings サービス追加（設定管理システム） |
 | 0.5.0 | 2025-12-11 | BlazeAI サービス追加（AI敵管理） |
 | 0.4.0 | 2025-12-11 | InputBinding サービス追加（キーバインディングシステム） |
 | 0.3.0 | 2025-12-11 | Input サービス追加 |
