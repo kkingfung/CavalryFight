@@ -7,6 +7,7 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Services.Core;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
+using Unity.Services.Authentication;
 using UnityEngine;
 
 namespace CavalryFight.Services.Lobby
@@ -68,6 +69,12 @@ namespace CavalryFight.Services.Lobby
             try
             {
                 await UnityServices.InitializeAsync();
+
+                // Anonymous認証を実行
+                if (!Unity.Services.Authentication.AuthenticationService.Instance.IsSignedIn)
+                {
+                    await Unity.Services.Authentication.AuthenticationService.Instance.SignInAnonymouslyAsync();
+                }
                 _initialized = true;
                 Debug.Log("[RelayManager] Unity Services initialized successfully.");
                 return true;
