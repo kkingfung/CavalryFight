@@ -27,6 +27,7 @@ MonoBehaviour:
   m_checkForDuplicateSceneOperations: 1
   m_preventSpammingEventMethods: 1
   m_spamCheckCooldown: 0.5
+  m_isNetcodeValidationEnabled: 1
   m_blacklist:
     list: []
   m_whitelist:
