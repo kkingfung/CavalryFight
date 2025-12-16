@@ -47,6 +47,16 @@ namespace CavalryFight.Services.SceneManagement
         private float _loadStartTime;
         private string _currentSceneName = string.Empty;
 
+        // シーンコレクション参照
+        private SceneCollection? _startupCollection;
+        private SceneCollection? _mainMenuCollection;
+        private SceneCollection? _lobbyCollection;
+        private SceneCollection? _settingsCollection;
+        private SceneCollection? _matchCollection;
+        private SceneCollection? _trainingCollection;
+        private SceneCollection? _resultsCollection;
+        private SceneCollection? _replayCollection;
+
         #endregion
 
         #region Properties
@@ -102,7 +112,153 @@ namespace CavalryFight.Services.SceneManagement
 
         #endregion
 
-        #region Scene Operations
+        #region Configuration
+
+        /// <summary>
+        /// シーンコレクションを登録します。
+        /// </summary>
+        /// <param name="startup">Startupシーンコレクション</param>
+        /// <param name="mainMenu">MainMenuシーンコレクション</param>
+        /// <param name="lobby">Lobbyシーンコレクション</param>
+        /// <param name="settings">Settingsシーンコレクション</param>
+        /// <param name="match">Matchシーンコレクション</param>
+        /// <param name="training">Trainingシーンコレクション</param>
+        /// <param name="results">Resultsシーンコレクション</param>
+        /// <param name="replay">Replayシーンコレクション</param>
+        public void RegisterSceneCollections(
+            SceneCollection? startup,
+            SceneCollection? mainMenu,
+            SceneCollection? lobby,
+            SceneCollection? settings,
+            SceneCollection? match,
+            SceneCollection? training,
+            SceneCollection? results,
+            SceneCollection? replay)
+        {
+            _startupCollection = startup;
+            _mainMenuCollection = mainMenu;
+            _lobbyCollection = lobby;
+            _settingsCollection = settings;
+            _matchCollection = match;
+            _trainingCollection = training;
+            _resultsCollection = results;
+            _replayCollection = replay;
+
+            Debug.Log("[SceneManagementService] Scene collections registered.");
+        }
+
+        #endregion
+
+        #region High-Level Scene Operations
+
+        /// <summary>
+        /// メインメニューシーンをロードします。
+        /// </summary>
+        public void LoadMainMenu()
+        {
+            if (_mainMenuCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] MainMenu collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("MainMenu", "MainMenu collection is not registered"));
+                return;
+            }
+
+            OpenCollection(_mainMenuCollection);
+        }
+
+        /// <summary>
+        /// ロビーシーンをロードします。
+        /// </summary>
+        public void LoadLobby()
+        {
+            if (_lobbyCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] Lobby collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Lobby", "Lobby collection is not registered"));
+                return;
+            }
+
+            OpenCollection(_lobbyCollection);
+        }
+
+        /// <summary>
+        /// 設定シーンをロードします。
+        /// </summary>
+        public void LoadSettings()
+        {
+            if (_settingsCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] Settings collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Settings", "Settings collection is not registered"));
+                return;
+            }
+
+            OpenCollection(_settingsCollection);
+        }
+
+        /// <summary>
+        /// マッチシーンをロードします。
+        /// </summary>
+        public void LoadMatch()
+        {
+            if (_matchCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] Match collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Match", "Match collection is not registered"));
+                return;
+            }
+
+            OpenCollection(_matchCollection);
+        }
+
+        /// <summary>
+        /// トレーニングシーンをロードします。
+        /// </summary>
+        public void LoadTraining()
+        {
+            if (_trainingCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] Training collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Training", "Training collection is not registered"));
+                return;
+            }
+
+            OpenCollection(_trainingCollection);
+        }
+
+        /// <summary>
+        /// 結果シーンをロードします。
+        /// </summary>
+        public void LoadResults()
+        {
+            if (_resultsCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] Results collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Results", "Results collection is not registered"));
+                return;
+            }
+
+            OpenCollection(_resultsCollection);
+        }
+
+        /// <summary>
+        /// リプレイシーンをロードします。
+        /// </summary>
+        public void LoadReplay()
+        {
+            if (_replayCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] Replay collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Replay", "Replay collection is not registered"));
+                return;
+            }
+
+            OpenCollection(_replayCollection);
+        }
+
+        #endregion
+
+        #region Low-Level Scene Operations
 
         /// <summary>
         /// シーンを開きます。

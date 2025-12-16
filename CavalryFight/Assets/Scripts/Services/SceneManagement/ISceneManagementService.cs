@@ -50,7 +50,71 @@ namespace CavalryFight.Services.SceneManagement
 
         #endregion
 
-        #region Scene Operations
+        #region Configuration
+
+        /// <summary>
+        /// シーンコレクションを登録します。
+        /// </summary>
+        /// <param name="startup">Startupシーンコレクション</param>
+        /// <param name="mainMenu">MainMenuシーンコレクション</param>
+        /// <param name="lobby">Lobbyシーンコレクション</param>
+        /// <param name="settings">Settingsシーンコレクション</param>
+        /// <param name="match">Matchシーンコレクション</param>
+        /// <param name="training">Trainingシーンコレクション</param>
+        /// <param name="results">Resultsシーンコレクション</param>
+        /// <param name="replay">Replayシーンコレクション</param>
+        void RegisterSceneCollections(
+            SceneCollection? startup,
+            SceneCollection? mainMenu,
+            SceneCollection? lobby,
+            SceneCollection? settings,
+            SceneCollection? match,
+            SceneCollection? training,
+            SceneCollection? results,
+            SceneCollection? replay);
+
+        #endregion
+
+        #region High-Level Scene Operations
+
+        /// <summary>
+        /// メインメニューシーンをロードします。
+        /// </summary>
+        void LoadMainMenu();
+
+        /// <summary>
+        /// ロビーシーンをロードします。
+        /// </summary>
+        void LoadLobby();
+
+        /// <summary>
+        /// 設定シーンをロードします。
+        /// </summary>
+        void LoadSettings();
+
+        /// <summary>
+        /// マッチシーンをロードします。
+        /// </summary>
+        void LoadMatch();
+
+        /// <summary>
+        /// トレーニングシーンをロードします。
+        /// </summary>
+        void LoadTraining();
+
+        /// <summary>
+        /// 結果シーンをロードします。
+        /// </summary>
+        void LoadResults();
+
+        /// <summary>
+        /// リプレイシーンをロードします。
+        /// </summary>
+        void LoadReplay();
+
+        #endregion
+
+        #region Low-Level Scene Operations
 
         /// <summary>
         /// シーンを開きます。
