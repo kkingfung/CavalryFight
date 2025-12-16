@@ -1,0 +1,424 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8042267033748032890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - Training
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: d6wm3eg4.tgm
+  m_isHidden: 0
+  m_scenes: []
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: Training
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 0
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1
+--- !u!114 &-2292065768625389036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - Settings
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: jlywwk8i.1hf
+  m_isHidden: 0
+  m_scenes: []
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: Settings
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 0
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1
+--- !u!114 &-2265142666104476371
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a76d21c0c976cdf40aeea86004124fdf, type: 3}
+  m_Name: Standalone
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.StandaloneCollection
+  m_id: yy0t5r3u.6s7
+  m_isHidden: 0
+  m_title: Standalone
+  m_description: Standalone scenes are guaranteed to be included build, even if they
+    are not contained in a normal collection.
+  m_standaloneScenes: []
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed0f1fcb14f10114ca58b525ad780b5b, type: 3}
+  m_Name: MainProfile
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.Profile
+  m_id: kc33o9qs.k5a
+  m_isHidden: 0
+  m_autoUpdateBuildScenes: 1
+  m_preventAssignmentIfNullAndUnityHasABuildProfileActive: 1
+  m_unityBuildProfile: {fileID: 0}
+  m_oldDynamicCollections: []
+  m_oldStandaloneCollection:
+    m_id: 
+    m_scenes: []
+  m_removedCollections: []
+  m_collections:
+  - {fileID: 8589590292782032948}
+  - {fileID: 640684327245363652}
+  - {fileID: 8876666167659424018}
+  - {fileID: -2292065768625389036}
+  - {fileID: 33481719916973878}
+  - {fileID: -8042267033748032890}
+  - {fileID: 4155319312566489168}
+  - {fileID: 2841897788759262390}
+  m_dynamicCollectionsList: []
+  m_standaloneCollection: {fileID: -2265142666104476371}
+  m_defaultASMScenes: {fileID: 8638527954878072010}
+  m_unloadUnusedAssetsForStandalone: 1
+  m_notify: 0
+  m_notifyMessage: 
+  m_loadingScene: {fileID: 0}
+  m_splashScene: {fileID: 0}
+  m_startupScene: {fileID: 0}
+--- !u!114 &33481719916973878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - Match
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: rua9y6c2.ih4
+  m_isHidden: 0
+  m_scenes: []
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: Match
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 0
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1
+--- !u!114 &640684327245363652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - Main menu
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: 2ydv0glt.yqq
+  m_isHidden: 0
+  m_scenes: []
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: Main menu
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 1
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1
+--- !u!114 &2841897788759262390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - Replay
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: kavzjt6l.gpf
+  m_isHidden: 0
+  m_scenes: []
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: Replay
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 0
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1
+--- !u!114 &4155319312566489168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - Results
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: 6q5vmaj3.reh
+  m_isHidden: 0
+  m_scenes: []
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: Results
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 0
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1
+--- !u!114 &8589590292782032948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - Startup (persistent)
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: w4im52sb.t73
+  m_isHidden: 0
+  m_scenes: []
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: Startup (persistent)
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 1
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 1
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1
+--- !u!114 &8638527954878072010
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 216095d4afa098149a390d16f910489b, type: 3}
+  m_Name: ASM Defaults
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.DefaultASMScenesCollection
+  m_id: 4cwcv2ou.lfn
+  m_isHidden: 0
+  m_title: ASM Defaults
+  m_description: ASM contains some default scenes that you may use or take inspiration
+    from.The scenes are provided as a UPM sample, you may use the button below, or
+    use the package manager, to import it.
+  m_scenes: []
+  isImported: 0
+--- !u!114 &8876666167659424018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - Lobby
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: ytkdx787.6dk
+  m_isHidden: 0
+  m_scenes: []
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: Lobby
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 0
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1

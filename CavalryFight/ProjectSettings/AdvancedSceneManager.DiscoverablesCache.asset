@@ -184,6 +184,10 @@ MonoBehaviour:
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - type:AdvancedSceneManager.Editor.Utility.HierarchyGUIUtility, AdvancedSceneManager,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.PackageSupport.Addressables.AddressablesSceneLoader,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - type:AdvancedSceneManager.PackageSupport.Addressables.Editor.AddressablesUtility,
+    AdvancedSceneManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - type:AdvancedSceneManager.PackageSupport.Netcode.NetcodeSceneLoader, AdvancedSceneManager,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - type:AdvancedSceneManager.Services.UpdateService, AdvancedSceneManager.Editor,
