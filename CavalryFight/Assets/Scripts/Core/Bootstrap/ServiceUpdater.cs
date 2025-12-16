@@ -98,11 +98,6 @@ namespace CavalryFight.Core.Bootstrap
                 _matchService.Update();
             }
 
-            // BlazeAIServiceの更新
-            if (_aiService != null)
-            {
-                _aiService.Update();
-            }
 
             // ReplayRecorderの更新
             if (_replayRecorder != null && _replayRecorder is ReplayRecorder recorder)

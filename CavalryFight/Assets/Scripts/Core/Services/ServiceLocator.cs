@@ -144,7 +144,12 @@ namespace CavalryFight.Core.Services
                 return newService;
             }
 
-            throw new InvalidOperationException($"Service of type {serviceType.Name} is not registered.");
+            // サービスが見つからない場合、詳細なエラーメッセージを生成
+            string errorMessage = $"Service of type {serviceType.Name} is not registered.\n";
+            errorMessage += "Registered services:\n";
+            errorMessage += GetRegisteredServicesDebugInfo();
+
+            throw new InvalidOperationException(errorMessage);
         }
 
         /// <summary>
@@ -292,6 +297,69 @@ namespace CavalryFight.Core.Services
             _isInitialized = false;
 
             Debug.Log("[ServiceLocator] Shutdown complete.");
+        }
+
+        /// <summary>
+        /// 登録されているすべてのサービスのタイプを取得します
+        /// </summary>
+        /// <returns>登録されているサービスのタイプのリスト</returns>
+        public List<Type> GetRegisteredServiceTypes()
+        {
+            var types = new List<Type>();
+
+            types.AddRange(_services.Keys);
+
+            // ファクトリーのみ登録されているサービスも含める
+            foreach (var factoryType in _factories.Keys)
+            {
+                if (!types.Contains(factoryType))
+                {
+                    types.Add(factoryType);
+                }
+            }
+
+            return types;
+        }
+
+        /// <summary>
+        /// 登録されているサービスのデバッグ情報を取得します
+        /// </summary>
+        /// <returns>サービス一覧の文字列</returns>
+        public string GetRegisteredServicesDebugInfo()
+        {
+            if (_services.Count == 0 && _factories.Count == 0)
+            {
+                return "  (No services registered)";
+            }
+
+            var info = "";
+
+            // インスタンス化されているサービス
+            foreach (var kvp in _services)
+            {
+                info += $"  - {kvp.Key.Name} (instance: {kvp.Value.GetType().Name})\n";
+            }
+
+            // ファクトリーのみ登録されているサービス
+            foreach (var kvp in _factories)
+            {
+                if (!_services.ContainsKey(kvp.Key))
+                {
+                    info += $"  - {kvp.Key.Name} (factory only, not yet instantiated)\n";
+                }
+            }
+
+            return info.TrimEnd('\n');
+        }
+
+        /// <summary>
+        /// 登録されているサービスの統計情報をログ出力します
+        /// </summary>
+        public void LogRegisteredServices()
+        {
+            Debug.Log($"[ServiceLocator] Total registered services: {_services.Count}");
+            Debug.Log($"[ServiceLocator] Total registered factories: {_factories.Count}");
+            Debug.Log("[ServiceLocator] Registered services:\n" + GetRegisteredServicesDebugInfo());
         }
 
         /// <summary>
