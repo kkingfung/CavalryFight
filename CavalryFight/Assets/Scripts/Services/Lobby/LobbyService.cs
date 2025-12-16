@@ -163,8 +163,7 @@ namespace CavalryFight.Services.Lobby
 
             Debug.Log("[LobbyService] Initializing...");
 
-            // Initialize relay manager (async operation will happen when creating/joining room)
-            _ = _relayManager.InitializeAsync();
+            // RelayManager は CreateRoom/JoinRoom 時に非同期で初期化されます
 
             _initialized = true;
             Debug.Log("[LobbyService] Initialization complete.");
@@ -298,9 +297,13 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// ルームを作成します（ホスト）
         /// </summary>
+        /// <remarks>
+        /// このメソッドは非同期処理を開始し、即座に制御を返します。
+        /// 実際の成功/失敗は RoomCreated イベントまたは ErrorOccurred イベントで通知されます。
+        /// </remarks>
         /// <param name="roomSettings">ルーム設定</param>
         /// <param name="playerName">プレイヤー名</param>
-        /// <returns>成功した場合はtrue</returns>
+        /// <returns>リクエストが受け付けられた場合はtrue（初期化エラーや既にルームに参加している場合はfalse）</returns>
         public bool CreateRoom(RoomSettings roomSettings, string playerName)
         {
             if (!_initialized)
@@ -338,6 +341,14 @@ namespace CavalryFight.Services.Lobby
         /// <param name="playerName">プレイヤー名</param>
         private async System.Threading.Tasks.Task StartHostRelayAsync(string playerName)
         {
+            // RelayManager の初期化を確実に待つ
+            bool initialized = await _relayManager.InitializeAsync();
+            if (!initialized)
+            {
+                ErrorOccurred?.Invoke("Failed to initialize RelayManager.");
+                return;
+            }
+
             string? joinCode = await _relayManager.StartHostAsync();
 
             if (joinCode == null)
@@ -616,10 +627,14 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// ジョインコードを使用してルームに参加します（ゲスト）
         /// </summary>
+        /// <remarks>
+        /// このメソッドは非同期処理を開始し、即座に制御を返します。
+        /// 実際の成功/失敗は RoomJoined イベントまたは ErrorOccurred イベントで通知されます。
+        /// </remarks>
         /// <param name="joinCode">ジョインコード</param>
         /// <param name="playerName">プレイヤー名</param>
         /// <param name="password">パスワード（必要な場合）</param>
-        /// <returns>成功した場合はtrue</returns>
+        /// <returns>リクエストが受け付けられた場合はtrue（初期化エラーや既にルームに参加している場合はfalse）</returns>
         public bool JoinRoom(string joinCode, string playerName, string password = "")
         {
             if (!_initialized)
@@ -648,6 +663,14 @@ namespace CavalryFight.Services.Lobby
         /// <param name="password">パスワード</param>
         private async System.Threading.Tasks.Task JoinRelayAsync(string joinCode, string playerName, string password)
         {
+            // RelayManager の初期化を確実に待つ
+            bool initialized = await _relayManager.InitializeAsync();
+            if (!initialized)
+            {
+                ErrorOccurred?.Invoke("Failed to initialize RelayManager.");
+                return;
+            }
+
             bool relayJoined = await _relayManager.JoinRelayAsync(joinCode);
 
             if (!relayJoined)
