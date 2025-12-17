@@ -150,10 +150,10 @@ namespace CavalryFight.Services.Input
             _inputService.AttackButtonPressed += OnAttackButtonPressed;
             _inputService.AttackButtonReleased += OnAttackButtonReleased;
             _inputService.CancelAttackButtonPressed += OnCancelAttackButtonPressed;
+            _inputService.BoostButtonPressed += OnBoostButtonPressed;
             _inputService.MountButtonPressed += OnMountButtonPressed;
             _inputService.JumpButtonPressed += OnJumpButtonPressed;
             _inputService.MenuButtonPressed += OnMenuButtonPressed;
-            _inputService.PauseButtonPressed += OnPauseButtonPressed;
 
             // コマンドを初期化
             ResetInputCommand = new RelayCommand(
@@ -341,16 +341,16 @@ namespace CavalryFight.Services.Input
         }
 
         /// <summary>
-        /// ポーズボタンが押された時の処理
+        /// ブーストボタンが押された時の処理
         /// </summary>
         /// <param name="sender">イベント送信元</param>
         /// <param name="e">イベント引数</param>
-        private void OnPauseButtonPressed(object? sender, EventArgs e)
+        private void OnBoostButtonPressed(object? sender, EventArgs e)
         {
-            Debug.Log("[InputUsageExample] Pause button pressed!");
+            Debug.Log("[InputUsageExample] Boost button pressed!");
 
-            // 実際のゲームでは、ここでポーズメニューを表示します
-            // 例: UIManager.ShowPauseMenu();
+            // 実際のゲームでは、ここで馬のブーストを発動します
+            // 例: HorseController.TriggerBoost();
         }
 
         #endregion
@@ -366,10 +366,10 @@ namespace CavalryFight.Services.Input
             _inputService.AttackButtonPressed -= OnAttackButtonPressed;
             _inputService.AttackButtonReleased -= OnAttackButtonReleased;
             _inputService.CancelAttackButtonPressed -= OnCancelAttackButtonPressed;
+            _inputService.BoostButtonPressed -= OnBoostButtonPressed;
             _inputService.MountButtonPressed -= OnMountButtonPressed;
             _inputService.JumpButtonPressed -= OnJumpButtonPressed;
             _inputService.MenuButtonPressed -= OnMenuButtonPressed;
-            _inputService.PauseButtonPressed -= OnPauseButtonPressed;
 
             base.OnDispose();
         }

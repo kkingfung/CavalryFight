@@ -2,6 +2,7 @@
 
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using CavalryFight.Core.Services;
 
 namespace CavalryFight.Services.Input
@@ -35,9 +36,18 @@ namespace CavalryFight.Services.Input
         /// </summary>
         /// <remarks>
         /// チャージ中の攻撃をキャンセルする際に使用します。
-        /// デフォルトでは右クリック（Fire2）に割り当てられます。
+        /// デフォルトでは右クリックに割り当てられます。
         /// </remarks>
         public event EventHandler? CancelAttackButtonPressed;
+
+        /// <summary>
+        /// ブーストボタンが押された時に発生します。
+        /// </summary>
+        /// <remarks>
+        /// 馬の突然のスピードブーストに使用します。
+        /// 攻撃チャージ中でない場合に右クリックで発動します。
+        /// </remarks>
+        public event EventHandler? BoostButtonPressed;
 
         /// <summary>
         /// 騎乗/降馬ボタンが押された時に発生します。
@@ -58,11 +68,6 @@ namespace CavalryFight.Services.Input
         /// </remarks>
         public event EventHandler? MenuButtonPressed;
 
-        /// <summary>
-        /// ポーズボタンが押された時に発生します。
-        /// </summary>
-        public event EventHandler? PauseButtonPressed;
-
         #endregion
 
         #region Fields
@@ -71,8 +76,7 @@ namespace CavalryFight.Services.Input
         private float _movementSensitivity = 1.0f;
         private float _cameraSensitivity = 1.0f;
         private bool _invertYAxis = false;
-        private InputUpdater? _inputUpdater;
-        private IInputBindingService? _bindingService;
+        private GameInputActions? _inputActions;
 
         #endregion
 
@@ -84,7 +88,21 @@ namespace CavalryFight.Services.Input
         public bool InputEnabled
         {
             get => _inputEnabled;
-            set => _inputEnabled = value;
+            set
+            {
+                _inputEnabled = value;
+                if (_inputActions != null)
+                {
+                    if (_inputEnabled)
+                    {
+                        _inputActions.Enable();
+                    }
+                    else
+                    {
+                        _inputActions.Disable();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -123,24 +141,26 @@ namespace CavalryFight.Services.Input
         /// </summary>
         /// <remarks>
         /// ServiceLocatorに登録された直後に呼び出されます。
-        /// 入力更新用のMonoBehaviourを作成します。
+        /// Input Actionsを作成し、イベントを購読します。
         /// </remarks>
         public void Initialize()
         {
             Debug.Log("[InputService] Initializing...");
 
-            // InputBindingServiceを取得
-            _bindingService = ServiceLocator.Instance.Get<IInputBindingService>();
-            if (_bindingService == null)
-            {
-                Debug.LogWarning("[InputService] InputBindingService not found. Using hardcoded bindings.");
-            }
+            // GameInputActionsを作成
+            _inputActions = new GameInputActions();
 
-            // 入力更新用のGameObjectを作成
-            var updaterObject = new GameObject("InputUpdater");
-            GameObject.DontDestroyOnLoad(updaterObject);
-            _inputUpdater = updaterObject.AddComponent<InputUpdater>();
-            _inputUpdater.Initialize(this);
+            // イベントを購読
+            _inputActions.Gameplay.Attack.started += OnAttackStarted;
+            _inputActions.Gameplay.Attack.canceled += OnAttackCanceled;
+            _inputActions.Gameplay.CancelAttack.performed += OnCancelAttackPerformed;
+            _inputActions.Gameplay.Boost.performed += OnBoostPerformed;
+            _inputActions.Gameplay.Mount.performed += OnMountPerformed;
+            _inputActions.Gameplay.Jump.performed += OnJumpPerformed;
+            _inputActions.UI.Menu.performed += OnMenuPerformed;
+
+            // 入力を有効化
+            _inputActions.Enable();
 
             Debug.Log("[InputService] Initialized.");
         }
@@ -149,7 +169,7 @@ namespace CavalryFight.Services.Input
         /// サービスを破棄し、リソースを解放します。
         /// </summary>
         /// <remarks>
-        /// イベントハンドラをクリアし、入力更新用のGameObjectを破棄します。
+        /// イベントハンドラをクリアし、Input Actionsを破棄します。
         /// </remarks>
         public void Dispose()
         {
@@ -159,16 +179,24 @@ namespace CavalryFight.Services.Input
             AttackButtonPressed = null;
             AttackButtonReleased = null;
             CancelAttackButtonPressed = null;
+            BoostButtonPressed = null;
             MountButtonPressed = null;
             JumpButtonPressed = null;
             MenuButtonPressed = null;
-            PauseButtonPressed = null;
 
-            // InputUpdaterを破棄
-            if (_inputUpdater != null)
+            // Input Actionsのイベント購読を解除
+            if (_inputActions != null)
             {
-                GameObject.Destroy(_inputUpdater.gameObject);
-                _inputUpdater = null;
+                _inputActions.Gameplay.Attack.started -= OnAttackStarted;
+                _inputActions.Gameplay.Attack.canceled -= OnAttackCanceled;
+                _inputActions.Gameplay.CancelAttack.performed -= OnCancelAttackPerformed;
+                _inputActions.Gameplay.Boost.performed -= OnBoostPerformed;
+                _inputActions.Gameplay.Mount.performed -= OnMountPerformed;
+                _inputActions.Gameplay.Jump.performed -= OnJumpPerformed;
+                _inputActions.UI.Menu.performed -= OnMenuPerformed;
+
+                _inputActions.Dispose();
+                _inputActions = null;
             }
         }
 
@@ -182,12 +210,12 @@ namespace CavalryFight.Services.Input
         /// <returns>移動ベクトル（X: 水平、Y: 垂直）</returns>
         public Vector2 GetMovementInput()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return Vector2.zero;
             }
 
-            Vector2 input = GetRawMovementInput();
+            Vector2 input = _inputActions.Gameplay.Move.ReadValue<Vector2>();
             input *= _movementSensitivity;
 
             // 正規化（斜め移動が速くならないように）
@@ -205,49 +233,12 @@ namespace CavalryFight.Services.Input
         /// <returns>生の移動ベクトル</returns>
         public Vector2 GetRawMovementInput()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return Vector2.zero;
             }
 
-            float horizontal = 0f;
-            float vertical = 0f;
-
-            // バインディングサービスが利用可能な場合は、バインディングを使用
-            if (_bindingService != null)
-            {
-                // 前進
-                if (IsActionPressed(InputAction.MoveForward))
-                {
-                    vertical += 1f;
-                }
-
-                // 後退
-                if (IsActionPressed(InputAction.MoveBackward))
-                {
-                    vertical -= 1f;
-                }
-
-                // 右移動
-                if (IsActionPressed(InputAction.MoveRight))
-                {
-                    horizontal += 1f;
-                }
-
-                // 左移動
-                if (IsActionPressed(InputAction.MoveLeft))
-                {
-                    horizontal -= 1f;
-                }
-            }
-            else
-            {
-                // フォールバック: デフォルトの軸を使用
-                horizontal = UnityEngine.Input.GetAxisRaw("Horizontal");
-                vertical = UnityEngine.Input.GetAxisRaw("Vertical");
-            }
-
-            return new Vector2(horizontal, vertical);
+            return _inputActions.Gameplay.Move.ReadValue<Vector2>();
         }
 
         #endregion
@@ -260,34 +251,26 @@ namespace CavalryFight.Services.Input
         /// <returns>カメラベクトル（X: 水平、Y: 垂直）</returns>
         public Vector2 GetCameraInput()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return Vector2.zero;
             }
 
-            float horizontal;
-            float vertical;
+            Vector2 input = _inputActions.Gameplay.Camera.ReadValue<Vector2>();
 
-            // バインディングサービスが利用可能な場合は、バインディングを使用
-            if (_bindingService != null)
+            // マウスの場合はスケーリングが必要
+            if (Mouse.current != null)
             {
-                horizontal = GetActionAxis(InputAction.CameraHorizontal);
-                vertical = GetActionAxis(InputAction.CameraVertical);
-            }
-            else
-            {
-                // フォールバック: デフォルトの軸を使用
-                horizontal = UnityEngine.Input.GetAxis("Mouse X");
-                vertical = UnityEngine.Input.GetAxis("Mouse Y");
+                input *= 0.01f; // マウスデルタをスケーリング
             }
 
             // Y軸反転
             if (_invertYAxis)
             {
-                vertical = -vertical;
+                input.y = -input.y;
             }
 
-            return new Vector2(horizontal, vertical) * _cameraSensitivity;
+            return input * _cameraSensitivity;
         }
 
         #endregion
@@ -304,12 +287,12 @@ namespace CavalryFight.Services.Input
         /// <returns>押されている場合true</returns>
         public bool GetAttackButton()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return false;
             }
 
-            return IsActionPressed(InputAction.Attack);
+            return _inputActions.Gameplay.Attack.IsPressed();
         }
 
         /// <summary>
@@ -321,12 +304,12 @@ namespace CavalryFight.Services.Input
         /// <returns>押された瞬間の場合true</returns>
         public bool GetAttackButtonDown()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return false;
             }
 
-            return IsActionPressedDown(InputAction.Attack);
+            return _inputActions.Gameplay.Attack.WasPressedThisFrame();
         }
 
         /// <summary>
@@ -339,12 +322,12 @@ namespace CavalryFight.Services.Input
         /// <returns>離された瞬間の場合true</returns>
         public bool GetAttackButtonUp()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return false;
             }
 
-            return IsActionReleasedUp(InputAction.Attack);
+            return _inputActions.Gameplay.Attack.WasReleasedThisFrame();
         }
 
         /// <summary>
@@ -352,17 +335,35 @@ namespace CavalryFight.Services.Input
         /// </summary>
         /// <remarks>
         /// チャージ中の攻撃をキャンセルする際に使用します。
-        /// デフォルトでは右クリック（Fire2）に割り当てられます。
+        /// デフォルトでは右クリックに割り当てられます。
         /// </remarks>
         /// <returns>押された瞬間の場合true</returns>
         public bool GetCancelAttackButtonDown()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return false;
             }
 
-            return IsActionPressedDown(InputAction.CancelAttack);
+            return _inputActions.Gameplay.CancelAttack.WasPressedThisFrame();
+        }
+
+        /// <summary>
+        /// ブーストボタンが押された瞬間かを取得します。
+        /// </summary>
+        /// <remarks>
+        /// 馬の突然のスピードブーストに使用します。
+        /// 攻撃チャージ中でない場合に右クリックで発動します。
+        /// </remarks>
+        /// <returns>押された瞬間の場合true</returns>
+        public bool GetBoostButtonDown()
+        {
+            if (!_inputEnabled || _inputActions == null)
+            {
+                return false;
+            }
+
+            return _inputActions.Gameplay.Boost.WasPressedThisFrame();
         }
 
         /// <summary>
@@ -371,12 +372,12 @@ namespace CavalryFight.Services.Input
         /// <returns>押された瞬間の場合true</returns>
         public bool GetMountButtonDown()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return false;
             }
 
-            return IsActionPressedDown(InputAction.Mount);
+            return _inputActions.Gameplay.Mount.WasPressedThisFrame();
         }
 
         /// <summary>
@@ -385,12 +386,12 @@ namespace CavalryFight.Services.Input
         /// <returns>押された瞬間の場合true</returns>
         public bool GetJumpButtonDown()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return false;
             }
 
-            return IsActionPressedDown(InputAction.Jump);
+            return _inputActions.Gameplay.Jump.WasPressedThisFrame();
         }
 
         #endregion
@@ -407,26 +408,12 @@ namespace CavalryFight.Services.Input
         /// <returns>押された瞬間の場合true</returns>
         public bool GetMenuButtonDown()
         {
-            if (!_inputEnabled)
+            if (!_inputEnabled || _inputActions == null)
             {
                 return false;
             }
 
-            return IsActionPressedDown(InputAction.Menu);
-        }
-
-        /// <summary>
-        /// ポーズボタンが押された瞬間かを取得します。
-        /// </summary>
-        /// <returns>押された瞬間の場合true</returns>
-        public bool GetPauseButtonDown()
-        {
-            if (!_inputEnabled)
-            {
-                return false;
-            }
-
-            return IsActionPressedDown(InputAction.Pause);
+            return _inputActions.UI.Menu.WasPressedThisFrame();
         }
 
         #endregion
@@ -438,7 +425,8 @@ namespace CavalryFight.Services.Input
         /// </summary>
         public void ResetInput()
         {
-            UnityEngine.Input.ResetInputAxes();
+            // 新しいInput Systemでは自動的にリセットされるため、実装不要
+            Debug.Log("[InputService] Input reset (no-op with new Input System).");
         }
 
         /// <summary>
@@ -446,7 +434,7 @@ namespace CavalryFight.Services.Input
         /// </summary>
         public void DisableInput()
         {
-            _inputEnabled = false;
+            InputEnabled = false;
             Debug.Log("[InputService] Input disabled.");
         }
 
@@ -455,272 +443,68 @@ namespace CavalryFight.Services.Input
         /// </summary>
         public void EnableInput()
         {
-            _inputEnabled = true;
+            InputEnabled = true;
             Debug.Log("[InputService] Input enabled.");
         }
 
         #endregion
 
-        #region Internal Methods
+        #region Event Handlers
 
         /// <summary>
-        /// 入力イベントをチェックして発火します（InputUpdaterから呼ばれます）
+        /// 攻撃ボタンが押された時のハンドラ
         /// </summary>
-        internal void CheckAndFireEvents()
+        private void OnAttackStarted(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            if (!_inputEnabled)
-            {
-                return;
-            }
-
-            // 攻撃ボタン押下
-            if (GetAttackButtonDown())
-            {
-                AttackButtonPressed?.Invoke(this, EventArgs.Empty);
-            }
-
-            // 攻撃ボタン解放
-            if (GetAttackButtonUp())
-            {
-                AttackButtonReleased?.Invoke(this, EventArgs.Empty);
-            }
-
-            // 攻撃キャンセルボタン
-            if (GetCancelAttackButtonDown())
-            {
-                CancelAttackButtonPressed?.Invoke(this, EventArgs.Empty);
-            }
-
-            // 騎乗/降馬ボタン
-            if (GetMountButtonDown())
-            {
-                MountButtonPressed?.Invoke(this, EventArgs.Empty);
-            }
-
-            // ジャンプボタン
-            if (GetJumpButtonDown())
-            {
-                JumpButtonPressed?.Invoke(this, EventArgs.Empty);
-            }
-
-            // メニューボタン
-            if (GetMenuButtonDown())
-            {
-                MenuButtonPressed?.Invoke(this, EventArgs.Empty);
-            }
-
-            // ポーズボタン
-            if (GetPauseButtonDown())
-            {
-                PauseButtonPressed?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        #endregion
-
-        #region Private Helper Methods
-
-        /// <summary>
-        /// 指定されたアクションが押されているかを判定します。
-        /// </summary>
-        /// <param name="action">判定するアクション</param>
-        /// <returns>押されている場合true</returns>
-        private bool IsActionPressed(InputAction action)
-        {
-            if (_bindingService == null)
-            {
-                return false;
-            }
-
-            var binding = _bindingService.GetBinding(action);
-            if (binding == null)
-            {
-                return false;
-            }
-
-            // キーをチェック
-            if (binding.PrimaryKey != KeyCode.None && UnityEngine.Input.GetKey(binding.PrimaryKey))
-            {
-                return true;
-            }
-
-            if (binding.SecondaryKey != KeyCode.None && UnityEngine.Input.GetKey(binding.SecondaryKey))
-            {
-                return true;
-            }
-
-            // ゲームパッドボタンをチェック
-            if (!string.IsNullOrEmpty(binding.GamepadButton))
-            {
-                try
-                {
-                    if (UnityEngine.Input.GetButton(binding.GamepadButton))
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                    // ボタンが定義されていない場合は無視
-                }
-            }
-
-            return false;
+            AttackButtonPressed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
-        /// 指定されたアクションが押された瞬間かを判定します。
+        /// 攻撃ボタンが離された時のハンドラ
         /// </summary>
-        /// <param name="action">判定するアクション</param>
-        /// <returns>押された瞬間の場合true</returns>
-        private bool IsActionPressedDown(InputAction action)
+        private void OnAttackCanceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            if (_bindingService == null)
-            {
-                return false;
-            }
-
-            var binding = _bindingService.GetBinding(action);
-            if (binding == null)
-            {
-                return false;
-            }
-
-            // キーをチェック
-            if (binding.PrimaryKey != KeyCode.None && UnityEngine.Input.GetKeyDown(binding.PrimaryKey))
-            {
-                return true;
-            }
-
-            if (binding.SecondaryKey != KeyCode.None && UnityEngine.Input.GetKeyDown(binding.SecondaryKey))
-            {
-                return true;
-            }
-
-            // ゲームパッドボタンをチェック
-            if (!string.IsNullOrEmpty(binding.GamepadButton))
-            {
-                try
-                {
-                    if (UnityEngine.Input.GetButtonDown(binding.GamepadButton))
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                    // ボタンが定義されていない場合は無視
-                }
-            }
-
-            return false;
+            AttackButtonReleased?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
-        /// 指定されたアクションが離された瞬間かを判定します。
+        /// 攻撃キャンセルボタンが押された時のハンドラ
         /// </summary>
-        /// <param name="action">判定するアクション</param>
-        /// <returns>離された瞬間の場合true</returns>
-        private bool IsActionReleasedUp(InputAction action)
+        private void OnCancelAttackPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            if (_bindingService == null)
-            {
-                return false;
-            }
-
-            var binding = _bindingService.GetBinding(action);
-            if (binding == null)
-            {
-                return false;
-            }
-
-            // キーをチェック
-            if (binding.PrimaryKey != KeyCode.None && UnityEngine.Input.GetKeyUp(binding.PrimaryKey))
-            {
-                return true;
-            }
-
-            if (binding.SecondaryKey != KeyCode.None && UnityEngine.Input.GetKeyUp(binding.SecondaryKey))
-            {
-                return true;
-            }
-
-            // ゲームパッドボタンをチェック
-            if (!string.IsNullOrEmpty(binding.GamepadButton))
-            {
-                try
-                {
-                    if (UnityEngine.Input.GetButtonUp(binding.GamepadButton))
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                    // ボタンが定義されていない場合は無視
-                }
-            }
-
-            return false;
+            CancelAttackButtonPressed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
-        /// 指定されたアクションの軸入力値を取得します。
+        /// ブーストボタンが押された時のハンドラ
         /// </summary>
-        /// <param name="action">取得するアクション</param>
-        /// <returns>軸入力値</returns>
-        private float GetActionAxis(InputAction action)
+        private void OnBoostPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            if (_bindingService == null)
-            {
-                return 0f;
-            }
-
-            var binding = _bindingService.GetBinding(action);
-            if (binding == null || string.IsNullOrEmpty(binding.GamepadAxis))
-            {
-                return 0f;
-            }
-
-            try
-            {
-                return UnityEngine.Input.GetAxis(binding.GamepadAxis);
-            }
-            catch
-            {
-                // 軸が定義されていない場合は0を返す
-                return 0f;
-            }
+            BoostButtonPressed?.Invoke(this, EventArgs.Empty);
         }
 
-        #endregion
-
-        #region InputUpdater (Nested MonoBehaviour)
+        /// <summary>
+        /// 騎乗/降馬ボタンが押された時のハンドラ
+        /// </summary>
+        private void OnMountPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            MountButtonPressed?.Invoke(this, EventArgs.Empty);
+        }
 
         /// <summary>
-        /// 入力更新用のMonoBehaviour
+        /// ジャンプボタンが押された時のハンドラ
         /// </summary>
-        /// <remarks>
-        /// InputServiceの内部クラスとして定義し、毎フレーム入力イベントをチェックします。
-        /// このクラスは外部からアクセスされないため、ネストクラスとして定義されています。
-        /// </remarks>
-        private class InputUpdater : MonoBehaviour
+        private void OnJumpPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            private InputService? _service;
+            JumpButtonPressed?.Invoke(this, EventArgs.Empty);
+        }
 
-            /// <summary>
-            /// InputUpdaterを初期化します。
-            /// </summary>
-            /// <param name="service">親となるInputService</param>
-            public void Initialize(InputService service)
-            {
-                _service = service;
-            }
-
-            private void Update()
-            {
-                _service?.CheckAndFireEvents();
-            }
+        /// <summary>
+        /// メニューボタンが押された時のハンドラ
+        /// </summary>
+        private void OnMenuPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            MenuButtonPressed?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion

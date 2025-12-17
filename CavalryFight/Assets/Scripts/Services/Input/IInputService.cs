@@ -35,9 +35,18 @@ namespace CavalryFight.Services.Input
         /// </summary>
         /// <remarks>
         /// チャージ中の攻撃をキャンセルする際に使用します。
-        /// デフォルトでは右クリック（Fire2）に割り当てられます。
+        /// デフォルトでは右クリックに割り当てられます。
         /// </remarks>
         event EventHandler? CancelAttackButtonPressed;
+
+        /// <summary>
+        /// ブーストボタンが押された時に発生します。
+        /// </summary>
+        /// <remarks>
+        /// 馬の突然のスピードブーストに使用します。
+        /// 攻撃チャージ中でない場合に右クリックで発動します。
+        /// </remarks>
+        event EventHandler? BoostButtonPressed;
 
         /// <summary>
         /// 騎乗/降馬ボタンが押された時に発生します。
@@ -57,11 +66,6 @@ namespace CavalryFight.Services.Input
         /// デフォルトではESCキーに割り当てられます。
         /// </remarks>
         event EventHandler? MenuButtonPressed;
-
-        /// <summary>
-        /// ポーズボタンが押された時に発生します。
-        /// </summary>
-        event EventHandler? PauseButtonPressed;
 
         #endregion
 
@@ -168,6 +172,16 @@ namespace CavalryFight.Services.Input
         /// <returns>押された瞬間の場合true</returns>
         bool GetJumpButtonDown();
 
+        /// <summary>
+        /// ブーストボタンが押された瞬間かを取得します。
+        /// </summary>
+        /// <remarks>
+        /// 馬の突然のスピードブーストに使用します。
+        /// 攻撃チャージ中でない場合に右クリックで発動します。
+        /// </remarks>
+        /// <returns>押された瞬間の場合true</returns>
+        bool GetBoostButtonDown();
+
         #endregion
 
         #region UI Input
@@ -181,12 +195,6 @@ namespace CavalryFight.Services.Input
         /// </remarks>
         /// <returns>押された瞬間の場合true</returns>
         bool GetMenuButtonDown();
-
-        /// <summary>
-        /// ポーズボタンが押された瞬間かを取得します。
-        /// </summary>
-        /// <returns>押された瞬間の場合true</returns>
-        bool GetPauseButtonDown();
 
         #endregion
 
