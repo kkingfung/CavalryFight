@@ -211,7 +211,7 @@ MonoBehaviour:
   m_prefix: 'MainProfile - '
   m_inputBindings: []
   m_ignoreInputBindingsForScenes: []
-  m_startupOption: 1
+  m_startupOption: 2
   m_loadingScreenUsage: 1
   m_loadingScene: {fileID: 0}
   m_activeScene: {fileID: 0}
