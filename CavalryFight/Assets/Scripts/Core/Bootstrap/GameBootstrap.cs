@@ -13,6 +13,7 @@ using CavalryFight.Services.Replay;
 using CavalryFight.Services.SceneManagement;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace CavalryFight.Core.Bootstrap
@@ -69,10 +70,8 @@ namespace CavalryFight.Core.Bootstrap
             // 依存関係を検証
             ValidateServiceDependencies();
 
-            // 全サービスを初期化
-            InitializeServices();
-
-            Debug.Log("[GameBootstrap] Initialization complete.");
+            // 全サービスを初期化（非同期）
+            _ = InitializeServicesAsync();
         }
 
         /// <summary>
@@ -137,9 +136,9 @@ namespace CavalryFight.Core.Bootstrap
         }
 
         /// <summary>
-        /// すべてのサービスを初期化します
+        /// すべてのサービスを初期化し、MainMenuへ遷移します
         /// </summary>
-        private void InitializeServices()
+        private async Task InitializeServicesAsync()
         {
             Debug.Log("[GameBootstrap] Initializing services...");
 
@@ -197,6 +196,27 @@ namespace CavalryFight.Core.Bootstrap
             }
 
             Debug.Log("[GameBootstrap] All services initialized successfully.");
+
+            // すべてのサービスの初期化が完了したら、MainMenuへ遷移
+            if (_sceneCollectionConfig != null && _sceneCollectionConfig.MainMenu != null)
+            {
+                Debug.Log("[GameBootstrap] Transitioning to MainMenu...");
+                var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+                if (sceneService != null)
+                {
+                    await sceneService.OpenCollectionAsync(_sceneCollectionConfig.MainMenu);
+                }
+                else
+                {
+                    Debug.LogError("[GameBootstrap] SceneManagementService not found. Cannot transition to MainMenu.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[GameBootstrap] MainMenu scene collection is not configured. Staying in Startup scene.");
+            }
+
+            Debug.Log("[GameBootstrap] Initialization complete.");
         }
 
         /// <summary>

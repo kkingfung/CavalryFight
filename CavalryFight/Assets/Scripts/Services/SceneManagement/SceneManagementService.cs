@@ -310,6 +310,14 @@ namespace CavalryFight.Services.SceneManagement
 
             var operation = collection.Open(openAll);
 
+            if (operation == null)
+            {
+                throw new InvalidOperationException($"Failed to open collection: {collection.name}");
+            }
+
+            // 進捗更新のコールバックを登録（operationが"frozen"になる前に登録する必要がある）
+            operation.OnProgressChanged(OnProgressUpdated);
+
             if (useLoadingScreen && LoadingScreenUtility.fade != null)
             {
                 operation.With(LoadingScreenUtility.fade);
@@ -429,11 +437,8 @@ namespace CavalryFight.Services.SceneManagement
 
                 SceneLoadStarted?.Invoke(this, new SceneLoadEventArgs(_currentSceneName, 0f));
 
-                // 進捗更新のコールバックを登録
-                if (e.operation != null)
-                {
-                    e.operation.OnProgressChanged(OnProgressUpdated);
-                }
+                // NOTE: e.operationのOnProgressChangedは、このタイミングでは"frozen"状態のため登録できません
+                // 代わりにUpdate内でポーリングするか、他のコールバックで進捗を追跡します
             }
             catch (Exception ex)
             {
