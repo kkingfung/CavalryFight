@@ -20,6 +20,8 @@ namespace CavalryFight.Views
         #region Fields
 
         private Button? _startTrainingButton;
+        private Button? _matchLobbyButton;
+        private Button? _customizationButton;
         private Button? _settingsButton;
         private Button? _quitButton;
         private Label? _titleLabel;
@@ -56,6 +58,8 @@ namespace CavalryFight.Views
             _titleLabel = Q<Label>("TitleLabel");
             _subtitleLabel = Q<Label>("SubtitleLabel");
             _startTrainingButton = Q<Button>("StartTrainingButton");
+            _matchLobbyButton = Q<Button>("MatchLobbyButton");
+            _customizationButton = Q<Button>("CustomizationButton");
             _settingsButton = Q<Button>("SettingsButton");
             _quitButton = Q<Button>("QuitButton");
 
@@ -130,6 +134,16 @@ namespace CavalryFight.Views
                 Debug.LogWarning("[MainMenuView] StartTrainingButton not found in UXML.", this);
             }
 
+            if (_matchLobbyButton == null)
+            {
+                Debug.LogWarning("[MainMenuView] MatchLobbyButton not found in UXML.", this);
+            }
+
+            if (_customizationButton == null)
+            {
+                Debug.LogWarning("[MainMenuView] CustomizationButton not found in UXML.", this);
+            }
+
             if (_settingsButton == null)
             {
                 Debug.LogWarning("[MainMenuView] SettingsButton not found in UXML.", this);
@@ -151,6 +165,16 @@ namespace CavalryFight.Views
                 _startTrainingButton.clicked += OnStartTrainingButtonClicked;
             }
 
+            if (_matchLobbyButton != null)
+            {
+                _matchLobbyButton.clicked += OnMatchLobbyButtonClicked;
+            }
+
+            if (_customizationButton != null)
+            {
+                _customizationButton.clicked += OnCustomizationButtonClicked;
+            }
+
             if (_settingsButton != null)
             {
                 _settingsButton.clicked += OnSettingsButtonClicked;
@@ -170,6 +194,16 @@ namespace CavalryFight.Views
             if (_startTrainingButton != null)
             {
                 _startTrainingButton.clicked -= OnStartTrainingButtonClicked;
+            }
+
+            if (_matchLobbyButton != null)
+            {
+                _matchLobbyButton.clicked -= OnMatchLobbyButtonClicked;
+            }
+
+            if (_customizationButton != null)
+            {
+                _customizationButton.clicked -= OnCustomizationButtonClicked;
             }
 
             if (_settingsButton != null)
@@ -221,6 +255,22 @@ namespace CavalryFight.Views
         private void OnStartTrainingButtonClicked()
         {
             ViewModel?.StartTrainingCommand.Execute(null);
+        }
+
+        /// <summary>
+        /// マッチロビーボタンがクリックされた時の処理
+        /// </summary>
+        private void OnMatchLobbyButtonClicked()
+        {
+            ViewModel?.OpenMatchLobbyCommand.Execute(null);
+        }
+
+        /// <summary>
+        /// カスタマイゼーションボタンがクリックされた時の処理
+        /// </summary>
+        private void OnCustomizationButtonClicked()
+        {
+            ViewModel?.OpenCustomizationCommand.Execute(null);
         }
 
         /// <summary>

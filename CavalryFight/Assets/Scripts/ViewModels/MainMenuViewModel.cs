@@ -54,6 +54,16 @@ namespace CavalryFight.ViewModels
         public ICommand StartTrainingCommand { get; }
 
         /// <summary>
+        /// マッチロビーを開くコマンド
+        /// </summary>
+        public ICommand OpenMatchLobbyCommand { get; }
+
+        /// <summary>
+        /// カスタマイゼーション画面を開くコマンド
+        /// </summary>
+        public ICommand OpenCustomizationCommand { get; }
+
+        /// <summary>
         /// 設定画面を開くコマンド
         /// </summary>
         public ICommand OpenSettingsCommand { get; }
@@ -77,6 +87,8 @@ namespace CavalryFight.ViewModels
 
             // コマンドを初期化
             StartTrainingCommand = new RelayCommand(OnStartTraining, CanStartTraining);
+            OpenMatchLobbyCommand = new RelayCommand(OnOpenMatchLobby, CanOpenMatchLobby);
+            OpenCustomizationCommand = new RelayCommand(OnOpenCustomization, CanOpenCustomization);
             OpenSettingsCommand = new RelayCommand(OnOpenSettings, CanOpenSettings);
             QuitGameCommand = new RelayCommand(OnQuitGame);
         }
@@ -101,6 +113,44 @@ namespace CavalryFight.ViewModels
         {
             Debug.Log("[MainMenuViewModel] Starting Training Mode...");
             _sceneManagementService?.LoadTraining();
+        }
+
+        /// <summary>
+        /// マッチロビーを開けるかどうかを判定します。
+        /// </summary>
+        /// <returns>開ける場合はtrue</returns>
+        private bool CanOpenMatchLobby()
+        {
+            return _sceneManagementService != null && !_sceneManagementService.IsLoading;
+        }
+
+        /// <summary>
+        /// マッチロビーを開きます。
+        /// </summary>
+        private void OnOpenMatchLobby()
+        {
+            Debug.Log("[MainMenuViewModel] Opening Match Lobby...");
+            _sceneManagementService?.LoadLobby();
+        }
+
+        /// <summary>
+        /// カスタマイゼーション画面を開けるかどうかを判定します。
+        /// </summary>
+        /// <returns>開ける場合はtrue</returns>
+        private bool CanOpenCustomization()
+        {
+            return _sceneManagementService != null && !_sceneManagementService.IsLoading;
+        }
+
+        /// <summary>
+        /// カスタマイゼーション画面を開きます。
+        /// </summary>
+        private void OnOpenCustomization()
+        {
+            Debug.Log("[MainMenuViewModel] Opening Customization...");
+            // TODO: カスタマイゼーション専用のシーンが必要な場合は実装
+            // 現在はSettingsシーンでカスタマイゼーションタブを提供する想定
+            _sceneManagementService?.LoadSettings();
         }
 
         /// <summary>
