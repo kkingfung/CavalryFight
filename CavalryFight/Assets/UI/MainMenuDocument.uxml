@@ -1,0 +1,11 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="root" style="flex-grow: 1;">
+        <ui:VisualElement name="Root" style="flex-grow: 1; align-items: center; justify-content: center; width: 100%; height: 100%; background-color: rgb(255, 0, 0);">
+            <ui:Label text="CavalryFight" name="TitleLabel" />
+            <ui:Label text="Main Menu" name="SubtitleLabel" />
+            <ui:Button text="Start Training" name="StartTrainingButton" style="width: 200px; height: 50px; margin-left: 4px; margin-top: 10px; margin-bottom: 10px;" />
+            <ui:Button text="Settings" name="SettingsButton" style="width: 200px; height: 50px; margin-top: 10px; margin-bottom: 10px;" />
+            <ui:Button text="Quit Game" name="QuitButton" style="width: 200px; height: 50px; margin-top: 10px; margin-bottom: 10px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
