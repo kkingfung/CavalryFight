@@ -64,6 +64,11 @@ namespace CavalryFight.ViewModels
         public ICommand OpenCustomizationCommand { get; }
 
         /// <summary>
+        /// リプレイ履歴画面を開くコマンド
+        /// </summary>
+        public ICommand OpenReplayHistoryCommand { get; }
+
+        /// <summary>
         /// 設定画面を開くコマンド
         /// </summary>
         public ICommand OpenSettingsCommand { get; }
@@ -89,6 +94,7 @@ namespace CavalryFight.ViewModels
             StartTrainingCommand = new RelayCommand(OnStartTraining, CanStartTraining);
             OpenMatchLobbyCommand = new RelayCommand(OnOpenMatchLobby, CanOpenMatchLobby);
             OpenCustomizationCommand = new RelayCommand(OnOpenCustomization, CanOpenCustomization);
+            OpenReplayHistoryCommand = new RelayCommand(OnOpenReplayHistory, CanOpenReplayHistory);
             OpenSettingsCommand = new RelayCommand(OnOpenSettings, CanOpenSettings);
             QuitGameCommand = new RelayCommand(OnQuitGame);
         }
@@ -151,6 +157,24 @@ namespace CavalryFight.ViewModels
             // TODO: カスタマイゼーション専用のシーンが必要な場合は実装
             // 現在はSettingsシーンでカスタマイゼーションタブを提供する想定
             _sceneManagementService?.LoadSettings();
+        }
+
+        /// <summary>
+        /// リプレイ履歴画面を開けるかどうかを判定します。
+        /// </summary>
+        /// <returns>開ける場合はtrue</returns>
+        private bool CanOpenReplayHistory()
+        {
+            return _sceneManagementService != null && !_sceneManagementService.IsLoading;
+        }
+
+        /// <summary>
+        /// リプレイ履歴画面を開きます。
+        /// </summary>
+        private void OnOpenReplayHistory()
+        {
+            Debug.Log("[MainMenuViewModel] Opening Replay History...");
+            _sceneManagementService?.LoadReplay();
         }
 
         /// <summary>
