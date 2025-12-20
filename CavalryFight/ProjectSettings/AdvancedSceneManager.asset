@@ -46,7 +46,7 @@ MonoBehaviour:
   m_allowCollectionLocking: 1
   m_openCollection: {fileID: 0}
   m_additiveCollections: []
-  m_fadeScene: {fileID: 0}
+  m_fadeScene: {fileID: 11400000, guid: 64dc76f34486aba4a969f411027df128, type: 2}
   m_allowLoadingScenesInParallel: 0
   m_allowUpdateCheck: 1
   m_toolbarButtonVisible: 1
