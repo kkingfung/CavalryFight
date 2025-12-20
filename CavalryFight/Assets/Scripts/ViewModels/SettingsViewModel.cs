@@ -381,14 +381,33 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void InitializeDisplayOptions()
         {
-            // 解像度の取得（重複を除く）
-            _availableResolutions = Screen.resolutions
-                .Where(r => r.width >= 1280 && r.height >= 720) // 最小解像度フィルタ
+            // システムで利用可能な解像度を取得（重複を除く、最小HD 720p）
+            var systemResolutions = Screen.resolutions
+                .Where(r => r.width >= 1280 && r.height >= 720)
+                .GroupBy(r => new { r.width, r.height })
+                .Select(g => g.First())
+                .ToList();
+
+            var standardResolutions = new List<Resolution>
+            {
+                new Resolution { width = 1280, height = 720, refreshRateRatio = new RefreshRate { numerator = 60, denominator = 1 } },   // HD
+                new Resolution { width = 1920, height = 1080, refreshRateRatio = new RefreshRate { numerator = 60, denominator = 1 } },  // Full HD
+                new Resolution { width = 2560, height = 1440, refreshRateRatio = new RefreshRate { numerator = 60, denominator = 1 } },  // QHD/2K
+                new Resolution { width = 3840, height = 2160, refreshRateRatio = new RefreshRate { numerator = 60, denominator = 1 } },  // 4K UHD
+                new Resolution { width = 5120, height = 2880, refreshRateRatio = new RefreshRate { numerator = 60, denominator = 1 } },  // 5K
+                new Resolution { width = 7680, height = 4320, refreshRateRatio = new RefreshRate { numerator = 60, denominator = 1 } }   // 8K UHD
+            };
+
+            // システム解像度と標準解像度を統合
+            var allResolutions = systemResolutions
+                .Concat(standardResolutions)
                 .GroupBy(r => new { r.width, r.height })
                 .Select(g => g.First())
                 .OrderBy(r => r.width)
                 .ThenBy(r => r.height)
                 .ToList();
+
+            _availableResolutions = allResolutions;
 
             // Quality設定名の取得
             _qualityLevelNames = QualitySettings.names.ToList();

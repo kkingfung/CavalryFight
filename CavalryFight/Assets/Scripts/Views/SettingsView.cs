@@ -82,6 +82,9 @@ namespace CavalryFight.Views
             // Dropdownの選択肢を設定
             SetupDropdowns();
 
+            // ViewModelの値でUIを更新（現在の設定値を表示）
+            UpdateUIFromViewModel();
+
             // イベントハンドラを登録
             RegisterEventHandlers();
         }
@@ -93,9 +96,6 @@ namespace CavalryFight.Views
         protected override void BindViewModel(SettingsViewModel viewModel)
         {
             base.BindViewModel(viewModel);
-
-            // プロパティバインディング
-            UpdateUIFromViewModel();
 
             // PropertyChangedイベントを購読
             viewModel.PropertyChanged += OnViewModelPropertyChanged;
