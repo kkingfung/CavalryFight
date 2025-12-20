@@ -21,6 +21,7 @@ namespace CavalryFight.Views
 
         private Button? _startTrainingButton;
         private Button? _matchLobbyButton;
+        private Button? _replayButton;
         private Button? _customizationButton;
         private Button? _settingsButton;
         private Button? _quitButton;
@@ -59,6 +60,7 @@ namespace CavalryFight.Views
             _subtitleLabel = Q<Label>("SubtitleLabel");
             _startTrainingButton = Q<Button>("StartTrainingButton");
             _matchLobbyButton = Q<Button>("MatchLobbyButton");
+            _replayButton = Q<Button>("ReplayButton");
             _customizationButton = Q<Button>("CustomizationButton");
             _settingsButton = Q<Button>("SettingsButton");
             _quitButton = Q<Button>("QuitButton");
@@ -139,6 +141,11 @@ namespace CavalryFight.Views
                 Debug.LogWarning("[MainMenuView] MatchLobbyButton not found in UXML.", this);
             }
 
+            if (_replayButton == null)
+            {
+                Debug.LogWarning("[MainMenuView] ReplayButton not found in UXML.", this);
+            }
+
             if (_customizationButton == null)
             {
                 Debug.LogWarning("[MainMenuView] CustomizationButton not found in UXML.", this);
@@ -170,6 +177,11 @@ namespace CavalryFight.Views
                 _matchLobbyButton.clicked += OnMatchLobbyButtonClicked;
             }
 
+            if (_replayButton != null)
+            {
+                _replayButton.clicked += OnReplayButtonClicked;
+            }
+
             if (_customizationButton != null)
             {
                 _customizationButton.clicked += OnCustomizationButtonClicked;
@@ -199,6 +211,11 @@ namespace CavalryFight.Views
             if (_matchLobbyButton != null)
             {
                 _matchLobbyButton.clicked -= OnMatchLobbyButtonClicked;
+            }
+
+            if (_replayButton != null)
+            {
+                _replayButton.clicked -= OnReplayButtonClicked;
             }
 
             if (_customizationButton != null)
@@ -263,6 +280,14 @@ namespace CavalryFight.Views
         private void OnMatchLobbyButtonClicked()
         {
             ViewModel?.OpenMatchLobbyCommand.Execute(null);
+        }
+
+        /// <summary>
+        /// リプレイ履歴ボタンがクリックされた時の処理
+        /// </summary>
+        private void OnReplayButtonClicked()
+        {
+            ViewModel?.OpenReplayHistoryCommand.Execute(null);
         }
 
         /// <summary>
