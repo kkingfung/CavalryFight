@@ -42,6 +42,7 @@ namespace CavalryFight.Views
         // Buttons
         private Button? _applyButton;
         private Button? _resetButton;
+        private Button? _keyBindingButton;
         private Button? _backButton;
         private Label? _titleLabel;
 
@@ -150,6 +151,7 @@ namespace CavalryFight.Views
             // Buttons
             _applyButton = Q<Button>("ApplyButton");
             _resetButton = Q<Button>("ResetButton");
+            _keyBindingButton = Q<Button>("KeyBindingButton");
             _backButton = Q<Button>("BackButton");
         }
 
@@ -225,6 +227,10 @@ namespace CavalryFight.Views
             if (_resetButton == null)
             {
                 Debug.LogWarning("[SettingsView] ResetButton not found in UXML.", this);
+            }
+            if (_keyBindingButton == null)
+            {
+                Debug.LogWarning("[SettingsView] KeyBindingButton not found in UXML.", this);
             }
             if (_backButton == null)
             {
@@ -412,6 +418,10 @@ namespace CavalryFight.Views
             {
                 _resetButton.clicked += OnResetButtonClicked;
             }
+            if (_keyBindingButton != null)
+            {
+                _keyBindingButton.clicked += OnKeyBindingButtonClicked;
+            }
             if (_backButton != null)
             {
                 _backButton.clicked += OnBackButtonClicked;
@@ -485,6 +495,10 @@ namespace CavalryFight.Views
             if (_resetButton != null)
             {
                 _resetButton.clicked -= OnResetButtonClicked;
+            }
+            if (_keyBindingButton != null)
+            {
+                _keyBindingButton.clicked -= OnKeyBindingButtonClicked;
             }
             if (_backButton != null)
             {
@@ -696,6 +710,11 @@ namespace CavalryFight.Views
         private void OnResetButtonClicked()
         {
             ViewModel?.ResetSettingsCommand.Execute(null);
+        }
+
+        private void OnKeyBindingButtonClicked()
+        {
+            ViewModel?.OpenKeyBindingsCommand.Execute(null);
         }
 
         private void OnBackButtonClicked()

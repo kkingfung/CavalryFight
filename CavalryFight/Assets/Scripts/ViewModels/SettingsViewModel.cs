@@ -325,6 +325,11 @@ namespace CavalryFight.ViewModels
         public ICommand ResetSettingsCommand { get; }
 
         /// <summary>
+        /// キーバインディング設定を開くコマンド
+        /// </summary>
+        public ICommand OpenKeyBindingsCommand { get; }
+
+        /// <summary>
         /// メインメニューに戻るコマンド
         /// </summary>
         public ICommand BackToMenuCommand { get; }
@@ -345,6 +350,7 @@ namespace CavalryFight.ViewModels
             // コマンドを初期化
             ApplySettingsCommand = new RelayCommand(OnApplySettings, CanApplySettings);
             ResetSettingsCommand = new RelayCommand(OnResetSettings);
+            OpenKeyBindingsCommand = new RelayCommand(OnOpenKeyBindings);
             BackToMenuCommand = new RelayCommand(OnBackToMenu, CanBackToMenu);
 
             // 利用可能な解像度とQuality設定を取得
@@ -670,6 +676,16 @@ namespace CavalryFight.ViewModels
             _gameSettingsService.ResetToDefault();
             LoadCurrentSettings();
             Debug.Log("[SettingsViewModel] Settings reset to default.");
+        }
+
+        /// <summary>
+        /// キーバインディング設定を開きます
+        /// </summary>
+        private void OnOpenKeyBindings()
+        {
+            Debug.Log("[SettingsViewModel] Opening Key Bindings...");
+            // TODO: キーバインディングUIパネル/モーダルを表示する実装が必要
+            // InputBindingServiceを使用してキー設定UIを表示
         }
 
         /// <summary>
