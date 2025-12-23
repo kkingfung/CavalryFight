@@ -275,6 +275,7 @@ namespace CavalryFight.Core.Bootstrap
                 mainMenu: _sceneCollectionConfig.MainMenu,
                 lobby: _sceneCollectionConfig.Lobby,
                 settings: _sceneCollectionConfig.Settings,
+                customization: _sceneCollectionConfig.Customization,
                 match: _sceneCollectionConfig.Match,
                 training: _sceneCollectionConfig.Training,
                 results: _sceneCollectionConfig.Results,

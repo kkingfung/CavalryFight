@@ -16,6 +16,7 @@ MonoBehaviour:
   _mainMenu: {fileID: 640684327245363652, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
   _lobby: {fileID: 8876666167659424018, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
   _settings: {fileID: -2292065768625389036, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
+  _customization: {fileID: 7113116682740546260, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
   _match: {fileID: 33481719916973878, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
   _training: {fileID: -8042267033748032890, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
   _results: {fileID: 4155319312566489168, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}

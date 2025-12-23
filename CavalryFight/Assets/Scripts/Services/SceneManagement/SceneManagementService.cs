@@ -52,6 +52,7 @@ namespace CavalryFight.Services.SceneManagement
         private SceneCollection? _mainMenuCollection;
         private SceneCollection? _lobbyCollection;
         private SceneCollection? _settingsCollection;
+        private SceneCollection? _customizationCollection;
         private SceneCollection? _matchCollection;
         private SceneCollection? _trainingCollection;
         private SceneCollection? _resultsCollection;
@@ -121,6 +122,7 @@ namespace CavalryFight.Services.SceneManagement
         /// <param name="mainMenu">MainMenuシーンコレクション</param>
         /// <param name="lobby">Lobbyシーンコレクション</param>
         /// <param name="settings">Settingsシーンコレクション</param>
+        /// <param name="customization">Customizationシーンコレクション</param>
         /// <param name="match">Matchシーンコレクション</param>
         /// <param name="training">Trainingシーンコレクション</param>
         /// <param name="results">Resultsシーンコレクション</param>
@@ -130,6 +132,7 @@ namespace CavalryFight.Services.SceneManagement
             SceneCollection? mainMenu,
             SceneCollection? lobby,
             SceneCollection? settings,
+            SceneCollection? customization,
             SceneCollection? match,
             SceneCollection? training,
             SceneCollection? results,
@@ -139,6 +142,7 @@ namespace CavalryFight.Services.SceneManagement
             _mainMenuCollection = mainMenu;
             _lobbyCollection = lobby;
             _settingsCollection = settings;
+            _customizationCollection = customization;
             _matchCollection = match;
             _trainingCollection = training;
             _resultsCollection = results;
@@ -194,6 +198,21 @@ namespace CavalryFight.Services.SceneManagement
             }
 
             OpenCollection(_settingsCollection);
+        }
+
+        /// <summary>
+        /// カスタマイゼーションシーンをロードします。
+        /// </summary>
+        public void LoadCustomization()
+        {
+            if (_customizationCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] Customization collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Customization", "Customization collection is not registered"));
+                return;
+            }
+
+            OpenCollection(_customizationCollection);
         }
 
         /// <summary>
