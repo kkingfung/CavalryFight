@@ -25,6 +25,7 @@ namespace CavalryFight.Views
 
         [Header("3D Preview")]
         [SerializeField] private Camera? _previewCamera;
+        [SerializeField] private Transform? _Container;
         [SerializeField] private GameObject? _characterPreviewPrefab;
         [SerializeField] private GameObject? _mountPreviewPrefab;
 
@@ -1140,8 +1141,18 @@ namespace CavalryFight.Views
                 // 必要に応じてキャラクタープレビューをインスタンス化
                 if (_currentPreviewCharacter == null && _characterPreviewPrefab != null)
                 {
-                    _currentPreviewCharacter = Instantiate(_characterPreviewPrefab);
-                    _currentPreviewCharacter.layer = LayerMask.NameToLayer("Preview");
+                    _currentPreviewCharacter = Instantiate(_characterPreviewPrefab, _Container);
+                    _currentPreviewCharacter.transform.localPosition = Vector3.zero;
+                    _currentPreviewCharacter.transform.localRotation = Quaternion.identity;
+                    SetLayerRecursively(_currentPreviewCharacter, LayerMask.NameToLayer("Preview"));
+                    Debug.Log($"[CustomizationView] Instantiated character preview");
+                }
+
+                // キャラクターを表示
+                if (_currentPreviewCharacter != null)
+                {
+                    _currentPreviewCharacter.SetActive(true);
+                    customizationService.ApplyCharacterCustomization(_currentPreviewCharacter);
                 }
 
                 // 馬を非表示
@@ -1149,20 +1160,24 @@ namespace CavalryFight.Views
                 {
                     _currentPreviewMount.SetActive(false);
                 }
-
-                // キャラクターにカスタマイズを適用
-                if (_currentPreviewCharacter != null)
-                {
-                    customizationService.ApplyCharacterCustomization(_currentPreviewCharacter);
-                }
             }
             else if (ViewModel.IsMountCategory)
             {
                 // 馬も同様
                 if (_currentPreviewMount == null && _mountPreviewPrefab != null)
                 {
-                    _currentPreviewMount = Instantiate(_mountPreviewPrefab);
-                    _currentPreviewMount.layer = LayerMask.NameToLayer("Preview");
+                    _currentPreviewMount = Instantiate(_mountPreviewPrefab, _Container);
+                    _currentPreviewMount.transform.localPosition = Vector3.zero;
+                    _currentPreviewMount.transform.localRotation = Quaternion.identity;
+                    SetLayerRecursively(_currentPreviewMount, LayerMask.NameToLayer("Preview"));
+                    Debug.Log($"[CustomizationView] Instantiated mount preview");
+                }
+
+                // 馬を表示
+                if (_currentPreviewMount != null)
+                {
+                    _currentPreviewMount.SetActive(true);
+                    customizationService.ApplyMountCustomization(_currentPreviewMount);
                 }
 
                 // キャラクターを非表示
@@ -1170,11 +1185,28 @@ namespace CavalryFight.Views
                 {
                     _currentPreviewCharacter.SetActive(false);
                 }
+            }
+        }
 
-                // 馬にカスタマイズを適用
-                if (_currentPreviewMount != null)
+        /// <summary>
+        /// GameObjectとその全ての子オブジェクトのレイヤーを再帰的に設定します
+        /// </summary>
+        /// <param name="obj">対象のGameObject</param>
+        /// <param name="layer">設定するレイヤー</param>
+        private void SetLayerRecursively(GameObject obj, int layer)
+        {
+            if (obj == null)
+            {
+                return;
+            }
+
+            obj.layer = layer;
+
+            foreach (Transform child in obj.transform)
+            {
+                if (child != null)
                 {
-                    customizationService.ApplyMountCustomization(_currentPreviewMount);
+                    SetLayerRecursively(child.gameObject, layer);
                 }
             }
         }
@@ -1195,6 +1227,8 @@ namespace CavalryFight.Views
                 Destroy(_currentPreviewMount);
                 _currentPreviewMount = null;
             }
+
+            // 注意: _previewContainer自体は破棄しない（シーンに配置された永続的なオブジェクト）
         }
 
         #endregion

@@ -164,16 +164,22 @@ namespace CavalryFight.Services.Customization
             }
 
             // P09キャラクターかどうかを確認
-            // AnimatorコンポーネントとP09の構造（子オブジェクトの命名規則）で判定
-            var animator = characterObject.GetComponent<Animator>();
+            // Animatorコンポーネント（自身または子に存在）とP09の構造（子オブジェクトの命名規則）で判定
+            var animator = characterObject.GetComponentInChildren<Animator>(true);
             if (animator == null)
             {
+                Debug.LogWarning($"[P09CharacterApplier] No Animator found in {characterObject.name} or its children.");
                 return false;
             }
 
             // P09特有の子オブジェクトが存在するか確認
             var hasP09Structure = characterObject.GetComponentsInChildren<Transform>(true)
                 .Any(t => t.name.StartsWith("P09_") || t.name.Contains("Hair") || t.name.Contains("Armor"));
+
+            if (!hasP09Structure)
+            {
+                Debug.LogWarning($"[P09CharacterApplier] No P09 structure found in {characterObject.name}. Looking for children with 'P09_', 'Hair', or 'Armor' in their names.");
+            }
 
             return hasP09Structure;
         }

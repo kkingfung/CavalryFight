@@ -114,6 +114,11 @@ namespace CavalryFight.Services.Customization
             var hasMalbersStructure = mountObject.GetComponentsInChildren<Transform>(true)
                 .Any(t => t.name.Contains("Horse") || t.name.Contains("Mane") || t.name.StartsWith("Horse_"));
 
+            if (!hasMalbersStructure)
+            {
+                Debug.LogWarning($"[MalbersHorseApplier] No Malbers structure found in {mountObject.name}. Looking for children with 'Horse', 'Mane', or 'Horse_' in their names.");
+            }
+
             return hasMalbersStructure;
         }
 
