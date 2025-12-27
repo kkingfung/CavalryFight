@@ -207,21 +207,55 @@ namespace CavalryFight.Services.Customization
         }
 
         /// <summary>
-        /// JSONから読み込みます
+        /// JSONから読み込みを試みます
         /// </summary>
         /// <param name="json">JSON文字列</param>
-        /// <returns>カスタマイズデータ</returns>
-        public static CharacterCustomization? FromJson(string json)
+        /// <param name="customization">読み込まれたカスタマイズデータ</param>
+        /// <returns>読み込みに成功した場合はtrue</returns>
+        public static bool TryFromJson(string json, out CharacterCustomization? customization)
         {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                Debug.LogWarning("[CharacterCustomization] JSON string is null or empty.");
+                customization = null;
+                return false;
+            }
+
             try
             {
-                return JsonUtility.FromJson<CharacterCustomization>(json);
+                customization = JsonUtility.FromJson<CharacterCustomization>(json);
+
+                if (customization == null)
+                {
+                    Debug.LogError("[CharacterCustomization] JsonUtility returned null.");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (ArgumentException ex)
+            {
+                Debug.LogError($"[CharacterCustomization] Invalid JSON format: {ex.Message}");
+                customization = null;
+                return false;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CharacterCustomization] Failed to parse JSON: {ex.Message}");
-                return null;
+                Debug.LogError($"[CharacterCustomization] Unexpected error parsing JSON: {ex.Message}\nStack trace: {ex.StackTrace}");
+                customization = null;
+                return false;
             }
+        }
+
+        /// <summary>
+        /// JSONから読み込みます（後方互換性のため保持）
+        /// </summary>
+        /// <param name="json">JSON文字列</param>
+        /// <returns>カスタマイズデータ（失敗時はnull）</returns>
+        public static CharacterCustomization? FromJson(string json)
+        {
+            TryFromJson(json, out var customization);
+            return customization;
         }
 
         #endregion

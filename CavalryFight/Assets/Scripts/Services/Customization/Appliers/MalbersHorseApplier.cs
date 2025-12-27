@@ -255,9 +255,9 @@ namespace CavalryFight.Services.Customization
         private void ApplyManeStyle(Transform child, ManeStyle maneStyle)
         {
             // たてがみの命名規則:
-            // Mane/Mane 01 Short
-            // Mane/Mane 02 Long/Mane 02 Long Left
-            // Mane/Mane 02 Long/Mane 02 Long Right
+            // Mane/Mane 01 Short / Horse Mane Short LOD0/LOD1
+            // Mane/Mane 02 Long/Mane 02 Long Left / Horse Mane Long Left LOD0/LOD1
+            // Mane/Mane 02 Long/Mane 02 Long Right / Horse Mane Long Right LOD0/LOD1
             // Mane/Mane 03 V Shape/Horse_Mane04 V Left
             // Mane/Mane 03 V Shape/Horse_Mane04 V Right
 
@@ -278,13 +278,19 @@ namespace CavalryFight.Services.Customization
                 switch (maneStyle)
                 {
                     case ManeStyle.Short:
-                        shouldActivate = child.name.Contains("Mane 01 Short");
+                        // "Mane 01 Short" または "Horse Mane Short" にマッチ
+                        shouldActivate = child.name.Contains("Mane 01 Short") ||
+                                       (child.name.Contains("Horse Mane Short") && child.name.Contains("LOD"));
                         break;
                     case ManeStyle.LongLeft:
-                        shouldActivate = child.name.Contains("Mane 02 Long Left");
+                        // "Mane 02 Long Left" または "Horse Mane Long Left" にマッチ
+                        shouldActivate = child.name.Contains("Mane 02 Long Left") ||
+                                       (child.name.Contains("Horse Mane Long Left") && child.name.Contains("LOD"));
                         break;
                     case ManeStyle.LongRight:
-                        shouldActivate = child.name.Contains("Mane 02 Long Right");
+                        // "Mane 02 Long Right" または "Horse Mane Long Right" にマッチ
+                        shouldActivate = child.name.Contains("Mane 02 Long Right") ||
+                                       (child.name.Contains("Horse Mane Long Right") && child.name.Contains("LOD"));
                         break;
                     case ManeStyle.VShapeLeft:
                         shouldActivate = child.name.Contains("V Left");

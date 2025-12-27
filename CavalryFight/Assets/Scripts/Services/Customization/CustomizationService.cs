@@ -173,6 +173,38 @@ namespace CavalryFight.Services.Customization
         }
 
         /// <summary>
+        /// サービスの設定が有効かどうかを検証します
+        /// </summary>
+        /// <returns>設定が有効な場合はtrue</returns>
+        /// <remarks>
+        /// GameBootstrap初期化時に呼び出して、
+        /// 必要なApplierが設定されているか確認してください。
+        /// </remarks>
+        public bool ValidateConfiguration()
+        {
+            bool isValid = true;
+
+            if (_characterApplier == null)
+            {
+                Debug.LogError("[CustomizationService] Character applier not set! Call SetCharacterApplier() during initialization.");
+                isValid = false;
+            }
+
+            if (_mountApplier == null)
+            {
+                Debug.LogError("[CustomizationService] Mount applier not set! Call SetMountApplier() during initialization.");
+                isValid = false;
+            }
+
+            if (isValid)
+            {
+                Debug.Log("[CustomizationService] Configuration validation passed.");
+            }
+
+            return isValid;
+        }
+
+        /// <summary>
         /// サービスを破棄します
         /// </summary>
         public void Dispose()
