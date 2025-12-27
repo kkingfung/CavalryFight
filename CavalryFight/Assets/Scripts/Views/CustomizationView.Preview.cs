@@ -171,8 +171,18 @@ namespace CavalryFight.Views
                             Debug.LogError("[CustomizationView] P09CharacterApplier not found!");
                         }
 
-                        // アニメーションを再生（アイドルポーズ）
-                        EnableIdleAnimation(_currentPreviewCharacter, ViewModel.WorkingCharacter.Gender);
+                        // アニメーションを再生（現在のモードを保持）
+                        // 戦闘待機モードの場合はそのモードを維持し、通常モードの場合はアイドルアニメーションを再生
+                        if (_isCombatIdleMode)
+                        {
+                            // 戦闘待機モードを再適用
+                            customizationService.SetCharacterCombatIdleMode(_currentPreviewCharacter, true);
+                        }
+                        else
+                        {
+                            // 通常のアイドルアニメーション
+                            EnableIdleAnimation(_currentPreviewCharacter, ViewModel.WorkingCharacter.Gender);
+                        }
                     }
                     else
                     {
