@@ -43,6 +43,15 @@ namespace CavalryFight.Views
             ViewModel = new MainMenuViewModel();
         }
 
+        /// <summary>
+        /// 破棄時の処理
+        /// </summary>
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            ViewModel?.Dispose();
+        }
+
         #endregion
 
         #region Protected Methods
