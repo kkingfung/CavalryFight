@@ -71,7 +71,28 @@ namespace CavalryFight.Core.Bootstrap
             ValidateServiceDependencies();
 
             // 全サービスを初期化（非同期）
-            _ = InitializeServicesAsync();
+            // async voidを使用して例外を適切にキャッチ
+            InitializeServicesAsyncWrapper();
+        }
+
+        /// <summary>
+        /// InitializeServicesAsyncのラッパー（例外ハンドリング用）
+        /// </summary>
+        private async void InitializeServicesAsyncWrapper()
+        {
+            try
+            {
+                await InitializeServicesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameBootstrap] Fatal error during service initialization: {ex.Message}\n{ex.StackTrace}");
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit();
+#endif
+            }
         }
 
         /// <summary>
@@ -204,11 +225,31 @@ namespace CavalryFight.Core.Bootstrap
                 var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
                 if (sceneService != null)
                 {
-                    await sceneService.OpenCollectionAsync(_sceneCollectionConfig.MainMenu);
+                    try
+                    {
+                        await sceneService.OpenCollectionAsync(_sceneCollectionConfig.MainMenu);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"[GameBootstrap] Failed to transition to MainMenu: {ex.Message}\n{ex.StackTrace}");
+                        Debug.LogError("[GameBootstrap] Application cannot continue. Please check the scene configuration.");
+#if UNITY_EDITOR
+                        UnityEditor.EditorApplication.isPlaying = false;
+#else
+                        Application.Quit();
+#endif
+                        return;
+                    }
                 }
                 else
                 {
                     Debug.LogError("[GameBootstrap] SceneManagementService not found. Cannot transition to MainMenu.");
+#if UNITY_EDITOR
+                    UnityEditor.EditorApplication.isPlaying = false;
+#else
+                    Application.Quit();
+#endif
+                    return;
                 }
             }
             else
