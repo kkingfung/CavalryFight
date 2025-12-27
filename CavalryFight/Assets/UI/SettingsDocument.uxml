@@ -1,0 +1,39 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/SettingsStyles.uss?fileID=7433441132597879392&amp;guid=71de36ef08e7f6843ba15dfa1cf42ebf&amp;type=3#SettingsStyles" />
+    <ui:VisualElement name="root" style="flex-grow: 1;">
+        <ui:VisualElement name="Root" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/Textures/bg_settings.png?fileID=2800000&amp;guid=d8dea11677d243e4ba74ad29acc19fa9&amp;type=3#bg_settings&quot;); flex-direction: column;">
+            <ui:Label text="Settings" name="TitleLabel" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Black&apos;); font-size: 96px; -unity-text-outline-width: 5px; margin: 1%;" />
+            <ui:VisualElement name="AudioSection" style="justify-content: flex-start; align-items: stretch; height: auto; margin-bottom: 0%;">
+                <ui:Label text="Audio Settings" name="AudioSettings" style="margin: 4% 4% 10px 4%; margin-top: 0%;" />
+                <ui:Slider label="Master Volume" value="1" high-value="1" name="MasterVolumeSlider" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+                <ui:Slider label="BGM Volume" value="0.8" high-value="1" name="BgmVolumeSlider" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+                <ui:Slider label="SFX Volume" value="0.8" high-value="1" name="SfxVolumeSlider" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="VideoSection" style="justify-content: flex-start; align-items: stretch; height: auto; align-self: center; margin-bottom: 0%;">
+                <ui:Label text="Video Settings" name="VideoSettings" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 72px; margin: 10px 4%; margin-top: 0; margin-bottom: 0;" />
+                <ui:DropdownField label="Display Mode" name="DisplayModeDropdown" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+                <ui:DropdownField label="Resolution" name="ResolutionDropdown" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+                <ui:DropdownField label="Quality Preset" name="QualityDropdown" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+                <ui:DropdownField label="Anti-Aliasing" name="AntiAliasingDropdown" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+                <ui:DropdownField label="Target FPS" name="TargetFpsDropdown" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+                <ui:Toggle label="VSync" name="VSyncToggle" value="true" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="GameplaySection" style="justify-content: flex-start; margin-bottom: 0%;">
+                <ui:Label text="Gameplay Settings" name="GameplaySettings" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 72px; margin: 10px 4%; margin-top: 0; margin-bottom: 0;" />
+                <ui:Slider label="Movement Sensitivity " value="1" high-value="1" name="MovementSensitivitySlider" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px; min-height: auto;" />
+                <ui:Slider label="Camera Sensitivity" value="0.5" high-value="1" name="CameraSensitivitySlider" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+                <ui:Toggle label="Invert Y-Axis" name="InvertYAxisToggle" value="false" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Medium&apos;); font-size: 36px;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ButtonSection" style="flex-direction: row;">
+                <ui:VisualElement name="LeftButtonSection" style="flex-grow: 1; align-self: flex-end; height: auto; margin-bottom: 0%; width: auto; margin-left: 4%; margin-right: 0%;">
+                    <ui:Button text="Key Configuration" name="KeyBindingButton" style="background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
+                </ui:VisualElement>
+                <ui:VisualElement name="RightButtonSection" style="flex-direction: row; justify-content: flex-end; width: auto; align-self: auto; margin: 4% 4% 4% 0; margin-top: 0%; height: auto; align-items: flex-end; margin-bottom: 0%; margin-right: 4%;">
+                    <ui:Button text="Apply" name="ApplyButton" style="width: 600px; height: 100px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
+                    <ui:Button text="Reset to Default" name="ResetButton" style="width: 600px; height: 100px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
+                    <ui:Button text="Back to Menu" name="BackButton" style="width: 600px; height: 100px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

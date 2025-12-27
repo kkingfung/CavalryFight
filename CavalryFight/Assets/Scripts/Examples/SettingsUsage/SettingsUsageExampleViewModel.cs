@@ -45,10 +45,6 @@ namespace CavalryFight.Services.GameSettings
         private float _movementSensitivity;
         private float _cameraSensitivity;
         private bool _invertYAxis;
-        private int _difficulty;
-        private bool _showSubtitles;
-        private bool _showDamageNumbers;
-        private bool _showMinimap;
 
         #endregion
 
@@ -257,66 +253,6 @@ namespace CavalryFight.Services.GameSettings
             }
         }
 
-        /// <summary>
-        /// 難易度を取得または設定します（0=Easy, 1=Normal, 2=Hard）
-        /// </summary>
-        public int Difficulty
-        {
-            get { return _difficulty; }
-            set
-            {
-                if (SetProperty(ref _difficulty, value))
-                {
-                    UpdatePendingGameplaySettings();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 字幕表示を取得または設定します
-        /// </summary>
-        public bool ShowSubtitles
-        {
-            get { return _showSubtitles; }
-            set
-            {
-                if (SetProperty(ref _showSubtitles, value))
-                {
-                    UpdatePendingGameplaySettings();
-                }
-            }
-        }
-
-        /// <summary>
-        /// ダメージ表示を取得または設定します
-        /// </summary>
-        public bool ShowDamageNumbers
-        {
-            get { return _showDamageNumbers; }
-            set
-            {
-                if (SetProperty(ref _showDamageNumbers, value))
-                {
-                    UpdatePendingGameplaySettings();
-                }
-            }
-        }
-
-        /// <summary>
-        /// ミニマップ表示を取得または設定します
-        /// </summary>
-        public bool ShowMinimap
-        {
-            get { return _showMinimap; }
-            set
-            {
-                if (SetProperty(ref _showMinimap, value))
-                {
-                    UpdatePendingGameplaySettings();
-                }
-            }
-        }
-
         #endregion
 
         #region Properties - State
@@ -412,10 +348,6 @@ namespace CavalryFight.Services.GameSettings
             _movementSensitivity = profile.Gameplay.MovementSensitivity;
             _cameraSensitivity = profile.Gameplay.CameraSensitivity;
             _invertYAxis = profile.Gameplay.InvertYAxis;
-            _difficulty = profile.Gameplay.Difficulty;
-            _showSubtitles = profile.Gameplay.ShowSubtitles;
-            _showDamageNumbers = profile.Gameplay.ShowDamageNumbers;
-            _showMinimap = profile.Gameplay.ShowMinimap;
 
             // 全プロパティの変更通知
             OnPropertyChanged(string.Empty);
@@ -472,10 +404,6 @@ namespace CavalryFight.Services.GameSettings
             pendingProfile.Gameplay.MovementSensitivity = _movementSensitivity;
             pendingProfile.Gameplay.CameraSensitivity = _cameraSensitivity;
             pendingProfile.Gameplay.InvertYAxis = _invertYAxis;
-            pendingProfile.Gameplay.Difficulty = _difficulty;
-            pendingProfile.Gameplay.ShowSubtitles = _showSubtitles;
-            pendingProfile.Gameplay.ShowDamageNumbers = _showDamageNumbers;
-            pendingProfile.Gameplay.ShowMinimap = _showMinimap;
 
             _settingsService.SetPendingSettings(pendingProfile);
             OnPropertyChanged(nameof(HasPendingChanges));
