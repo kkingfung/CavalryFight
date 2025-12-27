@@ -350,6 +350,10 @@ namespace CavalryFight.ViewModels
             // クリーンアップ
             _rebindingOperation?.Dispose();
             _rebindingOperation = null;
+
+            // アクションを再有効化
+            entry.Action.Enable();
+            Debug.Log($"[KeyBindingViewModel] Action '{entry.ActionName}' re-enabled after rebind.");
         }
 
         /// <summary>
@@ -359,6 +363,9 @@ namespace CavalryFight.ViewModels
         {
             Debug.LogWarning("=== [KeyBindingViewModel] REBIND CANCELED ===");
 
+            // アクションを再有効化（キャンセル前に保存）
+            var entry = CurrentRebindingEntry;
+
             CurrentRebindingEntry = null;
             IsRebinding = false;
             RebindingPrompt = string.Empty;
@@ -366,6 +373,13 @@ namespace CavalryFight.ViewModels
             // クリーンアップ
             _rebindingOperation?.Dispose();
             _rebindingOperation = null;
+
+            // アクションを再有効化
+            if (entry != null)
+            {
+                entry.Action.Enable();
+                Debug.Log($"[KeyBindingViewModel] Action '{entry.ActionName}' re-enabled after cancel.");
+            }
         }
 
         #endregion

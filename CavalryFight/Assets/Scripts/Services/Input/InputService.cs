@@ -78,6 +78,11 @@ namespace CavalryFight.Services.Input
         private bool _invertYAxis = false;
         private GameInputActions? _inputActions;
 
+        /// <summary>
+        /// 攻撃がチャージ中かどうかを示すフラグ
+        /// </summary>
+        private bool _isAttackCharging = false;
+
         #endregion
 
         #region Properties
@@ -99,6 +104,8 @@ namespace CavalryFight.Services.Input
                     }
                     else
                     {
+                        // 入力無効化時に攻撃チャージ状態をリセット
+                        _isAttackCharging = false;
                         _inputActions.Disable();
                     }
                 }
@@ -258,8 +265,9 @@ namespace CavalryFight.Services.Input
 
             Vector2 input = _inputActions.Gameplay.Camera.ReadValue<Vector2>();
 
-            // マウスの場合はスケーリングが必要
-            if (Mouse.current != null)
+            // マウスデルタの場合はスケーリングが必要
+            var activeControl = _inputActions.Gameplay.Camera.activeControl;
+            if (activeControl != null && activeControl.device is Mouse)
             {
                 input *= 0.01f; // マウスデルタをスケーリング
             }
@@ -425,8 +433,11 @@ namespace CavalryFight.Services.Input
         /// </summary>
         public void ResetInput()
         {
-            // 新しいInput Systemでは自動的にリセットされるため、実装不要
-            Debug.Log("[InputService] Input reset (no-op with new Input System).");
+            // 攻撃チャージ状態をリセット
+            _isAttackCharging = false;
+
+            // 新しいInput Systemでは他の状態は自動的にリセットされる
+            Debug.Log("[InputService] Input reset.");
         }
 
         /// <summary>
@@ -456,6 +467,7 @@ namespace CavalryFight.Services.Input
         /// </summary>
         private void OnAttackStarted(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
+            _isAttackCharging = true;
             AttackButtonPressed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -464,23 +476,41 @@ namespace CavalryFight.Services.Input
         /// </summary>
         private void OnAttackCanceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
+            _isAttackCharging = false;
             AttackButtonReleased?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
         /// 攻撃キャンセルボタンが押された時のハンドラ
         /// </summary>
+        /// <remarks>
+        /// 攻撃チャージ中の場合のみ、CancelAttackButtonPressedイベントを発火します。
+        /// それ以外の場合は無視され、Boostイベントが処理されます。
+        /// </remarks>
         private void OnCancelAttackPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            CancelAttackButtonPressed?.Invoke(this, EventArgs.Empty);
+            // 攻撃チャージ中の場合のみキャンセルイベントを発火
+            if (_isAttackCharging)
+            {
+                _isAttackCharging = false;
+                CancelAttackButtonPressed?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
         /// ブーストボタンが押された時のハンドラ
         /// </summary>
+        /// <remarks>
+        /// 攻撃チャージ中でない場合のみ、BoostButtonPressedイベントを発火します。
+        /// 攻撃チャージ中の場合は無視され、CancelAttackイベントが処理されます。
+        /// </remarks>
         private void OnBoostPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            BoostButtonPressed?.Invoke(this, EventArgs.Empty);
+            // 攻撃チャージ中でない場合のみブーストイベントを発火
+            if (!_isAttackCharging)
+            {
+                BoostButtonPressed?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -504,6 +534,8 @@ namespace CavalryFight.Services.Input
         /// </summary>
         private void OnMenuPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
+            // メニューを開く際に攻撃チャージ状態をリセット
+            _isAttackCharging = false;
             MenuButtonPressed?.Invoke(this, EventArgs.Empty);
         }
 

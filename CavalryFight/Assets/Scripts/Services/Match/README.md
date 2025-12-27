@@ -176,7 +176,11 @@ private void ShowScoreboard()
 // ロビーからマッチに遷移する際に呼び出す
 public void StartMatchFromLobby()
 {
-    if (!NetworkManager.Singleton.IsServer) return;
+    if (NetworkManager.Singleton == null
+        || !NetworkManager.Singleton.IsServer)
+    {
+        return;
+    }
 
     // ロビーからプレイヤー情報を取得
     var playerSlots = _lobbyService.PlayerSlots;
@@ -193,7 +197,11 @@ public void StartMatchFromLobby()
 ```csharp
 private void CheckWinCondition()
 {
-    if (!NetworkManager.Singleton.IsServer) return;
+    if (NetworkManager.Singleton == null
+        || !NetworkManager.Singleton.IsServer)
+    {
+        return;
+    }
 
     var allScores = _matchService.GetAllPlayerScores();
 
@@ -220,7 +228,11 @@ private void CheckWinCondition()
 ```csharp
 public void ApplyHardModeScoring()
 {
-    if (!NetworkManager.Singleton.IsServer) return;
+    if (NetworkManager.Singleton == null
+        || !NetworkManager.Singleton.IsServer)
+    {
+        return;
+    }
 
     var hardModeScoring = new ScoringConfig
     {

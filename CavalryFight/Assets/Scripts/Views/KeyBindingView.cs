@@ -152,7 +152,7 @@ namespace CavalryFight.Views
         /// <summary>
         /// 開始処理
         /// </summary>
-        protected virtual void Start()
+        protected void Start()
         {
             // 保存済みのバインディングを読み込み
             ViewModel?.LoadBindings();
