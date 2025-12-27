@@ -71,7 +71,28 @@ namespace CavalryFight.Core.Bootstrap
             ValidateServiceDependencies();
 
             // 全サービスを初期化（非同期）
-            _ = InitializeServicesAsync();
+            // async voidを使用して例外を適切にキャッチ
+            InitializeServicesAsyncWrapper();
+        }
+
+        /// <summary>
+        /// InitializeServicesAsyncのラッパー（例外ハンドリング用）
+        /// </summary>
+        private async void InitializeServicesAsyncWrapper()
+        {
+            try
+            {
+                await InitializeServicesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameBootstrap] Fatal error during service initialization: {ex.Message}\n{ex.StackTrace}");
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit();
+#endif
+            }
         }
 
         /// <summary>
@@ -204,11 +225,31 @@ namespace CavalryFight.Core.Bootstrap
                 var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
                 if (sceneService != null)
                 {
-                    await sceneService.OpenCollectionAsync(_sceneCollectionConfig.MainMenu);
+                    try
+                    {
+                        await sceneService.OpenCollectionAsync(_sceneCollectionConfig.MainMenu);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"[GameBootstrap] Failed to transition to MainMenu: {ex.Message}\n{ex.StackTrace}");
+                        Debug.LogError("[GameBootstrap] Application cannot continue. Please check the scene configuration.");
+#if UNITY_EDITOR
+                        UnityEditor.EditorApplication.isPlaying = false;
+#else
+                        Application.Quit();
+#endif
+                        return;
+                    }
                 }
                 else
                 {
                     Debug.LogError("[GameBootstrap] SceneManagementService not found. Cannot transition to MainMenu.");
+#if UNITY_EDITOR
+                    UnityEditor.EditorApplication.isPlaying = false;
+#else
+                    Application.Quit();
+#endif
+                    return;
                 }
             }
             else
@@ -228,16 +269,8 @@ namespace CavalryFight.Core.Bootstrap
             try
             {
                 var service = ServiceLocator.Instance.Get<T>();
-                if (service != null)
-                {
-                    service.Initialize();
-                    Debug.Log($"[GameBootstrap] {typeof(T).Name} initialized successfully.");
-                }
-                else
-                {
-                    Debug.LogWarning($"[GameBootstrap] {typeof(T).Name} not found in ServiceLocator.");
-                    _failedServices.Add(typeof(T));
-                }
+                service.Initialize();
+                Debug.Log($"[GameBootstrap] {typeof(T).Name} initialized successfully.");
             }
             catch (Exception ex)
             {
@@ -329,15 +362,8 @@ namespace CavalryFight.Core.Bootstrap
             try
             {
                 var service = ServiceLocator.Instance.Get<T>();
-                if (service != null)
-                {
-                    service.Dispose();
-                    Debug.Log($"[GameBootstrap] {serviceName} disposed successfully.");
-                }
-                else
-                {
-                    Debug.LogWarning($"[GameBootstrap] {serviceName} not found in ServiceLocator.");
-                }
+                service.Dispose();
+                Debug.Log($"[GameBootstrap] {serviceName} disposed successfully.");
             }
             catch (System.Exception ex)
             {

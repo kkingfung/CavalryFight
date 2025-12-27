@@ -18,7 +18,7 @@ namespace CavalryFight.Services.Input
     public class InputUsageExampleViewModel : ViewModelBase
     {
         #region Fields
-
+        private const float _maxChargeTime = 3.0f;
         private readonly IInputService _inputService;
         private bool _isPlayerControlEnabled = true;
         private float _currentMovementSensitivity = 1.0f;
@@ -200,9 +200,7 @@ namespace CavalryFight.Services.Input
                 AttackChargeTime += Time.deltaTime;
 
                 // 実際のゲームでは、チャージ時間に応じて攻撃力を変化させます
-                // 例: 最大3秒でフルチャージ
-                float maxChargeTime = 3.0f;
-                float chargePercent = Mathf.Clamp01(AttackChargeTime / maxChargeTime);
+                float chargePercent = Mathf.Clamp01(AttackChargeTime / _maxChargeTime);
 
                 Debug.Log($"[InputUsageExample] Charging attack: {chargePercent:P0} ({AttackChargeTime:F2}s)");
             }
@@ -290,8 +288,7 @@ namespace CavalryFight.Services.Input
         private void ExecuteChargedAttack(float chargeTime)
         {
             // チャージ時間に応じた攻撃力を計算
-            float maxChargeTime = 3.0f;
-            float chargePercent = Mathf.Clamp01(chargeTime / maxChargeTime);
+            float chargePercent = Mathf.Clamp01(chargeTime / _maxChargeTime);
             float attackPower = 1.0f + (chargePercent * 2.0f); // 1.0～3.0倍
 
             Debug.Log($"[InputUsageExample] Charged attack executed! Power: {attackPower:F1}x (Charge: {chargePercent:P0})");

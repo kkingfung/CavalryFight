@@ -125,25 +125,31 @@ namespace CavalryFight.Services.Replay
             }
 
             // 二分探索で最も近いフレームを見つける
-            int closestIndex = 0;
-            float closestDistance = Mathf.Abs(Frames[0].Timestamp - timestamp);
+            int left = 0;
+            int right = Frames.Count - 1;
 
-            for (int i = 1; i < Frames.Count; i++)
+            while (left < right)
             {
-                float distance = Mathf.Abs(Frames[i].Timestamp - timestamp);
-                if (distance < closestDistance)
+                int mid = (left + right) / 2;
+                if (Frames[mid].Timestamp < timestamp)
                 {
-                    closestDistance = distance;
-                    closestIndex = i;
+                    left = mid + 1;
                 }
-                else if (Frames[i].Timestamp > timestamp)
+                else
                 {
-                    // タイムスタンプを超えたので終了
-                    break;
+                    right = mid;
                 }
             }
 
-            return Frames[closestIndex];
+            // 前後のフレームと比較して最も近いものを返す
+            if (left > 0)
+            {
+                float distLeft = Mathf.Abs(Frames[left - 1].Timestamp - timestamp);
+                float distRight = Mathf.Abs(Frames[left].Timestamp - timestamp);
+                return distLeft < distRight ? Frames[left - 1] : Frames[left];
+            }
+
+            return Frames[left];
         }
 
         /// <summary>

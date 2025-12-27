@@ -312,7 +312,8 @@ namespace CavalryFight.Services.Match.Examples
                 return;
             }
 
-            if (!NetworkManager.Singleton.IsServer)
+            if (NetworkManager.Singleton == null
+                || !NetworkManager.Singleton.IsServer)
             {
                 Debug.LogError("[MatchUsageExample] Only server can start match.");
                 return;
@@ -346,7 +347,8 @@ namespace CavalryFight.Services.Match.Examples
                 return;
             }
 
-            if (!NetworkManager.Singleton.IsServer)
+            if (NetworkManager.Singleton == null
+                || !NetworkManager.Singleton.IsServer)
             {
                 Debug.LogError("[MatchUsageExample] Only server can end match.");
                 return;
@@ -368,7 +370,8 @@ namespace CavalryFight.Services.Match.Examples
                 return;
             }
 
-            if (!NetworkManager.Singleton.IsServer)
+            if (NetworkManager.Singleton == null
+                || !NetworkManager.Singleton.IsServer)
             {
                 Debug.LogError("[MatchUsageExample] Only server can update scoring config.");
                 return;
