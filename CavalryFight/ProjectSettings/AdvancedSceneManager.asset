@@ -23,7 +23,7 @@ MonoBehaviour:
       values: []
   m_defaultProfile: {fileID: 0}
   m_forceProfile: {fileID: 0}
-  m_buildProfile: {fileID: 0}
+  m_buildProfile: {fileID: 11400000, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
   m_checkForDuplicateSceneOperations: 1
   m_preventSpammingEventMethods: 1
   m_spamCheckCooldown: 0.5

@@ -30,6 +30,10 @@ namespace CavalryFight.Core.Bootstrap
     {
         #region Fields
 
+        [Header("Configuration")]
+        [Tooltip("シーンコレクション設定")]
+        [SerializeField] private SceneCollectionConfig? _sceneCollectionConfig;
+
         /// <summary>
         /// クリティカルなサービスのリスト（これらが失敗すると起動を中止）
         /// </summary>
@@ -150,6 +154,7 @@ namespace CavalryFight.Core.Bootstrap
             InitializeService<IAudioService>();
             InitializeService<IGameSettingsService>();
             InitializeService<ISceneManagementService>();
+            ConfigureSceneManagementService();
             InitializeService<IGameStateService>();
 
             // Gameplay services
@@ -217,6 +222,38 @@ namespace CavalryFight.Core.Bootstrap
                     Debug.LogWarning($"[GameBootstrap] {typeof(T).Name} is not critical. Continuing initialization...");
                 }
             }
+        }
+
+        /// <summary>
+        /// SceneManagementService にシーンコレクションを設定します
+        /// </summary>
+        private void ConfigureSceneManagementService()
+        {
+            if (_sceneCollectionConfig == null)
+            {
+                Debug.LogError("[GameBootstrap] SceneCollectionConfig is not assigned! Scene loading will not work.");
+                return;
+            }
+
+            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            if (sceneService == null)
+            {
+                Debug.LogError("[GameBootstrap] SceneManagementService not found. Cannot configure scene collections.");
+                return;
+            }
+
+            sceneService.RegisterSceneCollections(
+                startup: _sceneCollectionConfig.Startup,
+                mainMenu: _sceneCollectionConfig.MainMenu,
+                lobby: _sceneCollectionConfig.Lobby,
+                settings: _sceneCollectionConfig.Settings,
+                match: _sceneCollectionConfig.Match,
+                training: _sceneCollectionConfig.Training,
+                results: _sceneCollectionConfig.Results,
+                replay: _sceneCollectionConfig.Replay
+            );
+
+            Debug.Log("[GameBootstrap] SceneManagementService configured with scene collections.");
         }
 
         /// <summary>
@@ -327,8 +364,11 @@ namespace CavalryFight.Core.Bootstrap
         {
             var dependencies = new Dictionary<Type, List<Type>>();
 
-            // 現在、明示的な依存関係はありません
-            // GameStateService は独立して動作し、呼び出し側が StateChanged イベントを監視してシーン遷移を実行します
+            // GameStateService は SceneManagementService に依存
+            dependencies[typeof(IGameStateService)] = new List<Type>
+            {
+                typeof(ISceneManagementService)
+            };
 
             // 将来的に他の依存関係を追加する場合はここに記述
             // 例:

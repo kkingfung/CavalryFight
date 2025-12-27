@@ -1,6 +1,7 @@
 #nullable enable
 
 using CavalryFight.Core.Services;
+using CavalryFight.Services.SceneManagement;
 using System;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace CavalryFight.Services.GameState
     {
         #region Fields
 
+        private ISceneManagementService? _sceneService;
 
         #endregion
 
@@ -48,6 +50,13 @@ namespace CavalryFight.Services.GameState
         {
             Debug.Log("[GameStateService] Initializing...");
 
+            // SceneManagementServiceを取得
+            _sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            if (_sceneService == null)
+            {
+                Debug.LogError("[GameStateService] SceneManagementService not found! Scene transitions will not work.");
+            }
+
             // 初期状態を設定
             CurrentState = GameState.Initializing;
             PreviousState = null;
@@ -75,8 +84,7 @@ namespace CavalryFight.Services.GameState
         /// メインメニューへ遷移
         /// </summary>
         /// <remarks>
-        /// 実際のシーン遷移は呼び出し側（ViewModel等）が責任を持ちます。
-        /// このメソッドは状態変更とイベント発火のみを行います。
+        /// 状態変更とシーンロードを行います。
         /// </remarks>
         public void TransitionToMainMenu()
         {
@@ -87,14 +95,14 @@ namespace CavalryFight.Services.GameState
             }
 
             ChangeState(GameState.MainMenu);
+            _sceneService?.LoadMainMenu();
         }
 
         /// <summary>
         /// ロビーへ遷移
         /// </summary>
         /// <remarks>
-        /// 実際のシーン遷移は呼び出し側（ViewModel等）が責任を持ちます。
-        /// このメソッドは状態変更とイベント発火のみを行います。
+        /// 状態変更とシーンロードを行います。
         /// </remarks>
         public void TransitionToLobby()
         {
@@ -105,14 +113,14 @@ namespace CavalryFight.Services.GameState
             }
 
             ChangeState(GameState.Lobby);
+            _sceneService?.LoadLobby();
         }
 
         /// <summary>
         /// マッチへ遷移
         /// </summary>
         /// <remarks>
-        /// 実際のシーン遷移は呼び出し側（ViewModel等）が責任を持ちます。
-        /// このメソッドは状態変更とイベント発火のみを行います。
+        /// 状態変更とシーンロードを行います。
         /// </remarks>
         public void TransitionToMatch()
         {
@@ -123,14 +131,14 @@ namespace CavalryFight.Services.GameState
             }
 
             ChangeState(GameState.Match);
+            _sceneService?.LoadMatch();
         }
 
         /// <summary>
         /// 結果画面へ遷移
         /// </summary>
         /// <remarks>
-        /// 実際のシーン遷移は呼び出し側（ViewModel等）が責任を持ちます。
-        /// このメソッドは状態変更とイベント発火のみを行います。
+        /// 状態変更とシーンロードを行います。
         /// </remarks>
         public void TransitionToResults()
         {
@@ -141,14 +149,14 @@ namespace CavalryFight.Services.GameState
             }
 
             ChangeState(GameState.Results);
+            _sceneService?.LoadResults();
         }
 
         /// <summary>
         /// リプレイへ遷移
         /// </summary>
         /// <remarks>
-        /// 実際のシーン遷移は呼び出し側（ViewModel等）が責任を持ちます。
-        /// このメソッドは状態変更とイベント発火のみを行います。
+        /// 状態変更とシーンロードを行います。
         /// </remarks>
         public void TransitionToReplay()
         {
@@ -159,6 +167,7 @@ namespace CavalryFight.Services.GameState
             }
 
             ChangeState(GameState.Replay);
+            _sceneService?.LoadReplay();
         }
 
         #endregion

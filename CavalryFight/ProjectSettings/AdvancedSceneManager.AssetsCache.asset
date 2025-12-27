@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.ASMAssetsCache
   m_sceneHelper: {fileID: 11400000, guid: 76b7bbebc13f0914d9760382f86bf158, type: 2}
-  m_profiles: []
+  m_profiles:
+  - {fileID: 11400000, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
   m_scenes: []
   m_collectionTemplates: []
