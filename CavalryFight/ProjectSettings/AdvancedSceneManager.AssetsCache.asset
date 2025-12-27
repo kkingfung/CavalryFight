@@ -15,5 +15,6 @@ MonoBehaviour:
   m_sceneHelper: {fileID: 11400000, guid: 76b7bbebc13f0914d9760382f86bf158, type: 2}
   m_profiles:
   - {fileID: 11400000, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
-  m_scenes: []
+  m_scenes:
+  - {fileID: 11400000, guid: 34015f3346313bd469dc6da2d5e97286, type: 2}
   m_collectionTemplates: []

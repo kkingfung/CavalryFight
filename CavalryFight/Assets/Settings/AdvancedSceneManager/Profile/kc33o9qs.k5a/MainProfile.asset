@@ -330,7 +330,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
   m_id: w4im52sb.t73
   m_isHidden: 0
-  m_scenes: []
+  m_scenes:
+  - {fileID: 11400000, guid: 34015f3346313bd469dc6da2d5e97286, type: 2}
   m_description: 
   m_isLocked: 0
   m_lockMessage: 

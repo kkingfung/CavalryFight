@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 143365c1c80370a48a4c89e0b158bf44, type: 3}
+  m_Name: Startup
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.Scene
+  m_id: ie5aj617.4x8
+  m_isHidden: 0
+  m_autoScenes: []
+  m_path: Assets/Scenes/Startup.unity
+  m_sceneAssetGUID: c1f8e9f6d18b98442b59453598f62946
+  m_sceneAsset: {fileID: 102900000, guid: c1f8e9f6d18b98442b59453598f62946, type: 3}
+  m_isLocked: 0
+  m_lockMessage: 
+  m_sceneLoader: 
+  m_loadPriority: -2
+  m_isLoadingScreen: 0
+  m_isSplashScreen: 0
+  m_isDefaultASMScene: 0
+  m_keepOpenWhenCollectionsClose: 0
+  m_keepOpenWhenNewCollectionWouldReopen: 1
+  m_openOnStartup: 0
+  m_openOnPlayMode: 0
+  m_autoOpenInEditor: 0
+  m_autoOpenInEditorScenes: []
+  m_crossSceneReferences: []
+  m_inputBindings: []
+  m_inputBindingsLoadingScene: {fileID: 0}
+  m_ignoreInputBindingsForScenes: []
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnPreload:
+      m_PersistentCalls:
+        m_Calls: []
+    OnPreloadFinished:
+      m_PersistentCalls:
+        m_Calls: []
+    OnCollectionOpened:
+      m_PersistentCalls:
+        m_Calls: []
+    OnCollectionClosed:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_assetReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
