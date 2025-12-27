@@ -353,6 +353,19 @@ namespace CavalryFight.Services.Lobby
             {
                 PlayerSlotChanged?.Invoke(changeEvent.Index, changeEvent.Value);
             }
+            else if (changeEvent.Type == NetworkListEvent<PlayerSlot>.EventType.Add)
+            {
+                // 新しいスロットが追加された時（初期同期時など）
+                PlayerSlotChanged?.Invoke(changeEvent.Index, changeEvent.Value);
+            }
+            else if (changeEvent.Type == NetworkListEvent<PlayerSlot>.EventType.Full)
+            {
+                // リスト全体が初期化された時（クライアント側の初期同期）
+                for (int i = 0; i < _playerSlots.Count; i++)
+                {
+                    PlayerSlotChanged?.Invoke(i, _playerSlots[i]);
+                }
+            }
         }
 
         #endregion

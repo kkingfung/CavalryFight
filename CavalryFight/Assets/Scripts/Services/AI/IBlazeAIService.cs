@@ -16,6 +16,18 @@ namespace CavalryFight.Services.AI
     /// </remarks>
     public interface IBlazeAIService : IService
     {
+        #region Update
+
+        /// <summary>
+        /// サービスを更新します（MonoBehaviourのUpdateから呼び出す）
+        /// </summary>
+        /// <remarks>
+        /// AI状態の変更を検出するために毎フレーム呼び出す必要があります。
+        /// </remarks>
+        void Update();
+
+        #endregion
+
         #region Events
 
         /// <summary>
