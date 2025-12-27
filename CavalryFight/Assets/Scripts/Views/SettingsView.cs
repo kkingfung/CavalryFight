@@ -1,6 +1,8 @@
 #nullable enable
 
 using CavalryFight.Core.MVVM;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
 using CavalryFight.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +21,14 @@ namespace CavalryFight.Views
     [RequireComponent(typeof(UIDocument))]
     public class SettingsView : UIToolkitViewBase<SettingsViewModel>
     {
+        #region Serialized Fields
+
+        [Header("Audio")]
+        [SerializeField] private AudioClip? _bgmClip;
+        [SerializeField] private AudioClip? _buttonClickSfx;
+
+        #endregion
+
         #region Fields
 
         // Audio
@@ -69,6 +79,34 @@ namespace CavalryFight.Views
             {
                 Debug.LogWarning("[SettingsView] KeyBindingView not found in scene.", this);
             }
+        }
+
+        /// <summary>
+        /// 有効化時の処理
+        /// </summary>
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            // BGMを再生
+            if (_bgmClip != null)
+            {
+                var audioService = ServiceLocator.Instance.Get<IAudioService>();
+                if (audioService != null)
+                {
+                    audioService.PlayBgm(_bgmClip, loop: true, fadeInDuration: 2f);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 無効化時の処理
+        /// </summary>
+        protected override void OnDisable()
+        {
+            // BGMは停止しない（シーン遷移時の継続再生のため）
+            // 次のシーンが異なるBGMを要求する場合は、そのシーンのOnEnable()で自動的に切り替わる
+            base.OnDisable();
         }
 
         #endregion
@@ -718,16 +756,19 @@ namespace CavalryFight.Views
         // Button Handlers
         private void OnApplyButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.ApplySettingsCommand.Execute(null);
         }
 
         private void OnResetButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.ResetSettingsCommand.Execute(null);
         }
 
         private void OnKeyBindingButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.OpenKeyBindingsCommand.Execute(null);
         }
 
@@ -748,7 +789,27 @@ namespace CavalryFight.Views
 
         private void OnBackButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.BackToMenuCommand.Execute(null);
+        }
+
+        #endregion
+
+        #region Private Methods - Audio
+
+        /// <summary>
+        /// ボタンクリック効果音を再生します
+        /// </summary>
+        private void PlayButtonClickSfx()
+        {
+            if (_buttonClickSfx != null)
+            {
+                var audioService = ServiceLocator.Instance.Get<IAudioService>();
+                if (audioService != null)
+                {
+                    audioService.PlaySfx(_buttonClickSfx);
+                }
+            }
         }
 
         #endregion

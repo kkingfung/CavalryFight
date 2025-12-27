@@ -107,6 +107,14 @@ namespace CavalryFight.Core.MVVM
         }
 
         /// <summary>
+        /// Unityの無効化処理
+        /// </summary>
+        protected virtual void OnDisable()
+        {
+            // 派生クラスで実装
+        }
+
+        /// <summary>
         /// Unityの破棄処理
         /// </summary>
         protected virtual void OnDestroy()

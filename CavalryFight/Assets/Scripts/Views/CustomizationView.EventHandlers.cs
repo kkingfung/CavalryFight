@@ -2,6 +2,7 @@
 
 using System;
 using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
 using CavalryFight.Services.Customization;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.ViewModels;
@@ -671,6 +672,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnResetButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.ResetCommand.Execute(null);
         }
 
@@ -679,6 +681,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnBackButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.BackToMenuCommand.Execute(null);
         }
 
@@ -687,6 +690,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnCombatIdleToggleClicked()
         {
+            PlayButtonClickSfx();
             _isCombatIdleMode = !_isCombatIdleMode;
 
             // ボタンテキストを更新
@@ -711,6 +715,25 @@ namespace CavalryFight.Views
 
                     // アニメーターモードを切り替え
                     customizationService.SetCharacterCombatIdleMode(_currentPreviewCharacter, _isCombatIdleMode);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Private Methods - Audio
+
+        /// <summary>
+        /// ボタンクリック効果音を再生します
+        /// </summary>
+        private void PlayButtonClickSfx()
+        {
+            if (_buttonClickSfx != null)
+            {
+                var audioService = ServiceLocator.Instance.Get<IAudioService>();
+                if (audioService != null)
+                {
+                    audioService.PlaySfx(_buttonClickSfx);
                 }
             }
         }

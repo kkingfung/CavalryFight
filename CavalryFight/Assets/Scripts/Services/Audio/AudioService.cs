@@ -187,6 +187,13 @@ namespace CavalryFight.Services.Audio
                 return;
             }
 
+            // 同じBGMが既に再生中の場合は、再起動せずに継続
+            if (_audioManager.BgmSource.clip == clip && _audioManager.BgmSource.isPlaying)
+            {
+                Debug.Log($"[AudioService] BGM '{clip.name}' is already playing. Continuing seamlessly.");
+                return;
+            }
+
             _currentBgmName = clip.name;
 
             if (fadeInDuration > 0f)

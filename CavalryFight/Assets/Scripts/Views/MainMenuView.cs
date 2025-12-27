@@ -1,6 +1,8 @@
 #nullable enable
 
 using CavalryFight.Core.MVVM;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
 using CavalryFight.ViewModels;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,6 +19,14 @@ namespace CavalryFight.Views
     [RequireComponent(typeof(UIDocument))]
     public class MainMenuView : UIToolkitViewBase<MainMenuViewModel>
     {
+        #region Serialized Fields
+
+        [Header("Audio")]
+        [SerializeField] private AudioClip? _bgmClip;
+        [SerializeField] private AudioClip? _buttonClickSfx;
+
+        #endregion
+
         #region Fields
 
         private Button? _startTrainingButton;
@@ -41,6 +51,34 @@ namespace CavalryFight.Views
 
             // ViewModelを作成してバインド
             ViewModel = new MainMenuViewModel();
+        }
+
+        /// <summary>
+        /// 有効化時の処理
+        /// </summary>
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            // BGMを再生
+            if (_bgmClip != null)
+            {
+                var audioService = ServiceLocator.Instance.Get<IAudioService>();
+                if (audioService != null)
+                {
+                    audioService.PlayBgm(_bgmClip, loop: true, fadeInDuration: 2f);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 無効化時の処理
+        /// </summary>
+        protected override void OnDisable()
+        {
+            // BGMは停止しない（シーン遷移時の継続再生のため）
+            // 次のシーンが異なるBGMを要求する場合は、そのシーンのOnEnable()で自動的に切り替わる
+            base.OnDisable();
         }
 
         #endregion
@@ -271,6 +309,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnStartTrainingButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.StartTrainingCommand.Execute(null);
         }
 
@@ -279,6 +318,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnMatchLobbyButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.OpenMatchLobbyCommand.Execute(null);
         }
 
@@ -287,6 +327,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnReplayButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.OpenReplayHistoryCommand.Execute(null);
         }
 
@@ -295,6 +336,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnCustomizationButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.OpenCustomizationCommand.Execute(null);
         }
 
@@ -303,6 +345,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnSettingsButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.OpenSettingsCommand.Execute(null);
         }
 
@@ -311,7 +354,27 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnQuitButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.QuitGameCommand.Execute(null);
+        }
+
+        #endregion
+
+        #region Private Methods - Audio
+
+        /// <summary>
+        /// ボタンクリック効果音を再生します
+        /// </summary>
+        private void PlayButtonClickSfx()
+        {
+            if (_buttonClickSfx != null)
+            {
+                var audioService = ServiceLocator.Instance.Get<IAudioService>();
+                if (audioService != null)
+                {
+                    audioService.PlaySfx(_buttonClickSfx);
+                }
+            }
         }
 
         #endregion
