@@ -203,16 +203,8 @@ namespace CavalryFight.Core.Bootstrap
             try
             {
                 var service = ServiceLocator.Instance.Get<T>();
-                if (service != null)
-                {
-                    service.Initialize();
-                    Debug.Log($"[GameBootstrap] {typeof(T).Name} initialized successfully.");
-                }
-                else
-                {
-                    Debug.LogWarning($"[GameBootstrap] {typeof(T).Name} not found in ServiceLocator.");
-                    _failedServices.Add(typeof(T));
-                }
+                +service.Initialize();
+                +Debug.Log($"[GameBootstrap] {typeof(T).Name} initialized successfully.");
             }
             catch (Exception ex)
             {
@@ -272,15 +264,8 @@ namespace CavalryFight.Core.Bootstrap
             try
             {
                 var service = ServiceLocator.Instance.Get<T>();
-                if (service != null)
-                {
-                    service.Dispose();
-                    Debug.Log($"[GameBootstrap] {serviceName} disposed successfully.");
-                }
-                else
-                {
-                    Debug.LogWarning($"[GameBootstrap] {serviceName} not found in ServiceLocator.");
-                }
+                service.Dispose();
+                Debug.Log($"[GameBootstrap] {serviceName} disposed successfully.");
             }
             catch (System.Exception ex)
             {
