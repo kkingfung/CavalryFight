@@ -13,6 +13,7 @@ using CavalryFight.Services.Replay;
 using CavalryFight.Services.SceneManagement;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace CavalryFight.Core.Bootstrap
@@ -69,10 +70,29 @@ namespace CavalryFight.Core.Bootstrap
             // 依存関係を検証
             ValidateServiceDependencies();
 
-            // 全サービスを初期化
-            InitializeServices();
+            // 全サービスを初期化（非同期）
+            // async voidを使用して例外を適切にキャッチ
+            InitializeServicesAsyncWrapper();
+        }
 
-            Debug.Log("[GameBootstrap] Initialization complete.");
+        /// <summary>
+        /// InitializeServicesAsyncのラッパー（例外ハンドリング用）
+        /// </summary>
+        private async void InitializeServicesAsyncWrapper()
+        {
+            try
+            {
+                await InitializeServicesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameBootstrap] Fatal error during service initialization: {ex.Message}\n{ex.StackTrace}");
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit();
+#endif
+            }
         }
 
         /// <summary>
@@ -137,9 +157,9 @@ namespace CavalryFight.Core.Bootstrap
         }
 
         /// <summary>
-        /// すべてのサービスを初期化します
+        /// すべてのサービスを初期化し、MainMenuへ遷移します
         /// </summary>
-        private void InitializeServices()
+        private async Task InitializeServicesAsync()
         {
             Debug.Log("[GameBootstrap] Initializing services...");
 
@@ -197,6 +217,47 @@ namespace CavalryFight.Core.Bootstrap
             }
 
             Debug.Log("[GameBootstrap] All services initialized successfully.");
+
+            // すべてのサービスの初期化が完了したら、MainMenuへ遷移
+            if (_sceneCollectionConfig != null && _sceneCollectionConfig.MainMenu != null)
+            {
+                Debug.Log("[GameBootstrap] Transitioning to MainMenu...");
+                var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+                if (sceneService != null)
+                {
+                    try
+                    {
+                        await sceneService.OpenCollectionAsync(_sceneCollectionConfig.MainMenu);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"[GameBootstrap] Failed to transition to MainMenu: {ex.Message}\n{ex.StackTrace}");
+                        Debug.LogError("[GameBootstrap] Application cannot continue. Please check the scene configuration.");
+#if UNITY_EDITOR
+                        UnityEditor.EditorApplication.isPlaying = false;
+#else
+                        Application.Quit();
+#endif
+                        return;
+                    }
+                }
+                else
+                {
+                    Debug.LogError("[GameBootstrap] SceneManagementService not found. Cannot transition to MainMenu.");
+#if UNITY_EDITOR
+                    UnityEditor.EditorApplication.isPlaying = false;
+#else
+                    Application.Quit();
+#endif
+                    return;
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[GameBootstrap] MainMenu scene collection is not configured. Staying in Startup scene.");
+            }
+
+            Debug.Log("[GameBootstrap] Initialization complete.");
         }
 
         /// <summary>

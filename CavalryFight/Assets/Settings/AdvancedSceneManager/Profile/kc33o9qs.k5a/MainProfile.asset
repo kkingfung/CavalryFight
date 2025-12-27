@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
   m_id: d6wm3eg4.tgm
   m_isHidden: 0
-  m_scenes: []
+  m_scenes:
+  - {fileID: 0}
   m_description: 
   m_isLocked: 0
   m_lockMessage: 
@@ -201,7 +202,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
   m_id: 2ydv0glt.yqq
   m_isHidden: 0
-  m_scenes: []
+  m_scenes:
+  - {fileID: 11400000, guid: 8916a5f16a042fc4e9e4fea646903e60, type: 2}
   m_description: 
   m_isLocked: 0
   m_lockMessage: 
@@ -210,7 +212,7 @@ MonoBehaviour:
   m_prefix: 'MainProfile - '
   m_inputBindings: []
   m_ignoreInputBindingsForScenes: []
-  m_startupOption: 1
+  m_startupOption: 2
   m_loadingScreenUsage: 1
   m_loadingScene: {fileID: 0}
   m_activeScene: {fileID: 0}
