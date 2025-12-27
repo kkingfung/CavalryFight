@@ -1,0 +1,19 @@
+{
+    "name": "CavalryFight.ViewModels",
+    "rootNamespace": "CavalryFight.ViewModels",
+    "references": [
+        "CavalryFight.Core",
+        "CavalryFight.Services",
+        "CavalryFight.Input",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,14 @@
+{
+    "name": "P09.ModularHumanoid",
+    "rootNamespace": "P09.Modular.Humanoid",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
