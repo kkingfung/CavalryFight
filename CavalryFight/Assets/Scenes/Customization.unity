@@ -248,6 +248,10 @@ MonoBehaviour:
   _Container: {fileID: 1049231973}
   _characterPreviewPrefab: {fileID: 1965089710480139792, guid: 3e9422cc4ffe9f14e9919fca62fe9260, type: 3}
   _mountPreviewPrefab: {fileID: 9003172271060271436, guid: 9fd0d9be2bedab14cb47824b08637bcf, type: 3}
+  _maleAnimatorController: {fileID: 9100000, guid: 9a47776e2dacad14f8db9bb2ce9f73db, type: 2}
+  _femaleAnimatorController: {fileID: 9100000, guid: b41eacc932fb30741baf063f71a635b0, type: 2}
+  _maleCombatIdleAnimatorController: {fileID: 9100000, guid: e183bd776e6209945b3eb395fa7fc724, type: 2}
+  _femaleCombatIdleAnimatorController: {fileID: 9100000, guid: e183bd776e6209945b3eb395fa7fc724, type: 2}
 --- !u!114 &1049231975
 MonoBehaviour:
   m_ObjectHideFlags: 0

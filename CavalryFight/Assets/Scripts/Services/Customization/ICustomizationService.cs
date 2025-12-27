@@ -161,5 +161,33 @@ namespace CavalryFight.Services.Customization
         void ResetToDefault();
 
         #endregion
+
+        #region Combat Idle Mode
+
+        /// <summary>
+        /// キャラクターを戦闘待機モードに切り替えます
+        /// </summary>
+        /// <param name="characterObject">対象のキャラクターGameObject</param>
+        /// <param name="useCombatIdle">trueの場合は戦闘待機アニメーター、falseの場合は通常アニメーター</param>
+        /// <returns>切り替えに成功したかどうか</returns>
+        bool SetCharacterCombatIdleMode(GameObject characterObject, bool useCombatIdle);
+
+        #endregion
+
+        #region Applier Access
+
+        /// <summary>
+        /// P09CharacterApplierを取得します（データ設定用）
+        /// </summary>
+        /// <returns>P09CharacterApplier（設定されていない場合はnull）</returns>
+        P09CharacterApplier? GetP09CharacterApplier();
+
+        /// <summary>
+        /// MalbersHorseApplierを取得します（データ設定用）
+        /// </summary>
+        /// <returns>MalbersHorseApplier（設定されていない場合はnull）</returns>
+        MalbersHorseApplier? GetMalbersHorseApplier();
+
+        #endregion
     }
 }

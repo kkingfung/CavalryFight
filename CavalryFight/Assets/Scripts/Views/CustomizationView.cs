@@ -29,6 +29,12 @@ namespace CavalryFight.Views
         [SerializeField] private GameObject? _characterPreviewPrefab;
         [SerializeField] private GameObject? _mountPreviewPrefab;
 
+        [Header("P09 Animator Controllers")]
+        [SerializeField] private RuntimeAnimatorController? _maleAnimatorController;
+        [SerializeField] private RuntimeAnimatorController? _femaleAnimatorController;
+        [SerializeField] private RuntimeAnimatorController? _maleCombatIdleAnimatorController;
+        [SerializeField] private RuntimeAnimatorController? _femaleCombatIdleAnimatorController;
+
         // カテゴリタブ
         private Button? _characterTabButton;
         private Button? _mountTabButton;
@@ -104,10 +110,31 @@ namespace CavalryFight.Views
 
         // 馬パネル
         private VisualElement? _mountPanel;
-        private DropdownField? _mountTypeDropdown;
-        private DropdownField? _coatColorDropdown;
-        private DropdownField? _maneStyleDropdown;
-        private DropdownField? _maneColorDropdown;
+
+        // CoatColor用矢印コントロール
+        private Button? _coatColorPrevButton;
+        private Label? _coatColorValue;
+        private Button? _coatColorNextButton;
+
+        // ManeStyle用矢印コントロール
+        private Button? _maneStylePrevButton;
+        private Label? _maneStyleValue;
+        private Button? _maneStyleNextButton;
+
+        // ManeColor用矢印コントロール
+        private Button? _maneColorPrevButton;
+        private Label? _maneColorValue;
+        private Button? _maneColorNextButton;
+
+        // HornType用矢印コントロール
+        private Button? _hornTypePrevButton;
+        private Label? _hornTypeValue;
+        private Button? _hornTypeNextButton;
+
+        // HornMaterial用矢印コントロール
+        private Button? _hornMaterialPrevButton;
+        private Label? _hornMaterialValue;
+        private Button? _hornMaterialNextButton;
 
         // MountArmor用矢印コントロール
         private Button? _mountArmorPrevButton;
@@ -115,6 +142,7 @@ namespace CavalryFight.Views
         private Button? _mountArmorNextButton;
 
         private Toggle? _saddleToggle;
+        private Toggle? _reinsToggle;
 
         // プレビュー
         private VisualElement? _previewContainer;
@@ -122,10 +150,17 @@ namespace CavalryFight.Views
         // 下部ボタン
         private Button? _resetButton;
         private Button? _backButton;
+        private Button? _combatIdleToggleButton;
+
+        // 戦闘待機モード状態
+        private bool _isCombatIdleMode = false;
 
         // 3Dプレビューオブジェクト
         private GameObject? _currentPreviewCharacter;
         private GameObject? _currentPreviewMount;
+
+        // 再入防止フラグ
+        private bool _isUpdatingPreview = false;
 
         #endregion
 
@@ -178,6 +213,9 @@ namespace CavalryFight.Views
 
             // イベントハンドラを登録
             RegisterEventHandlers();
+
+            // プレビューオブジェクトを初期化（両方インスタンス化）
+            InitializePreviewObjects();
 
             // 初期カテゴリを表示
             UpdateCategoryVisibility();
@@ -298,20 +336,37 @@ namespace CavalryFight.Views
             _bowNextButton = Q<Button>("BowNextButton");
 
             // 馬コントロール
-            _mountTypeDropdown = Q<DropdownField>("MountTypeDropdown");
-            _coatColorDropdown = Q<DropdownField>("CoatColorDropdown");
-            _maneStyleDropdown = Q<DropdownField>("ManeStyleDropdown");
-            _maneColorDropdown = Q<DropdownField>("ManeColorDropdown");
+            _coatColorPrevButton = Q<Button>("CoatColorPrevButton");
+            _coatColorValue = Q<Label>("CoatColorValue");
+            _coatColorNextButton = Q<Button>("CoatColorNextButton");
+
+            _maneStylePrevButton = Q<Button>("ManeStylePrevButton");
+            _maneStyleValue = Q<Label>("ManeStyleValue");
+            _maneStyleNextButton = Q<Button>("ManeStyleNextButton");
+
+            _maneColorPrevButton = Q<Button>("ManeColorPrevButton");
+            _maneColorValue = Q<Label>("ManeColorValue");
+            _maneColorNextButton = Q<Button>("ManeColorNextButton");
+
+            _hornTypePrevButton = Q<Button>("HornTypePrevButton");
+            _hornTypeValue = Q<Label>("HornTypeValue");
+            _hornTypeNextButton = Q<Button>("HornTypeNextButton");
+
+            _hornMaterialPrevButton = Q<Button>("HornMaterialPrevButton");
+            _hornMaterialValue = Q<Label>("HornMaterialValue");
+            _hornMaterialNextButton = Q<Button>("HornMaterialNextButton");
 
             _mountArmorPrevButton = Q<Button>("MountArmorPrevButton");
             _mountArmorValue = Q<Label>("MountArmorValue");
             _mountArmorNextButton = Q<Button>("MountArmorNextButton");
 
             _saddleToggle = Q<Toggle>("SaddleToggle");
+            _reinsToggle = Q<Toggle>("ReinsToggle");
 
             // 下部ボタン
             _resetButton = Q<Button>("ResetButton");
             _backButton = Q<Button>("BackButton");
+            _combatIdleToggleButton = Q<Button>("CombatIdleToggleButton");
         }
 
         /// <summary>
@@ -363,34 +418,6 @@ namespace CavalryFight.Views
             if (_genderRadioGroup != null)
             {
                 _genderRadioGroup.choices = new System.Collections.Generic.List<string> { "Male", "Female" };
-            }
-
-            // 馬のタイプ
-            if (_mountTypeDropdown != null)
-            {
-                _mountTypeDropdown.choices = System.Enum.GetNames(typeof(MountType))
-                    .Select(name => name).ToList();
-            }
-
-            // 毛色
-            if (_coatColorDropdown != null)
-            {
-                _coatColorDropdown.choices = System.Enum.GetNames(typeof(HorseColor))
-                    .Select(name => name).ToList();
-            }
-
-            // たてがみスタイル
-            if (_maneStyleDropdown != null)
-            {
-                _maneStyleDropdown.choices = System.Enum.GetNames(typeof(ManeStyle))
-                    .Select(name => name).ToList();
-            }
-
-            // たてがみの色
-            if (_maneColorDropdown != null)
-            {
-                _maneColorDropdown.choices = System.Enum.GetNames(typeof(ManeColor))
-                    .Select(name => name).ToList();
             }
         }
 
@@ -497,24 +524,26 @@ namespace CavalryFight.Views
 
             var mount = ViewModel.WorkingMount;
 
-            // 馬のタイプ
-            if (_mountTypeDropdown != null)
-            {
-                _mountTypeDropdown.index = (int)mount.MountType;
-            }
-
             // 外見
-            if (_coatColorDropdown != null)
+            if (_coatColorValue != null)
             {
-                _coatColorDropdown.index = (int)mount.CoatColor;
+                _coatColorValue.text = mount.CoatColor.ToString();
             }
-            if (_maneStyleDropdown != null)
+            if (_maneStyleValue != null)
             {
-                _maneStyleDropdown.index = (int)mount.ManeStyle;
+                _maneStyleValue.text = mount.ManeStyle.ToString();
             }
-            if (_maneColorDropdown != null)
+            if (_maneColorValue != null)
             {
-                _maneColorDropdown.index = (int)mount.ManeColor;
+                _maneColorValue.text = mount.ManeColor.ToString();
+            }
+            if (_hornTypeValue != null)
+            {
+                _hornTypeValue.text = mount.HornType.ToString();
+            }
+            if (_hornMaterialValue != null)
+            {
+                _hornMaterialValue.text = mount.HornMaterial.ToString();
             }
 
             // 装備
@@ -525,6 +554,10 @@ namespace CavalryFight.Views
             if (_saddleToggle != null)
             {
                 _saddleToggle.value = mount.HasSaddle;
+            }
+            if (_reinsToggle != null)
+            {
+                _reinsToggle.value = mount.HasReins;
             }
         }
 
@@ -608,20 +641,20 @@ namespace CavalryFight.Views
             // 矢印ボタンハンドラ
             if (_faceTypePrevButton != null)
             {
-                _faceTypePrevButton.clicked += () => OnArrowButtonClicked("FaceType", -1, 0, 1);
+                _faceTypePrevButton.clicked += () => OnArrowButtonClicked("FaceType", -1, 1, 3);
             }
             if (_faceTypeNextButton != null)
             {
-                _faceTypeNextButton.clicked += () => OnArrowButtonClicked("FaceType", 1, 0, 1);
+                _faceTypeNextButton.clicked += () => OnArrowButtonClicked("FaceType", 1, 1, 3);
             }
 
             if (_hairstylePrevButton != null)
             {
-                _hairstylePrevButton.clicked += () => OnArrowButtonClicked("Hairstyle", -1, 0, 14);
+                _hairstylePrevButton.clicked += () => OnArrowButtonClicked("Hairstyle", -1, 1, 14);
             }
             if (_hairstyleNextButton != null)
             {
-                _hairstyleNextButton.clicked += () => OnArrowButtonClicked("Hairstyle", 1, 0, 14);
+                _hairstyleNextButton.clicked += () => OnArrowButtonClicked("Hairstyle", 1, 1, 14);
             }
 
             if (_hairColorPrevButton != null)
@@ -635,110 +668,138 @@ namespace CavalryFight.Views
 
             if (_eyeColorPrevButton != null)
             {
-                _eyeColorPrevButton.clicked += () => OnArrowButtonClicked("EyeColor", -1, 1, 9);
+                _eyeColorPrevButton.clicked += () => OnArrowButtonClicked("EyeColor", -1, 1, 5);
             }
             if (_eyeColorNextButton != null)
             {
-                _eyeColorNextButton.clicked += () => OnArrowButtonClicked("EyeColor", 1, 1, 9);
+                _eyeColorNextButton.clicked += () => OnArrowButtonClicked("EyeColor", 1, 1, 5);
             }
 
             if (_facialHairPrevButton != null)
             {
-                _facialHairPrevButton.clicked += () => OnArrowButtonClicked("FacialHair", -1, 0, 10);
+                _facialHairPrevButton.clicked += () => OnArrowButtonClicked("FacialHair", -1, 0, 8);
             }
             if (_facialHairNextButton != null)
             {
-                _facialHairNextButton.clicked += () => OnArrowButtonClicked("FacialHair", 1, 0, 10);
+                _facialHairNextButton.clicked += () => OnArrowButtonClicked("FacialHair", 1, 0, 8);
             }
 
             if (_skinTonePrevButton != null)
             {
-                _skinTonePrevButton.clicked += () => OnArrowButtonClicked("SkinTone", -1, 1, 9);
+                _skinTonePrevButton.clicked += () => OnArrowButtonClicked("SkinTone", -1, 1, 3);
             }
             if (_skinToneNextButton != null)
             {
-                _skinToneNextButton.clicked += () => OnArrowButtonClicked("SkinTone", 1, 1, 9);
+                _skinToneNextButton.clicked += () => OnArrowButtonClicked("SkinTone", 1, 1, 3);
             }
 
             if (_bustSizePrevButton != null)
             {
-                _bustSizePrevButton.clicked += () => OnArrowButtonClicked("BustSize", -1, 0, 5);
+                _bustSizePrevButton.clicked += () => OnArrowButtonClicked("BustSize", -1, 1, 3);
             }
             if (_bustSizeNextButton != null)
             {
-                _bustSizeNextButton.clicked += () => OnArrowButtonClicked("BustSize", 1, 0, 5);
+                _bustSizeNextButton.clicked += () => OnArrowButtonClicked("BustSize", 1, 1, 3);
             }
 
             if (_headArmorPrevButton != null)
             {
-                _headArmorPrevButton.clicked += () => OnArrowButtonClicked("HeadArmor", -1, 0, 10);
+                _headArmorPrevButton.clicked += () => OnArrowButtonClicked("HeadArmor", -1, 0, 12);
             }
             if (_headArmorNextButton != null)
             {
-                _headArmorNextButton.clicked += () => OnArrowButtonClicked("HeadArmor", 1, 0, 10);
+                _headArmorNextButton.clicked += () => OnArrowButtonClicked("HeadArmor", 1, 0, 12);
             }
 
             if (_chestArmorPrevButton != null)
             {
-                _chestArmorPrevButton.clicked += () => OnArrowButtonClicked("ChestArmor", -1, 0, 10);
+                _chestArmorPrevButton.clicked += () => OnArrowButtonClicked("ChestArmor", -1, 0, 12);
             }
             if (_chestArmorNextButton != null)
             {
-                _chestArmorNextButton.clicked += () => OnArrowButtonClicked("ChestArmor", 1, 0, 10);
+                _chestArmorNextButton.clicked += () => OnArrowButtonClicked("ChestArmor", 1, 0, 12);
             }
 
             if (_armsArmorPrevButton != null)
             {
-                _armsArmorPrevButton.clicked += () => OnArrowButtonClicked("ArmsArmor", -1, 0, 10);
+                _armsArmorPrevButton.clicked += () => OnArrowButtonClicked("ArmsArmor", -1, 0, 12);
             }
             if (_armsArmorNextButton != null)
             {
-                _armsArmorNextButton.clicked += () => OnArrowButtonClicked("ArmsArmor", 1, 0, 10);
+                _armsArmorNextButton.clicked += () => OnArrowButtonClicked("ArmsArmor", 1, 0, 12);
             }
 
             if (_waistArmorPrevButton != null)
             {
-                _waistArmorPrevButton.clicked += () => OnArrowButtonClicked("WaistArmor", -1, 0, 10);
+                _waistArmorPrevButton.clicked += () => OnArrowButtonClicked("WaistArmor", -1, 1, 12);
             }
             if (_waistArmorNextButton != null)
             {
-                _waistArmorNextButton.clicked += () => OnArrowButtonClicked("WaistArmor", 1, 0, 10);
+                _waistArmorNextButton.clicked += () => OnArrowButtonClicked("WaistArmor", 1, 1, 12);
             }
 
             if (_legsArmorPrevButton != null)
             {
-                _legsArmorPrevButton.clicked += () => OnArrowButtonClicked("LegsArmor", -1, 0, 10);
+                _legsArmorPrevButton.clicked += () => OnArrowButtonClicked("LegsArmor", -1, 0, 12);
             }
             if (_legsArmorNextButton != null)
             {
-                _legsArmorNextButton.clicked += () => OnArrowButtonClicked("LegsArmor", 1, 0, 10);
+                _legsArmorNextButton.clicked += () => OnArrowButtonClicked("LegsArmor", 1, 0, 12);
             }
 
             if (_bowPrevButton != null)
             {
-                _bowPrevButton.clicked += () => OnArrowButtonClicked("Bow", -1, 1, 5);
+                _bowPrevButton.clicked += () => OnArrowButtonClicked("Bow", -1, 10, 13);
             }
             if (_bowNextButton != null)
             {
-                _bowNextButton.clicked += () => OnArrowButtonClicked("Bow", 1, 1, 5);
+                _bowNextButton.clicked += () => OnArrowButtonClicked("Bow", 1, 10, 13);
             }
 
-            // 馬コントロール
-            if (_mountTypeDropdown != null)
+            // 馬コントロール - 矢印ボタン
+            if (_coatColorPrevButton != null)
             {
-                _mountTypeDropdown.RegisterValueChangedCallback(OnMountTypeChanged);
+                _coatColorPrevButton.clicked += () => OnMountEnumArrowClicked("CoatColor", -1);
             }
-            if (_coatColorDropdown != null)
+            if (_coatColorNextButton != null)
             {
-                _coatColorDropdown.RegisterValueChangedCallback(OnCoatColorChanged);
+                _coatColorNextButton.clicked += () => OnMountEnumArrowClicked("CoatColor", 1);
             }
-            if (_maneStyleDropdown != null)
+
+            if (_maneStylePrevButton != null)
             {
-                _maneStyleDropdown.RegisterValueChangedCallback(OnManeStyleChanged);
+                _maneStylePrevButton.clicked += () => OnMountEnumArrowClicked("ManeStyle", -1);
             }
-            if (_maneColorDropdown != null)
+            if (_maneStyleNextButton != null)
             {
-                _maneColorDropdown.RegisterValueChangedCallback(OnManeColorChanged);
+                _maneStyleNextButton.clicked += () => OnMountEnumArrowClicked("ManeStyle", 1);
+            }
+
+            if (_maneColorPrevButton != null)
+            {
+                _maneColorPrevButton.clicked += () => OnMountEnumArrowClicked("ManeColor", -1);
+            }
+            if (_maneColorNextButton != null)
+            {
+                _maneColorNextButton.clicked += () => OnMountEnumArrowClicked("ManeColor", 1);
+            }
+
+            if (_hornTypePrevButton != null)
+            {
+                _hornTypePrevButton.clicked += () => OnMountEnumArrowClicked("HornType", -1);
+            }
+            if (_hornTypeNextButton != null)
+            {
+                _hornTypeNextButton.clicked += () => OnMountEnumArrowClicked("HornType", 1);
+            }
+
+            if (_hornMaterialPrevButton != null)
+            {
+                _hornMaterialPrevButton.clicked += () => OnMountEnumArrowClicked("HornMaterial", -1);
+            }
+            if (_hornMaterialNextButton != null)
+            {
+                _hornMaterialNextButton.clicked += () => OnMountEnumArrowClicked("HornMaterial", 1);
             }
 
             if (_mountArmorPrevButton != null)
@@ -754,6 +815,10 @@ namespace CavalryFight.Views
             {
                 _saddleToggle.RegisterValueChangedCallback(OnSaddleChanged);
             }
+            if (_reinsToggle != null)
+            {
+                _reinsToggle.RegisterValueChangedCallback(OnReinsChanged);
+            }
 
             // 下部ボタン
             if (_resetButton != null)
@@ -763,6 +828,10 @@ namespace CavalryFight.Views
             if (_backButton != null)
             {
                 _backButton.clicked += OnBackButtonClicked;
+            }
+            if (_combatIdleToggleButton != null)
+            {
+                _combatIdleToggleButton.clicked += OnCombatIdleToggleClicked;
             }
         }
 
@@ -791,25 +860,13 @@ namespace CavalryFight.Views
             // 手動でイベント解除する必要はない
 
             // 馬コントロール
-            if (_mountTypeDropdown != null)
-            {
-                _mountTypeDropdown.UnregisterValueChangedCallback(OnMountTypeChanged);
-            }
-            if (_coatColorDropdown != null)
-            {
-                _coatColorDropdown.UnregisterValueChangedCallback(OnCoatColorChanged);
-            }
-            if (_maneStyleDropdown != null)
-            {
-                _maneStyleDropdown.UnregisterValueChangedCallback(OnManeStyleChanged);
-            }
-            if (_maneColorDropdown != null)
-            {
-                _maneColorDropdown.UnregisterValueChangedCallback(OnManeColorChanged);
-            }
             if (_saddleToggle != null)
             {
                 _saddleToggle.UnregisterValueChangedCallback(OnSaddleChanged);
+            }
+            if (_reinsToggle != null)
+            {
+                _reinsToggle.UnregisterValueChangedCallback(OnReinsChanged);
             }
 
             // 下部ボタン
@@ -820,6 +877,10 @@ namespace CavalryFight.Views
             if (_backButton != null)
             {
                 _backButton.clicked -= OnBackButtonClicked;
+            }
+            if (_combatIdleToggleButton != null)
+            {
+                _combatIdleToggleButton.clicked -= OnCombatIdleToggleClicked;
             }
         }
 
@@ -1059,41 +1120,84 @@ namespace CavalryFight.Views
             }
         }
 
-        // 馬変更ハンドラ
-        private void OnMountTypeChanged(ChangeEvent<string> evt)
+        /// <summary>
+        /// 馬の列挙型プロパティ用の矢印ボタンクリックハンドラ
+        /// </summary>
+        /// <param name="propertyName">プロパティ名</param>
+        /// <param name="direction">方向（-1 = 前, 1 = 次）</param>
+        private void OnMountEnumArrowClicked(string propertyName, int direction)
         {
-            if (ViewModel != null && _mountTypeDropdown != null)
+            if (ViewModel == null)
             {
-                ViewModel.WorkingMount.MountType = (MountType)_mountTypeDropdown.index;
-                ViewModel.NotifyMountChanged();
+                return;
             }
-        }
 
-        private void OnCoatColorChanged(ChangeEvent<string> evt)
-        {
-            if (ViewModel != null && _coatColorDropdown != null)
+            switch (propertyName)
             {
-                ViewModel.WorkingMount.CoatColor = (HorseColor)_coatColorDropdown.index;
-                ViewModel.NotifyMountChanged();
+                case "CoatColor":
+                    {
+                        int currentValue = (int)ViewModel.WorkingMount.CoatColor;
+                        int enumLength = System.Enum.GetValues(typeof(HorseColor)).Length;
+                        int newValue = (currentValue + direction + enumLength) % enumLength;
+                        ViewModel.WorkingMount.CoatColor = (HorseColor)newValue;
+                        if (_coatColorValue != null)
+                        {
+                            _coatColorValue.text = ((HorseColor)newValue).ToString();
+                        }
+                        break;
+                    }
+                case "ManeStyle":
+                    {
+                        int currentValue = (int)ViewModel.WorkingMount.ManeStyle;
+                        int enumLength = System.Enum.GetValues(typeof(ManeStyle)).Length;
+                        int newValue = (currentValue + direction + enumLength) % enumLength;
+                        ViewModel.WorkingMount.ManeStyle = (ManeStyle)newValue;
+                        if (_maneStyleValue != null)
+                        {
+                            _maneStyleValue.text = ((ManeStyle)newValue).ToString();
+                        }
+                        break;
+                    }
+                case "ManeColor":
+                    {
+                        int currentValue = (int)ViewModel.WorkingMount.ManeColor;
+                        int enumLength = System.Enum.GetValues(typeof(ManeColor)).Length;
+                        int newValue = (currentValue + direction + enumLength) % enumLength;
+                        ViewModel.WorkingMount.ManeColor = (ManeColor)newValue;
+                        if (_maneColorValue != null)
+                        {
+                            _maneColorValue.text = ((ManeColor)newValue).ToString();
+                        }
+                        break;
+                    }
+                case "HornType":
+                    {
+                        int currentValue = (int)ViewModel.WorkingMount.HornType;
+                        int enumLength = System.Enum.GetValues(typeof(HornType)).Length;
+                        int newValue = (currentValue + direction + enumLength) % enumLength;
+                        ViewModel.WorkingMount.HornType = (HornType)newValue;
+                        if (_hornTypeValue != null)
+                        {
+                            _hornTypeValue.text = ((HornType)newValue).ToString();
+                        }
+                        break;
+                    }
+                case "HornMaterial":
+                    {
+                        int currentValue = (int)ViewModel.WorkingMount.HornMaterial;
+                        int enumLength = System.Enum.GetValues(typeof(HornMaterial)).Length;
+                        int newValue = (currentValue + direction + enumLength) % enumLength;
+                        ViewModel.WorkingMount.HornMaterial = (HornMaterial)newValue;
+                        if (_hornMaterialValue != null)
+                        {
+                            _hornMaterialValue.text = ((HornMaterial)newValue).ToString();
+                        }
+                        break;
+                    }
             }
-        }
 
-        private void OnManeStyleChanged(ChangeEvent<string> evt)
-        {
-            if (ViewModel != null && _maneStyleDropdown != null)
-            {
-                ViewModel.WorkingMount.ManeStyle = (ManeStyle)_maneStyleDropdown.index;
-                ViewModel.NotifyMountChanged();
-            }
-        }
-
-        private void OnManeColorChanged(ChangeEvent<string> evt)
-        {
-            if (ViewModel != null && _maneColorDropdown != null)
-            {
-                ViewModel.WorkingMount.ManeColor = (ManeColor)_maneColorDropdown.index;
-                ViewModel.NotifyMountChanged();
-            }
+            // 変更を通知
+            ViewModel.NotifyMountChanged();
         }
 
         private void OnSaddleChanged(ChangeEvent<bool> evt)
@@ -1101,6 +1205,15 @@ namespace CavalryFight.Views
             if (ViewModel != null)
             {
                 ViewModel.WorkingMount.HasSaddle = evt.newValue;
+                ViewModel.NotifyMountChanged();
+            }
+        }
+
+        private void OnReinsChanged(ChangeEvent<bool> evt)
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.WorkingMount.HasReins = evt.newValue;
                 ViewModel.NotifyMountChanged();
             }
         }
@@ -1116,43 +1229,173 @@ namespace CavalryFight.Views
             ViewModel?.BackToMenuCommand.Execute(null);
         }
 
+        private void OnCombatIdleToggleClicked()
+        {
+            _isCombatIdleMode = !_isCombatIdleMode;
+
+            // ボタンテキストを更新
+            if (_combatIdleToggleButton != null)
+            {
+                _combatIdleToggleButton.text = _isCombatIdleMode ? "Idle" : "Combat";
+            }
+
+            // アニメーターを切り替え
+            if (_currentPreviewCharacter != null)
+            {
+                var customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
+                if (customizationService != null)
+                {
+                    // P09CharacterApplierにアニメーターを設定
+                    var p09Applier = customizationService.GetP09CharacterApplier();
+                    if (p09Applier != null)
+                    {
+                        p09Applier.MaleCombatIdleAnimator = _maleCombatIdleAnimatorController;
+                        p09Applier.FemaleCombatIdleAnimator = _femaleCombatIdleAnimatorController;
+                    }
+
+                    // アニメーターモードを切り替え
+                    customizationService.SetCharacterCombatIdleMode(_currentPreviewCharacter, _isCombatIdleMode);
+                }
+            }
+        }
+
         #endregion
 
         #region 3D Preview
+
+        /// <summary>
+        /// プレビューオブジェクトを初期化します（シーン開始時に両方インスタンス化）
+        /// </summary>
+        private void InitializePreviewObjects()
+        {
+            var customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
+            if (customizationService == null)
+            {
+                Debug.LogError("[CustomizationView] CustomizationService not found!");
+                return;
+            }
+
+            // キャラクタープレビューをインスタンス化（非アクティブ状態で作成）
+            if (_characterPreviewPrefab != null && _currentPreviewCharacter == null)
+            {
+                _currentPreviewCharacter = Instantiate(_characterPreviewPrefab, _Container, false);
+
+                // 即座に非アクティブ化（念のため）
+                _currentPreviewCharacter.SetActive(false);
+
+                // Transform設定
+                _currentPreviewCharacter.transform.localPosition = Vector3.zero;
+                _currentPreviewCharacter.transform.localRotation = Quaternion.identity;
+                SetLayerRecursively(_currentPreviewCharacter, LayerMask.NameToLayer("Preview"));
+
+                // 非表示のままカスタマイズを適用
+                var p09Applier = customizationService.GetP09CharacterApplier();
+                if (p09Applier != null)
+                {
+                    p09Applier.Apply(_currentPreviewCharacter, ViewModel.WorkingCharacter);
+                }
+
+                // Animatorを設定
+                AssignAnimatorController(_currentPreviewCharacter, ViewModel.WorkingCharacter.Gender);
+                EnableIdleAnimation(_currentPreviewCharacter, ViewModel.WorkingCharacter.Gender);
+
+                // 非表示のまま維持（タブ切り替え時に表示）
+            }
+            else if (_characterPreviewPrefab == null)
+            {
+                Debug.LogWarning("[CustomizationView] _characterPreviewPrefab is null! Character preview will not be available.");
+            }
+
+            // 馬プレビューをインスタンス化（非アクティブ状態で作成）
+            if (_mountPreviewPrefab != null && _currentPreviewMount == null)
+            {
+                _currentPreviewMount = Instantiate(_mountPreviewPrefab, _Container, false);
+
+                // 即座に非アクティブ化（念のため）
+                _currentPreviewMount.SetActive(false);
+
+                // Transform設定
+                _currentPreviewMount.transform.localPosition = Vector3.zero;
+                _currentPreviewMount.transform.localRotation = Quaternion.identity;
+                SetLayerRecursively(_currentPreviewMount, LayerMask.NameToLayer("Preview"));
+
+                // 非表示のままカスタマイズを適用
+                var malbersApplier = customizationService.GetMalbersHorseApplier();
+                if (malbersApplier != null)
+                {
+                    malbersApplier.Apply(_currentPreviewMount, ViewModel.WorkingMount);
+                }
+
+                // Animationを設定
+                EnableIdleAnimation(_currentPreviewMount, null);
+
+                // 非表示のまま維持（タブ切り替え時に表示）
+            }
+            else if (_mountPreviewPrefab == null)
+            {
+                Debug.LogWarning("[CustomizationView] _mountPreviewPrefab is null! Mount preview will not be available.");
+            }
+        }
 
         /// <summary>
         /// プレビューを更新します
         /// </summary>
         private void UpdatePreview()
         {
-            if (ViewModel == null || _previewCamera == null)
+            // 再入防止: すでに更新中の場合は何もしない
+            if (_isUpdatingPreview)
             {
                 return;
             }
 
-            var customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
-            if (customizationService == null)
+            _isUpdatingPreview = true;
+
+            try
             {
-                return;
-            }
+                if (ViewModel == null)
+                {
+                    return;
+                }
+
+                if (_previewCamera == null)
+                {
+                    return;
+                }
+
+                var customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
+                if (customizationService == null)
+                {
+                    return;
+                }
 
             if (ViewModel.IsCharacterCategory)
             {
-                // 必要に応じてキャラクタープレビューをインスタンス化
-                if (_currentPreviewCharacter == null && _characterPreviewPrefab != null)
-                {
-                    _currentPreviewCharacter = Instantiate(_characterPreviewPrefab, _Container);
-                    _currentPreviewCharacter.transform.localPosition = Vector3.zero;
-                    _currentPreviewCharacter.transform.localRotation = Quaternion.identity;
-                    SetLayerRecursively(_currentPreviewCharacter, LayerMask.NameToLayer("Preview"));
-                    Debug.Log($"[CustomizationView] Instantiated character preview");
-                }
+                Debug.Log("[CustomizationView] Updating character preview...");
 
-                // キャラクターを表示
+                // キャラクターを表示・カスタマイズ適用
                 if (_currentPreviewCharacter != null)
                 {
                     _currentPreviewCharacter.SetActive(true);
-                    customizationService.ApplyCharacterCustomization(_currentPreviewCharacter);
+
+                    AssignAnimatorController(_currentPreviewCharacter, ViewModel.WorkingCharacter.Gender);
+
+                    // P09CharacterApplierを直接使用してカスタマイズを適用
+                    var p09Applier = customizationService.GetP09CharacterApplier();
+                    if (p09Applier != null)
+                    {
+                        p09Applier.Apply(_currentPreviewCharacter, ViewModel.WorkingCharacter);
+                    }
+                    else
+                    {
+                        Debug.LogError("[CustomizationView] P09CharacterApplier not found!");
+                    }
+
+                    // アニメーションを再生（アイドルポーズ）
+                    EnableIdleAnimation(_currentPreviewCharacter, ViewModel.WorkingCharacter.Gender);
+                }
+                else
+                {
+                    Debug.LogWarning("[CustomizationView] Character preview object not initialized!");
                 }
 
                 // 馬を非表示
@@ -1163,21 +1406,30 @@ namespace CavalryFight.Views
             }
             else if (ViewModel.IsMountCategory)
             {
-                // 馬も同様
-                if (_currentPreviewMount == null && _mountPreviewPrefab != null)
-                {
-                    _currentPreviewMount = Instantiate(_mountPreviewPrefab, _Container);
-                    _currentPreviewMount.transform.localPosition = Vector3.zero;
-                    _currentPreviewMount.transform.localRotation = Quaternion.identity;
-                    SetLayerRecursively(_currentPreviewMount, LayerMask.NameToLayer("Preview"));
-                    Debug.Log($"[CustomizationView] Instantiated mount preview");
-                }
+                Debug.Log("[CustomizationView] Updating mount preview...");
 
-                // 馬を表示
+                // 馬を表示・カスタマイズ適用
                 if (_currentPreviewMount != null)
                 {
                     _currentPreviewMount.SetActive(true);
-                    customizationService.ApplyMountCustomization(_currentPreviewMount);
+
+                    // MalbersHorseApplierを直接使用してカスタマイズを適用
+                    var malbersApplier = customizationService.GetMalbersHorseApplier();
+                    if (malbersApplier != null)
+                    {
+                        malbersApplier.Apply(_currentPreviewMount, ViewModel.WorkingMount);
+                    }
+                    else
+                    {
+                        Debug.LogError("[CustomizationView] MalbersHorseApplier not found!");
+                    }
+
+                    // アニメーションを再生（アイドルポーズ）
+                    EnableIdleAnimation(_currentPreviewMount, null);
+                }
+                else
+                {
+                    Debug.LogWarning("[CustomizationView] Mount preview object not initialized!");
                 }
 
                 // キャラクターを非表示
@@ -1185,6 +1437,11 @@ namespace CavalryFight.Views
                 {
                     _currentPreviewCharacter.SetActive(false);
                 }
+            }
+            }
+            finally
+            {
+                _isUpdatingPreview = false;
             }
         }
 
@@ -1229,6 +1486,187 @@ namespace CavalryFight.Views
             }
 
             // 注意: _previewContainer自体は破棄しない（シーンに配置された永続的なオブジェクト）
+        }
+
+        /// <summary>
+        /// アイドルアニメーションを有効化し、物理演算を無効化します
+        /// </summary>
+        /// <param name="previewObject">プレビューオブジェクト</param>
+        /// <param name="gender">性別（キャラクターの場合のみ）</param>
+        private void EnableIdleAnimation(GameObject previewObject, Gender? gender)
+        {
+            if (previewObject == null)
+            {
+                return;
+            }
+
+            // 物理演算を無効化（プレビューが落下しないように）
+            DisablePhysics(previewObject);
+
+            var animator = previewObject.GetComponent<Animator>();
+            if (animator == null)
+            {
+                animator = previewObject.GetComponentInChildren<Animator>();
+            }
+
+            if (animator == null)
+            {
+                Debug.LogWarning($"[CustomizationView] No Animator found on {previewObject.name}. Cannot play idle animation.");
+                return;
+            }
+
+            // Animatorを有効化
+            animator.enabled = true;
+
+            Debug.Log($"[CustomizationView] Found Animator on {animator.gameObject.name}, controller: {animator.runtimeAnimatorController?.name ?? "NULL"}");
+
+            // キャラクターの場合、性別に応じたアイドルアニメーションを再生
+            if (gender.HasValue)
+            {
+                // P09のアニメーションステートを試す（複数の命名規則に対応）
+                string[] possibleStates = gender.Value == Gender.Male
+                    ? new[] { "Idle", "idle", "P09_Male_idle", "P09 Male idle", "Male_Idle" }
+                    : new[] { "Idle", "idle", "P09_Fem_idle", "P09 Fem idle", "Female_Idle" };
+
+                bool foundAnimation = false;
+                foreach (var stateName in possibleStates)
+                {
+                    if (HasAnimationState(animator, stateName))
+                    {
+                        animator.Play(stateName);
+                        Debug.Log($"[CustomizationView] Playing '{stateName}' animation for character.");
+                        foundAnimation = true;
+                        break;
+                    }
+                }
+
+                if (!foundAnimation)
+                {
+                    Debug.LogWarning($"[CustomizationView] No idle animation found. Tried: {string.Join(", ", possibleStates)}. Using default state.");
+                }
+            }
+            else
+            {
+                // 馬の場合、Malbersのアニメーションシステムを使用
+                // Malbersは通常Animalコンポーネントで制御されるため、
+                // Animatorを直接操作せずにデフォルトのステートを使用
+                Debug.Log($"[CustomizationView] Mount animator enabled. Using Malbers default animation system.");
+            }
+        }
+
+        /// <summary>
+        /// Animatorに指定されたステートが存在するかチェックします
+        /// </summary>
+        /// <param name="animator">Animator</param>
+        /// <param name="stateName">ステート名</param>
+        /// <returns>ステートが存在する場合はtrue</returns>
+        private bool HasAnimationState(Animator animator, string stateName)
+        {
+            if (animator == null || animator.runtimeAnimatorController == null)
+            {
+                return false;
+            }
+
+            foreach (var clip in animator.runtimeAnimatorController.animationClips)
+            {
+                if (clip.name == stateName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// GameObjectとその子オブジェクトの物理演算を無効化します
+        /// </summary>
+        /// <param name="obj">対象のGameObject</param>
+        /// <remarks>
+        /// プレビューオブジェクトが重力で落下しないように、
+        /// すべてのRigidbodyコンポーネントをkinematicに設定し、
+        /// Malbersの Animalコンポーネントも無効化します。
+        /// </remarks>
+        private void DisablePhysics(GameObject obj)
+        {
+            if (obj == null)
+            {
+                return;
+            }
+
+            // 自身と全ての子オブジェクトのRigidbodyを取得
+            var rigidbodies = obj.GetComponentsInChildren<Rigidbody>(true);
+            foreach (var rb in rigidbodies)
+            {
+                if (rb != null)
+                {
+                    rb.isKinematic = true;
+                    rb.useGravity = false;
+                    rb.detectCollisions = false;
+                    Debug.Log($"[CustomizationView] Disabled physics on Rigidbody: {rb.gameObject.name}");
+                }
+            }
+
+            // Malbers Animal componentを無効化（馬の場合）
+            var animalComponents = obj.GetComponentsInChildren<Component>(true)
+                .Where(c => c.GetType().Name == "Animal" || c.GetType().Name.Contains("MAnimal"))
+                .ToArray();
+
+            foreach (var animal in animalComponents)
+            {
+                if (animal != null)
+                {
+                    var animalBehaviour = animal as MonoBehaviour;
+                    if (animalBehaviour != null)
+                    {
+                        animalBehaviour.enabled = false;
+                        Debug.Log($"[CustomizationView] Disabled Malbers Animal component on {animal.gameObject.name}");
+                    }
+                }
+            }
+
+            Debug.Log($"[CustomizationView] Physics disabled: {rigidbodies.Length} Rigidbodies, {animalComponents.Length} Animal components in {obj.name}");
+        }
+
+        /// <summary>
+        /// P09キャラクターにAnimator Controllerを割り当てます
+        /// </summary>
+        /// <param name="characterObject">キャラクターオブジェクト</param>
+        /// <param name="gender">性別</param>
+        /// <remarks>
+        /// T-pose問題を修正するため、性別に応じた正しいAnimator Controllerを割り当てます
+        /// </remarks>
+        private void AssignAnimatorController(GameObject characterObject, Gender gender)
+        {
+            if (characterObject == null)
+            {
+                return;
+            }
+
+            var animator = characterObject.GetComponent<Animator>();
+            if (animator == null)
+            {
+                animator = characterObject.GetComponentInChildren<Animator>();
+            }
+
+            if (animator == null)
+            {
+                Debug.LogWarning($"[CustomizationView] No Animator found on {characterObject.name}. Cannot assign controller.");
+                return;
+            }
+
+            // 性別に応じてAnimator Controllerを割り当て
+            RuntimeAnimatorController? controller = gender == Gender.Male ? _maleAnimatorController : _femaleAnimatorController;
+
+            if (controller != null)
+            {
+                animator.runtimeAnimatorController = controller;
+                Debug.Log($"[CustomizationView] Assigned {controller.name} to {animator.gameObject.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"[CustomizationView] {(gender == Gender.Male ? "Male" : "Female")} Animator Controller not assigned in Inspector!");
+            }
         }
 
         #endregion

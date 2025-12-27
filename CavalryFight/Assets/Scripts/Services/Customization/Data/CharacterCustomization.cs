@@ -24,9 +24,9 @@ namespace CavalryFight.Services.Customization
         public Gender Gender = Gender.Male;
 
         /// <summary>
-        /// 顔のタイプ（0-1）
+        /// 顔のタイプ（1-3、P09は1-based indexing）
         /// </summary>
-        public int FaceType = 0;
+        public int FaceType = 1;
 
         #endregion
 
@@ -48,20 +48,20 @@ namespace CavalryFight.Services.Customization
         public int EyeColorId = 1;
 
         /// <summary>
-        /// 顔のひげID（男性のみ、0-9、0 = なし）
+        /// 顔のひげID（男性のみ、0-8、0 = なし）
         /// </summary>
         public int FacialHairId = 0;
 
         /// <summary>
-        /// 肌の色ID（1-6）
+        /// 肌の色ID（1-3）
         /// </summary>
         public int SkinToneId = 1;
 
         /// <summary>
-        /// バストサイズ（女性のみ、0-2）
+        /// バストサイズ（女性のみ、1-3）
         /// </summary>
         /// <remarks>
-        /// 0 = 小、1 = 中、2 = 大
+        /// 1 = 小、2 = 中、3 = 大
         /// </remarks>
         public int BustSize = 1;
 
@@ -70,38 +70,38 @@ namespace CavalryFight.Services.Customization
         #region Armor
 
         /// <summary>
-        /// 頭部防具ID（0 = なし、1-11）
+        /// 頭部防具ID（0 = なし、2-12）
         /// </summary>
         public int HeadArmorId = 0;
 
         /// <summary>
-        /// 胸部防具ID（0 = 下着、1-13）
+        /// 胸部防具ID（0 = 素体、1-12）
         /// </summary>
-        public int ChestArmorId = 1;
+        public int ChestArmorId = 0;
 
         /// <summary>
-        /// 腕部防具ID（0 = なし、1-13）
+        /// 腕部防具ID（0 = 素体、1-12）
         /// </summary>
-        public int ArmsArmorId = 1;
+        public int ArmsArmorId = 0;
 
         /// <summary>
-        /// 腰部防具ID（0 = 下着、1-11）
+        /// 腰部防具ID（1-12）
         /// </summary>
         public int WaistArmorId = 1;
 
         /// <summary>
-        /// 脚部防具ID（0 = 下着、1-13）
+        /// 脚部防具ID（0 = 素体、1-12）
         /// </summary>
-        public int LegsArmorId = 1;
+        public int LegsArmorId = 0;
 
         #endregion
 
         #region Weapons
 
         /// <summary>
-        /// 弓ID（1-4）
+        /// 弓ID（10-13、P09のWeapon IDs: 1-5=剣、6-9=杖、10-13=弓）
         /// </summary>
-        public int BowId = 1;
+        public int BowId = 10;
 
         #endregion
 

@@ -41,6 +41,16 @@ namespace CavalryFight.Services.Customization
         /// </summary>
         public ManeColor ManeColor = ManeColor.Brown;
 
+        /// <summary>
+        /// 角のメッシュタイプ（どの角を表示するか）
+        /// </summary>
+        public HornType HornType = HornType.None;
+
+        /// <summary>
+        /// 角のマテリアル（角の色/スタイル）
+        /// </summary>
+        public HornMaterial HornMaterial = HornMaterial.BlackPA;
+
         #endregion
 
         #region Equipment
@@ -54,6 +64,11 @@ namespace CavalryFight.Services.Customization
         /// 鞍を装備するか
         /// </summary>
         public bool HasSaddle = true;
+
+        /// <summary>
+        /// 手綱を装備するか
+        /// </summary>
+        public bool HasReins = true;
 
         #endregion
 
@@ -91,8 +106,11 @@ namespace CavalryFight.Services.Customization
                 CoatColor = this.CoatColor,
                 ManeStyle = this.ManeStyle,
                 ManeColor = this.ManeColor,
+                HornType = this.HornType,
+                HornMaterial = this.HornMaterial,
                 ArmorId = this.ArmorId,
-                HasSaddle = this.HasSaddle
+                HasSaddle = this.HasSaddle,
+                HasReins = this.HasReins
             };
         }
 

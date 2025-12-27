@@ -132,15 +132,43 @@
                 <ui:ScrollView name="MountPanel" class="customization-panel" style="flex-grow: 1; display: none;">
                     <ui:VisualElement name="MountContent">
 
-                        <!-- Basic -->
-                        <ui:Label text="Basic" class="section-header" style="font-size: 56px; margin-bottom: 10px;" />
-                        <ui:DropdownField label="Mount Type" name="MountTypeDropdown" class="customization-control" style="font-size: 32px;" />
-
                         <!-- Appearance -->
-                        <ui:Label text="Appearance" class="section-header" style="font-size: 56px; margin-top: 20px; margin-bottom: 10px;" />
-                        <ui:DropdownField label="Coat Color" name="CoatColorDropdown" class="customization-control" style="font-size: 32px;" />
-                        <ui:DropdownField label="Mane Style" name="ManeStyleDropdown" class="customization-control" style="font-size: 32px;" />
-                        <ui:DropdownField label="Mane Color" name="ManeColorDropdown" class="customization-control" style="font-size: 32px;" />
+                        <ui:Label text="Appearance" class="section-header" style="font-size: 56px; margin-bottom: 10px;" />
+
+                        <ui:VisualElement name="CoatColorControl" class="arrow-control">
+                            <ui:Label text="Coat Color" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="CoatColorPrevButton" class="arrow-button" />
+                            <ui:Label text="Brown" name="CoatColorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="CoatColorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="ManeStyleControl" class="arrow-control">
+                            <ui:Label text="Mane Style" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="ManeStylePrevButton" class="arrow-button" />
+                            <ui:Label text="Short" name="ManeStyleValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="ManeStyleNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="ManeColorControl" class="arrow-control">
+                            <ui:Label text="Mane Color" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="ManeColorPrevButton" class="arrow-button" />
+                            <ui:Label text="Brown" name="ManeColorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="ManeColorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="HornTypeControl" class="arrow-control">
+                            <ui:Label text="Horn Type" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="HornTypePrevButton" class="arrow-button" />
+                            <ui:Label text="None" name="HornTypeValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="HornTypeNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="HornMaterialControl" class="arrow-control">
+                            <ui:Label text="Horn Material" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="HornMaterialPrevButton" class="arrow-button" />
+                            <ui:Label text="BlackPA" name="HornMaterialValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="HornMaterialNextButton" class="arrow-button" />
+                        </ui:VisualElement>
 
                         <!-- Equipment -->
                         <ui:Label text="Equipment" class="section-header" style="font-size: 56px; margin-top: 20px; margin-bottom: 10px;" />
@@ -153,6 +181,8 @@
                         </ui:VisualElement>
 
                         <ui:Toggle label="Saddle" name="SaddleToggle" class="customization-control" style="font-size: 32px;" />
+
+                        <ui:Toggle label="Reins" name="ReinsToggle" class="customization-control" style="font-size: 32px;" />
 
                     </ui:VisualElement>
                 </ui:ScrollView>
@@ -169,6 +199,7 @@
 
         <!-- Bottom Buttons -->
         <ui:VisualElement name="ButtonSection" style="flex-direction: row; justify-content: flex-end; margin: 0 4% 2% 4%;">
+            <ui:Button text="Combat" name="CombatIdleToggleButton" style="width: 400px; height: 100px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
             <ui:Button text="Reset" name="ResetButton" style="width: 400px; height: 100px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
             <ui:Button text="Back" name="BackButton" style="width: 400px; height: 100px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
         </ui:VisualElement>
