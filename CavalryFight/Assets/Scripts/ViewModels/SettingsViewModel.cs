@@ -336,6 +336,15 @@ namespace CavalryFight.ViewModels
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// キーバインディング設定を開く要求が発生した時のイベント
+        /// </summary>
+        public event System.EventHandler? OpenKeyBindingsRequested;
+
+        #endregion
+
         #region Constructor
 
         /// <summary>
@@ -703,8 +712,7 @@ namespace CavalryFight.ViewModels
         private void OnOpenKeyBindings()
         {
             Debug.Log("[SettingsViewModel] Opening Key Bindings...");
-            // TODO: キーバインディングUIパネル/モーダルを表示する実装が必要
-            // InputBindingServiceを使用してキー設定UIを表示
+            OpenKeyBindingsRequested?.Invoke(this, System.EventArgs.Empty);
         }
 
         /// <summary>

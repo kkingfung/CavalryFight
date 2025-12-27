@@ -46,6 +46,9 @@ namespace CavalryFight.Views
         private Button? _backButton;
         private Label? _titleLabel;
 
+        // Key Binding Popup
+        private KeyBindingView? _keyBindingView;
+
         #endregion
 
         #region Unity Lifecycle
@@ -59,6 +62,13 @@ namespace CavalryFight.Views
 
             // ViewModelを作成してバインド
             ViewModel = new SettingsViewModel();
+
+            // KeyBindingViewを取得
+            _keyBindingView = FindFirstObjectByType<KeyBindingView>(FindObjectsInactive.Include);
+            if (_keyBindingView == null)
+            {
+                Debug.LogWarning("[SettingsView] KeyBindingView not found in scene.", this);
+            }
         }
 
         #endregion
@@ -99,6 +109,9 @@ namespace CavalryFight.Views
 
             // PropertyChangedイベントを購読
             viewModel.PropertyChanged += OnViewModelPropertyChanged;
+
+            // キーバインディング開く要求イベントを購読
+            viewModel.OpenKeyBindingsRequested += OnOpenKeyBindingsRequested;
         }
 
         /// <summary>
@@ -110,6 +123,7 @@ namespace CavalryFight.Views
             if (ViewModel != null)
             {
                 ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                ViewModel.OpenKeyBindingsRequested -= OnOpenKeyBindingsRequested;
             }
 
             // イベントハンドラを解除
@@ -715,6 +729,21 @@ namespace CavalryFight.Views
         private void OnKeyBindingButtonClicked()
         {
             ViewModel?.OpenKeyBindingsCommand.Execute(null);
+        }
+
+        /// <summary>
+        /// キーバインディング開く要求イベントを処理します
+        /// </summary>
+        private void OnOpenKeyBindingsRequested(object? sender, System.EventArgs e)
+        {
+            if (_keyBindingView != null)
+            {
+                _keyBindingView.Show();
+            }
+            else
+            {
+                Debug.LogWarning("[SettingsView] Cannot open key bindings: KeyBindingView is not available.", this);
+            }
         }
 
         private void OnBackButtonClicked()
