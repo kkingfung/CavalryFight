@@ -244,6 +244,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 215238263f69a7a428a501ca728bc11e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Views.CustomizationView
+  _bgmClip: {fileID: 8300000, guid: 1fa0f31b05466174489a4c2afffe35d1, type: 3}
+  _buttonClickSfx: {fileID: 8300000, guid: aa43ca9e0da8ae1439e4ad22d8a20e14, type: 3}
   _previewCamera: {fileID: 1080700941}
   _Container: {fileID: 1049231973}
   _characterPreviewPrefab: {fileID: 1965089710480139792, guid: 3e9422cc4ffe9f14e9919fca62fe9260, type: 3}
@@ -430,6 +432,7 @@ GameObject:
   - component: {fileID: 1646291244}
   - component: {fileID: 1646291243}
   - component: {fileID: 1646291245}
+  - component: {fileID: 1646291246}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -548,6 +551,14 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!81 &1646291246
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1646291241}
+  m_Enabled: 1
 --- !u!1 &2140084484
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,6 +2,7 @@
 
 using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
 using CavalryFight.Services.Customization;
 using CavalryFight.ViewModels;
 using UnityEngine;
@@ -27,6 +28,10 @@ namespace CavalryFight.Views
     public partial class CustomizationView : UIToolkitViewBase<CustomizationViewModel>
     {
         #region Serialized Fields
+
+        [Header("Audio")]
+        [SerializeField] private AudioClip? _bgmClip;
+        [SerializeField] private AudioClip? _buttonClickSfx;
 
         [Header("3D Preview")]
         [SerializeField] private Camera? _previewCamera;
@@ -198,6 +203,34 @@ namespace CavalryFight.Views
             ViewModel = new CustomizationViewModel(customizationService);
 
             Debug.Log("[CustomizationView] View initialized with ViewModel.", this);
+        }
+
+        /// <summary>
+        /// 有効化時の処理
+        /// </summary>
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            // BGMを再生
+            if (_bgmClip != null)
+            {
+                var audioService = ServiceLocator.Instance.Get<IAudioService>();
+                if (audioService != null)
+                {
+                    audioService.PlayBgm(_bgmClip, loop: true, fadeInDuration: 2f);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 無効化時の処理
+        /// </summary>
+        protected override void OnDisable()
+        {
+            // BGMは停止しない（シーン遷移時の継続再生のため）
+            // 次のシーンが異なるBGMを要求する場合は、そのシーンのOnEnable()で自動的に切り替わる
+            base.OnDisable();
         }
 
         #endregion

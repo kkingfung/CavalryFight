@@ -19,6 +19,12 @@ namespace CavalryFight.Views
         /// </summary>
         private void InitializePreviewObjects()
         {
+            if (ViewModel == null)
+            {
+                Debug.LogError("[CustomizationView] ViewModel is null! Cannot initialize preview objects.");
+                return;
+            }
+
             var customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
             if (customizationService == null)
             {
