@@ -41,6 +41,16 @@ namespace CavalryFight.Services.Customization
         /// </summary>
         public ManeColor ManeColor = ManeColor.Brown;
 
+        /// <summary>
+        /// 角のメッシュタイプ（どの角を表示するか）
+        /// </summary>
+        public HornType HornType = HornType.None;
+
+        /// <summary>
+        /// 角のマテリアル（角の色/スタイル）
+        /// </summary>
+        public HornMaterial HornMaterial = HornMaterial.BlackPA;
+
         #endregion
 
         #region Equipment
@@ -54,6 +64,11 @@ namespace CavalryFight.Services.Customization
         /// 鞍を装備するか
         /// </summary>
         public bool HasSaddle = true;
+
+        /// <summary>
+        /// 手綱を装備するか
+        /// </summary>
+        public bool HasReins = true;
 
         #endregion
 
@@ -91,8 +106,11 @@ namespace CavalryFight.Services.Customization
                 CoatColor = this.CoatColor,
                 ManeStyle = this.ManeStyle,
                 ManeColor = this.ManeColor,
+                HornType = this.HornType,
+                HornMaterial = this.HornMaterial,
                 ArmorId = this.ArmorId,
-                HasSaddle = this.HasSaddle
+                HasSaddle = this.HasSaddle,
+                HasReins = this.HasReins
             };
         }
 
@@ -106,21 +124,55 @@ namespace CavalryFight.Services.Customization
         }
 
         /// <summary>
-        /// JSONから読み込みます
+        /// JSONから読み込みを試みます
         /// </summary>
         /// <param name="json">JSON文字列</param>
-        /// <returns>カスタマイズデータ</returns>
-        public static MountCustomization? FromJson(string json)
+        /// <param name="customization">読み込まれたカスタマイズデータ</param>
+        /// <returns>読み込みに成功した場合はtrue</returns>
+        public static bool TryFromJson(string json, out MountCustomization? customization)
         {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                Debug.LogWarning("[MountCustomization] JSON string is null or empty.");
+                customization = null;
+                return false;
+            }
+
             try
             {
-                return JsonUtility.FromJson<MountCustomization>(json);
+                customization = JsonUtility.FromJson<MountCustomization>(json);
+
+                if (customization == null)
+                {
+                    Debug.LogError("[MountCustomization] JsonUtility returned null.");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (ArgumentException ex)
+            {
+                Debug.LogError($"[MountCustomization] Invalid JSON format: {ex.Message}");
+                customization = null;
+                return false;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[MountCustomization] Failed to parse JSON: {ex.Message}");
-                return null;
+                Debug.LogError($"[MountCustomization] Unexpected error parsing JSON: {ex.Message}\nStack trace: {ex.StackTrace}");
+                customization = null;
+                return false;
             }
+        }
+
+        /// <summary>
+        /// JSONから読み込みます（後方互換性のため保持）
+        /// </summary>
+        /// <param name="json">JSON文字列</param>
+        /// <returns>カスタマイズデータ（失敗時はnull）</returns>
+        public static MountCustomization? FromJson(string json)
+        {
+            TryFromJson(json, out var customization);
+            return customization;
         }
 
         #endregion

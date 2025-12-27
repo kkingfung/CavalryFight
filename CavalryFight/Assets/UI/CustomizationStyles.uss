@@ -1,0 +1,450 @@
+/* ===========================================
+   Customization Scene Stylesheet
+   =========================================== */
+
+/* Root Container */
+#Root {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+    padding: 1%;
+}
+
+/* Title Label */
+#TitleLabel {
+    font-size: 96px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(255, 255, 255);
+    margin: 1%;
+    width: 100%;
+    height: auto;
+}
+
+/* Content Area */
+#ContentArea {
+    flex-grow: 1;
+    flex-direction: row;
+    margin: 0 2% 2% 2%;
+}
+
+/* Left Panel */
+#LeftPanel {
+    width: 50%;
+    flex-direction: column;
+    margin-right: 2%;
+}
+
+/* Right Panel */
+#RightPanel {
+    width: 50%;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    flex-direction: column;
+}
+
+/* Category Tabs Container */
+#CategoryTabs {
+    flex-direction: row;
+    margin-bottom: 20px;
+    height: 80px;
+}
+
+/* Category Tab Buttons */
+.category-tab {
+    flex-grow: 1;
+    font-size: 48px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    -unity-text-align: middle-center;
+    background-color: rgba(128, 128, 128, 0.3);
+    border-width: 0;
+    margin: 0 5px;
+}
+
+/* Active Tab */
+.category-tab.tab-active {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-bottom-width: 5px;
+    border-bottom-color: rgb(255, 255, 255);
+}
+
+/* Tab Hover Effect */
+.category-tab:hover {
+    background-color: rgba(200, 200, 200, 0.3);
+}
+
+/* Customization Panels */
+.customization-panel {
+    flex-grow: 1;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+/* Section Headers */
+.section-header {
+    font-size: 56px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: rgb(255, 255, 255);
+}
+
+/* Customization Controls */
+.customization-control {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Arrow Controls */
+.arrow-control {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-left: 2%;
+    margin-right: 2%;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.arrow-control-label {
+    min-width: 250px;
+    flex-grow: 1;
+    margin-right: 20px;
+    margin-left: 0;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+}
+
+.arrow-button {
+    width: 50px;
+    height: 45px;
+    font-size: 36px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    -unity-text-align: middle-center;
+    background-color: rgba(128, 128, 128, 0.3);
+    border-width: 2px;
+    border-color: rgb(150, 150, 150);
+    border-radius: 5px;
+    margin-left: 3px;
+    margin-right: 3px;
+    flex-shrink: 0;
+}
+
+.arrow-button:hover {
+    background-color: rgba(150, 150, 150, 0.4);
+    border-color: rgb(200, 200, 200);
+}
+
+.arrow-button:active {
+    background-color: rgba(100, 100, 100, 0.5);
+}
+
+.arrow-value {
+    width: 188px;
+    height: 45px;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    -unity-text-align: middle-center;
+    color: rgb(255, 255, 255);
+    background-color: rgba(128, 128, 128, 0.3);
+    border-width: 2px;
+    border-color: rgb(150, 150, 150);
+    border-radius: 5px;
+    padding: 5px 10px;
+    flex-shrink: 0;
+}
+
+/* Slider Styling */
+Slider,
+SliderInt {
+    height: auto;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-left: 2%;
+    margin-right: 2%;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    align-items: center;
+}
+
+/* Slider Label */
+Slider > Label,
+SliderInt > Label {
+    min-width: 300px;
+    margin-right: 50px;
+    -unity-text-align: middle-left;
+    align-self: center;
+}
+
+/* Slider Input Container */
+Slider .unity-base-slider__input,
+SliderInt .unity-base-slider__input {
+    margin-top: -8px;
+    margin-bottom: 10px;
+}
+
+/* Slider Track */
+Slider .unity-base-slider__tracker,
+SliderInt .unity-base-slider__tracker {
+    height: 25px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    border-radius: 12px;
+    background-color: rgba(128, 128, 128, 0.3);
+}
+
+/* Slider Dragger */
+Slider .unity-base-slider__dragger,
+SliderInt .unity-base-slider__dragger {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: rgb(200, 200, 200);
+    border-width: 4px;
+    border-color: rgb(255, 255, 255);
+}
+
+/* Toggle Styling */
+Toggle {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-left: 2%;
+    margin-right: 2%;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    flex-direction: row;
+}
+
+/* Toggle Label */
+Toggle > Label {
+    min-width: 250px;
+    flex-grow: 1;
+    margin-right: 20px;
+    margin-left: 0;
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+}
+
+/* Toggle Checkmark Container */
+Toggle .unity-toggle__input {
+    width: 45px;
+    height: 45px;
+    margin-left: 0;
+    margin-right: 0;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+/* Toggle Checkmark */
+Toggle .unity-toggle__checkmark {
+    width: 35px;
+    height: 35px;
+    border-radius: 5px;
+    border-width: 3px;
+    border-color: rgb(200, 200, 200);
+    background-color: rgba(128, 128, 128, 0.3);
+}
+
+/* Toggle Checkmark (when checked) */
+Toggle:checked .unity-toggle__checkmark {
+    background-color: rgba(255, 255, 255, 1);
+    border-color: rgba(128, 128, 128, 0.3);
+}
+
+/* RadioButtonGroup Styling */
+RadioButtonGroup {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-left: 2%;
+    margin-right: 2%;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    flex-direction: row;
+}
+
+/* RadioButtonGroup Label */
+RadioButtonGroup > Label {
+    min-width: 250px;
+    flex-grow: 1;
+    margin-right: 20px;
+    margin-left: 0;
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+}
+
+/* RadioButtonGroup Container */
+RadioButtonGroup .unity-radio-button-group__container {
+    flex-direction: row;
+    flex-shrink: 0;
+    width: 300px;
+}
+
+/* Individual Radio Buttons */
+RadioButton {
+    width: 144px;
+    margin: 0 3px;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 10px;
+}
+
+/* Radio Button Label */
+RadioButton > Label {
+    width: 90px;
+    margin-left: 8px;
+    margin-right: 0;
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+    flex-shrink: 0;
+}
+
+/* Radio Button Checkmark Container */
+RadioButton .unity-radio-button__checkmark-background {
+    width: 35px;
+    height: 35px;
+    border-radius: 18px;
+    border-width: 3px;
+    border-color: rgb(200, 200, 200);
+    background-color: rgba(128, 128, 128, 0.3);
+    flex-shrink: 0;
+}
+
+/* Radio Button Checkmark (when checked) */
+RadioButton:checked .unity-radio-button__checkmark-background {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgb(255, 255, 255);
+}
+
+/* Radio Button Checkmark Inner Circle */
+RadioButton .unity-radio-button__checkmark {
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background-color: transparent;
+}
+
+/* Radio Button Checkmark Inner Circle (when checked) */
+RadioButton:checked .unity-radio-button__checkmark {
+    background-color: rgb(255, 255, 255);
+}
+
+/* Dropdown Field Styling */
+DropdownField {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-left: 2%;
+    margin-right: 2%;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    flex-direction: row;
+}
+
+/* Dropdown Label */
+DropdownField > Label {
+    min-width: 250px;
+    flex-grow: 1;
+    margin-right: 20px;
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+}
+
+/* Dropdown Input Container */
+DropdownField .unity-base-popup-field__input {
+    flex-grow: 1;
+    min-width: 300px;
+    height: 45px;
+    padding: 5px 10px;
+    background-color: rgba(128, 128, 128, 0.3);
+    border-radius: 5px;
+    border-width: 2px;
+    border-color: rgb(150, 150, 150);
+    -unity-text-align: middle-left;
+}
+
+/* Dropdown Arrow */
+DropdownField .unity-base-popup-field__arrow {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+}
+
+/* Dropdown Hover Effect */
+DropdownField:hover .unity-base-popup-field__input {
+    border-color: rgb(200, 200, 200);
+    background-color: rgba(150, 150, 150, 0.4);
+}
+
+/* Dropdown Focus Effect */
+DropdownField:focus .unity-base-popup-field__input {
+    border-color: rgb(100, 200, 255);
+    background-color: rgba(100, 200, 255, 0.2);
+}
+
+/* Preview Container */
+#PreviewContainer {
+    flex-grow: 1;
+    margin: 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Button Section */
+#ButtonSection {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin: 0 4% 2% 4%;
+}
+
+/* Buttons */
+#ResetButton,
+#BackButton {
+    width: 400px;
+    height: 100px;
+    font-size: 48px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    -unity-text-align: middle-center;
+    background-color: rgba(188, 188, 188, 0);
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/* Button Hover Effect */
+Button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Button Active/Pressed Effect */
+Button:active {
+    background-color: rgba(100, 100, 100, 0.2);
+}
+
+/* ScrollView Styling */
+ScrollView {
+    flex-grow: 1;
+}
+
+/* ScrollView Content Container */
+ScrollView .unity-scroll-view__content-container {
+    padding: 10px;
+}
+
+/* ScrollView Vertical Scroller */
+ScrollView .unity-scroller--vertical {
+    width: 20px;
+}
+
+/* ScrollView Horizontal Scroller (hidden) */
+ScrollView .unity-scroller--horizontal {
+    display: none;
+}

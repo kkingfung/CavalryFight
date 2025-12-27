@@ -30,6 +30,16 @@ namespace CavalryFight.Services.Customization
         /// </summary>
         private const string PRESET_EXTENSION = ".json";
 
+        /// <summary>
+        /// 現在のキャラクターカスタマイズ保存キー
+        /// </summary>
+        private const string CURRENT_CHARACTER_KEY = "CurrentCharacterCustomization";
+
+        /// <summary>
+        /// 現在の騎乗動物カスタマイズ保存キー
+        /// </summary>
+        private const string CURRENT_MOUNT_KEY = "CurrentMountCustomization";
+
         #endregion
 
         #region Fields
@@ -155,8 +165,43 @@ namespace CavalryFight.Services.Customization
                 Debug.Log($"[CustomizationService] Created presets folder: {_presetsPath}");
             }
 
+            // 保存されたカスタマイズデータを読み込む
+            LoadCurrentCustomization();
+
             _initialized = true;
             Debug.Log("[CustomizationService] Initialization complete.");
+        }
+
+        /// <summary>
+        /// サービスの設定が有効かどうかを検証します
+        /// </summary>
+        /// <returns>設定が有効な場合はtrue</returns>
+        /// <remarks>
+        /// GameBootstrap初期化時に呼び出して、
+        /// 必要なApplierが設定されているか確認してください。
+        /// </remarks>
+        public bool ValidateConfiguration()
+        {
+            bool isValid = true;
+
+            if (_characterApplier == null)
+            {
+                Debug.LogError("[CustomizationService] Character applier not set! Call SetCharacterApplier() during initialization.");
+                isValid = false;
+            }
+
+            if (_mountApplier == null)
+            {
+                Debug.LogError("[CustomizationService] Mount applier not set! Call SetMountApplier() during initialization.");
+                isValid = false;
+            }
+
+            if (isValid)
+            {
+                Debug.Log("[CustomizationService] Configuration validation passed.");
+            }
+
+            return isValid;
         }
 
         /// <summary>
@@ -217,6 +262,9 @@ namespace CavalryFight.Services.Customization
             _currentCharacter = customization.Clone();
             CharacterCustomizationChanged?.Invoke(_currentCharacter);
 
+            // 自動保存
+            SaveCurrentCustomization();
+
             Debug.Log("[CustomizationService] Character customization updated.");
         }
 
@@ -234,6 +282,9 @@ namespace CavalryFight.Services.Customization
 
             _currentMount = customization.Clone();
             MountCustomizationChanged?.Invoke(_currentMount);
+
+            // 自動保存
+            SaveCurrentCustomization();
 
             Debug.Log("[CustomizationService] Mount customization updated.");
         }
@@ -256,6 +307,9 @@ namespace CavalryFight.Services.Customization
 
             CharacterCustomizationChanged?.Invoke(_currentCharacter);
             MountCustomizationChanged?.Invoke(_currentMount);
+
+            // 自動保存
+            SaveCurrentCustomization();
 
             Debug.Log("[CustomizationService] Character and mount customization updated.");
         }
@@ -551,6 +605,50 @@ namespace CavalryFight.Services.Customization
 
         #endregion
 
+        #region Combat Idle Mode
+
+        /// <summary>
+        /// キャラクターを戦闘待機モードに切り替えます
+        /// </summary>
+        /// <param name="characterObject">対象のキャラクターGameObject</param>
+        /// <param name="useCombatIdle">trueの場合は戦闘待機アニメーター、falseの場合は通常アニメーター</param>
+        /// <returns>切り替えに成功したかどうか</returns>
+        public bool SetCharacterCombatIdleMode(GameObject characterObject, bool useCombatIdle)
+        {
+            var p09Applier = _characterApplier as P09CharacterApplier;
+            if (p09Applier == null)
+            {
+                Debug.LogError("[CustomizationService] P09CharacterApplier is not set.");
+                return false;
+            }
+
+            return p09Applier.SetCombatIdleMode(characterObject, _currentCharacter.Gender, useCombatIdle);
+        }
+
+        #endregion
+
+        #region P09 Data Configuration
+
+        /// <summary>
+        /// P09CharacterApplierを取得します（データ設定用）
+        /// </summary>
+        /// <returns>P09CharacterApplier（設定されていない場合はnull）</returns>
+        public P09CharacterApplier? GetP09CharacterApplier()
+        {
+            return _characterApplier as P09CharacterApplier;
+        }
+
+        /// <summary>
+        /// MalbersHorseApplierを取得します（データ設定用）
+        /// </summary>
+        /// <returns>MalbersHorseApplier（設定されていない場合はnull）</returns>
+        public MalbersHorseApplier? GetMalbersHorseApplier()
+        {
+            return _mountApplier as MalbersHorseApplier;
+        }
+
+        #endregion
+
         #region Helper Methods
 
         /// <summary>
@@ -561,6 +659,63 @@ namespace CavalryFight.Services.Customization
         private string GetPresetFilePath(string presetName)
         {
             return Path.Combine(_presetsPath, $"{presetName}{PRESET_EXTENSION}");
+        }
+
+        /// <summary>
+        /// 現在のカスタマイズデータをPlayerPrefsから読み込みます
+        /// </summary>
+        private void LoadCurrentCustomization()
+        {
+            // キャラクターカスタマイズを読み込む
+            if (PlayerPrefs.HasKey(CURRENT_CHARACTER_KEY))
+            {
+                string json = PlayerPrefs.GetString(CURRENT_CHARACTER_KEY);
+                var loaded = CharacterCustomization.FromJson(json);
+                if (loaded != null)
+                {
+                    _currentCharacter = loaded;
+                    Debug.Log("[CustomizationService] Loaded character customization from PlayerPrefs.");
+                }
+            }
+            else
+            {
+                Debug.Log("[CustomizationService] No saved character customization found, using default.");
+            }
+
+            // 騎乗動物カスタマイズを読み込む
+            if (PlayerPrefs.HasKey(CURRENT_MOUNT_KEY))
+            {
+                string json = PlayerPrefs.GetString(CURRENT_MOUNT_KEY);
+                var loaded = MountCustomization.FromJson(json);
+                if (loaded != null)
+                {
+                    _currentMount = loaded;
+                    Debug.Log("[CustomizationService] Loaded mount customization from PlayerPrefs.");
+                }
+            }
+            else
+            {
+                Debug.Log("[CustomizationService] No saved mount customization found, using default.");
+            }
+        }
+
+        /// <summary>
+        /// 現在のカスタマイズデータをPlayerPrefsに保存します
+        /// </summary>
+        private void SaveCurrentCustomization()
+        {
+            // キャラクターカスタマイズを保存
+            string characterJson = _currentCharacter.ToJson();
+            PlayerPrefs.SetString(CURRENT_CHARACTER_KEY, characterJson);
+
+            // 騎乗動物カスタマイズを保存
+            string mountJson = _currentMount.ToJson();
+            PlayerPrefs.SetString(CURRENT_MOUNT_KEY, mountJson);
+
+            // PlayerPrefsを即座にディスクに書き込む
+            PlayerPrefs.Save();
+
+            Debug.Log("[CustomizationService] Saved current customization to PlayerPrefs.");
         }
 
         #endregion

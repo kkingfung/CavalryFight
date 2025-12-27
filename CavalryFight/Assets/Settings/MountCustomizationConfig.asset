@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 783a2174744afa143b568a958925e45b, type: 3}
+  m_Name: MountCustomizationConfig
+  m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Services.Customization.MountCustomizationConfig
+  _coatColorMaterials:
+  - {fileID: 2100000, guid: 5120b901560dcad408aa1361836cbd16, type: 2}
+  - {fileID: 2100000, guid: 48a3ff7d81b735a47aaa910a8a1df49f, type: 2}
+  - {fileID: 2100000, guid: d24c88fd0da379649a4d2506731dbaf1, type: 2}
+  - {fileID: 2100000, guid: c30e93411f145e04b83e5b4fe8b38fe8, type: 2}
+  - {fileID: 2100000, guid: 4a303854212219f4bbbd9a546d8e515d, type: 2}
+  - {fileID: 2100000, guid: dbcaf2e0cb9c14c4f9b885d4191a6cfc, type: 2}
+  _maneColorMaterials:
+  - {fileID: 2100000, guid: 4c6d3a2609c8f404280dcfa6cf8a195d, type: 2}
+  - {fileID: 2100000, guid: 605a93b5e45c5514e8bace45672405e5, type: 2}
+  - {fileID: 2100000, guid: 415d6403e4da1af4083108180b132073, type: 2}
+  - {fileID: 2100000, guid: 40f88f46f86b2dd41925a353dcb3588b, type: 2}
+  - {fileID: 2100000, guid: f668d8047970c2c4c883e2a1d7e8034b, type: 2}
+  _hornMaterials:
+  - {fileID: 2100000, guid: 91323fd7305eef84898490654355c7fc, type: 2}
+  - {fileID: 2100000, guid: 8a5f66b5b0d8b294685184337afc88c7, type: 2}
+  - {fileID: 2100000, guid: 2042a37e90cca754786238dbafcff420, type: 2}
+  - {fileID: 2100000, guid: eaa6452f14e69874c846fe688cde7b27, type: 2}
+  - {fileID: 2100000, guid: 37821a324fdbabc4ba3211272ba94d9a, type: 2}
+  - {fileID: 2100000, guid: f2419d2aec36f234aad35d35ea6d7250, type: 2}
+  _armorMaterials:
+  - {fileID: 0}
+  - {fileID: 2100000, guid: 8d4a10d132018bb4fafa0917d7d0cf93, type: 2}
+  - {fileID: 2100000, guid: 2d7957b153c554d4c9a485a5fb3593d9, type: 2}
+  - {fileID: 2100000, guid: 1b3d278764a381a40a703df9bbc2a839, type: 2}
+  _saddleMaterial: {fileID: 2100000, guid: 40e1ad78d17981c43b148efa9105b11e, type: 2}

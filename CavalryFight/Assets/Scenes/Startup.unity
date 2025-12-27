@@ -293,6 +293,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Core.Bootstrap.GameBootstrap
   _sceneCollectionConfig: {fileID: 11400000, guid: f1ec38a9dbac4e540bb043ba46a8dd08, type: 2}
+  _p09EditPartData:
+  - {fileID: 11400000, guid: fc352260f002844ec97e43a1926a495b, type: 2}
+  - {fileID: 11400000, guid: 9b6f7639b7d214a948be451ff13eda37, type: 2}
+  - {fileID: 11400000, guid: 70533569fca6a4169a160ad70cf6b835, type: 2}
+  - {fileID: 11400000, guid: f718deed7d82240278a78300ca4003db, type: 2}
+  - {fileID: 11400000, guid: 770e8c8b917a34a64a6bbcc3e2f650fa, type: 2}
+  - {fileID: 11400000, guid: c88d9087126214a838d991a53e516c99, type: 2}
+  - {fileID: 11400000, guid: 0cd1bb80ba5c94dbcba729eb3ceb1875, type: 2}
+  - {fileID: 11400000, guid: 95ff639186f5f48158073a468189f38d, type: 2}
+  - {fileID: 11400000, guid: 063399033bb544320890dbcbad60935e, type: 2}
+  - {fileID: 11400000, guid: 64a26d33fdcad47d79e787d909c9ca4e, type: 2}
+  - {fileID: 11400000, guid: 60f88fe53acc44708b50f9a093412426, type: 2}
+  - {fileID: 11400000, guid: 775e2d40822e34a3d877dbcd73dd827d, type: 2}
+  - {fileID: 11400000, guid: a1896976f0f674054a4564a96ef84813, type: 2}
+  - {fileID: 11400000, guid: 8cbd6c36320614c63ab46a2945388a64, type: 2}
+  - {fileID: 11400000, guid: 8b44c8938be594265b875a3b181ae7dc, type: 2}
+  - {fileID: 11400000, guid: 0f4a01710c7a0476a8f08ee2b44016ad, type: 2}
+  - {fileID: 11400000, guid: 9aaaef487dcd54c7bbc38a69fbf9944e, type: 2}
+  _mountCustomizationConfig: {fileID: 11400000, guid: 3089d2019f11c4345ae64fb483ca95ec, type: 2}
 --- !u!114 &1035952336
 MonoBehaviour:
   m_ObjectHideFlags: 0

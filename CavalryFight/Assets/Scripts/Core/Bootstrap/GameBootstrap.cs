@@ -35,6 +35,14 @@ namespace CavalryFight.Core.Bootstrap
         [Tooltip("シーンコレクション設定")]
         [SerializeField] private SceneCollectionConfig? _sceneCollectionConfig;
 
+        [Header("P09 Customization Data")]
+        [Tooltip("P09 Modular Humanoid の EditPartDataContainer リスト（DemoPageControllerと同じデータを使用）")]
+        [SerializeField] private List<P09.Modular.Humanoid.Data.EditPartDataContainer> _p09EditPartData = new List<P09.Modular.Humanoid.Data.EditPartDataContainer>();
+
+        [Header("Mount Customization Data")]
+        [Tooltip("騎乗動物カスタマイズのマテリアル設定")]
+        [SerializeField] private MountCustomizationConfig? _mountCustomizationConfig;
+
         /// <summary>
         /// クリティカルなサービスのリスト（これらが失敗すると起動を中止）
         /// </summary>
@@ -137,7 +145,29 @@ namespace CavalryFight.Core.Bootstrap
 
             // Customization service (with appliers)
             var characterApplier = new P09CharacterApplier();
+            // P09データを設定
+            if (_p09EditPartData != null && _p09EditPartData.Count > 0)
+            {
+                characterApplier.EditPartDataContainers = _p09EditPartData;
+                Debug.Log($"[GameBootstrap] Assigned {_p09EditPartData.Count} P09 EditPartDataContainers to character applier.");
+            }
+            else
+            {
+                Debug.LogWarning("[GameBootstrap] No P09 EditPartDataContainers assigned! Please assign them in the Inspector.");
+            }
+
             var mountApplier = new MalbersHorseApplier();
+            // 騎乗動物カスタマイズ設定を適用
+            if (_mountCustomizationConfig != null)
+            {
+                _mountCustomizationConfig.ApplyToApplier(mountApplier);
+                Debug.Log($"[GameBootstrap] Applied MountCustomizationConfig to mount applier.");
+            }
+            else
+            {
+                Debug.LogWarning("[GameBootstrap] No MountCustomizationConfig assigned! Mount materials will not be available.");
+            }
+
             var customizationService = new CustomizationService(characterApplier, mountApplier);
             ServiceLocator.Instance.Register<ICustomizationService>(customizationService);
 
@@ -308,6 +338,7 @@ namespace CavalryFight.Core.Bootstrap
                 mainMenu: _sceneCollectionConfig.MainMenu,
                 lobby: _sceneCollectionConfig.Lobby,
                 settings: _sceneCollectionConfig.Settings,
+                customization: _sceneCollectionConfig.Customization,
                 match: _sceneCollectionConfig.Match,
                 training: _sceneCollectionConfig.Training,
                 results: _sceneCollectionConfig.Results,

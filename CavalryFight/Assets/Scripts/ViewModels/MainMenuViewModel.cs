@@ -154,9 +154,7 @@ namespace CavalryFight.ViewModels
         private void OnOpenCustomization()
         {
             Debug.Log("[MainMenuViewModel] Opening Customization...");
-            // TODO: カスタマイゼーション専用のシーンが必要な場合は実装
-            // 現在はSettingsシーンでカスタマイゼーションタブを提供する想定
-            _sceneManagementService?.LoadSettings();
+            _sceneManagementService?.LoadCustomization();
         }
 
         /// <summary>

@@ -1,8 +1,10 @@
 #nullable enable
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using P09.Modular.Humanoid.Data;
 
 namespace CavalryFight.Services.Customization
 {
@@ -10,9 +12,9 @@ namespace CavalryFight.Services.Customization
     /// P09 Modular Humanoidキャラクターカスタマイズ適用
     /// </summary>
     /// <remarks>
-    /// P09 Modular Humanoidアセットのキャラクターに
-    /// カスタマイズを適用します。
-    /// 子オブジェクトの表示/非表示、マテリアルの変更を行います。
+    /// P09 Modular Humanoidアセットの公式ScriptableObjectシステムを使用します。
+    /// EditPartDataContainer を使用したデータドリブンなカスタマイズ適用を行います。
+    /// AvatarView.cs の実装を参考にしています。
     /// </remarks>
     public class P09CharacterApplier : ICharacterApplier
     {
@@ -43,41 +45,28 @@ namespace CavalryFight.Services.Customization
         #region Fields
 
         /// <summary>
-        /// 髪の色マテリアル配列（1-9）
+        /// P09 EditPartDataContainerのリスト
         /// </summary>
         /// <remarks>
-        /// インデックス0は未使用。1-9にマテリアルを設定してください。
+        /// Unity InspectorでP09のScriptableObjectフォルダから設定してください。
+        /// DemoPageControllerと同じデータを使用できます。
         /// </remarks>
-        public Material[] HairColorMaterials = new Material[10];
+        public List<EditPartDataContainer> EditPartDataContainers = new List<EditPartDataContainer>();
 
         /// <summary>
-        /// 肌の色マテリアル配列（1-6）
+        /// 男性用戦闘待機アニメーター
         /// </summary>
-        /// <remarks>
-        /// インデックス0は未使用。1-6にマテリアルを設定してください。
-        /// </remarks>
-        public Material[] SkinToneMaterials = new Material[7];
+        public RuntimeAnimatorController? MaleCombatIdleAnimator;
 
         /// <summary>
-        /// 目の色マテリアル配列（1-5）
+        /// 女性用戦闘待機アニメーター
         /// </summary>
-        /// <remarks>
-        /// インデックス0は未使用。1-5にマテリアルを設定してください。
-        /// </remarks>
-        public Material[] EyeColorMaterials = new Material[6];
+        public RuntimeAnimatorController? FemaleCombatIdleAnimator;
 
         /// <summary>
-        /// バストサイズのスケール配列（0-2）
+        /// 元のアニメーターコントローラーを保持するキャッシュ（キャラクターごと）
         /// </summary>
-        /// <remarks>
-        /// 0 = 小、1 = 中、2 = 大
-        /// </remarks>
-        public Vector3[] BustSizes = new Vector3[]
-        {
-            new Vector3(0.8f, 0.8f, 0.8f),  // 小
-            new Vector3(1.0f, 1.0f, 1.0f),  // 中
-            new Vector3(1.2f, 1.2f, 1.2f)   // 大
-        };
+        private readonly Dictionary<GameObject, RuntimeAnimatorController> _originalAnimators = new Dictionary<GameObject, RuntimeAnimatorController>();
 
         #endregion
 
@@ -97,27 +86,72 @@ namespace CavalryFight.Services.Customization
                 return false;
             }
 
+            if (EditPartDataContainers == null || EditPartDataContainers.Count == 0)
+            {
+                Debug.LogError("[P09CharacterApplier] EditPartDataContainers is empty! Please assign P09 ScriptableObject data in CustomizationService.");
+                return false;
+            }
+
             try
             {
                 int sexId = customization.Gender == Gender.Male ? MALE_SEX_ID : FEMALE_SEX_ID;
 
-                // すべての子オブジェクトに対してカスタマイズを適用
-                foreach (Transform child in characterObject.GetComponentsInChildren<Transform>(true))
+                // すべての子Transformを取得
+                var allChildren = characterObject.GetComponentsInChildren<Transform>(true);
+
+                // まず、コアボディパーツ（Male_Body_*, Female_Body_*）を確実に有効化
+                foreach (Transform child in allChildren)
+                {
+                    if ((child.name.Contains("Male_Body_") || child.name.Contains("Female_Body_")) &&
+                        !child.name.Contains("Nakid") && !child.name.Contains("Armor"))
+                    {
+                        if (!child.gameObject.activeSelf)
+                        {
+                            child.gameObject.SetActive(true);
+                        }
+                    }
+                }
+
+                // 剣をすべて無効化（このゲームは弓専用）
+                foreach (Transform child in allChildren)
+                {
+                    if (child.name.Contains("Sword") && !child.name.Contains("Bow"))
+                    {
+                        if (child.gameObject.activeSelf)
+                        {
+                            child.gameObject.SetActive(false);
+                        }
+                    }
+                }
+
+                int changeCount = 0;
+
+                // P09のデータドリブンシステムを使用してカスタマイズを適用
+                foreach (Transform child in allChildren)
                 {
                     // 性別
-                    ApplyGender(child, sexId);
+                    if (ApplyPartData(child, EditPartType.Sex, customization.Gender == Gender.Male ? 1 : 2, sexId))
+                    {
+                        changeCount++;
+                    }
 
-                    // 顔のタイプ
-                    ApplyFaceType(child, customization.FaceType, sexId);
+                    // 顔タイプ
+                    if (ApplyPartData(child, EditPartType.FaceType, customization.FaceType, sexId))
+                    {
+                        changeCount++;
+                    }
 
                     // 髪型
-                    ApplyHairstyle(child, customization.HairstyleId, sexId);
+                    if (ApplyPartData(child, EditPartType.HairStyle, customization.HairstyleId, sexId))
+                    {
+                        changeCount++;
+                    }
 
                     // 髪の色
                     ApplyHairColor(child, customization.HairColorId, customization.HairstyleId);
 
                     // 肌の色
-                    ApplySkinTone(child, customization.SkinToneId);
+                    ApplySkinColor(child, customization.SkinToneId, sexId);
 
                     // 目の色
                     ApplyEyeColor(child, customization.EyeColorId);
@@ -125,7 +159,10 @@ namespace CavalryFight.Services.Customization
                     // 顔のひげ（男性のみ）
                     if (customization.Gender == Gender.Male)
                     {
-                        ApplyFacialHair(child, customization.FacialHairId);
+                        if (ApplyPartData(child, EditPartType.FacialHair, customization.FacialHairId, sexId))
+                        {
+                            changeCount++;
+                        }
                     }
 
                     // バストサイズ（女性のみ）
@@ -135,18 +172,40 @@ namespace CavalryFight.Services.Customization
                     }
 
                     // 防具
-                    ApplyArmor(child, customization, sexId);
+                    if (ApplyPartData(child, EditPartType.Head, customization.HeadArmorId, sexId))
+                    {
+                        changeCount++;
+                    }
 
-                    // 弓
-                    ApplyBow(child, customization.BowId);
+                    if (ApplyPartData(child, EditPartType.Chest, customization.ChestArmorId, sexId))
+                    {
+                        changeCount++;
+                    }
+                    if (ApplyPartData(child, EditPartType.Arm, customization.ArmsArmorId, sexId))
+                    {
+                        changeCount++;
+                    }
+                    if (ApplyPartData(child, EditPartType.Waist, customization.WaistArmorId, sexId))
+                    {
+                        changeCount++;
+                    }
+                    if (ApplyPartData(child, EditPartType.Leg, customization.LegsArmorId, sexId))
+                    {
+                        changeCount++;
+                    }
+
+                    // 弓/武器
+                    if (ApplyPartData(child, EditPartType.Weapon, customization.BowId, sexId))
+                    {
+                        changeCount++;
+                    }
                 }
 
-                Debug.Log($"[P09CharacterApplier] Successfully applied customization to: {characterObject.name}");
                 return true;
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[P09CharacterApplier] Failed to apply customization: {ex.Message}");
+                Debug.LogError($"[P09CharacterApplier] Failed to apply customization: {ex.Message}\n{ex.StackTrace}");
                 return false;
             }
         }
@@ -164,83 +223,149 @@ namespace CavalryFight.Services.Customization
             }
 
             // P09キャラクターかどうかを確認
-            // AnimatorコンポーネントとP09の構造（子オブジェクトの命名規則）で判定
-            var animator = characterObject.GetComponent<Animator>();
+            var animator = characterObject.GetComponentInChildren<Animator>(true);
             if (animator == null)
             {
+                Debug.LogWarning($"[P09CharacterApplier] No Animator found in {characterObject.name}.");
                 return false;
             }
 
-            // P09特有の子オブジェクトが存在するか確認
-            var hasP09Structure = characterObject.GetComponentsInChildren<Transform>(true)
-                .Any(t => t.name.StartsWith("P09_") || t.name.Contains("Hair") || t.name.Contains("Armor"));
+            // P09構造があるか確認
+            var allTransforms = characterObject.GetComponentsInChildren<Transform>(true);
+            var hasP09Structure = allTransforms.Any(t => t.name.StartsWith("P09_") || t.name.Contains("Hair") || t.name.Contains("Armor"));
 
             return hasP09Structure;
         }
 
         #endregion
 
-        #region Apply Methods
+        #region Public Methods
 
         /// <summary>
-        /// 性別を適用します
+        /// アニメーターを戦闘待機モードに切り替えます
         /// </summary>
-        private void ApplyGender(Transform child, int sexId)
+        /// <param name="characterObject">対象のキャラクターGameObject</param>
+        /// <param name="gender">キャラクターの性別</param>
+        /// <param name="useCombatIdle">trueの場合は戦闘待機アニメーター、falseの場合は通常アニメーターに戻す</param>
+        /// <returns>切り替えに成功したかどうか</returns>
+        public bool SetCombatIdleMode(GameObject characterObject, Gender gender, bool useCombatIdle)
         {
-            // P09_Human_Male または P09_Human_Female などの命名規則
-            if (child.name.Contains("_Male"))
+            if (characterObject == null)
             {
-                child.gameObject.SetActive(sexId == MALE_SEX_ID);
+                Debug.LogError("[P09CharacterApplier] Character object is null.");
+                return false;
             }
-            else if (child.name.Contains("_Female") || child.name.Contains("_Fem"))
+
+            var animator = characterObject.GetComponentInChildren<Animator>(true);
+            if (animator == null)
             {
-                child.gameObject.SetActive(sexId == FEMALE_SEX_ID);
+                Debug.LogError($"[P09CharacterApplier] No Animator found in {characterObject.name}.");
+                return false;
             }
+
+            if (useCombatIdle)
+            {
+                // 元のアニメーターを保存（初回のみ）
+                if (!_originalAnimators.ContainsKey(characterObject) && animator.runtimeAnimatorController != null)
+                {
+                    _originalAnimators[characterObject] = animator.runtimeAnimatorController;
+                }
+
+                // 戦闘待機アニメーターに切り替え
+                RuntimeAnimatorController? combatAnimator = gender == Gender.Male ? MaleCombatIdleAnimator : FemaleCombatIdleAnimator;
+
+                if (combatAnimator == null)
+                {
+                    Debug.LogWarning($"[P09CharacterApplier] Combat idle animator for {gender} is not assigned.");
+                    return false;
+                }
+
+                animator.runtimeAnimatorController = combatAnimator;
+            }
+            else
+            {
+                // 通常アニメーターに戻す
+                if (_originalAnimators.TryGetValue(characterObject, out var originalAnimator))
+                {
+                    animator.runtimeAnimatorController = originalAnimator;
+                }
+                else
+                {
+                    Debug.LogWarning($"[P09CharacterApplier] No original animator found for {characterObject.name}. Cannot revert.");
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        /// <summary>
-        /// 顔のタイプを適用します
-        /// </summary>
-        private void ApplyFaceType(Transform child, int faceType, int sexId)
-        {
-            // 顔タイプの命名規則: P09_Face_01, P09_Face_02 など
-            for (int i = 0; i <= 1; i++)
-            {
-                string maleFaceName = $"P09_Face_{i:D2}_Male";
-                string femaleFaceName = $"P09_Face_{i:D2}_Female";
+        #endregion
 
-                if (child.name == maleFaceName)
-                {
-                    child.gameObject.SetActive(sexId == MALE_SEX_ID && i == faceType);
-                }
-                else if (child.name == femaleFaceName)
-                {
-                    child.gameObject.SetActive(sexId == FEMALE_SEX_ID && i == faceType);
-                }
-            }
-        }
+        #region Data-Driven Apply Methods
 
         /// <summary>
-        /// 髪型を適用します
+        /// EditPartDataを使用してパーツの表示/非表示を適用します
         /// </summary>
-        private void ApplyHairstyle(Transform child, int hairstyleId, int sexId)
+        /// <param name="child">対象のTransform</param>
+        /// <param name="partType">パーツタイプ</param>
+        /// <param name="currentId">現在選択されているID</param>
+        /// <param name="sexId">性別ID</param>
+        /// <returns>変更があった場合はtrue</returns>
+        /// <remarks>
+        /// AvatarView.UpdateRenderer() と同じロジックを使用
+        /// </remarks>
+        private bool ApplyPartData(Transform child, EditPartType partType, int currentId, int sexId)
         {
-            // 髪型の命名規則: P09_Hair_01, P09_Hair_02 など
-            for (int i = 0; i <= 14; i++)
+            // コアボディパーツは絶対にApplyPartDataで処理しない（常に表示されるべき）
+            if ((child.name.Contains("Male_Body_") || child.name.Contains("Female_Body_")) &&
+                !child.name.Contains("Nakid") && !child.name.Contains("Armor"))
             {
-                string hairName = $"P09_Hair_{i:D2}";
-                string maleHairName = $"P09_Hair_{i:D2}_Male";
-                string femaleHairName = $"P09_Hair_{i:D2}_Female";
+                return false;
+            }
 
-                if (child.name == hairName || child.name == maleHairName)
+            var dataList = GetEditPartDataList(partType, sexId);
+            if (dataList == null || dataList.Count == 0)
+            {
+                return false;
+            }
+
+            bool changed = false;
+
+            foreach (var data in dataList)
+            {
+                // パターン1: 完全一致
+                if (child.name == data.MeshName)
                 {
-                    child.gameObject.SetActive(sexId == MALE_SEX_ID && i == hairstyleId);
+                    bool shouldBeActive = data.ContentId == currentId;
+                    if (child.gameObject.activeSelf != shouldBeActive)
+                    {
+                        child.gameObject.SetActive(shouldBeActive);
+                        changed = true;
+                    }
                 }
-                else if (child.name == femaleHairName)
+                // パターン2: テンプレート（Male）
+                else if (child.name == string.Format(data.MeshName, "Male"))
                 {
-                    child.gameObject.SetActive(sexId == FEMALE_SEX_ID && i == hairstyleId);
+                    bool shouldBeActive = sexId == MALE_SEX_ID && data.ContentId == currentId;
+                    if (child.gameObject.activeSelf != shouldBeActive)
+                    {
+                        child.gameObject.SetActive(shouldBeActive);
+                        changed = true;
+                    }
+                }
+                // パターン3: テンプレート（Female/Fem）
+                else if (child.name == string.Format(data.MeshName, "Female") || child.name == string.Format(data.MeshName, "Fem"))
+                {
+                    bool shouldBeActive = sexId == FEMALE_SEX_ID && data.ContentId == currentId;
+                    if (child.gameObject.activeSelf != shouldBeActive)
+                    {
+                        child.gameObject.SetActive(shouldBeActive);
+                        changed = true;
+                    }
                 }
             }
+
+            return changed;
         }
 
         /// <summary>
@@ -248,16 +373,31 @@ namespace CavalryFight.Services.Customization
         /// </summary>
         private void ApplyHairColor(Transform child, int hairColorId, int hairstyleId)
         {
-            // 髪型のメッシュにマテリアルを適用
-            if (child.name.StartsWith("P09_Hair_") && child.name.Contains($"{hairstyleId:D2}"))
+            var dataList = GetEditPartDataList(EditPartType.HairColor, 0);
+            if (dataList == null || dataList.Count == 0)
             {
-                var renderer = child.GetComponent<Renderer>();
-                if (renderer != null && hairColorId > 0 && hairColorId < HairColorMaterials.Length)
+                return;
+            }
+
+            var currentData = dataList.FirstOrDefault(d => d.ContentId == hairColorId) as HairColorEditPartData;
+            if (currentData == null)
+            {
+                return;
+            }
+
+            foreach (var data in dataList)
+            {
+                // MeshNameがテンプレート形式: "Hair_{0}" → "Hair_01", "Hair_02" etc.
+                if (child.name == string.Format(data.MeshName, hairstyleId))
                 {
-                    var material = HairColorMaterials[hairColorId];
-                    if (material != null)
+                    var renderer = child.GetComponent<Renderer>();
+                    if (renderer != null)
                     {
-                        renderer.material = material;
+                        var material = currentData.GetMaterial(hairstyleId);
+                        if (material != null)
+                        {
+                            renderer.material = material;
+                        }
                     }
                 }
             }
@@ -266,21 +406,22 @@ namespace CavalryFight.Services.Customization
         /// <summary>
         /// 肌の色を適用します
         /// </summary>
-        private void ApplySkinTone(Transform child, int skinToneId)
+        private void ApplySkinColor(Transform child, int skinColorId, int sexId)
         {
+            var dataList = GetEditPartDataList(EditPartType.Skin, sexId);
+            if (dataList == null || dataList.Count == 0)
+            {
+                return;
+            }
+
+            var currentData = dataList.FirstOrDefault(d => d.ContentId == skinColorId) as ColorEditPartData;
+            if (currentData?.Material == null)
+            {
+                return;
+            }
+
             var renderer = child.GetComponent<Renderer>();
             if (renderer == null)
-            {
-                return;
-            }
-
-            if (skinToneId <= 0 || skinToneId >= SkinToneMaterials.Length)
-            {
-                return;
-            }
-
-            var skinMaterial = SkinToneMaterials[skinToneId];
-            if (skinMaterial == null)
             {
                 return;
             }
@@ -290,9 +431,16 @@ namespace CavalryFight.Services.Customization
 
             for (int i = 0; i < materials.Length; i++)
             {
-                if (Regex.IsMatch(materials[i].name, SKIN_MATERIAL_PATTERN))
+                string matName = materials[i].name;
+                // Unity adds "(Instance)" suffix, so check if it starts with the pattern
+                bool matches = matName.Contains("Skin") &&
+                              (matName.StartsWith("P09_Male_Skin") ||
+                               matName.StartsWith("P09_Female_Skin") ||
+                               matName.StartsWith("P09_Fem_Skin"));
+
+                if (matches)
                 {
-                    materials[i] = skinMaterial;
+                    materials[i] = currentData.Material;
                     changed = true;
                 }
             }
@@ -308,13 +456,14 @@ namespace CavalryFight.Services.Customization
         /// </summary>
         private void ApplyEyeColor(Transform child, int eyeColorId)
         {
-            if (eyeColorId <= 0 || eyeColorId >= EyeColorMaterials.Length)
+            var dataList = GetEditPartDataList(EditPartType.EyeColor, 0);
+            if (dataList == null || dataList.Count == 0)
             {
                 return;
             }
 
-            var eyeMaterial = EyeColorMaterials[eyeColorId];
-            if (eyeMaterial == null)
+            var currentData = dataList.FirstOrDefault(d => d.ContentId == eyeColorId) as ColorEditPartData;
+            if (currentData == null || currentData.Material == null)
             {
                 return;
             }
@@ -329,7 +478,7 @@ namespace CavalryFight.Services.Customization
                 {
                     if (Regex.IsMatch(materials[i].name, EYE_MATERIAL_PATTERN))
                     {
-                        materials[i] = eyeMaterial;
+                        materials[i] = currentData.Material;
                         changed = true;
                     }
                 }
@@ -342,96 +491,60 @@ namespace CavalryFight.Services.Customization
         }
 
         /// <summary>
-        /// 顔のひげを適用します
-        /// </summary>
-        private void ApplyFacialHair(Transform child, int facialHairId)
-        {
-            // 顔のひげの命名規則: P09_FacialHair_01 など
-            for (int i = 0; i <= 9; i++)
-            {
-                string facialHairName = $"P09_FacialHair_{i:D2}";
-                if (child.name == facialHairName)
-                {
-                    child.gameObject.SetActive(i == facialHairId);
-                }
-            }
-        }
-
-        /// <summary>
         /// バストサイズを適用します
         /// </summary>
         private void ApplyBustSize(Transform child, int bustSize)
         {
-            if (bustSize < 0 || bustSize >= BustSizes.Length)
+            var dataList = GetEditPartDataList(EditPartType.BustSize, FEMALE_SEX_ID);
+            if (dataList == null || dataList.Count == 0)
             {
                 return;
             }
 
-            // バストの命名規則: P09_Bust_R, P09_Bust_L
-            if (child.name == "P09_Bust_R" || child.name == "P09_Bust_L")
+            var currentData = dataList.FirstOrDefault(d => d.ContentId == bustSize) as BustSizeEditPartData;
+            if (currentData == null)
             {
-                child.localScale = BustSizes[bustSize];
+                return;
             }
-        }
 
-        /// <summary>
-        /// 防具を適用します
-        /// </summary>
-        private void ApplyArmor(Transform child, CharacterCustomization customization, int sexId)
-        {
-            // 頭部防具
-            ApplyArmorPiece(child, "P09_Armor_Head", customization.HeadArmorId, sexId);
-
-            // 胸部防具
-            ApplyArmorPiece(child, "P09_Armor_Chest", customization.ChestArmorId, sexId);
-
-            // 腕部防具
-            ApplyArmorPiece(child, "P09_Armor_Arm", customization.ArmsArmorId, sexId);
-
-            // 腰部防具
-            ApplyArmorPiece(child, "P09_Armor_Waist", customization.WaistArmorId, sexId);
-
-            // 脚部防具
-            ApplyArmorPiece(child, "P09_Armor_Leg", customization.LegsArmorId, sexId);
-        }
-
-        /// <summary>
-        /// 防具パーツを適用します
-        /// </summary>
-        private void ApplyArmorPiece(Transform child, string armorPrefix, int armorId, int sexId)
-        {
-            // 防具の命名規則: P09_Armor_Head_01, P09_Armor_Head_01_Male など
-            for (int i = 0; i <= 13; i++)
+            // MeshNameがテンプレート: "Bust_{0}" → "Bust_R", "Bust_L"
+            if (child.name == string.Format(currentData.MeshName, "R") ||
+                child.name == string.Format(currentData.MeshName, "L"))
             {
-                string armorName = $"{armorPrefix}_{i:D2}";
-                string maleArmorName = $"{armorPrefix}_{i:D2}_Male";
-                string femaleArmorName = $"{armorPrefix}_{i:D2}_Female";
-
-                if (child.name == armorName || child.name == maleArmorName)
+                if (child.localScale != currentData.Size)
                 {
-                    child.gameObject.SetActive(sexId == MALE_SEX_ID && i == armorId);
-                }
-                else if (child.name == femaleArmorName)
-                {
-                    child.gameObject.SetActive(sexId == FEMALE_SEX_ID && i == armorId);
+                    child.localScale = currentData.Size;
                 }
             }
         }
 
+        #endregion
+
+        #region Helper Methods
+
         /// <summary>
-        /// 弓を適用します
+        /// EditPartTypeに対応するデータリストを取得します
         /// </summary>
-        private void ApplyBow(Transform child, int bowId)
+        /// <param name="partType">パーツタイプ</param>
+        /// <param name="sexId">性別ID（0=両方、1=男性、2=女性）</param>
+        /// <returns>データリスト</returns>
+        private List<IEditPartData>? GetEditPartDataList(EditPartType partType, int sexId)
         {
-            // 弓の命名規則: P09_Bow_01, P09_Bow_02 など
-            for (int i = 1; i <= 4; i++)
+            // まずsexId=0（両方）のデータを探す
+            var container = EditPartDataContainers.FirstOrDefault(c => c.Type == partType && c.SexId == 0);
+            if (container != null && container.PartDataList != null && container.PartDataList.Count > 0)
             {
-                string bowName = $"P09_Bow_{i:D2}";
-                if (child.name == bowName || child.name.StartsWith(bowName))
-                {
-                    child.gameObject.SetActive(i == bowId);
-                }
+                return container.PartDataList;
             }
+
+            // 次に性別固有のデータを探す
+            container = EditPartDataContainers.FirstOrDefault(c => c.Type == partType && c.SexId == sexId);
+            if (container != null && container.PartDataList != null)
+            {
+                return container.PartDataList;
+            }
+
+            return null;
         }
 
         #endregion

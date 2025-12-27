@@ -59,6 +59,7 @@ namespace CavalryFight.Services.SceneManagement
         /// <param name="mainMenu">MainMenuシーンコレクション</param>
         /// <param name="lobby">Lobbyシーンコレクション</param>
         /// <param name="settings">Settingsシーンコレクション</param>
+        /// <param name="customization">Customizationシーンコレクション</param>
         /// <param name="match">Matchシーンコレクション</param>
         /// <param name="training">Trainingシーンコレクション</param>
         /// <param name="results">Resultsシーンコレクション</param>
@@ -68,6 +69,7 @@ namespace CavalryFight.Services.SceneManagement
             SceneCollection? mainMenu,
             SceneCollection? lobby,
             SceneCollection? settings,
+            SceneCollection? customization,
             SceneCollection? match,
             SceneCollection? training,
             SceneCollection? results,
@@ -91,6 +93,11 @@ namespace CavalryFight.Services.SceneManagement
         /// 設定シーンをロードします。
         /// </summary>
         void LoadSettings();
+
+        /// <summary>
+        /// カスタマイゼーションシーンをロードします。
+        /// </summary>
+        void LoadCustomization();
 
         /// <summary>
         /// マッチシーンをロードします。

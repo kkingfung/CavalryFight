@@ -137,6 +137,7 @@ MonoBehaviour:
   - {fileID: -8042267033748032890}
   - {fileID: 4155319312566489168}
   - {fileID: 2841897788759262390}
+  - {fileID: 7113116682740546260}
   m_dynamicCollectionsList: []
   m_standaloneCollection: {fileID: -2265142666104476371}
   m_defaultASMScenes: {fileID: 0}
@@ -296,6 +297,50 @@ MonoBehaviour:
   m_lockMessage: 
   m_userData: {fileID: 0}
   m_title: Results
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 0
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1
+--- !u!114 &7113116682740546260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - Customization
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: 6baw603e.l2o
+  m_isHidden: 0
+  m_scenes:
+  - {fileID: 11400000, guid: 9dcd0cad8ed6c6b42921a33913ab2659, type: 2}
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: Customization
   m_prefix: 'MainProfile - '
   m_inputBindings: []
   m_ignoreInputBindingsForScenes: []

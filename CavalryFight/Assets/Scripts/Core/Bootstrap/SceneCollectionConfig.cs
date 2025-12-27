@@ -31,6 +31,9 @@ namespace CavalryFight.Core.Bootstrap
         [Tooltip("設定画面シーン")]
         [SerializeField] private SceneCollection? _settings;
 
+        [Tooltip("カスタマイゼーション画面シーン")]
+        [SerializeField] private SceneCollection? _customization;
+
         [Header("Gameplay Scenes")]
         [Tooltip("マッチシーン（ゲームプレイ）")]
         [SerializeField] private SceneCollection? _match;
@@ -68,6 +71,11 @@ namespace CavalryFight.Core.Bootstrap
         /// 設定画面シーンを取得します
         /// </summary>
         public SceneCollection? Settings => _settings;
+
+        /// <summary>
+        /// カスタマイゼーション画面シーンを取得します
+        /// </summary>
+        public SceneCollection? Customization => _customization;
 
         /// <summary>
         /// マッチシーンを取得します

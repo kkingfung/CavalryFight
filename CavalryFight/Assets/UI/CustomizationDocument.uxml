@@ -1,0 +1,208 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/CustomizationStyles.uss?fileID=7433441132597879392&amp;guid=TBD&amp;type=3#CustomizationStyles" />
+    <ui:VisualElement name="Root" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/Textures/bg_settings.png?fileID=2800000&amp;guid=d8dea11677d243e4ba74ad29acc19fa9&amp;type=3#bg_settings&quot;); flex-direction: column;">
+
+        <!-- Title -->
+        <ui:Label text="Customization" name="TitleLabel" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Black&apos;); font-size: 96px; -unity-text-outline-width: 5px; margin: 1%;" />
+
+        <!-- Main Content Area -->
+        <ui:VisualElement name="ContentArea" style="flex-grow: 1; flex-direction: row; margin: 0 2% 2% 2%;">
+
+            <!-- Left Panel - Controls -->
+            <ui:VisualElement name="LeftPanel" style="width: 50%; margin-right: 2%;">
+
+                <!-- Category Tabs -->
+                <ui:VisualElement name="CategoryTabs" style="flex-direction: row; margin-bottom: 20px;">
+                    <ui:Button text="Character" name="CharacterTabButton" class="category-tab tab-active" style="flex-grow: 1; font-size: 48px; height: 80px;" />
+                    <ui:Button text="Mount" name="MountTabButton" class="category-tab" style="flex-grow: 1; font-size: 48px; height: 80px;" />
+                </ui:VisualElement>
+
+                <!-- Character Panel -->
+                <ui:ScrollView name="CharacterPanel" class="customization-panel" style="flex-grow: 1;">
+                    <ui:VisualElement name="CharacterContent">
+
+                        <!-- Basic -->
+                        <ui:Label text="Basic" class="section-header" style="font-size: 56px; margin-bottom: 10px;" />
+                        <ui:RadioButtonGroup label="Gender" name="GenderRadioGroup" class="customization-control gender-radio-group" style="font-size: 32px;" />
+
+                        <ui:VisualElement name="FaceTypeControl" class="arrow-control">
+                            <ui:Label text="Face Type" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="FaceTypePrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="FaceTypeValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="FaceTypeNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <!-- Appearance -->
+                        <ui:Label text="Appearance" class="section-header" style="font-size: 56px; margin-top: 20px; margin-bottom: 10px;" />
+
+                        <ui:VisualElement name="HairstyleControl" class="arrow-control">
+                            <ui:Label text="Hairstyle" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="HairstylePrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="HairstyleValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="HairstyleNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="HairColorControl" class="arrow-control">
+                            <ui:Label text="Hair Color" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="HairColorPrevButton" class="arrow-button" />
+                            <ui:Label text="1" name="HairColorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="HairColorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="EyeColorControl" class="arrow-control">
+                            <ui:Label text="Eye Color" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="EyeColorPrevButton" class="arrow-button" />
+                            <ui:Label text="1" name="EyeColorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="EyeColorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="FacialHairControl" class="arrow-control">
+                            <ui:Label text="Facial Hair" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="FacialHairPrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="FacialHairValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="FacialHairNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="SkinToneControl" class="arrow-control">
+                            <ui:Label text="Skin Tone" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="SkinTonePrevButton" class="arrow-button" />
+                            <ui:Label text="1" name="SkinToneValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="SkinToneNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="BustSizeControl" class="arrow-control">
+                            <ui:Label text="Bust Size" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="BustSizePrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="BustSizeValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="BustSizeNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <!-- Armor -->
+                        <ui:Label text="Armor" class="section-header" style="font-size: 56px; margin-top: 20px; margin-bottom: 10px;" />
+
+                        <ui:VisualElement name="HeadArmorControl" class="arrow-control">
+                            <ui:Label text="Head Armor" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="HeadArmorPrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="HeadArmorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="HeadArmorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="ChestArmorControl" class="arrow-control">
+                            <ui:Label text="Chest Armor" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="ChestArmorPrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="ChestArmorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="ChestArmorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="ArmsArmorControl" class="arrow-control">
+                            <ui:Label text="Arms Armor" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="ArmsArmorPrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="ArmsArmorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="ArmsArmorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="WaistArmorControl" class="arrow-control">
+                            <ui:Label text="Waist Armor" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="WaistArmorPrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="WaistArmorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="WaistArmorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="LegsArmorControl" class="arrow-control">
+                            <ui:Label text="Legs Armor" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="LegsArmorPrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="LegsArmorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="LegsArmorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <!-- Weapon -->
+                        <ui:Label text="Weapon" class="section-header" style="font-size: 56px; margin-top: 20px; margin-bottom: 10px;" />
+
+                        <ui:VisualElement name="BowControl" class="arrow-control">
+                            <ui:Label text="Bow" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="BowPrevButton" class="arrow-button" />
+                            <ui:Label text="1" name="BowValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="BowNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                    </ui:VisualElement>
+                </ui:ScrollView>
+
+                <!-- Mount Panel -->
+                <ui:ScrollView name="MountPanel" class="customization-panel" style="flex-grow: 1; display: none;">
+                    <ui:VisualElement name="MountContent">
+
+                        <!-- Appearance -->
+                        <ui:Label text="Appearance" class="section-header" style="font-size: 56px; margin-bottom: 10px;" />
+
+                        <ui:VisualElement name="CoatColorControl" class="arrow-control">
+                            <ui:Label text="Coat Color" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="CoatColorPrevButton" class="arrow-button" />
+                            <ui:Label text="Brown" name="CoatColorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="CoatColorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="ManeStyleControl" class="arrow-control">
+                            <ui:Label text="Mane Style" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="ManeStylePrevButton" class="arrow-button" />
+                            <ui:Label text="Short" name="ManeStyleValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="ManeStyleNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="ManeColorControl" class="arrow-control">
+                            <ui:Label text="Mane Color" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="ManeColorPrevButton" class="arrow-button" />
+                            <ui:Label text="Brown" name="ManeColorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="ManeColorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="HornTypeControl" class="arrow-control">
+                            <ui:Label text="Horn Type" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="HornTypePrevButton" class="arrow-button" />
+                            <ui:Label text="None" name="HornTypeValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="HornTypeNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="HornMaterialControl" class="arrow-control">
+                            <ui:Label text="Horn Material" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="HornMaterialPrevButton" class="arrow-button" />
+                            <ui:Label text="BlackPA" name="HornMaterialValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="HornMaterialNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <!-- Equipment -->
+                        <ui:Label text="Equipment" class="section-header" style="font-size: 56px; margin-top: 20px; margin-bottom: 10px;" />
+
+                        <ui:VisualElement name="MountArmorControl" class="arrow-control">
+                            <ui:Label text="Armor" class="arrow-control-label" />
+                            <ui:Button text="&lt;" name="MountArmorPrevButton" class="arrow-button" />
+                            <ui:Label text="0" name="MountArmorValue" class="arrow-value" />
+                            <ui:Button text="&gt;" name="MountArmorNextButton" class="arrow-button" />
+                        </ui:VisualElement>
+
+                        <ui:Toggle label="Saddle" name="SaddleToggle" class="customization-control" style="font-size: 32px;" />
+
+                        <ui:Toggle label="Reins" name="ReinsToggle" class="customization-control" style="font-size: 32px;" />
+
+                    </ui:VisualElement>
+                </ui:ScrollView>
+
+            </ui:VisualElement>
+
+            <!-- Right Panel - 3D Preview -->
+            <ui:VisualElement name="RightPanel" style="width: 50%; background-color: rgba(0, 0, 0, 0.3); border-radius: 10px;">
+                <ui:Label text="Preview" class="section-header" style="font-size: 56px; margin: 20px; text-align: upper-center;" />
+                <ui:VisualElement name="PreviewContainer" style="flex-grow: 1; margin: 20px; background-color: rgba(0, 0, 0, 0.5); border-radius: 10px;" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- Bottom Buttons -->
+        <ui:VisualElement name="ButtonSection" style="flex-direction: row; justify-content: flex-end; margin: 0 4% 2% 4%;">
+            <ui:Button text="Combat" name="CombatIdleToggleButton" style="width: 400px; height: 100px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
+            <ui:Button text="Reset" name="ResetButton" style="width: 400px; height: 100px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
+            <ui:Button text="Back" name="BackButton" style="width: 400px; height: 100px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>
