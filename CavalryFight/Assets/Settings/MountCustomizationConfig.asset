@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: MountCustomizationConfig
   m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Services.Customization.MountCustomizationConfig
   _coatColorMaterials:
-  - {fileID: 2100000, guid: 48a3ff7d81b735a47aaa910a8a1df49f, type: 2}
   - {fileID: 2100000, guid: 5120b901560dcad408aa1361836cbd16, type: 2}
-  - {fileID: 2100000, guid: dbcaf2e0cb9c14c4f9b885d4191a6cfc, type: 2}
+  - {fileID: 2100000, guid: 48a3ff7d81b735a47aaa910a8a1df49f, type: 2}
   - {fileID: 2100000, guid: d24c88fd0da379649a4d2506731dbaf1, type: 2}
-  - {fileID: 2100000, guid: 4a303854212219f4bbbd9a546d8e515d, type: 2}
   - {fileID: 2100000, guid: c30e93411f145e04b83e5b4fe8b38fe8, type: 2}
+  - {fileID: 2100000, guid: 4a303854212219f4bbbd9a546d8e515d, type: 2}
+  - {fileID: 2100000, guid: dbcaf2e0cb9c14c4f9b885d4191a6cfc, type: 2}
   _maneColorMaterials:
-  - {fileID: 2100000, guid: 415d6403e4da1af4083108180b132073, type: 2}
   - {fileID: 2100000, guid: 4c6d3a2609c8f404280dcfa6cf8a195d, type: 2}
-  - {fileID: 2100000, guid: f668d8047970c2c4c883e2a1d7e8034b, type: 2}
   - {fileID: 2100000, guid: 605a93b5e45c5514e8bace45672405e5, type: 2}
+  - {fileID: 2100000, guid: 415d6403e4da1af4083108180b132073, type: 2}
   - {fileID: 2100000, guid: 40f88f46f86b2dd41925a353dcb3588b, type: 2}
+  - {fileID: 2100000, guid: f668d8047970c2c4c883e2a1d7e8034b, type: 2}
   _hornMaterials:
   - {fileID: 2100000, guid: 91323fd7305eef84898490654355c7fc, type: 2}
   - {fileID: 2100000, guid: 8a5f66b5b0d8b294685184337afc88c7, type: 2}
