@@ -258,8 +258,9 @@ namespace CavalryFight.Services.Input
 
             Vector2 input = _inputActions.Gameplay.Camera.ReadValue<Vector2>();
 
-            // マウスの場合はスケーリングが必要
-            if (Mouse.current != null)
+            // マウスデルタの場合はスケーリングが必要
+            var activeControl = _inputActions.Gameplay.Camera.activeControl;
+            if (activeControl != null && activeControl.device is Mouse)
             {
                 input *= 0.01f; // マウスデルタをスケーリング
             }
