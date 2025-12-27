@@ -1,0 +1,27 @@
+{
+    "name": "CavalryFight.Services",
+    "rootNamespace": "CavalryFight.Services",
+    "references": [
+        "CavalryFight.Core",
+        "CavalryFight.Input",
+        "Unity.Netcode.Runtime",
+        "Unity.InputSystem",
+        "Unity.Collections",
+        "Unity.Services.Core",
+        "Unity.Services.Authentication",
+        "Unity.Services.Multiplayer",
+        "MalbersAnimations",
+        "P09.ModularHumanoid",
+        "BlazeAI",
+        "AdvancedSceneManager"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
