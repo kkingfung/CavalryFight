@@ -203,8 +203,8 @@ namespace CavalryFight.Core.Bootstrap
             try
             {
                 var service = ServiceLocator.Instance.Get<T>();
-                +service.Initialize();
-                +Debug.Log($"[GameBootstrap] {typeof(T).Name} initialized successfully.");
+                service.Initialize();
+                Debug.Log($"[GameBootstrap] {typeof(T).Name} initialized successfully.");
             }
             catch (Exception ex)
             {
