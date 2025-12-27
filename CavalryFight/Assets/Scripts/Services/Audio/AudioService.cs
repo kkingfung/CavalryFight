@@ -221,6 +221,7 @@ namespace CavalryFight.Services.Audio
             {
                 _audioManager.BgmSource.Stop();
                 _currentBgmName = null;
+                BgmChanged?.Invoke(this, new AudioChangedEventArgs(string.Empty));
             }
 
             Debug.Log("[AudioService] BGM stopped.");
@@ -400,6 +401,11 @@ namespace CavalryFight.Services.Audio
         private class AudioManager : MonoBehaviour
         {
             /// <summary>
+            /// 親AudioService
+            /// </summary>
+            public AudioService? Service { get; private set; }
+
+            /// <summary>
             /// BGM用のAudioSource
             /// </summary>
             public AudioSource? BgmSource { get; private set; }
@@ -415,6 +421,8 @@ namespace CavalryFight.Services.Audio
             /// <param name="service">親となるAudioService</param>
             public void Initialize(AudioService service)
             {
+                Service = service;
+
                 // BGM用AudioSource
                 BgmSource = gameObject.AddComponent<AudioSource>();
                 BgmSource.playOnAwake = false;

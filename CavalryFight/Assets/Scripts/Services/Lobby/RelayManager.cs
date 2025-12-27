@@ -7,6 +7,7 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Services.Core;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
+using Unity.Services.Authentication;
 using UnityEngine;
 
 namespace CavalryFight.Services.Lobby
@@ -68,6 +69,13 @@ namespace CavalryFight.Services.Lobby
             try
             {
                 await UnityServices.InitializeAsync();
+
+                // Anonymous認証を実行
+                if (!Unity.Services.Authentication.AuthenticationService.Instance.IsSignedIn)
+                {
+                    await Unity.Services.Authentication.AuthenticationService.Instance.SignInAnonymouslyAsync();
+                }
+
                 _initialized = true;
                 Debug.Log("[RelayManager] Unity Services initialized successfully.");
                 return true;
@@ -104,7 +112,20 @@ namespace CavalryFight.Services.Lobby
                 _currentJoinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
                 // Unity TransportにRelay情報を設定
-                var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+                var networkManager = NetworkManager.Singleton;
+                if (networkManager == null)
+                {
+                    Debug.LogError("[RelayManager] NetworkManager.Singleton is null.");
+                    return null;
+                }
+
+                var unityTransport = networkManager.GetComponent<UnityTransport>();
+                if (unityTransport == null)
+                {
+                    Debug.LogError("[RelayManager] UnityTransport component not found.");
+                    return null;
+                }
+
                 unityTransport.SetHostRelayData(
                     allocation.RelayServer.IpV4,
                     (ushort)allocation.RelayServer.Port,
@@ -152,7 +173,20 @@ namespace CavalryFight.Services.Lobby
                 JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
 
                 // Unity TransportにRelay情報を設定
-                var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+                var networkManager = NetworkManager.Singleton;
+                if (networkManager == null)
+                {
+                    Debug.LogError("[RelayManager] NetworkManager.Singleton is null.");
+                    return false;
+                }
+
+                var unityTransport = networkManager.GetComponent<UnityTransport>();
+                if (unityTransport == null)
+                {
+                    Debug.LogError("[RelayManager] UnityTransport component not found.");
+                    return false;
+                }
+
                 unityTransport.SetClientRelayData(
                     joinAllocation.RelayServer.IpV4,
                     (ushort)joinAllocation.RelayServer.Port,

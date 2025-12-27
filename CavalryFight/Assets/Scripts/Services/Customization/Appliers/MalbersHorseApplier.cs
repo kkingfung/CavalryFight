@@ -210,7 +210,6 @@ namespace CavalryFight.Services.Customization
             // 一般的な命名規則: "Horse_Body", "Horse 4", "Horse" など
             if (child.name.Contains("Horse") && !child.name.Contains("Mane") && !child.name.Contains("Tail"))
             {
-                // SkinnedMeshRenderer または MeshRenderer を取得
                 Renderer? renderer = child.GetComponent<SkinnedMeshRenderer>();
                 if (renderer == null)
                 {
@@ -315,7 +314,6 @@ namespace CavalryFight.Services.Customization
 
             if (isMane || isTail)
             {
-                // SkinnedMeshRenderer または MeshRenderer を取得
                 Renderer? renderer = child.GetComponent<SkinnedMeshRenderer>();
                 if (renderer == null)
                 {
@@ -375,7 +373,6 @@ namespace CavalryFight.Services.Customization
                         var material = HornMaterials[materialIndex];
                         if (material != null)
                         {
-                            // SkinnedMeshRenderer または MeshRenderer を取得
                             Renderer? renderer = child.GetComponent<SkinnedMeshRenderer>();
                             if (renderer == null)
                             {
@@ -451,10 +448,10 @@ namespace CavalryFight.Services.Customization
 
                 if (hasSaddle && SaddleMaterial != null)
                 {
-                    var renderer = child.GetComponent<SkinnedMeshRenderer>();
+                    Renderer? renderer = child.GetComponent<SkinnedMeshRenderer>();
                     if (renderer == null)
                     {
-                        renderer = child.GetComponent<MeshRenderer>() as Renderer as SkinnedMeshRenderer;
+                        renderer = child.GetComponent<MeshRenderer>();
                     }
 
                     if (renderer != null)

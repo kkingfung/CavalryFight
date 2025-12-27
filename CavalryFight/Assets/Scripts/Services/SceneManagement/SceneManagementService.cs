@@ -103,6 +103,10 @@ namespace CavalryFight.Services.SceneManagement
         {
             Debug.Log("[SceneManagementService] Disposing...");
 
+            // ASMのコールバックを登録解除
+            SceneManager.events.UnregisterCallback<SceneOpenPhaseEvent>(OnSceneOpenStarted, When.Before);
+            SceneManager.events.UnregisterCallback<SceneOpenPhaseEvent>(OnSceneOpenCompleted, When.After);
+
             // イベントハンドラをクリア
             SceneLoadStarted = null;
             SceneLoadCompleted = null;
@@ -167,7 +171,15 @@ namespace CavalryFight.Services.SceneManagement
                 return;
             }
 
-            OpenCollection(_mainMenuCollection);
+            try
+            {
+                OpenCollection(_mainMenuCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open MainMenu collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("MainMenu", ex.Message, ex));
+            }
         }
 
         /// <summary>
@@ -182,7 +194,15 @@ namespace CavalryFight.Services.SceneManagement
                 return;
             }
 
-            OpenCollection(_lobbyCollection);
+            try
+            {
+                OpenCollection(_lobbyCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open Lobby collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Lobby", ex.Message, ex));
+            }
         }
 
         /// <summary>
@@ -197,7 +217,15 @@ namespace CavalryFight.Services.SceneManagement
                 return;
             }
 
-            OpenCollection(_settingsCollection);
+            try
+            {
+                OpenCollection(_settingsCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open Settings collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Settings", ex.Message, ex));
+            }
         }
 
         /// <summary>
@@ -227,7 +255,15 @@ namespace CavalryFight.Services.SceneManagement
                 return;
             }
 
-            OpenCollection(_matchCollection);
+            try
+            {
+                OpenCollection(_matchCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open Match collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Match", ex.Message, ex));
+            }
         }
 
         /// <summary>
@@ -242,7 +278,15 @@ namespace CavalryFight.Services.SceneManagement
                 return;
             }
 
-            OpenCollection(_trainingCollection);
+            try
+            {
+                OpenCollection(_trainingCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open Training collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Training", ex.Message, ex));
+            }
         }
 
         /// <summary>
@@ -257,7 +301,15 @@ namespace CavalryFight.Services.SceneManagement
                 return;
             }
 
-            OpenCollection(_resultsCollection);
+            try
+            {
+                OpenCollection(_resultsCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open Results collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Results", ex.Message, ex));
+            }
         }
 
         /// <summary>
@@ -272,7 +324,15 @@ namespace CavalryFight.Services.SceneManagement
                 return;
             }
 
-            OpenCollection(_replayCollection);
+            try
+            {
+                OpenCollection(_replayCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open Replay collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Replay", ex.Message, ex));
+            }
         }
 
         #endregion

@@ -96,7 +96,7 @@ namespace CavalryFight.Services.Replay
         /// <summary>
         /// ハイライトの持続時間を取得します（秒）
         /// </summary>
-        public float Duration => EndTimestamp - StartTimestamp;
+        public float Duration => Mathf.Max(0f, EndTimestamp - StartTimestamp);
 
         /// <summary>
         /// イベントからハイライトを作成します（前後の余裕時間を含む）
