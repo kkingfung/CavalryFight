@@ -84,7 +84,8 @@ namespace CavalryFight.Views
 
             if (lobbyService == null || sceneService == null)
             {
-                Debug.LogError("[MatchLobbyView] Required services not found!");
+                Debug.LogError("[MatchLobbyView] Required services not found! Disabling component.");
+                enabled = false;
                 return;
             }
 
