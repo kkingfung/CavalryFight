@@ -423,7 +423,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
   m_id: ytkdx787.6dk
   m_isHidden: 0
-  m_scenes: []
+  m_scenes:
+  - {fileID: 11400000, guid: 704655fc0cde9534399a385d22bf131a, type: 2}
   m_description: 
   m_isLocked: 0
   m_lockMessage: 

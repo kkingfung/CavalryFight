@@ -1,0 +1,533 @@
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using CavalryFight.Core.MVVM;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
+using CavalryFight.Services.Lobby;
+using CavalryFight.Services.SceneManagement;
+using CavalryFight.ViewModels;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace CavalryFight.Views
+{
+    /// <summary>
+    /// マッチロビー画面のView
+    /// </summary>
+    /// <remarks>
+    /// ルームの作成と参加を管理する画面です。
+    /// MatchLobbyViewModelと連携して動作します。
+    /// </remarks>
+    [RequireComponent(typeof(UIDocument))]
+    public class MatchLobbyView : UIToolkitViewBase<MatchLobbyViewModel>
+    {
+        #region Serialized Fields
+
+        [Header("Audio")]
+        [SerializeField] private AudioClip? _bgmClip;
+        [SerializeField] private AudioClip? _buttonClickSfx;
+
+        #endregion
+
+        #region UI Elements
+
+        // Header
+        private Button? _refreshButton;
+        private Button? _backButton;
+
+        // Left Panel - Room List
+        private VisualElement? _roomListContainer;
+        private VisualElement? _emptyState;
+        private ScrollView? _roomListScrollView;
+
+        // Right Panel - Room Details
+        private VisualElement? _noSelectionState;
+        private VisualElement? _detailsContent;
+        private Label? _roomNameLabel;
+        private Label? _hostNameLabel;
+        private Label? _gameModeLabel;
+        private Label? _mapLabel;
+        private Label? _playersLabel;
+
+        // Join Form
+        private TextField? _playerNameInput;
+        private VisualElement? _passwordRow;
+        private TextField? _passwordInput;
+        private Button? _joinRoomButton;
+
+        // Footer
+        private Button? _hostRoomButton;
+
+        #endregion
+
+        #region Fields
+
+        private readonly Dictionary<string, VisualElement> _roomItemElements = new Dictionary<string, VisualElement>();
+        private VisualElement? _currentSelectedElement;
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        /// <summary>
+        /// 初期化処理
+        /// </summary>
+        protected override void Awake()
+        {
+            base.Awake();
+
+            // サービスを取得
+            var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+
+            if (lobbyService == null || sceneService == null)
+            {
+                Debug.LogError("[MatchLobbyView] Required services not found!");
+                return;
+            }
+
+            // ViewModelを作成して設定
+            ViewModel = new MatchLobbyViewModel(lobbyService, sceneService);
+        }
+
+        /// <summary>
+        /// 有効化時の処理
+        /// </summary>
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            // BGMを再生
+            if (_bgmClip != null)
+            {
+                var audioService = ServiceLocator.Instance.Get<IAudioService>();
+                if (audioService != null)
+                {
+                    audioService.PlayBgm(_bgmClip, loop: true, fadeInDuration: 2f);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 無効化時の処理
+        /// </summary>
+        protected override void OnDisable()
+        {
+            // BGMは停止しない（シーン遷移時の継続再生のため）
+            // 次のシーンが異なるBGMを要求する場合は、そのシーンのOnEnable()で自動的に切り替わる
+            base.OnDisable();
+        }
+
+        #endregion
+
+        #region Protected Methods
+
+        /// <summary>
+        /// ルートビジュアル要素が準備できたときの処理
+        /// </summary>
+        /// <param name="root">ルートビジュアル要素</param>
+        protected override void OnRootVisualElementReady(VisualElement root)
+        {
+            base.OnRootVisualElementReady(root);
+
+            // UI要素を取得
+            GetUIElements();
+
+            // UI要素の検証
+            ValidateUIElements();
+
+            // イベントハンドラを登録
+            RegisterEventHandlers();
+
+            // 初期状態を設定
+            UpdateEmptyState();
+            UpdateDetailsVisibility();
+
+            Debug.Log("[MatchLobbyView] UI initialized.");
+        }
+
+        /// <summary>
+        /// ViewModelとのバインディングを設定します
+        /// </summary>
+        /// <param name="viewModel">バインドするViewModel</param>
+        protected override void BindViewModel(MatchLobbyViewModel viewModel)
+        {
+            base.BindViewModel(viewModel);
+
+            // ViewModelのイベントを購読
+            viewModel.PropertyChanged += OnViewModelPropertyChanged;
+            viewModel.NavigateToRoomRequested += OnNavigateToRoomRequested;
+            viewModel.ErrorOccurred += OnErrorOccurred;
+
+            // ルームリストを初期化（将来実装）
+            // TODO: Populate room list when lobby service supports room listing
+        }
+
+        /// <summary>
+        /// ViewModelとのバインディングを解除します
+        /// </summary>
+        protected override void UnbindViewModel()
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+                ViewModel.NavigateToRoomRequested -= OnNavigateToRoomRequested;
+                ViewModel.ErrorOccurred -= OnErrorOccurred;
+            }
+
+            UnregisterEventHandlers();
+            base.UnbindViewModel();
+        }
+
+        #endregion
+
+        #region UI Element Setup
+
+        /// <summary>
+        /// UI要素を取得します
+        /// </summary>
+        private void GetUIElements()
+        {
+            if (RootVisualElement == null) return;
+
+            // Header
+            _refreshButton = Q<Button>("RefreshButton");
+            _backButton = Q<Button>("BackButton");
+
+            // Left Panel - Room List
+            _roomListContainer = Q<VisualElement>("RoomListContainer");
+            _emptyState = Q<VisualElement>("EmptyState");
+            _roomListScrollView = Q<ScrollView>("RoomListScrollView");
+
+            // Right Panel - Room Details
+            _noSelectionState = Q<VisualElement>("NoSelectionState");
+            _detailsContent = Q<VisualElement>("DetailsContent");
+            _roomNameLabel = Q<Label>("RoomNameLabel");
+            _hostNameLabel = Q<Label>("HostNameLabel");
+            _gameModeLabel = Q<Label>("GameModeLabel");
+            _mapLabel = Q<Label>("MapLabel");
+            _playersLabel = Q<Label>("PlayersLabel");
+
+            // Join Form
+            _playerNameInput = Q<TextField>("PlayerNameInput");
+            _passwordRow = Q<VisualElement>("PasswordRow");
+            _passwordInput = Q<TextField>("PasswordInput");
+            _joinRoomButton = Q<Button>("JoinRoomButton");
+
+            // Footer
+            _hostRoomButton = Q<Button>("HostRoomButton");
+        }
+
+        /// <summary>
+        /// UI要素が正しく取得できているか検証します
+        /// </summary>
+        private void ValidateUIElements()
+        {
+            if (_refreshButton == null)
+            {
+                Debug.LogWarning("[MatchLobbyView] RefreshButton not found!", this);
+            }
+
+            if (_roomListContainer == null)
+            {
+                Debug.LogWarning("[MatchLobbyView] RoomListContainer not found!", this);
+            }
+
+            if (_emptyState == null)
+            {
+                Debug.LogWarning("[MatchLobbyView] EmptyState not found!", this);
+            }
+
+            if (_noSelectionState == null)
+            {
+                Debug.LogWarning("[MatchLobbyView] NoSelectionState not found!", this);
+            }
+
+            if (_detailsContent == null)
+            {
+                Debug.LogWarning("[MatchLobbyView] DetailsContent not found!", this);
+            }
+
+            if (_backButton == null)
+            {
+                Debug.LogWarning("[MatchLobbyView] BackButton not found!", this);
+            }
+
+            if (_hostRoomButton == null)
+            {
+                Debug.LogWarning("[MatchLobbyView] HostRoomButton not found!", this);
+            }
+        }
+
+        #endregion
+
+        #region Event Handlers Registration
+
+        /// <summary>
+        /// イベントハンドラを登録します
+        /// </summary>
+        private void RegisterEventHandlers()
+        {
+            // Header buttons
+            if (_refreshButton != null)
+            {
+                _refreshButton.clicked += OnRefreshButtonClicked;
+            }
+
+            if (_backButton != null)
+            {
+                _backButton.clicked += OnBackButtonClicked;
+            }
+
+            // Join form buttons
+            if (_joinRoomButton != null)
+            {
+                _joinRoomButton.clicked += OnJoinRoomButtonClicked;
+            }
+
+            // Footer buttons
+            if (_hostRoomButton != null)
+            {
+                _hostRoomButton.clicked += OnHostRoomButtonClicked;
+            }
+        }
+
+        /// <summary>
+        /// イベントハンドラの登録を解除します
+        /// </summary>
+        private void UnregisterEventHandlers()
+        {
+            // Header buttons
+            if (_refreshButton != null)
+            {
+                _refreshButton.clicked -= OnRefreshButtonClicked;
+            }
+
+            if (_backButton != null)
+            {
+                _backButton.clicked -= OnBackButtonClicked;
+            }
+
+            // Join form buttons
+            if (_joinRoomButton != null)
+            {
+                _joinRoomButton.clicked -= OnJoinRoomButtonClicked;
+            }
+
+            // Footer buttons
+            if (_hostRoomButton != null)
+            {
+                _hostRoomButton.clicked -= OnHostRoomButtonClicked;
+            }
+        }
+
+        #endregion
+
+        #region UI Updates
+
+        /// <summary>
+        /// 空リスト状態の表示/非表示を更新します
+        /// </summary>
+        private void UpdateEmptyState()
+        {
+            if (_emptyState == null || _roomListScrollView == null)
+            {
+                return;
+            }
+
+            // TODO: Update when room list is implemented
+            bool isEmpty = true; // Placeholder - check if room list is empty
+
+            if (isEmpty)
+            {
+                _emptyState.style.display = DisplayStyle.Flex;
+                _roomListScrollView.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                _emptyState.style.display = DisplayStyle.None;
+                _roomListScrollView.style.display = DisplayStyle.Flex;
+            }
+        }
+
+        /// <summary>
+        /// 詳細パネルの表示/非表示を更新します
+        /// </summary>
+        private void UpdateDetailsVisibility()
+        {
+            if (_noSelectionState == null || _detailsContent == null)
+            {
+                return;
+            }
+
+            // TODO: Update when room selection is implemented
+            bool hasSelection = false; // Placeholder - check if a room is selected
+
+            if (hasSelection)
+            {
+                _noSelectionState.style.display = DisplayStyle.None;
+                _detailsContent.style.display = DisplayStyle.Flex;
+            }
+            else
+            {
+                _noSelectionState.style.display = DisplayStyle.Flex;
+                _detailsContent.style.display = DisplayStyle.None;
+            }
+        }
+
+        /// <summary>
+        /// 詳細パネルの内容を更新します
+        /// </summary>
+        private void UpdateDetailsContent()
+        {
+            // TODO: Implement when room data model is available
+            // Update room name, host, game mode, map, players count, etc.
+
+            // Example:
+            // if (_roomNameLabel != null)
+            // {
+            //     _roomNameLabel.text = selectedRoom.RoomName;
+            // }
+        }
+
+        /// <summary>
+        /// パスワード入力欄の表示/非表示を更新します
+        /// </summary>
+        /// <param name="hasPassword">パスワード付きルームかどうか</param>
+        private void UpdatePasswordVisibility(bool hasPassword)
+        {
+            if (_passwordRow != null)
+            {
+                _passwordRow.style.display = hasPassword ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+        }
+
+        /// <summary>
+        /// ViewModelのプロパティ変更イベントハンドラ
+        /// </summary>
+        /// <param name="sender">送信元</param>
+        /// <param name="e">イベント引数</param>
+        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            // TODO: Update when ViewModel properties are finalized
+            switch (e.PropertyName)
+            {
+                case nameof(MatchLobbyViewModel.StatusMessage):
+                    // Update status if status label exists
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// リフレッシュボタンがクリックされた時の処理
+        /// </summary>
+        private void OnRefreshButtonClicked()
+        {
+            PlayButtonClickSfx();
+
+            // TODO: Implement room list refresh when lobby service supports it
+            Debug.Log("[MatchLobbyView] Refresh button clicked");
+        }
+
+        /// <summary>
+        /// 戻るボタンがクリックされた時の処理
+        /// </summary>
+        private void OnBackButtonClicked()
+        {
+            PlayButtonClickSfx();
+            ViewModel?.BackToMainMenu();
+        }
+
+        /// <summary>
+        /// ルームに参加ボタンがクリックされた時の処理
+        /// </summary>
+        private void OnJoinRoomButtonClicked()
+        {
+            if (ViewModel == null) return;
+
+            PlayButtonClickSfx();
+
+            // ViewModelに値を設定
+            if (_playerNameInput != null)
+            {
+                ViewModel.PlayerName = _playerNameInput.value;
+            }
+
+            // TODO: Get join code from selected room instead of manual input
+            // For now, this is a placeholder
+            Debug.Log("[MatchLobbyView] Join room button clicked");
+        }
+
+        /// <summary>
+        /// ルームをホストボタンがクリックされた時の処理
+        /// </summary>
+        private void OnHostRoomButtonClicked()
+        {
+            PlayButtonClickSfx();
+
+            // TODO: Open host room dialog or navigate to host room setup scene
+            Debug.Log("[MatchLobbyView] Host room button clicked");
+
+            // Temporary: Navigate directly to lobby setup
+            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            sceneService?.LoadLobby();
+        }
+
+        /// <summary>
+        /// ルームシーン遷移要求イベントハンドラ
+        /// </summary>
+        /// <param name="sender">送信元</param>
+        /// <param name="e">イベント引数</param>
+        private void OnNavigateToRoomRequested(object? sender, EventArgs e)
+        {
+            Debug.Log("[MatchLobbyView] Navigating to room scene...");
+
+            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            sceneService?.LoadLobby();
+        }
+
+        /// <summary>
+        /// エラー発生イベントハンドラ
+        /// </summary>
+        /// <param name="sender">送信元</param>
+        /// <param name="errorMessage">エラーメッセージ</param>
+        private void OnErrorOccurred(object? sender, string errorMessage)
+        {
+            Debug.LogError($"[MatchLobbyView] Error: {errorMessage}");
+
+            // TODO: Show error message in UI
+        }
+
+        #endregion
+
+        #region Private Methods - Audio
+
+        /// <summary>
+        /// ボタンクリック効果音を再生します
+        /// </summary>
+        private void PlayButtonClickSfx()
+        {
+            if (_buttonClickSfx != null)
+            {
+                var audioService = ServiceLocator.Instance.Get<IAudioService>();
+                if (audioService != null)
+                {
+                    audioService.PlaySfx(_buttonClickSfx);
+                }
+            }
+        }
+
+        #endregion
+    }
+}

@@ -5,7 +5,9 @@
         "CavalryFight.Core",
         "CavalryFight.Services",
         "CavalryFight.Input",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.Collections",
+        "Unity.Netcode.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
