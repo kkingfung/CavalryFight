@@ -59,14 +59,13 @@ namespace CavalryFight.Services.Lobby
         public int TimeLimit;
 
         /// <summary>
-        /// スコア目標
+        /// 矢の制限数
         /// </summary>
         /// <remarks>
-        /// ゲームモードによって意味が異なります。
-        /// ScoreMatch: 目標スコア
-        /// Deathmatch: キル数
+        /// 0 = 無制限
+        /// ScoreMatchモードでは制限あり、その他のモードでは無制限
         /// </remarks>
-        public int ScoreGoal;
+        public int ArrowLimit;
 
         /// <summary>
         /// マップ名
@@ -91,7 +90,7 @@ namespace CavalryFight.Services.Lobby
                 Password = new FixedString64Bytes(),
                 IsPublic = false,
                 TimeLimit = 300, // 5分
-                ScoreGoal = 100,
+                ArrowLimit = 0, // 無制限（Arenaモード）
                 MapName = new FixedString64Bytes("DefaultArena")
             };
         }
@@ -110,7 +109,7 @@ namespace CavalryFight.Services.Lobby
             Password = new FixedString64Bytes();
             IsPublic = false;
             TimeLimit = 300;
-            ScoreGoal = 100;
+            ArrowLimit = 0; // デフォルトは無制限
             MapName = new FixedString64Bytes("DefaultArena");
         }
 
@@ -129,7 +128,7 @@ namespace CavalryFight.Services.Lobby
             serializer.SerializeValue(ref Password);
             serializer.SerializeValue(ref IsPublic);
             serializer.SerializeValue(ref TimeLimit);
-            serializer.SerializeValue(ref ScoreGoal);
+            serializer.SerializeValue(ref ArrowLimit);
             serializer.SerializeValue(ref MapName);
         }
 

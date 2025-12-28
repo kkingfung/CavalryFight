@@ -104,9 +104,9 @@ namespace CavalryFight.ViewModels
         private int _timeLimit = 300;
 
         /// <summary>
-        /// スコアゴール
+        /// 矢の制限数
         /// </summary>
-        private int _scoreGoal = 100;
+        private int _arrowLimit = 0;
 
         /// <summary>
         /// 次のNPC番号（重複を避けるためのカウンター）
@@ -195,7 +195,14 @@ namespace CavalryFight.ViewModels
         public string GameMode
         {
             get => _gameMode;
-            set => SetProperty(ref _gameMode, value);
+            set
+            {
+                if (SetProperty(ref _gameMode, value))
+                {
+                    // ゲームモード変更時に適切なデフォルト値を設定
+                    ApplyGameModeRules();
+                }
+            }
         }
 
         /// <summary>
@@ -244,12 +251,12 @@ namespace CavalryFight.ViewModels
         }
 
         /// <summary>
-        /// スコアゴール
+        /// 矢の制限数
         /// </summary>
-        public int ScoreGoal
+        public int ArrowLimit
         {
-            get => _scoreGoal;
-            set => SetProperty(ref _scoreGoal, value);
+            get => _arrowLimit;
+            set => SetProperty(ref _arrowLimit, value);
         }
 
         /// <summary>
@@ -331,7 +338,7 @@ namespace CavalryFight.ViewModels
                 MapName = settings.MapName.ToString();
                 MaxPlayers = settings.MaxPlayers;
                 TimeLimit = settings.TimeLimit;
-                ScoreGoal = settings.ScoreGoal;
+                ArrowLimit = settings.ArrowLimit;
                 JoinCode = _lobbyService.CurrentJoinCode ?? "";
                 IsHost = _lobbyService.IsHost;
 
@@ -634,13 +641,24 @@ namespace CavalryFight.ViewModels
 
             // 現在の設定を取得して更新
             var settings = _lobbyService.CurrentRoomSettings;
+
+            // すべての変更可能な設定を更新
+            settings.RoomName = new Unity.Collections.FixedString64Bytes(RoomName);
+
+            // GameMode文字列をenumに変換
+            if (System.Enum.TryParse<GameMode>(GameMode, out var parsedGameMode))
+            {
+                settings.GameMode = parsedGameMode;
+            }
+
+            settings.MapName = new Unity.Collections.FixedString64Bytes(MapName);
             settings.TimeLimit = TimeLimit;
-            settings.ScoreGoal = ScoreGoal;
+            settings.ArrowLimit = ArrowLimit;
 
             // ネットワーク経由で設定を送信
             if (_lobbyService.UpdateRoomSettings(settings))
             {
-                Debug.Log($"[MatchRoomViewModel] Room settings updated: TimeLimit={TimeLimit}, ScoreGoal={ScoreGoal}");
+                Debug.Log($"[MatchRoomViewModel] Room settings updated: RoomName={RoomName}, GameMode={GameMode}, MapName={MapName}, TimeLimit={TimeLimit}, ArrowLimit={ArrowLimit}");
             }
             else
             {
@@ -652,6 +670,60 @@ namespace CavalryFight.ViewModels
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// ゲームモードに応じたルールを適用します
+        /// </summary>
+        private void ApplyGameModeRules()
+        {
+            // GameMode文字列をenumに変換
+            if (!System.Enum.TryParse<GameMode>(GameMode, out var parsedMode))
+            {
+                return;
+            }
+
+            // タイムリミットのルール適用
+            if (GameModeRules.IsTimeLimitLockedToNoLimit(parsedMode))
+            {
+                // Deathmatch: 常に"No Limit"（0）に固定
+                TimeLimit = 0;
+            }
+            else if (GameModeRules.IsTimeLimitRequired(parsedMode))
+            {
+                // Arena/ScoreMatch/TeamFight: 必須（0にできない）
+                if (TimeLimit == 0)
+                {
+                    TimeLimit = GameModeRules.GetDefaultTimeLimit(parsedMode);
+                }
+            }
+            else
+            {
+                // PvE: 自由設定（変更なし）
+                // 現在の値をそのまま保持
+            }
+
+            // 矢の制限のルール適用
+            if (GameModeRules.IsArrowLimitLockedToNoLimit(parsedMode))
+            {
+                // Arena/TeamFight/Deathmatch: 常に"No Limit"（0）に固定
+                ArrowLimit = 0;
+            }
+            else if (GameModeRules.IsArrowLimitRequired(parsedMode))
+            {
+                // ScoreMatch: 必須（0にできない）
+                if (ArrowLimit == 0)
+                {
+                    ArrowLimit = GameModeRules.GetDefaultArrowLimit(parsedMode);
+                }
+            }
+            else
+            {
+                // PvE: 自由設定（変更なし）
+                // 現在の値をそのまま保持
+            }
+
+            Debug.Log($"[MatchRoomViewModel] Game mode rules applied for {GameMode}: TimeLimit={TimeLimit}, ArrowLimit={ArrowLimit}");
+        }
 
         /// <summary>
         /// ゲームの準備をします

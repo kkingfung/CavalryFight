@@ -77,9 +77,9 @@
                         <ui:DropdownField name="TimeLimitDropdown" class="setting-dropdown" style="display: none;"/>
                     </ui:VisualElement>
                     <ui:VisualElement class="detail-row">
-                        <ui:Label text="Score Goal:" class="detail-label"/>
-                        <ui:Label text="100" name="ScoreGoalLabel" class="detail-value"/>
-                        <ui:DropdownField name="ScoreGoalDropdown" class="setting-dropdown" style="display: none;"/>
+                        <ui:Label text="Arrow Limit:" class="detail-label"/>
+                        <ui:Label text="No Limit" name="ArrowLimitLabel" class="detail-value"/>
+                        <ui:DropdownField name="ArrowLimitDropdown" class="setting-dropdown" style="display: none;"/>
                     </ui:VisualElement>
                 </ui:VisualElement>
 
