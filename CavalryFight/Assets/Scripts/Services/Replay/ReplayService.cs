@@ -73,10 +73,7 @@ namespace CavalryFight.Services.Replay
                 Debug.Log($"[ReplayService] Created replay folder: {_replayFolderPath}");
             }
 
-            // モックデータを生成
-            GenerateMockData();
-
-            Debug.Log($"[ReplayService] Service initialized. Replay folder: {_replayFolderPath}");
+            Debug.Log($"[ReplayService] Service created. Replay folder: {_replayFolderPath}");
         }
 
         #endregion

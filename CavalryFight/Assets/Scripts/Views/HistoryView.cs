@@ -661,29 +661,6 @@ namespace CavalryFight.Views
 
         #region Extensions
 
-        /// <summary>
-        /// ScrollToElement のためのヘルパーメソッド
-        /// </summary>
-        private static class VisualElementExtensions
-        {
-            public static void ScrollToElement(VisualElement element)
-            {
-                // 親のScrollViewを見つける
-                var parent = element.parent;
-                while (parent != null && !(parent is ScrollView))
-                {
-                    parent = parent.parent;
-                }
-
-                if (parent is ScrollView scrollView)
-                {
-                    // 要素が見えるようにスクロール
-                    float offset = element.layout.y;
-                    scrollView.scrollOffset = new Vector2(0, offset);
-                }
-            }
-        }
-
         #endregion
     }
 

@@ -73,7 +73,10 @@ namespace CavalryFight.Services.Replay
         {
             get
             {
-                if (IsDraw) return "Draw";
+                if (IsDraw)
+                {
+                    return "Draw";
+                }
                 return IsPlayerVictory ? "Victory" : "Defeat";
             }
         }
@@ -119,10 +122,17 @@ namespace CavalryFight.Services.Replay
         /// <returns>作成されたメタデータ</returns>
         public static ReplayMetadata FromReplayData(ReplayData replayData)
         {
+            DateTime recordedAt = DateTime.Now;
+            if (!DateTime.TryParse(replayData.RecordedAt, out recordedAt))
+            {
+                UnityEngine.Debug.LogWarning($"[ReplayMetadata] Failed to parse RecordedAt: {replayData.RecordedAt}. Using current time.");
+                recordedAt = DateTime.Now;
+            }
+
             return new ReplayMetadata
             {
                 ReplayId = replayData.ReplayId,
-                RecordedAt = DateTime.Parse(replayData.RecordedAt),
+                RecordedAt = recordedAt,
                 MapName = replayData.MapName,
                 GameMode = replayData.GameMode,
                 PlayerName = replayData.PlayerName,
