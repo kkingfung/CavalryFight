@@ -181,7 +181,7 @@ Toggle:checked .unity-toggle__checkmark {
 #ApplyButton,
 #ResetButton,
 #BackButton,
-#KeyBindingButton, {
+#KeyBindingButton {
     width: 600px;
     height: 100px;
     font-size: 48px;

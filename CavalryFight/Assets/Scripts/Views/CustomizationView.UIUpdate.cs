@@ -175,6 +175,12 @@ namespace CavalryFight.Views
                 _mountPanel.style.display = ViewModel.IsMountCategory ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
+            // 戦闘待機トグルボタンの表示/非表示を切り替え（キャラクターのみで表示）
+            if (_combatIdleToggleButton != null)
+            {
+                _combatIdleToggleButton.style.display = ViewModel.IsCharacterCategory ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
             // タブボタンのスタイルを更新（アクティブ状態の表示）
             UpdateTabButtonStyles();
 
