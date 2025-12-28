@@ -375,6 +375,31 @@ namespace CavalryFight.ViewModels
                 return;
             }
 
+            // FixedString64Bytesのバイト数制限をチェック（UTF-8で64バイトまで）
+            if (System.Text.Encoding.UTF8.GetByteCount(PlayerName) > 64)
+            {
+                StatusMessage = "プレイヤー名が長すぎます（64バイトまで）";
+                ErrorOccurred?.Invoke(this, "プレイヤー名が長すぎます。日本語の場合は約21文字までです。");
+                Debug.LogWarning($"[MatchLobbyViewModel] Player name too long: {PlayerName} ({System.Text.Encoding.UTF8.GetByteCount(PlayerName)} bytes)");
+                return;
+            }
+
+            if (System.Text.Encoding.UTF8.GetByteCount(RoomName) > 64)
+            {
+                StatusMessage = "ルーム名が長すぎます（64バイトまで）";
+                ErrorOccurred?.Invoke(this, "ルーム名が長すぎます。日本語の場合は約21文字までです。");
+                Debug.LogWarning($"[MatchLobbyViewModel] Room name too long: {RoomName} ({System.Text.Encoding.UTF8.GetByteCount(RoomName)} bytes)");
+                return;
+            }
+
+            if (System.Text.Encoding.UTF8.GetByteCount(SelectedMap) > 64)
+            {
+                StatusMessage = "マップ名が長すぎます（64バイトまで）";
+                ErrorOccurred?.Invoke(this, "マップ名が長すぎます。");
+                Debug.LogWarning($"[MatchLobbyViewModel] Map name too long: {SelectedMap} ({System.Text.Encoding.UTF8.GetByteCount(SelectedMap)} bytes)");
+                return;
+            }
+
             var roomSettings = new RoomSettings
             {
                 RoomName = new FixedString64Bytes(RoomName),
@@ -417,6 +442,15 @@ namespace CavalryFight.ViewModels
             {
                 StatusMessage = "プレイヤー名を入力してください";
                 ErrorOccurred?.Invoke(this, "プレイヤー名を入力してください");
+                return;
+            }
+
+            // FixedString64Bytesのバイト数制限をチェック（UTF-8で64バイトまで）
+            if (System.Text.Encoding.UTF8.GetByteCount(PlayerName) > 64)
+            {
+                StatusMessage = "プレイヤー名が長すぎます（64バイトまで）";
+                ErrorOccurred?.Invoke(this, "プレイヤー名が長すぎます。日本語の場合は約21文字までです。");
+                Debug.LogWarning($"[MatchLobbyViewModel] Player name too long: {PlayerName} ({System.Text.Encoding.UTF8.GetByteCount(PlayerName)} bytes)");
                 return;
             }
 
