@@ -191,8 +191,8 @@ namespace CavalryFight.Views
         {
             base.Awake();
 
-            // ServiceLocatorからICustomizationServiceを取得
-            var customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
+            // ServiceLocatorからICustomizationServiceを取得（例外を回避するためTryGetを使用）
+            var customizationService = ServiceLocator.Instance.TryGet<ICustomizationService>();
             if (customizationService == null)
             {
                 Debug.LogError("[CustomizationView] ICustomizationService not found in ServiceLocator! Disabling component.", this);

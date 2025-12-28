@@ -237,7 +237,7 @@ namespace CavalryFight.Examples.LobbyUsage
                 Password = new FixedString64Bytes(), // パスワードなし
                 IsPublic = false, // プライベートルーム（招待制）
                 TimeLimit = 300, // 5分
-                ScoreGoal = 100,
+                ArrowLimit = 0, // 無制限（Arenaモード）
                 MapName = new FixedString64Bytes("DefaultArena")
             };
 
@@ -551,7 +551,7 @@ namespace CavalryFight.Examples.LobbyUsage
             Debug.Log($"  Is Public: {settings.IsPublic}");
             Debug.Log($"  Has Password: {settings.HasPassword()}");
             Debug.Log($"  Time Limit: {settings.TimeLimit}s");
-            Debug.Log($"  Score Goal: {settings.ScoreGoal}");
+            Debug.Log($"  Arrow Limit: {(settings.ArrowLimit == 0 ? "Unlimited" : settings.ArrowLimit.ToString())}");
             Debug.Log($"  Map: {settings.MapName}");
             Debug.Log($"  Join Code: {_lobbyService.CurrentJoinCode ?? "N/A"}");
             Debug.Log($"  You are: {(_lobbyService.IsHost ? "HOST" : "GUEST")}");

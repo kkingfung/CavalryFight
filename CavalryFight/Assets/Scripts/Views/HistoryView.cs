@@ -75,8 +75,8 @@ namespace CavalryFight.Views
         {
             base.Awake();
 
-            // サービスを取得
-            var replayService = ServiceLocator.Instance.Get<IReplayService>();
+            // サービスを取得（例外を回避するためTryGetを使用）
+            var replayService = ServiceLocator.Instance.TryGet<IReplayService>();
             if (replayService == null)
             {
                 Debug.LogError("[HistoryView] IReplayService not found in ServiceLocator! Disabling component.", this);

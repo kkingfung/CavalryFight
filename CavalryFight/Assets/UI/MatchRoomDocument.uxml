@@ -1,0 +1,119 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/MatchRoomStyles.uss?fileID=7433441132597879392&amp;guid=PLACEHOLDER&amp;type=3#MatchRoomStyles"/>
+    <ui:VisualElement name="Root" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/Textures/bg_settings.png?fileID=2800000&amp;guid=d8dea11677d243e4ba74ad29acc19fa9&amp;type=3#bg_settings&quot;); flex-direction: column;">
+        <!-- Header -->
+        <ui:VisualElement name="Header" style="flex-direction: row; justify-content: space-between; align-items: center; margin: 1% 2%;">
+            <ui:Label text="Room Lobby" name="TitleLabel" style="-unity-font-definition: resource(&quot;FlatSkin/Font/Roboto-Black&quot;); font-size: 96px; -unity-text-outline-width: 5px; -unity-text-outline-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"/>
+            <ui:VisualElement style="flex-direction: row; align-items: center;">
+                <ui:Label text="Join Code: XXXXXX" name="JoinCodeLabel" style="font-size: 48px; -unity-font-definition: resource(&quot;FlatSkin/Font/Roboto-Bold&quot;); color: rgb(255, 255, 100); margin-right: 20px;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Content Area (Two Panels) -->
+        <ui:VisualElement name="ContentArea" style="flex-grow: 1; flex-direction: row; margin: 0 2% 2% 2%;">
+            <!-- Left Panel: Player List -->
+            <ui:VisualElement name="LeftPanel" style="width: 45%; margin-right: 2%; border-radius: 10px; padding: 20px;">
+                <ui:Label text="Players" name="PlayerListTitleLabel" class="panel-title" style="font-size: 56px; margin-bottom: 20px;"/>
+
+                <!-- Player List ScrollView -->
+                <ui:ScrollView name="PlayerListScrollView" style="flex-grow: 1;">
+                    <ui:VisualElement name="PlayerListContainer" class="player-list-container"/>
+                </ui:ScrollView>
+            </ui:VisualElement>
+
+            <!-- Right Panel: Room Settings -->
+            <ui:VisualElement name="RightPanel" style="width: 53%; border-radius: 10px; padding: 20px;">
+                <ui:Label text="Room Settings" name="SettingsTitleLabel" class="panel-title" style="font-size: 56px; margin-bottom: 20px;"/>
+
+                <!-- Room Information Section -->
+                <ui:VisualElement name="RoomInfoSection" style="margin-bottom: 30px;">
+                    <ui:Label text="Room Information" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Room Name:" class="detail-label"/>
+                        <ui:Label text="--" name="RoomNameLabel" class="detail-value"/>
+                        <ui:TextField name="RoomNameField" class="setting-textfield" style="display: none;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Host:" class="detail-label"/>
+                        <ui:Label text="--" name="HostNameLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Password:" class="detail-label"/>
+                        <ui:Label text="None" name="PasswordLabel" class="detail-value"/>
+                        <ui:TextField name="PasswordField" class="setting-textfield" is-password-field="true" style="display: none;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Public Room:" class="detail-label"/>
+                        <ui:Label text="Yes" name="PublicLabel" class="detail-value"/>
+                        <ui:Toggle name="PublicToggle" class="setting-toggle" style="display: none;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Max Players:" class="detail-label"/>
+                        <ui:Label text="8" name="MaxPlayersLabel" class="detail-value"/>
+                        <ui:DropdownField name="MaxPlayersDropdown" class="setting-dropdown" style="display: none;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Game Mode:" class="detail-label"/>
+                        <ui:Label text="--" name="GameModeLabel" class="detail-value"/>
+                        <ui:DropdownField name="GameModeDropdown" class="setting-dropdown" style="display: none;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Map:" class="detail-label"/>
+                        <ui:Label text="--" name="MapLabel" class="detail-value"/>
+                        <ui:DropdownField name="MapDropdown" class="setting-dropdown" style="display: none;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Players:" class="detail-label"/>
+                        <ui:Label text="0 / 8" name="PlayersLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Game Settings Section (Host Only) -->
+                <ui:VisualElement name="GameSettingsSection" style="margin-bottom: 30px; display: none;">
+                    <ui:Label text="Game Settings" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Time Limit:" class="detail-label"/>
+                        <ui:Label text="5:00" name="TimeLimitLabel" class="detail-value"/>
+                        <ui:DropdownField name="TimeLimitDropdown" class="setting-dropdown" style="display: none;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Arrow Limit:" class="detail-label"/>
+                        <ui:Label text="No Limit" name="ArrowLimitLabel" class="detail-value"/>
+                        <ui:DropdownField name="ArrowLimitDropdown" class="setting-dropdown" style="display: none;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Change/Apply Settings Button (Host Only) -->
+                <ui:VisualElement name="ChangeSettingsButtonSection" style="margin-top: 20px; display: none;">
+                    <ui:Button text="Change Settings" name="ChangeSettingsButton" class="action-button" style="width: 100%; height: 80px; font-size: 48px; background-color: rgba(150, 150, 150, 0.8);"/>
+                </ui:VisualElement>
+
+                <!-- Status Messages -->
+                <ui:VisualElement name="StatusSection" style="margin-top: auto; margin-bottom: 20px;">
+                    <ui:Label text="Waiting for players to ready up..." name="StatusLabel" style="font-size: 42px; -unity-font-definition: resource(&quot;FlatSkin/Font/Roboto-Medium&quot;); color: rgb(220, 220, 220); -unity-text-align: middle-center;"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Button Section (Bottom) -->
+        <ui:VisualElement name="ButtonSection" style="flex-direction: row; justify-content: space-between; margin: 0 2% 2% 2%;">
+            <ui:Button text="Leave Room" name="LeaveRoomButton" class="footer-button" style="width: 400px; height: 100px; font-size: 56px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+            <ui:VisualElement style="flex-direction: row;">
+                <!-- Host Buttons -->
+                <ui:Button text="Start Game" name="StartGameButton" class="footer-button primary-button" style="width: 400px; height: 100px; font-size: 56px; display: none; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                <!-- Guest Buttons -->
+                <ui:Button text="Ready" name="ReadyButton" class="footer-button primary-button" style="width: 400px; height: 100px; font-size: 56px; display: none; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                <ui:Button text="Cancel Ready" name="CancelReadyButton" class="footer-button" style="width: 400px; height: 100px; font-size: 56px; display: none; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Countdown Dialog (Overlay) -->
+        <ui:VisualElement name="CountdownDialog" style="position: absolute; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); align-items: center; justify-content: center; display: none;">
+            <ui:VisualElement style="background-color: rgba(20, 20, 20, 0.95); border-radius: 15px; padding: 40px; align-items: center; border-width: 3px; border-color: rgba(100, 150, 255, 0.8);">
+                <ui:Label text="Game Starting In..." style="font-size: 56px; -unity-font-definition: resource(&quot;FlatSkin/Font/Roboto-Bold&quot;); color: rgb(255, 255, 255); margin-bottom: 30px;"/>
+                <ui:Label text="5" name="CountdownLabel" style="font-size: 120px; -unity-font-definition: resource(&quot;FlatSkin/Font/Roboto-Black&quot;); color: rgb(255, 200, 100); margin-bottom: 30px;"/>
+                <ui:Button text="Cancel" name="CancelCountdownButton" class="footer-button danger-button" style="width: 300px; height: 80px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

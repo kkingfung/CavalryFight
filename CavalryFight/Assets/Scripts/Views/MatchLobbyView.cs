@@ -51,6 +51,10 @@ namespace CavalryFight.Views
         private Label? _mapLabel;
         private Label? _playersLabel;
 
+        // Join by Code
+        private TextField? _joinCodeInput;
+        private Button? _joinByCodeButton;
+
         // Join Form
         private TextField? _playerNameInput;
         private VisualElement? _passwordRow;
@@ -78,9 +82,9 @@ namespace CavalryFight.Views
         {
             base.Awake();
 
-            // サービスを取得
-            var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
-            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            // サービスを取得（例外を回避するためTryGetを使用）
+            var lobbyService = ServiceLocator.Instance.TryGet<ILobbyService>();
+            var sceneService = ServiceLocator.Instance.TryGet<ISceneManagementService>();
 
             if (lobbyService == null || sceneService == null)
             {
@@ -211,6 +215,10 @@ namespace CavalryFight.Views
             _mapLabel = Q<Label>("MapLabel");
             _playersLabel = Q<Label>("PlayersLabel");
 
+            // Join by Code
+            _joinCodeInput = Q<TextField>("JoinCodeInput");
+            _joinByCodeButton = Q<Button>("JoinByCodeButton");
+
             // Join Form
             _playerNameInput = Q<TextField>("PlayerNameInput");
             _passwordRow = Q<VisualElement>("PasswordRow");
@@ -282,6 +290,12 @@ namespace CavalryFight.Views
                 _backButton.clicked += OnBackButtonClicked;
             }
 
+            // Join by code button
+            if (_joinByCodeButton != null)
+            {
+                _joinByCodeButton.clicked += OnJoinByCodeButtonClicked;
+            }
+
             // Join form buttons
             if (_joinRoomButton != null)
             {
@@ -309,6 +323,12 @@ namespace CavalryFight.Views
             if (_backButton != null)
             {
                 _backButton.clicked -= OnBackButtonClicked;
+            }
+
+            // Join by code button
+            if (_joinByCodeButton != null)
+            {
+                _joinByCodeButton.clicked -= OnJoinByCodeButtonClicked;
             }
 
             // Join form buttons
@@ -451,6 +471,30 @@ namespace CavalryFight.Views
         }
 
         /// <summary>
+        /// Join by Codeボタンがクリックされた時の処理
+        /// </summary>
+        private void OnJoinByCodeButtonClicked()
+        {
+            if (ViewModel == null) return;
+
+            PlayButtonClickSfx();
+
+            // ジョインコードを取得
+            if (_joinCodeInput != null && !string.IsNullOrWhiteSpace(_joinCodeInput.value))
+            {
+                string joinCode = _joinCodeInput.value.Trim();
+                Debug.Log($"[MatchLobbyView] Join by code clicked: {joinCode}");
+
+                // TODO: ViewModelにJoinByCodeメソッドを実装して呼び出す
+                // ViewModel.JoinByCode(joinCode);
+            }
+            else
+            {
+                Debug.LogWarning("[MatchLobbyView] Join code is empty!");
+            }
+        }
+
+        /// <summary>
         /// ルームに参加ボタンがクリックされた時の処理
         /// </summary>
         private void OnJoinRoomButtonClicked()
@@ -477,12 +521,11 @@ namespace CavalryFight.Views
         {
             PlayButtonClickSfx();
 
-            // TODO: Open host room dialog or navigate to host room setup scene
-            Debug.Log("[MatchLobbyView] Host room button clicked");
+            Debug.Log("[MatchLobbyView] Host room button clicked - navigating to match room");
 
-            // Temporary: Navigate directly to lobby setup
+            // Navigate to match room scene
             var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
-            sceneService?.LoadLobby();
+            sceneService?.LoadMatchRoom();
         }
 
         /// <summary>
@@ -492,10 +535,10 @@ namespace CavalryFight.Views
         /// <param name="e">イベント引数</param>
         private void OnNavigateToRoomRequested(object? sender, EventArgs e)
         {
-            Debug.Log("[MatchLobbyView] Navigating to room scene...");
+            Debug.Log("[MatchLobbyView] Navigating to match room scene...");
 
             var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
-            sceneService?.LoadLobby();
+            sceneService?.LoadMatchRoom();
         }
 
         /// <summary>

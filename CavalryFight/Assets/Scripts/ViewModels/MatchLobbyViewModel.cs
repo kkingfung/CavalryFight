@@ -408,7 +408,7 @@ namespace CavalryFight.ViewModels
                 Password = new FixedString64Bytes(),
                 IsPublic = false,
                 TimeLimit = 300,
-                ScoreGoal = 100,
+                ArrowLimit = 0, // デフォルトは無制限（ScoreMatchの場合は後で設定変更可能）
                 MapName = new FixedString64Bytes(SelectedMap)
             };
 
