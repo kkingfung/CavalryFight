@@ -103,6 +103,11 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         public event Action<string>? ErrorOccurred;
 
+        /// <summary>
+        /// ホストが切断された時に発生します（ゲストのみ）
+        /// </summary>
+        public event Action? HostDisconnected;
+
         #endregion
 
         #region Properties
@@ -165,6 +170,12 @@ namespace CavalryFight.Services.Lobby
 
             // RelayManager は CreateRoom/JoinRoom 時に非同期で初期化されます
 
+            // NetworkManager の切断イベントを購読
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+            }
+
             _initialized = true;
             Debug.Log("[LobbyService] Initialization complete.");
         }
@@ -202,6 +213,12 @@ namespace CavalryFight.Services.Lobby
             // ネットワークイベントを購読解除
             UnsubscribeFromNetworkEvents();
 
+            // NetworkManager の切断イベントを購読解除
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+            }
+
             // イベントハンドラをクリア
             RoomCreated = null;
             RoomJoined = null;
@@ -212,6 +229,7 @@ namespace CavalryFight.Services.Lobby
             PlayerReadyChanged = null;
             MatchStarting = null;
             ErrorOccurred = null;
+            HostDisconnected = null;
 
             _initialized = false;
         }
@@ -288,6 +306,24 @@ namespace CavalryFight.Services.Lobby
         private void OnNetworkPlayerReadyChanged(ulong playerId, bool isReady)
         {
             PlayerReadyChanged?.Invoke(playerId, isReady);
+        }
+
+        /// <summary>
+        /// クライアント切断イベントハンドラ
+        /// </summary>
+        /// <param name="clientId">切断されたクライアントID</param>
+        private void OnClientDisconnected(ulong clientId)
+        {
+            // ゲストの場合、サーバー（ホスト）が切断されたか確認
+            if (!IsHost && clientId == NetworkManager.ServerClientId)
+            {
+                Debug.LogWarning("[LobbyService] Host disconnected.");
+                _isInRoom = false;
+                _localPlayerInfo = null;
+
+                // ホスト切断イベントを発火
+                HostDisconnected?.Invoke();
+            }
         }
 
         #endregion
@@ -713,6 +749,11 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// ルームから退出します
         /// </summary>
+        /// <remarks>
+        /// ホストが退出する場合、NetworkManager.Shutdown()によってサーバーがシャットダウンされます。
+        /// これにより、すべてのゲストクライアントでOnClientDisconnectedコールバックが発火し、
+        /// HostDisconnectedイベントが通知されます。ゲストはこのイベントを受けてロビーに戻ります。
+        /// </remarks>
         public void LeaveRoom()
         {
             if (!_isInRoom)
@@ -722,6 +763,8 @@ namespace CavalryFight.Services.Lobby
 
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
+                // ホストの場合はサーバーをシャットダウン（すべてのクライアントが切断される）
+                // ゲストの場合はクライアントのみシャットダウン
                 NetworkManager.Singleton.Shutdown();
             }
 

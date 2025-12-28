@@ -314,6 +314,9 @@ namespace CavalryFight.ViewModels
             _lobbyService = lobbyService ?? throw new ArgumentNullException(nameof(lobbyService));
             _sceneManagementService = sceneManagementService ?? throw new ArgumentNullException(nameof(sceneManagementService));
 
+            // ロビーイベントを購読
+            SubscribeToLobbyEvents();
+
             // 初期化
             InitializeRoomData();
 
@@ -323,6 +326,36 @@ namespace CavalryFight.ViewModels
         #endregion
 
         #region Initialization
+
+        /// <summary>
+        /// ロビーサービスのイベントを購読します
+        /// </summary>
+        private void SubscribeToLobbyEvents()
+        {
+            _lobbyService.HostDisconnected += OnHostDisconnected;
+        }
+
+        /// <summary>
+        /// ロビーサービスのイベント購読を解除します
+        /// </summary>
+        private void UnsubscribeFromLobbyEvents()
+        {
+            _lobbyService.HostDisconnected -= OnHostDisconnected;
+        }
+
+        /// <summary>
+        /// ホスト切断イベントハンドラ
+        /// </summary>
+        private void OnHostDisconnected()
+        {
+            Debug.LogWarning("[MatchRoomViewModel] Host has disconnected.");
+
+            // エラーメッセージを発火
+            ErrorOccurred?.Invoke(this, "Host has left the room.");
+
+            // ロビーに戻る
+            _sceneManagementService.LoadLobby();
+        }
 
         /// <summary>
         /// ルームデータを初期化します
@@ -356,6 +389,7 @@ namespace CavalryFight.ViewModels
 
                 Debug.Log($"[MatchRoomViewModel] Room data initialized from LobbyService: {RoomName}, Host: {IsHost}");
             }
+#if DEBUG
             else
             {
                 // ルームに参加していない場合は仮データで初期化（テスト用）
@@ -380,6 +414,7 @@ namespace CavalryFight.ViewModels
                     Fps = 60
                 });
             }
+#endif
         }
 
         #endregion
@@ -787,6 +822,9 @@ namespace CavalryFight.ViewModels
         /// </summary>
         protected override void OnDispose()
         {
+            // ロビーイベントの購読を解除
+            UnsubscribeFromLobbyEvents();
+
             // クリーンアップ
             Players.Clear();
 

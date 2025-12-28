@@ -62,6 +62,11 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         event Action<string>? ErrorOccurred;
 
+        /// <summary>
+        /// ホストが切断された時に発生します（ゲストのみ）
+        /// </summary>
+        event Action? HostDisconnected;
+
         #endregion
 
         #region Properties
