@@ -25,8 +25,11 @@ namespace CavalryFight.Core.Bootstrap
         [Tooltip("メインメニューシーン")]
         [SerializeField] private SceneCollection? _mainMenu;
 
-        [Tooltip("ロビーシーン（マルチプレイヤー待機）")]
+        [Tooltip("ロビーシーン（マルチプレイヤー待機・ルーム検索）")]
         [SerializeField] private SceneCollection? _lobby;
+
+        [Tooltip("マッチルームシーン（ルーム内待機）")]
+        [SerializeField] private SceneCollection? _matchRoom;
 
         [Tooltip("設定画面シーン")]
         [SerializeField] private SceneCollection? _settings;
@@ -63,9 +66,14 @@ namespace CavalryFight.Core.Bootstrap
         public SceneCollection? MainMenu => _mainMenu;
 
         /// <summary>
-        /// ロビーシーンを取得します
+        /// ロビーシーン（マッチロビー）を取得します
         /// </summary>
         public SceneCollection? Lobby => _lobby;
+
+        /// <summary>
+        /// マッチルームシーンを取得します
+        /// </summary>
+        public SceneCollection? MatchRoom => _matchRoom;
 
         /// <summary>
         /// 設定画面シーンを取得します

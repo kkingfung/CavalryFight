@@ -51,6 +51,7 @@ namespace CavalryFight.Services.SceneManagement
         private SceneCollection? _startupCollection;
         private SceneCollection? _mainMenuCollection;
         private SceneCollection? _lobbyCollection;
+        private SceneCollection? _matchRoomCollection;
         private SceneCollection? _settingsCollection;
         private SceneCollection? _customizationCollection;
         private SceneCollection? _matchCollection;
@@ -125,6 +126,7 @@ namespace CavalryFight.Services.SceneManagement
         /// <param name="startup">Startupシーンコレクション</param>
         /// <param name="mainMenu">MainMenuシーンコレクション</param>
         /// <param name="lobby">Lobbyシーンコレクション</param>
+        /// <param name="matchRoom">MatchRoomシーンコレクション</param>
         /// <param name="settings">Settingsシーンコレクション</param>
         /// <param name="customization">Customizationシーンコレクション</param>
         /// <param name="match">Matchシーンコレクション</param>
@@ -135,6 +137,7 @@ namespace CavalryFight.Services.SceneManagement
             SceneCollection? startup,
             SceneCollection? mainMenu,
             SceneCollection? lobby,
+            SceneCollection? matchRoom,
             SceneCollection? settings,
             SceneCollection? customization,
             SceneCollection? match,
@@ -145,6 +148,7 @@ namespace CavalryFight.Services.SceneManagement
             _startupCollection = startup;
             _mainMenuCollection = mainMenu;
             _lobbyCollection = lobby;
+            _matchRoomCollection = matchRoom;
             _settingsCollection = settings;
             _customizationCollection = customization;
             _matchCollection = match;
@@ -202,6 +206,29 @@ namespace CavalryFight.Services.SceneManagement
             {
                 Debug.LogError($"[SceneManagementService] Failed to open Lobby collection: {ex.Message}");
                 SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Lobby", ex.Message, ex));
+            }
+        }
+
+        /// <summary>
+        /// マッチルームシーンをロードします。
+        /// </summary>
+        public void LoadMatchRoom()
+        {
+            if (_matchRoomCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] MatchRoom collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("MatchRoom", "MatchRoom collection is not registered"));
+                return;
+            }
+
+            try
+            {
+                OpenCollection(_matchRoomCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open MatchRoom collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("MatchRoom", ex.Message, ex));
             }
         }
 

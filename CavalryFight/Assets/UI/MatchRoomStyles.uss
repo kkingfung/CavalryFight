@@ -1,0 +1,400 @@
+/* ===========================================
+   Match Room Scene Stylesheet
+   =========================================== */
+
+/* Root Container */
+#Root {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+}
+
+/* ===========================================
+   Header
+   =========================================== */
+
+#Header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1% 2%;
+}
+
+/* Title Label */
+#TitleLabel {
+    font-size: 96px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+}
+
+/* Join Code Label */
+#JoinCodeLabel {
+    font-size: 48px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 215, 0);
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgba(255, 215, 0, 0.5);
+}
+
+/* ===========================================
+   Content Area
+   =========================================== */
+
+#ContentArea {
+    flex-grow: 1;
+    flex-direction: row;
+    margin: 0 2% 2% 2%;
+}
+
+/* Panels */
+#LeftPanel, #RightPanel {
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#LeftPanel {
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 45%;
+    margin-right: 2%;
+    flex-direction: column;
+}
+
+#RightPanel {
+    background-color: rgba(0, 0, 0, 0.7);
+    width: 53%;
+    flex-direction: column;
+}
+
+/* Panel Titles */
+.panel-title {
+    font-size: 56px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 255, 255);
+    margin-bottom: 20px;
+}
+
+/* Section Headers */
+.section-header {
+    font-size: 48px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(220, 220, 220);
+    margin-bottom: 15px;
+}
+
+/* ===========================================
+   Player List (Left Panel)
+   =========================================== */
+
+.player-list-container {
+    flex-grow: 1;
+}
+
+/* Player List Item */
+.player-item {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    flex-direction: row;
+    align-items: center;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.2);
+    transition-duration: 0.2s;
+}
+
+.player-item:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Player Info Section */
+.player-item-info {
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+.player-item-name {
+    font-size: 42px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 255, 255);
+    margin-bottom: 5px;
+}
+
+.player-item-stats {
+    flex-direction: row;
+    align-items: center;
+}
+
+.player-item-fps {
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(100, 255, 100);
+    margin-right: 15px;
+}
+
+/* Team Badge */
+.team-badge {
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    padding: 5px 15px;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.team-a {
+    color: rgb(100, 150, 255);
+    background-color: rgba(100, 150, 255, 0.3);
+}
+
+.team-b {
+    color: rgb(255, 100, 100);
+    background-color: rgba(255, 100, 100, 0.3);
+}
+
+.team-none {
+    color: rgb(200, 200, 200);
+    background-color: rgba(128, 128, 128, 0.2);
+}
+
+/* Ready Status Badge */
+.ready-badge {
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    padding: 5px 15px;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.ready-true {
+    color: rgb(100, 255, 100);
+    background-color: rgba(0, 255, 0, 0.2);
+}
+
+.ready-false {
+    color: rgb(255, 200, 100);
+    background-color: rgba(255, 150, 0, 0.2);
+}
+
+/* Host Badge */
+.host-badge {
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 215, 0);
+    background-color: rgba(255, 215, 0, 0.2);
+    padding: 5px 15px;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+/* Player Actions */
+.player-item-actions {
+    flex-direction: row;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.team-button {
+    width: 100px;
+    height: 50px;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    background-color: rgba(100, 100, 100, 0.5);
+    border-radius: 5px;
+    border-width: 0;
+    margin-right: 10px;
+}
+
+.team-button:hover {
+    background-color: rgba(150, 150, 150, 0.7);
+}
+
+.kick-button {
+    width: 100px;
+    height: 50px;
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    background-color: rgba(255, 50, 50, 0.5);
+    border-radius: 5px;
+    border-width: 0;
+    color: rgb(255, 255, 255);
+}
+
+.kick-button:hover {
+    background-color: rgba(255, 70, 70, 0.7);
+}
+
+/* ===========================================
+   Room Settings (Right Panel)
+   =========================================== */
+
+/* Room Information Section */
+#RoomInfoSection {
+    margin-bottom: 30px;
+}
+
+/* Game Settings Section */
+#GameSettingsSection {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: rgba(100, 150, 255, 0.1);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgba(100, 150, 255, 0.3);
+}
+
+/* Detail Rows */
+.detail-row {
+    flex-direction: row;
+    margin-bottom: 15px;
+    align-items: center;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+.detail-label {
+    font-size: 36px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(220, 220, 220);
+    min-width: 200px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.detail-value {
+    font-size: 36px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 255, 255);
+    flex-grow: 1;
+    -unity-text-align: middle-right;
+}
+
+/* Setting Dropdown */
+.setting-dropdown {
+    flex-grow: 1;
+    min-width: 250px;
+    height: 60px;
+    font-size: 36px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    background-color: rgba(100, 100, 100, 0.6);
+    border-radius: 5px;
+    border-width: 2px;
+    border-color: rgba(150, 150, 150, 0.6);
+    color: rgb(255, 255, 255);
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-left: auto;
+}
+
+.setting-dropdown:hover {
+    background-color: rgba(120, 120, 120, 0.7);
+    border-color: rgba(180, 180, 180, 0.7);
+}
+
+.setting-dropdown:focus {
+    border-color: rgb(100, 150, 255);
+    background-color: rgba(100, 100, 100, 0.8);
+}
+
+/* Status Label */
+#StatusLabel {
+    font-size: 42px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(220, 220, 220);
+    -unity-text-align: middle-center;
+    margin-top: 20px;
+}
+
+/* ===========================================
+   Buttons
+   =========================================== */
+
+.header-button {
+    width: 200px;
+    height: 80px;
+    font-size: 48px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    background-color: rgba(100, 100, 100, 0.5);
+    border-radius: 8px;
+    border-width: 0;
+}
+
+.header-button:hover {
+    background-color: rgba(150, 150, 150, 0.7);
+}
+
+.action-button {
+    font-size: 56px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    -unity-text-align: middle-center;
+    border-radius: 10px;
+    border-width: 0;
+    margin-bottom: 15px;
+}
+
+.primary-button {
+    background-color: rgba(50, 150, 255, 0.7);
+    height: 100px;
+}
+
+.primary-button:hover {
+    background-color: rgba(70, 170, 255, 0.9);
+}
+
+.danger-button {
+    background-color: rgba(255, 50, 50, 0.7);
+    height: 80px;
+}
+
+.danger-button:hover {
+    background-color: rgba(255, 70, 70, 0.9);
+}
+
+.footer-button {
+    width: 400px;
+    height: 100px;
+    font-size: 56px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    background-color: rgba(100, 100, 100, 0.7);
+    border-radius: 10px;
+    border-width: 0;
+}
+
+.footer-button:hover {
+    background-color: rgba(120, 120, 120, 0.9);
+}
+
+.footer-button.primary-button {
+    background-color: rgba(50, 150, 255, 0.7);
+}
+
+.footer-button.primary-button:hover {
+    background-color: rgba(70, 170, 255, 0.9);
+}
+
+/* ===========================================
+   Countdown Dialog
+   =========================================== */
+
+#CountdownDialog {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    align-items: center;
+    justify-content: center;
+}
+
+#CountdownLabel {
+    font-size: 120px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
+    color: rgb(255, 200, 100);
+    -unity-text-align: middle-center;
+}
