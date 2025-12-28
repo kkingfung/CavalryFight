@@ -13,7 +13,7 @@ namespace CavalryFight.Services.Lobby
     /// - ScoreMatch: 時間制限必須、矢の制限あり、プレイヤーは死なない、勝者は最高スコア
     /// - TeamFight: 時間制限必須（Arenaと同じだがチーム戦）、無制限の矢、プレイヤーは死なない、勝者はチーム最高スコア
     /// - Deathmatch: 時間制限なし（固定）、無制限の矢、プレイヤーは死ぬ、最後の一人/チームが勝者
-    /// - PvE: すべてオプション（プレイヤーが自由に設定可能）、プレイヤーは死ぬ、勝者判定: 死亡 > スコア
+    /// - Versus: すべてオプション（プレイヤーが自由に設定可能）、プレイヤーは死ぬ、勝者判定: 死亡 > スコア
     /// </remarks>
     public static class GameModeRules
     {
@@ -30,7 +30,7 @@ namespace CavalryFight.Services.Lobby
                 GameMode.ScoreMatch => true,  // ラウンドごとの時間制限（必須）
                 GameMode.TeamFight => true,   // チーム戦での時間制限（必須）
                 GameMode.Deathmatch => false, // 最後の一人まで戦う（時間制限なし固定）
-                GameMode.PvE => false,        // 自由設定可能
+                GameMode.Versus => false,        // 自由設定可能
                 _ => false
             };
         }
@@ -62,7 +62,7 @@ namespace CavalryFight.Services.Lobby
                 GameMode.ScoreMatch => true,  // 編集可能（ただし"No Limit"は選択不可）
                 GameMode.TeamFight => true,   // 編集可能（ただし"No Limit"は選択不可）
                 GameMode.Deathmatch => false, // 固定（常に"No Limit"）
-                GameMode.PvE => true,         // 完全に編集可能
+                GameMode.Versus => true,         // 完全に編集可能
                 _ => false
             };
         }
@@ -80,7 +80,7 @@ namespace CavalryFight.Services.Lobby
                 GameMode.ScoreMatch => 180, // 3分（ラウンドごと）
                 GameMode.TeamFight => 600,  // 10分
                 GameMode.Deathmatch => 0,   // 制限なし（固定）
-                GameMode.PvE => 300,        // 5分（デフォルト値）
+                GameMode.Versus => 300,        // 5分（デフォルト値）
                 _ => 0
             };
         }
@@ -98,7 +98,7 @@ namespace CavalryFight.Services.Lobby
                 GameMode.ScoreMatch => true,  // 矢の制限あり（必須）
                 GameMode.TeamFight => false,  // 無制限の矢
                 GameMode.Deathmatch => false, // 無制限の矢
-                GameMode.PvE => false,        // 自由設定可能
+                GameMode.Versus => false,        // 自由設定可能
                 _ => false
             };
         }
@@ -116,7 +116,7 @@ namespace CavalryFight.Services.Lobby
                 GameMode.ScoreMatch => false, // 制限あり（編集可能）
                 GameMode.TeamFight => true,   // 常に無制限
                 GameMode.Deathmatch => true,  // 常に無制限
-                GameMode.PvE => false,        // 自由設定可能
+                GameMode.Versus => false,        // 自由設定可能
                 _ => true
             };
         }
@@ -134,7 +134,7 @@ namespace CavalryFight.Services.Lobby
                 GameMode.ScoreMatch => true,  // 編集可能（ただし"No Limit"は選択不可）
                 GameMode.TeamFight => false,  // 固定（常に無制限）
                 GameMode.Deathmatch => false, // 固定（常に無制限）
-                GameMode.PvE => true,         // 完全に編集可能
+                GameMode.Versus => true,         // 完全に編集可能
                 _ => false
             };
         }
@@ -152,7 +152,7 @@ namespace CavalryFight.Services.Lobby
                 GameMode.ScoreMatch => 5,    // 5本（デフォルト値）
                 GameMode.TeamFight => 0,     // 無制限（固定）
                 GameMode.Deathmatch => 0,    // 無制限（固定）
-                GameMode.PvE => 10,          // 10本（デフォルト値）
+                GameMode.Versus => 10,          // 10本（デフォルト値）
                 _ => 0
             };
         }
