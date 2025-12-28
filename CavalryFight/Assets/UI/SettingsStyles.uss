@@ -96,6 +96,7 @@
     margin-right: 0px;                 /* No right margin - truly rightmost */
     flex-shrink: 0;                    /* Prevent checkbox from shrinking */
     align-self: center;                /* Center checkbox vertically */
+    justify-content: flex-end;
 }
 
 /* Toggle Checkmark */

@@ -31,10 +31,26 @@
                     <ui:VisualElement class="detail-row">
                         <ui:Label text="Room Name:" class="detail-label"/>
                         <ui:Label text="--" name="RoomNameLabel" class="detail-value"/>
+                        <ui:TextField name="RoomNameField" class="setting-textfield" style="display: none;"/>
                     </ui:VisualElement>
                     <ui:VisualElement class="detail-row">
                         <ui:Label text="Host:" class="detail-label"/>
                         <ui:Label text="--" name="HostNameLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Password:" class="detail-label"/>
+                        <ui:Label text="None" name="PasswordLabel" class="detail-value"/>
+                        <ui:TextField name="PasswordField" class="setting-textfield" is-password-field="true" style="display: none;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Public Room:" class="detail-label"/>
+                        <ui:Label text="Yes" name="PublicLabel" class="detail-value"/>
+                        <ui:Toggle name="PublicToggle" class="setting-toggle" style="display: none;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Max Players:" class="detail-label"/>
+                        <ui:Label text="8" name="MaxPlayersLabel" class="detail-value"/>
+                        <ui:DropdownField name="MaxPlayersDropdown" class="setting-dropdown" style="display: none;"/>
                     </ui:VisualElement>
                     <ui:VisualElement class="detail-row">
                         <ui:Label text="Game Mode:" class="detail-label"/>
@@ -56,13 +72,20 @@
                 <ui:VisualElement name="GameSettingsSection" style="margin-bottom: 30px; display: none;">
                     <ui:Label text="Game Settings" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
                     <ui:VisualElement class="detail-row">
-                        <ui:Label text="Time Limit:" class="detail-label" style="font-size: 36px; width: 200px;"/>
-                        <ui:DropdownField name="TimeLimitDropdown" class="setting-dropdown" style="flex-grow: 1; height: 50px; font-size: 36px;"/>
+                        <ui:Label text="Time Limit:" class="detail-label"/>
+                        <ui:Label text="5:00" name="TimeLimitLabel" class="detail-value"/>
+                        <ui:DropdownField name="TimeLimitDropdown" class="setting-dropdown" style="display: none;"/>
                     </ui:VisualElement>
                     <ui:VisualElement class="detail-row">
-                        <ui:Label text="Score Goal:" class="detail-label" style="font-size: 36px; width: 200px;"/>
-                        <ui:DropdownField name="ScoreGoalDropdown" class="setting-dropdown" style="flex-grow: 1; height: 50px; font-size: 36px;"/>
+                        <ui:Label text="Score Goal:" class="detail-label"/>
+                        <ui:Label text="100" name="ScoreGoalLabel" class="detail-value"/>
+                        <ui:DropdownField name="ScoreGoalDropdown" class="setting-dropdown" style="display: none;"/>
                     </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Change/Apply Settings Button (Host Only) -->
+                <ui:VisualElement name="ChangeSettingsButtonSection" style="margin-top: 20px; display: none;">
+                    <ui:Button text="Change Settings" name="ChangeSettingsButton" class="action-button" style="width: 100%; height: 80px; font-size: 48px; background-color: rgba(150, 150, 150, 0.8);"/>
                 </ui:VisualElement>
 
                 <!-- Status Messages -->

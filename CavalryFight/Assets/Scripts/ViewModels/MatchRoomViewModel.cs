@@ -108,6 +108,11 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private int _scoreGoal = 100;
 
+        /// <summary>
+        /// 次のNPC番号（重複を避けるためのカウンター）
+        /// </summary>
+        private int _nextNpcNumber = 1;
+
         #endregion
 
         #region Properties
@@ -454,6 +459,93 @@ namespace CavalryFight.ViewModels
         }
 
         /// <summary>
+        /// NPCを追加します（ホストのみ）
+        /// </summary>
+        /// <param name="slotIndex">スロットインデックス</param>
+        public void AddNPC(int slotIndex)
+        {
+            if (!IsHost)
+            {
+                Debug.LogWarning("[MatchRoomViewModel] Only host can add NPCs.");
+                return;
+            }
+
+            if (Players.Count >= MaxPlayers)
+            {
+                Debug.LogWarning("[MatchRoomViewModel] Cannot add NPC: room is full.");
+                return;
+            }
+
+            // NPC用のプレイヤー情報を作成
+            var npc = new PlayerInfo
+            {
+                PlayerId = $"NPC_{System.Guid.NewGuid().ToString().Substring(0, 8)}",
+                PlayerName = $"NPC {_nextNpcNumber}",
+                IsNPC = true,
+                Difficulty = "Normal",
+                Team = PlayerTeam.None,
+                IsReady = true, // NPCは常に準備完了
+                Fps = 0
+            };
+
+            _nextNpcNumber++; // 次のNPC番号をインクリメント
+
+            Players.Add(npc);
+            CurrentPlayers = Players.Count;
+            OnPropertyChanged(nameof(Players));
+            UpdateStatusMessage();
+
+            Debug.Log($"[MatchRoomViewModel] Added NPC: {npc.PlayerName} at slot {slotIndex}");
+        }
+
+        /// <summary>
+        /// NPCを削除します（ホストのみ）
+        /// </summary>
+        /// <param name="npcId">NPC ID</param>
+        public void RemoveNPC(string npcId)
+        {
+            if (!IsHost)
+            {
+                Debug.LogWarning("[MatchRoomViewModel] Only host can remove NPCs.");
+                return;
+            }
+
+            var npc = Players.FirstOrDefault(p => p.PlayerId == npcId && p.IsNPC);
+            if (npc != null)
+            {
+                Players.Remove(npc);
+                CurrentPlayers = Players.Count;
+                OnPropertyChanged(nameof(Players));
+                UpdateStatusMessage();
+
+                Debug.Log($"[MatchRoomViewModel] Removed NPC: {npc.PlayerName}");
+            }
+        }
+
+        /// <summary>
+        /// NPC難易度を変更します（ホストのみ）
+        /// </summary>
+        /// <param name="npcId">NPC ID</param>
+        /// <param name="difficulty">難易度</param>
+        public void ChangeNPCDifficulty(string npcId, string difficulty)
+        {
+            if (!IsHost)
+            {
+                Debug.LogWarning("[MatchRoomViewModel] Only host can change NPC difficulty.");
+                return;
+            }
+
+            var npc = Players.FirstOrDefault(p => p.PlayerId == npcId && p.IsNPC);
+            if (npc != null)
+            {
+                npc.Difficulty = difficulty;
+                OnPropertyChanged(nameof(Players));
+
+                Debug.Log($"[MatchRoomViewModel] NPC {npc.PlayerName} difficulty changed to {difficulty}");
+            }
+        }
+
+        /// <summary>
         /// ゲームを開始します（ホストのみ）
         /// </summary>
         public void StartGame()
@@ -643,6 +735,8 @@ namespace CavalryFight.ViewModels
         private bool _isReady = false;
         private PlayerTeam _team = PlayerTeam.None;
         private int _fps = 0;
+        private bool _isNPC = false;
+        private string _difficulty = "Normal";
 
         /// <summary>
         /// プレイヤーID
@@ -719,6 +813,32 @@ namespace CavalryFight.ViewModels
             {
                 _fps = value;
                 OnPropertyChanged(nameof(Fps));
+            }
+        }
+
+        /// <summary>
+        /// NPCかどうか
+        /// </summary>
+        public bool IsNPC
+        {
+            get => _isNPC;
+            set
+            {
+                _isNPC = value;
+                OnPropertyChanged(nameof(IsNPC));
+            }
+        }
+
+        /// <summary>
+        /// NPC難易度（Easy, Normal, Hard, Expert）
+        /// </summary>
+        public string Difficulty
+        {
+            get => _difficulty;
+            set
+            {
+                _difficulty = value;
+                OnPropertyChanged(nameof(Difficulty));
             }
         }
 

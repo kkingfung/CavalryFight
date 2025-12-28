@@ -219,6 +219,7 @@ Toggle {
     font-size: 32px;
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
     flex-direction: row;
+    align-items: center;
 }
 
 /* Toggle Label */
@@ -229,16 +230,17 @@ Toggle > Label {
     margin-left: 0;
     -unity-text-align: middle-left;
     color: rgb(255, 255, 255);
+    font-size: 32px;
 }
 
 /* Toggle Checkmark Container */
 Toggle .unity-toggle__input {
     width: 45px;
     height: 45px;
-    margin-left: 0;
+    margin-left: auto;
     margin-right: 0;
     flex-shrink: 0;
-    align-self: center;
+    justify-content: flex-end;
 }
 
 /* Toggle Checkmark */
@@ -266,6 +268,7 @@ RadioButtonGroup {
     font-size: 32px;
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
     flex-direction: row;
+    align-items: center;
 }
 
 /* RadioButtonGroup Label */
@@ -276,6 +279,7 @@ RadioButtonGroup > Label {
     margin-left: 0;
     -unity-text-align: middle-left;
     color: rgb(255, 255, 255);
+    font-size: 32px;
 }
 
 /* RadioButtonGroup Container */
@@ -283,6 +287,8 @@ RadioButtonGroup .unity-radio-button-group__container {
     flex-direction: row;
     flex-shrink: 0;
     width: 300px;
+    justify-content: flex-end;
+    margin-left: auto;
 }
 
 /* Individual Radio Buttons */

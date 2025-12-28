@@ -164,6 +164,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40bb7eda20a707f4bb566b6c163363d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CavalryFight.Views::CavalryFight.Views.MatchLobbyView
+  _bgmClip: {fileID: 8300000, guid: ac8666fb953dece42b57499d86983d23, type: 3}
+  _buttonClickSfx: {fileID: 8300000, guid: aa43ca9e0da8ae1439e4ad22d8a20e14, type: 3}
 --- !u!114 &358203180
 MonoBehaviour:
   m_ObjectHideFlags: 0

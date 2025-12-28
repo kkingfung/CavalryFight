@@ -25,7 +25,14 @@
             </ui:VisualElement>
 
             <!-- Right Panel: Room Details & Join Form -->
-            <ui:VisualElement name="RightPanel" style="width: 53%; border-radius: 10px; padding: 20px;">
+            <ui:VisualElement name="RightPanel" style="width: 53%; border-radius: 10px; padding: 20px; flex-direction: column;">
+                <!-- Join by Code Section (Single Line - Always Visible) -->
+                <ui:VisualElement name="JoinByCodeSection" style="margin-bottom: 30px; flex-direction: row; align-items: center; background-color: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 5px;">
+                    <ui:Label text="Join by Code:" style="font-size: 42px; -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium'); color: rgb(255, 255, 255); margin-right: 20px; min-width: 240px;"/>
+                    <ui:TextField name="JoinCodeInput" placeholder-text="Enter 6-digit code" style="flex-grow: 1; height: 60px; font-size: 40px; -unity-text-align: middle-center; background-color: rgba(255, 255, 255, 0.9); color: rgb(0, 0, 0); border-radius: 5px; margin-right: 15px; border-width: 2px; border-color: rgba(120, 120, 120, 0.8);"/>
+                    <ui:Button text="Enter" name="JoinByCodeButton" style="width: 200px; height: 60px; font-size: 42px; -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold'); background-color: rgba(100, 180, 100, 0.8); color: rgb(0, 0, 0); border-radius: 5px; border-width: 2px; border-color: rgba(80, 150, 80, 0.8); background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                </ui:VisualElement>
+
                 <ui:Label text="Room Details" name="DetailsTitleLabel" class="panel-title" style="font-size: 56px; margin-bottom: 20px;"/>
 
                 <!-- No Selection State -->

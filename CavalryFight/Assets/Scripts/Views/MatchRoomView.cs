@@ -45,7 +45,14 @@ namespace CavalryFight.Views
 
         // Right Panel - Room Settings
         private Label? _roomNameLabel;
+        private TextField? _roomNameField;
         private Label? _hostNameLabel;
+        private Label? _passwordLabel;
+        private TextField? _passwordField;
+        private Label? _publicLabel;
+        private Toggle? _publicToggle;
+        private Label? _maxPlayersLabel;
+        private DropdownField? _maxPlayersDropdown;
         private Label? _gameModeLabel;
         private Label? _mapLabel;
         private Label? _playersLabel;
@@ -57,8 +64,14 @@ namespace CavalryFight.Views
 
         // Game Settings (Host Only)
         private VisualElement? _gameSettingsSection;
+        private Label? _timeLimitLabel;
         private DropdownField? _timeLimitDropdown;
+        private Label? _scoreGoalLabel;
         private DropdownField? _scoreGoalDropdown;
+
+        // Change/Apply Settings Button (Host Only)
+        private VisualElement? _changeSettingsButtonSection;
+        private Button? _changeSettingsButton;
 
         // Footer Buttons
         private Button? _leaveRoomButton;
@@ -78,6 +91,7 @@ namespace CavalryFight.Views
         private readonly Dictionary<string, VisualElement> _playerItemElements = new Dictionary<string, VisualElement>();
         private float _countdownTimer = 0f;
         private bool _isCountdownActive = false;
+        private bool _isEditMode = false; // ホストの設定編集モード
 
         #endregion
 
@@ -90,13 +104,14 @@ namespace CavalryFight.Views
         {
             base.Awake();
 
-            // サービスを取得
-            var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
-            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            // サービスを取得（例外を回避するためTryGetを使用）
+            var lobbyService = ServiceLocator.Instance.TryGet<ILobbyService>();
+            var sceneService = ServiceLocator.Instance.TryGet<ISceneManagementService>();
 
             if (lobbyService == null || sceneService == null)
             {
-                Debug.LogError("[MatchRoomView] Required services not found!", this);
+                Debug.LogError("[MatchRoomView] Required services not found! Disabling component.", this);
+                enabled = false;
                 return;
             }
 
@@ -172,6 +187,9 @@ namespace CavalryFight.Views
             // イベントハンドラを登録
             RegisterEventHandlers();
 
+            // プレイヤーリストを初期化（UI要素が準備できた後）
+            PopulatePlayerList();
+
             // 初期状態を設定
             UpdateUI();
 
@@ -239,7 +257,14 @@ namespace CavalryFight.Views
 
             // Right Panel - Room Settings
             _roomNameLabel = Q<Label>("RoomNameLabel");
+            _roomNameField = Q<TextField>("RoomNameField");
             _hostNameLabel = Q<Label>("HostNameLabel");
+            _passwordLabel = Q<Label>("PasswordLabel");
+            _passwordField = Q<TextField>("PasswordField");
+            _publicLabel = Q<Label>("PublicLabel");
+            _publicToggle = Q<Toggle>("PublicToggle");
+            _maxPlayersLabel = Q<Label>("MaxPlayersLabel");
+            _maxPlayersDropdown = Q<DropdownField>("MaxPlayersDropdown");
             _gameModeLabel = Q<Label>("GameModeLabel");
             _mapLabel = Q<Label>("MapLabel");
             _playersLabel = Q<Label>("PlayersLabel");
@@ -251,8 +276,14 @@ namespace CavalryFight.Views
 
             // Game Settings (Host Only)
             _gameSettingsSection = Q<VisualElement>("GameSettingsSection");
+            _timeLimitLabel = Q<Label>("TimeLimitLabel");
             _timeLimitDropdown = Q<DropdownField>("TimeLimitDropdown");
+            _scoreGoalLabel = Q<Label>("ScoreGoalLabel");
             _scoreGoalDropdown = Q<DropdownField>("ScoreGoalDropdown");
+
+            // Change/Apply Settings Button (Host Only)
+            _changeSettingsButtonSection = Q<VisualElement>("ChangeSettingsButtonSection");
+            _changeSettingsButton = Q<Button>("ChangeSettingsButton");
 
             // Footer Buttons
             _leaveRoomButton = Q<Button>("LeaveRoomButton");
@@ -312,6 +343,16 @@ namespace CavalryFight.Views
                 _mapDropdown.value = "DefaultArena";
             }
 
+            // Max Players dropdown (Room Info - Host only)
+            if (_maxPlayersDropdown != null)
+            {
+                _maxPlayersDropdown.choices = new List<string>
+                {
+                    "2", "4", "6", "8", "10", "12", "16"
+                };
+                _maxPlayersDropdown.value = "8";
+            }
+
             // Time Limit dropdown
             if (_timeLimitDropdown != null)
             {
@@ -331,6 +372,8 @@ namespace CavalryFight.Views
                 };
                 _scoreGoalDropdown.value = "100";
             }
+
+            // NPC Difficulty dropdowns are now created dynamically in player cells
         }
 
         #endregion
@@ -367,6 +410,12 @@ namespace CavalryFight.Views
             if (_cancelCountdownButton != null)
             {
                 _cancelCountdownButton.clicked += OnCancelCountdownButtonClicked;
+            }
+
+            // Change Settings button (Host only)
+            if (_changeSettingsButton != null)
+            {
+                _changeSettingsButton.clicked += OnChangeSettingsButtonClicked;
             }
 
             // Room Info dropdown change events (Host only)
@@ -424,6 +473,12 @@ namespace CavalryFight.Views
                 _cancelCountdownButton.clicked -= OnCancelCountdownButtonClicked;
             }
 
+            // Change Settings button
+            if (_changeSettingsButton != null)
+            {
+                _changeSettingsButton.clicked -= OnChangeSettingsButtonClicked;
+            }
+
             // Room Info dropdown change events
             if (_gameModeDropdown != null)
             {
@@ -465,13 +520,70 @@ namespace CavalryFight.Views
             _playerListContainer.Clear();
             _playerItemElements.Clear();
 
-            // プレイヤーアイテムを作成
-            foreach (var player in ViewModel.Players)
+            // 固定スロット数を作成（MaxPlayers分）
+            int maxPlayers = ViewModel.MaxPlayers;
+            var playersList = ViewModel.Players.ToList();
+
+            for (int i = 0; i < maxPlayers; i++)
             {
-                var playerItem = CreatePlayerListItem(player);
+                VisualElement playerItem;
+
+                if (i < playersList.Count)
+                {
+                    // プレイヤーが存在する場合
+                    var player = playersList[i];
+                    playerItem = CreatePlayerListItem(player);
+                    _playerItemElements[player.PlayerId] = playerItem;
+                }
+                else
+                {
+                    // 空スロットの場合
+                    playerItem = CreateEmptySlot(i);
+                }
+
                 _playerListContainer.Add(playerItem);
-                _playerItemElements[player.PlayerId] = playerItem;
             }
+        }
+
+        /// <summary>
+        /// 空スロットのUI要素を作成します
+        /// </summary>
+        /// <param name="slotIndex">スロットインデックス</param>
+        /// <returns>作成されたVisualElement</returns>
+        private VisualElement CreateEmptySlot(int slotIndex)
+        {
+            var container = new VisualElement();
+            container.AddToClassList("player-item");
+            container.AddToClassList("empty");
+            container.name = $"EmptySlot_{slotIndex}";
+
+            // プレイヤー情報セクション
+            var infoSection = new VisualElement();
+            infoSection.AddToClassList("player-item-info");
+
+            // "Empty" ラベル
+            var nameLabel = new Label("Empty");
+            nameLabel.AddToClassList("player-item-name");
+            nameLabel.AddToClassList("empty");
+            infoSection.Add(nameLabel);
+
+            container.Add(infoSection);
+
+            // ホストの場合: Add NPC ボタンを表示
+            if (ViewModel != null && ViewModel.IsHost)
+            {
+                var actionsSection = new VisualElement();
+                actionsSection.AddToClassList("player-item-actions");
+
+                var addNpcButton = new Button(() => OnAddNPCToSlot(slotIndex));
+                addNpcButton.text = "Add NPC";
+                addNpcButton.AddToClassList("add-npc-button");
+                actionsSection.Add(addNpcButton);
+
+                container.Add(actionsSection);
+            }
+
+            return container;
         }
 
         /// <summary>
@@ -494,31 +606,62 @@ namespace CavalryFight.Views
             nameLabel.AddToClassList("player-item-name");
             infoSection.Add(nameLabel);
 
-            // ステータス行（FPS, Team, Ready）
+            // ステータス行（HOST, Team, FPS/Difficulty, Ready）
             var statsRow = new VisualElement();
             statsRow.AddToClassList("player-item-stats");
 
-            // FPS
-            var fpsLabel = new Label($"{player.Fps} FPS");
-            fpsLabel.AddToClassList("player-item-fps");
-            statsRow.Add(fpsLabel);
-
-            // ホストバッジ
+            // 1. ホストバッジ（ホストの場合、名前の直後）またはスペーサー
             if (player.IsHost)
             {
                 var hostBadge = new Label("HOST");
                 hostBadge.AddToClassList("host-badge");
                 statsRow.Add(hostBadge);
             }
+            else
+            {
+                // ホストでない場合、スペーサーを追加して位置を揃える
+                var spacer = new VisualElement();
+                spacer.AddToClassList("host-badge");
+                spacer.style.visibility = Visibility.Hidden;
+                statsRow.Add(spacer);
+            }
 
-            // チームバッジ
+            // 2. チームバッジ
             var teamBadge = new Label(GetTeamLabel(player.Team));
             teamBadge.AddToClassList("team-badge");
             teamBadge.AddToClassList(GetTeamClass(player.Team));
             statsRow.Add(teamBadge);
 
-            // 準備状態バッジ（ゲストのみ）
-            if (!player.IsHost)
+            // 3. FPS（通常プレイヤー）or Difficulty（NPC）
+            if (player.IsNPC)
+            {
+                // NPC難易度ドロップダウン（ホストのみ編集可能）
+                if (ViewModel != null && ViewModel.IsHost)
+                {
+                    var difficultyDropdown = new DropdownField();
+                    difficultyDropdown.choices = new List<string> { "Easy", "Normal", "Hard", "Expert" };
+                    difficultyDropdown.value = player.Difficulty;
+                    difficultyDropdown.AddToClassList("npc-difficulty-dropdown");
+                    difficultyDropdown.RegisterValueChangedCallback(evt => OnNPCDifficultyChanged(player.PlayerId, evt.newValue));
+                    statsRow.Add(difficultyDropdown);
+                }
+                else
+                {
+                    var difficultyLabel = new Label($"NPC ({player.Difficulty})");
+                    difficultyLabel.AddToClassList("player-item-fps");
+                    statsRow.Add(difficultyLabel);
+                }
+            }
+            else
+            {
+                // 通常プレイヤー: FPS
+                var fpsLabel = new Label($"{player.Fps} FPS");
+                fpsLabel.AddToClassList("player-item-fps");
+                statsRow.Add(fpsLabel);
+            }
+
+            // 準備状態バッジ（ゲストのみ、NPCは除外）
+            if (!player.IsHost && !player.IsNPC)
             {
                 var readyBadge = new Label(player.IsReady ? "READY" : "NOT READY");
                 readyBadge.AddToClassList("ready-badge");
@@ -529,25 +672,44 @@ namespace CavalryFight.Views
             infoSection.Add(statsRow);
             container.Add(infoSection);
 
-            // アクションセクション（チーム変更、キック）
+            // アクションセクション（チーム変更、キック、Remove NPC）
             if (ViewModel != null)
             {
                 var actionsSection = new VisualElement();
                 actionsSection.AddToClassList("player-item-actions");
 
-                // チーム変更ボタン
-                var teamButton = new Button(() => OnTeamButtonClicked(player.PlayerId));
-                teamButton.text = "Team";
-                teamButton.AddToClassList("team-button");
-                actionsSection.Add(teamButton);
-
-                // キックボタン（ホストのみ、自分以外）
-                if (ViewModel.IsHost && !player.IsHost)
+                if (player.IsNPC)
                 {
-                    var kickButton = new Button(() => OnKickButtonClicked(player.PlayerId));
-                    kickButton.text = "Kick";
-                    kickButton.AddToClassList("kick-button");
-                    actionsSection.Add(kickButton);
+                    // NPCの場合: チーム変更ボタン（ホストのみ）
+                    if (ViewModel.IsHost)
+                    {
+                        var teamButton = new Button(() => OnTeamButtonClicked(player.PlayerId));
+                        teamButton.text = "Team";
+                        teamButton.AddToClassList("team-button");
+                        actionsSection.Add(teamButton);
+
+                        var removeNpcButton = new Button(() => OnRemoveNPCClicked(player.PlayerId));
+                        removeNpcButton.text = "Remove";
+                        removeNpcButton.AddToClassList("kick-button");
+                        actionsSection.Add(removeNpcButton);
+                    }
+                }
+                else
+                {
+                    // 通常プレイヤーの場合: チーム変更ボタン
+                    var teamButton = new Button(() => OnTeamButtonClicked(player.PlayerId));
+                    teamButton.text = "Team";
+                    teamButton.AddToClassList("team-button");
+                    actionsSection.Add(teamButton);
+
+                    // キックボタン（ホストのみ、自分以外）
+                    if (ViewModel.IsHost && !player.IsHost)
+                    {
+                        var kickButton = new Button(() => OnKickButtonClicked(player.PlayerId));
+                        kickButton.text = "Kick";
+                        kickButton.AddToClassList("kick-button");
+                        actionsSection.Add(kickButton);
+                    }
                 }
 
                 container.Add(actionsSection);
@@ -631,23 +793,85 @@ namespace CavalryFight.Views
                 _statusLabel.text = ViewModel.StatusMessage;
             }
 
-            // Game Settings Section (Host Only)
+            // Game Settings Section (Always visible for host)
             if (_gameSettingsSection != null)
             {
                 _gameSettingsSection.style.display = ViewModel.IsHost ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
-            // Room Info Dropdowns (Host shows dropdowns, Guest shows labels)
+            // Game Settings - Time Limit (Toggle between label and dropdown)
+            if (_timeLimitLabel != null && _timeLimitDropdown != null)
+            {
+                _timeLimitLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                _timeLimitDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
+            // Game Settings - Score Goal (Toggle between label and dropdown)
+            if (_scoreGoalLabel != null && _scoreGoalDropdown != null)
+            {
+                _scoreGoalLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                _scoreGoalDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
+            // Change Settings Button Section (Host Only)
+            if (_changeSettingsButtonSection != null)
+            {
+                _changeSettingsButtonSection.style.display = ViewModel.IsHost ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
+            // Room Info - Room Name (Edit Mode shows TextField, otherwise Label)
+            if (_roomNameLabel != null && _roomNameField != null)
+            {
+                _roomNameLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                _roomNameField.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+                if (ViewModel.IsHost && _isEditMode && _roomNameField.value != ViewModel.RoomName)
+                {
+                    _roomNameField.value = ViewModel.RoomName;
+                }
+            }
+
+            // Room Info - Password (Edit Mode shows TextField, otherwise Label)
+            if (_passwordLabel != null && _passwordField != null)
+            {
+                _passwordLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                _passwordField.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                // Show "******" if password is set, otherwise "None"
+                if (_passwordField.value != null && !string.IsNullOrEmpty(_passwordField.value))
+                {
+                    _passwordLabel.text = "******";
+                }
+                else
+                {
+                    _passwordLabel.text = "None";
+                }
+            }
+
+            // Room Info - Public (Edit Mode shows Toggle, otherwise Label)
+            if (_publicLabel != null && _publicToggle != null)
+            {
+                _publicLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                _publicToggle.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
+            // Room Info - Max Players (Edit Mode shows Dropdown, otherwise Label)
+            if (_maxPlayersLabel != null && _maxPlayersDropdown != null)
+            {
+                _maxPlayersLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                _maxPlayersDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
+            // Room Info Dropdowns (Edit Mode shows dropdowns, otherwise labels)
             if (_gameModeLabel != null && _gameModeDropdown != null)
             {
-                _gameModeLabel.style.display = ViewModel.IsHost ? DisplayStyle.None : DisplayStyle.Flex;
-                _gameModeDropdown.style.display = ViewModel.IsHost ? DisplayStyle.Flex : DisplayStyle.None;
+                _gameModeLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                _gameModeDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
             if (_mapLabel != null && _mapDropdown != null)
             {
-                _mapLabel.style.display = ViewModel.IsHost ? DisplayStyle.None : DisplayStyle.Flex;
-                _mapDropdown.style.display = ViewModel.IsHost ? DisplayStyle.Flex : DisplayStyle.None;
+                _mapLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                _mapDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
             // Buttons visibility
@@ -745,6 +969,12 @@ namespace CavalryFight.Views
                 case nameof(MatchRoomViewModel.IsHost):
                 case nameof(MatchRoomViewModel.CanStartGame):
                     UpdateButtonVisibility();
+                    break;
+
+                case nameof(MatchRoomViewModel.Players):
+                    // プレイヤー情報の変更（チーム変更など）
+                    PopulatePlayerList();
+                    UpdateUI();
                     break;
 
                 default:
@@ -977,6 +1207,87 @@ namespace CavalryFight.Views
             ViewModel.UpdateRoomSettings();
 
             Debug.Log($"[MatchRoomView] Map changed to: {evt.newValue}");
+        }
+
+        /// <summary>
+        /// スロットにNPCを追加する処理
+        /// </summary>
+        private void OnAddNPCToSlot(int slotIndex)
+        {
+            PlayButtonClickSfx();
+            ViewModel?.AddNPC(slotIndex);
+        }
+
+        /// <summary>
+        /// NPCを削除する処理
+        /// </summary>
+        private void OnRemoveNPCClicked(string npcId)
+        {
+            PlayButtonClickSfx();
+            ViewModel?.RemoveNPC(npcId);
+        }
+
+        /// <summary>
+        /// NPC難易度変更イベント
+        /// </summary>
+        private void OnNPCDifficultyChanged(string npcId, string difficulty)
+        {
+            ViewModel?.ChangeNPCDifficulty(npcId, difficulty);
+        }
+
+        /// <summary>
+        /// Change Settings / Apply Settings ボタンがクリックされた時の処理
+        /// </summary>
+        private void OnChangeSettingsButtonClicked()
+        {
+            PlayButtonClickSfx();
+
+            if (_isEditMode)
+            {
+                // Apply Settings: 設定を適用
+                ApplySettings();
+                _isEditMode = false;
+                if (_changeSettingsButton != null)
+                {
+                    _changeSettingsButton.text = "Change Settings";
+                }
+                Debug.Log("[MatchRoomView] Settings applied, returning to read-only mode");
+            }
+            else
+            {
+                // Change Settings: 編集モードに切り替え
+                _isEditMode = true;
+                if (_changeSettingsButton != null)
+                {
+                    _changeSettingsButton.text = "Apply Settings";
+                }
+                Debug.Log("[MatchRoomView] Entering edit mode");
+            }
+
+            // UIを更新
+            UpdateUI();
+        }
+
+        /// <summary>
+        /// 設定を適用します
+        /// </summary>
+        private void ApplySettings()
+        {
+            if (ViewModel == null) return;
+
+            // TODO: 変更検出ロジック
+            // 現在の値と元の値を比較し、変更があればサーバーに通知
+
+            // ViewModelの設定を更新
+            if (_roomNameField != null && _roomNameField.value != ViewModel.RoomName)
+            {
+                ViewModel.RoomName = _roomNameField.value;
+            }
+
+            // その他の設定も同様に適用
+            ViewModel.UpdateRoomSettings();
+
+            Debug.Log("[MatchRoomView] Room settings applied");
         }
 
         #endregion
