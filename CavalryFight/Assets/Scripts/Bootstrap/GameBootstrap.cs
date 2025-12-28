@@ -172,6 +172,7 @@ namespace CavalryFight.Core.Bootstrap
             ServiceLocator.Instance.Register<ICustomizationService>(customizationService);
 
             // Replay services
+            ServiceLocator.Instance.Register<IReplayService>(new ReplayService());
             ServiceLocator.Instance.Register<IReplayRecorder>(new ReplayRecorder());
             ServiceLocator.Instance.Register<IReplayPlayer>(new ReplayPlayer());
 
@@ -210,6 +211,7 @@ namespace CavalryFight.Core.Bootstrap
             // Gameplay services
             InitializeService<IBlazeAIService>();
             InitializeService<ICustomizationService>();
+            InitializeService<IReplayService>();
             InitializeService<IReplayRecorder>();
             InitializeService<IReplayPlayer>();
 
@@ -367,6 +369,7 @@ namespace CavalryFight.Core.Bootstrap
             // 3. Gameplay Services
             DisposeService<IReplayPlayer>("ReplayPlayer");
             DisposeService<IReplayRecorder>("ReplayRecorder");
+            DisposeService<IReplayService>("ReplayService");
             DisposeService<ICustomizationService>("CustomizationService");
             DisposeService<IBlazeAIService>("BlazeAIService");
 

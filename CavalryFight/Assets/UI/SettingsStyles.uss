@@ -5,128 +5,91 @@
 /* Root Container */
 #Root {
     flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
     width: 100%;
     height: 100%;
-    padding-top: 1%;
-    padding-bottom: 4%;
-    padding-left: 1%;
-    padding-right: 1%;
 }
 
-/* Title Label */
-#TitleLabel {
-    font-size: 96px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
-    -unity-text-outline-width: 5px;
-    -unity-text-outline-color: rgb(255, 255, 255);
-    margin-top: 1%;
-    margin-bottom: 2%;
-    margin-left: 1%;
-    margin-right: 1%;
-    width: 100%;
-    height: auto;
-}
-
-/* Section Containers */
-#AudioSection,
-#VideoSection,
-#GameplaySection,
-#ButtonSection {
-    flex-grow: 1;
-    width: 80%;
-    height: auto;
-    align-self: center;
-    justify-content: center;
-    margin-bottom: 3%;
-}
-
-/* Section Header Labels */
-#AudioSettings,
-#VideoSettings,
-#GameplaySettings {
-    font-size: 72px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
-    margin-top: 15px;
+/* Settings Section Panel */
+.settings-section {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
     margin-bottom: 20px;
-    margin-left: 4%;
-    margin-right: 4%;
 }
 
-/* Slider Styling */
-Slider,
-SliderInt {
-    height: auto;
-    margin-top: 15px;
+/* Section Header */
+.section-header {
+    font-size: 56px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 255, 255);
     margin-bottom: 15px;
-    margin-left: 4%;
-    margin-right: 4%;
+}
+
+/* Setting Control Container (for all controls) */
+.setting-control {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 0;
     font-size: 36px;
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
-    align-items: center;        /* Vertically center label and slider bar */
+    color: rgb(255, 255, 255);
 }
 
-/* Slider Label (the text part) */
-Slider > Label,
-SliderInt > Label {
-    min-width: 400px;
-    margin-right: 400px;
+/* Control Label (for all controls) */
+.setting-control > Label {
+    min-width: 350px;
+    flex-grow: 0;
+    flex-shrink: 0;
     -unity-text-align: middle-left;
-    align-self: center;         /* Keep label centered vertically */
+    color: rgb(255, 255, 255);
+    margin-right: 30px;
 }
 
 /* Slider Input Container (contains track and dragger) */
-Slider .unity-base-slider__input,
-SliderInt .unity-base-slider__input {
-    margin-top: -8px;           /* Move slider bar higher */
-    margin-bottom: 10px;        /* Adds space below the slider bar */
+.setting-control .unity-base-slider__input {
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-width: 2450px;
+    max-width: 2450px;
 }
 
 /* Slider Track */
-Slider .unity-base-slider__tracker,
-SliderInt .unity-base-slider__tracker {
+.setting-control .unity-base-slider__tracker {
     height: 30px;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    border-radius: 15px;        /* Half of height for rounded ends */
-    background-color: rgba(128, 128, 128, 0.3);
+    border-radius: 15px;
+    background-color: rgba(128, 128, 128, 0.5);
 }
 
 /* Slider Dragger (the knob) */
-Slider .unity-base-slider__dragger,
-SliderInt .unity-base-slider__dragger {
+.setting-control .unity-base-slider__dragger {
     width: 50px;
     height: 50px;
-    border-radius: 25px;        /* Half of size for perfect circle */
+    border-radius: 25px;
     background-color: rgb(200, 200, 200);
     border-width: 5px;
     border-color: rgb(255, 255, 255);
 }
 
-/* Toggle Styling */
-Toggle {
-    margin-top: 15px;
-    margin-bottom: 15px;
-    margin-left: 4%;
-    margin-right: 0%;                  /* Remove right margin for rightmost checkbox */
-    font-size: 36px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+/* Toggle Container - ensure proper right alignment */
+.setting-control.unity-toggle {
     flex-direction: row;
-    justify-content: space-between;    /* Push checkbox to the far right */
+    justify-content: space-between;
+    padding: 0;
+    margin-left: 0;
+    margin-right: 0;
 }
 
-/* Toggle Label */
-Toggle > Label {
-    min-width: 300px;
-    flex-grow: 1;                      /* Label takes available space */
-    margin-right: 2250px;
-    margin-left: 0;
-    -unity-text-align: middle-left;
+/* Toggle Label - no right margin for toggles */
+.setting-control.unity-toggle > Label {
+    margin-right: 3180;
+    flex-grow: 1;
 }
 
 /* Toggle Checkmark Container */
-Toggle .unity-toggle__input {
+.setting-control .unity-toggle__input {
     width: 50px;
     height: 50px;
     margin-left: 10px;
@@ -136,7 +99,7 @@ Toggle .unity-toggle__input {
 }
 
 /* Toggle Checkmark */
-Toggle .unity-toggle__checkmark {
+.setting-control .unity-toggle__checkmark {
     width: 40px;
     height: 40px;
     border-radius: 5px;
@@ -146,89 +109,22 @@ Toggle .unity-toggle__checkmark {
 }
 
 /* Toggle Checkmark (when checked) */
-Toggle:checked .unity-toggle__checkmark {
+.setting-control:checked .unity-toggle__checkmark {
     background-color: rgba(255, 255, 255, 1);
     border-color: rgba(128, 128, 128, 0.3);
 }
 
-/* Left Button Section */
-#LeftButtonSection {
-    flex-grow: 1;
-    width: 50%;
-    height: 20%;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-end;
-    align-self: flex-end;
-    margin-bottom: 4%;
-    margin-right: 4%;
-}
-
-/* Right Button Section */
-#RightButtonSection {
-    flex-grow: 1;
-    width: 50%;
-    height: 20%;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-end;
-    align-self: flex-end;
-    margin-bottom: 4%;
-    margin-right: 4%;
-}
-
-/* Buttons */
-#ApplyButton,
-#ResetButton,
-#BackButton,
-#KeyBindingButton {
-    width: 600px;
-    height: 100px;
-    font-size: 48px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
-    -unity-text-align: middle-center;
-    background-color: rgba(188, 188, 188, 0);
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
-/* Button Hover Effect (optional, requires hover pseudo-class support) */
-Button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Button Active/Pressed Effect */
-Button:active {
-    background-color: rgba(100, 100, 100, 0.2);
-}
 
 /* ===============================================
    Dropdown Field Styling
    =============================================== */
 
-DropdownField {
-    margin-top: 15px;
-    margin-bottom: 15px;
-    margin-left: 4%;
-    margin-right: 4%;
-    font-size: 36px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
-    flex-direction: row;
-}
-
-/* Dropdown Label */
-DropdownField > Label {
-    min-width: 300px;
-    flex-grow: 1;
-    margin-right: 20px;
-    margin-left: 0;
-    -unity-text-align: middle-left;
-}
-
 /* Dropdown Input Container */
-DropdownField .unity-base-popup-field__input {
-    flex-grow: 1;
-    min-width: 400px;
+.setting-control .unity-base-popup-field__input {
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-width: 900px;
+    max-width: 900px;
     height: 50px;
     padding: 5px 10px;
     background-color: rgba(128, 128, 128, 0.3);
@@ -236,23 +132,24 @@ DropdownField .unity-base-popup-field__input {
     border-width: 2px;
     border-color: rgb(150, 150, 150);
     -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
 }
 
 /* Dropdown Arrow */
-DropdownField .unity-base-popup-field__arrow {
+.setting-control .unity-base-popup-field__arrow {
     width: 20px;
     height: 20px;
     margin-right: 10px;
 }
 
 /* Dropdown Hover Effect */
-DropdownField:hover .unity-base-popup-field__input {
+.setting-control:hover .unity-base-popup-field__input {
     border-color: rgb(200, 200, 200);
     background-color: rgba(150, 150, 150, 0.4);
 }
 
 /* Dropdown Focus Effect */
-DropdownField:focus .unity-base-popup-field__input {
+.setting-control:focus .unity-base-popup-field__input {
     border-color: rgb(100, 200, 255);
     background-color: rgba(100, 200, 255, 0.2);
 }

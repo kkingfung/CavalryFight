@@ -248,7 +248,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
   m_id: kavzjt6l.gpf
   m_isHidden: 0
-  m_scenes: []
+  m_scenes:
+  - {fileID: 11400000, guid: aa7fc8ad87878634abc784b702f0af78, type: 2}
   m_description: 
   m_isLocked: 0
   m_lockMessage: 
