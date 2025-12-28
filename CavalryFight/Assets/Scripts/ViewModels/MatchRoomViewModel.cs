@@ -733,7 +733,7 @@ namespace CavalryFight.ViewModels
             }
             else
             {
-                // PvE: 自由設定（変更なし）
+                // Versus: 自由設定（変更なし）
                 // 現在の値をそのまま保持
             }
 
@@ -753,7 +753,7 @@ namespace CavalryFight.ViewModels
             }
             else
             {
-                // PvE: 自由設定（変更なし）
+                // Versus: 自由設定（変更なし）
                 // 現在の値をそのまま保持
             }
 

@@ -331,7 +331,7 @@ namespace CavalryFight.Views
             {
                 _gameModeDropdown.choices = new List<string>
                 {
-                    "Arena", "ScoreMatch", "TeamFight", "Deathmatch", "PvE"
+                    "Arena", "ScoreMatch", "TeamFight", "Deathmatch", "Versus"
                 };
                 _gameModeDropdown.value = "Arena";
             }

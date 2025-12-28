@@ -43,11 +43,11 @@ namespace CavalryFight.Services.Lobby
         Deathmatch = 3,
 
         /// <summary>
-        /// PvEモード
+        /// Versusモード
         /// </summary>
         /// <remarks>
         /// AIを相手にした戦闘。スキル向上とトレーニング。
         /// </remarks>
-        PvE = 4
+        Versus = 4
     }
 }
