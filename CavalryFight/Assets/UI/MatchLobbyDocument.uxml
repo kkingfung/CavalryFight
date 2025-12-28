@@ -1,0 +1,94 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/MatchLobbyStyles.uss?fileID=7433441132597879392&amp;guid=PLACEHOLDER&amp;type=3#MatchLobbyStyles"/>
+    <ui:VisualElement name="Root" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/Textures/bg_settings.png?fileID=2800000&amp;guid=d8dea11677d243e4ba74ad29acc19fa9&amp;type=3#bg_settings&quot;); flex-direction: column;">
+        <!-- Header -->
+        <ui:VisualElement name="Header" style="flex-direction: row; justify-content: space-between; align-items: center; margin: 1% 2%;">
+            <ui:Label text="Match Lobby" name="TitleLabel" style="-unity-font-definition: resource(&quot;FlatSkin/Font/Roboto-Black&quot;); font-size: 96px; -unity-text-outline-width: 5px; -unity-text-outline-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"/>
+            <ui:Button text="Refresh" name="RefreshButton" class="header-button" style="width: 200px; height: 80px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+        </ui:VisualElement>
+
+        <!-- Content Area (Two Panels) -->
+        <ui:VisualElement name="ContentArea" style="flex-grow: 1; flex-direction: row; margin: 0 2% 2% 2%;">
+            <!-- Left Panel: Room List -->
+            <ui:VisualElement name="LeftPanel" style="width: 45%; margin-right: 2%; border-radius: 10px; padding: 20px;">
+                <ui:Label text="Available Rooms" name="RoomListTitleLabel" class="panel-title" style="font-size: 56px; margin-bottom: 20px;"/>
+
+                <!-- Empty State -->
+                <ui:VisualElement name="EmptyState" style="flex-grow: 1; align-items: center; justify-content: center; display: none;">
+                    <ui:Label text="No rooms available" name="EmptyLabel" style="font-size: 48px; color: rgba(255, 255, 255, 0.5);"/>
+                </ui:VisualElement>
+
+                <!-- Room List ScrollView -->
+                <ui:ScrollView name="RoomListScrollView" style="flex-grow: 1;">
+                    <ui:VisualElement name="RoomListContainer" class="room-list-container"/>
+                </ui:ScrollView>
+            </ui:VisualElement>
+
+            <!-- Right Panel: Room Details & Join Form -->
+            <ui:VisualElement name="RightPanel" style="width: 53%; border-radius: 10px; padding: 20px;">
+                <ui:Label text="Room Details" name="DetailsTitleLabel" class="panel-title" style="font-size: 56px; margin-bottom: 20px;"/>
+
+                <!-- No Selection State -->
+                <ui:VisualElement name="NoSelectionState" style="flex-grow: 1; align-items: center; justify-content: center;">
+                    <ui:Label text="Select a room to view details" name="NoSelectionLabel" style="font-size: 48px; color: rgba(255, 255, 255, 0.5); -unity-text-align: middle-center;"/>
+                </ui:VisualElement>
+
+                <!-- Room Details Content -->
+                <ui:VisualElement name="DetailsContent" style="flex-grow: 1; display: none;">
+                    <!-- Room Information Section -->
+                    <ui:VisualElement name="RoomInfoSection" style="margin-bottom: 30px;">
+                        <ui:Label text="Room Information" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
+                        <ui:VisualElement class="detail-row">
+                            <ui:Label text="Room Name:" class="detail-label" style="font-size: 36px; width: 200px;"/>
+                            <ui:Label text="--" name="RoomNameLabel" class="detail-value" style="font-size: 36px;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="detail-row">
+                            <ui:Label text="Host:" class="detail-label" style="font-size: 36px; width: 200px;"/>
+                            <ui:Label text="--" name="HostNameLabel" class="detail-value" style="font-size: 36px;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="detail-row">
+                            <ui:Label text="Game Mode:" class="detail-label" style="font-size: 36px; width: 200px;"/>
+                            <ui:Label text="--" name="GameModeLabel" class="detail-value" style="font-size: 36px;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="detail-row">
+                            <ui:Label text="Map:" class="detail-label" style="font-size: 36px; width: 200px;"/>
+                            <ui:Label text="--" name="MapLabel" class="detail-value" style="font-size: 36px;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="detail-row">
+                            <ui:Label text="Players:" class="detail-label" style="font-size: 36px; width: 200px;"/>
+                            <ui:Label text="--" name="PlayersLabel" class="detail-value" style="font-size: 36px;"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- Join Form Section -->
+                    <ui:VisualElement name="JoinFormSection" style="margin-bottom: 30px;">
+                        <ui:Label text="Join Room" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
+
+                        <!-- Player Name Input -->
+                        <ui:VisualElement class="form-row">
+                            <ui:Label text="Player Name:" class="form-label" style="font-size: 36px; width: 200px;"/>
+                            <ui:TextField name="PlayerNameInput" value="Player" class="form-input" style="flex-grow: 1; height: 50px; font-size: 36px;"/>
+                        </ui:VisualElement>
+
+                        <!-- Password Input (Conditional) -->
+                        <ui:VisualElement name="PasswordRow" class="form-row" style="display: none;">
+                            <ui:Label text="Password:" class="form-label" style="font-size: 36px; width: 200px;"/>
+                            <ui:TextField name="PasswordInput" password="true" class="form-input" style="flex-grow: 1; height: 50px; font-size: 36px;"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- Actions Section -->
+                    <ui:VisualElement name="ActionsSection" style="margin-top: auto;">
+                        <ui:Button text="Join Room" name="JoinRoomButton" class="action-button primary-button" style="height: 100px; font-size: 56px; margin-bottom: 15px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Button Section (Bottom) -->
+        <ui:VisualElement name="ButtonSection" style="flex-direction: row; justify-content: space-between; margin: 0 2% 2% 2%;">
+            <ui:Button text="Back" name="BackButton" class="footer-button" style="width: 400px; height: 100px; font-size: 56px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+            <ui:Button text="Host Room" name="HostRoomButton" class="footer-button primary-button" style="width: 400px; height: 100px; font-size: 56px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

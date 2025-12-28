@@ -79,7 +79,8 @@ namespace CavalryFight.Views
             var replayService = ServiceLocator.Instance.Get<IReplayService>();
             if (replayService == null)
             {
-                Debug.LogError("[HistoryView] IReplayService not found in ServiceLocator!", this);
+                Debug.LogError("[HistoryView] IReplayService not found in ServiceLocator! Disabling component.", this);
+                enabled = false;
                 return;
             }
 

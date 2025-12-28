@@ -195,7 +195,8 @@ namespace CavalryFight.Views
             var customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
             if (customizationService == null)
             {
-                Debug.LogError("[CustomizationView] ICustomizationService not found in ServiceLocator!", this);
+                Debug.LogError("[CustomizationView] ICustomizationService not found in ServiceLocator! Disabling component.", this);
+                enabled = false;
                 return;
             }
 
