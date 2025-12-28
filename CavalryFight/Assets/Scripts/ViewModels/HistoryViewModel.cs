@@ -292,7 +292,6 @@ namespace CavalryFight.ViewModels
         {
             Debug.Log("[HistoryViewModel] Refreshing replay list...");
             _replayService.RefreshReplayList();
-            LoadReplayList();
         }
 
         /// <summary>

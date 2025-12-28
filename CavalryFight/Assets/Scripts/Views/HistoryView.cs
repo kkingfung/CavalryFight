@@ -79,7 +79,8 @@ namespace CavalryFight.Views
             var replayService = ServiceLocator.Instance.Get<IReplayService>();
             if (replayService == null)
             {
-                Debug.LogError("[HistoryView] IReplayService not found in ServiceLocator!", this);
+                Debug.LogError("[HistoryView] IReplayService not found in ServiceLocator! Disabling component.", this);
+                enabled = false;
                 return;
             }
 
@@ -660,29 +661,6 @@ namespace CavalryFight.Views
         #endregion
 
         #region Extensions
-
-        /// <summary>
-        /// ScrollToElement のためのヘルパーメソッド
-        /// </summary>
-        private static class VisualElementExtensions
-        {
-            public static void ScrollToElement(VisualElement element)
-            {
-                // 親のScrollViewを見つける
-                var parent = element.parent;
-                while (parent != null && !(parent is ScrollView))
-                {
-                    parent = parent.parent;
-                }
-
-                if (parent is ScrollView scrollView)
-                {
-                    // 要素が見えるようにスクロール
-                    float offset = element.layout.y;
-                    scrollView.scrollOffset = new Vector2(0, offset);
-                }
-            }
-        }
 
         #endregion
     }
