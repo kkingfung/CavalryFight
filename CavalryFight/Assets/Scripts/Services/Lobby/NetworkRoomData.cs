@@ -50,6 +50,11 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         public event Action<ulong, bool>? PlayerReadyChanged; // playerId, isReady
 
+        /// <summary>
+        /// プレイヤー名が変更された時に発生します
+        /// </summary>
+        public event Action<ulong, string>? PlayerNameChanged; // playerId, playerName
+
         #endregion
 
         #region Properties
@@ -80,6 +85,9 @@ namespace CavalryFight.Services.Lobby
 
             if (IsServer)
             {
+                // 既存のスロットをクリア（NetworkRoomDataオブジェクトが再利用される場合に備えて）
+                _playerSlots.Clear();
+
                 // サーバー側: 8つの空スロットを初期化
                 for (int i = 0; i < 8; i++)
                 {
@@ -264,6 +272,36 @@ namespace CavalryFight.Services.Lobby
         }
 
         /// <summary>
+        /// プレイヤー名を設定します（クライアントからのリクエスト）
+        /// </summary>
+        /// <param name="playerName">新しいプレイヤー名</param>
+        /// <param name="serverRpcParams">RPC parameters</param>
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        public void SetPlayerNameServerRpc(string playerName, RpcParams serverRpcParams = default)
+        {
+            ulong senderId = serverRpcParams.Receive.SenderClientId;
+
+            // プレイヤーのスロットを探す
+            for (int i = 0; i < _playerSlots.Count; i++)
+            {
+                if (_playerSlots[i].PlayerId == senderId)
+                {
+                    var slot = _playerSlots[i];
+                    slot.PlayerName = new Unity.Collections.FixedString64Bytes(playerName);
+                    _playerSlots[i] = slot;
+
+                    Debug.Log($"[NetworkRoomData] Player (ID: {senderId}) name changed to: {playerName}");
+
+                    // クライアントに通知
+                    NotifyPlayerNameChangedClientRpc(senderId, playerName);
+                    return;
+                }
+            }
+
+            Debug.LogWarning($"[NetworkRoomData] Player (ID: {senderId}) not found in any slot.");
+        }
+
+        /// <summary>
         /// プレイヤーの準備状態変更を全クライアントに通知します
         /// </summary>
         /// <param name="playerId">プレイヤーID</param>
@@ -272,6 +310,17 @@ namespace CavalryFight.Services.Lobby
         private void NotifyPlayerReadyChangedClientRpc(ulong playerId, bool isReady)
         {
             PlayerReadyChanged?.Invoke(playerId, isReady);
+        }
+
+        /// <summary>
+        /// プレイヤー名変更を全クライアントに通知します
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        /// <param name="playerName">新しいプレイヤー名</param>
+        [Rpc(SendTo.Everyone)]
+        private void NotifyPlayerNameChangedClientRpc(ulong playerId, string playerName)
+        {
+            PlayerNameChanged?.Invoke(playerId, playerName);
         }
 
         #endregion

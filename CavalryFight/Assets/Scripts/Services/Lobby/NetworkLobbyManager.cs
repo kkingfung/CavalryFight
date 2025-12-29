@@ -52,6 +52,21 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         public event Action<ulong>? PlayerLeft;
 
+        /// <summary>
+        /// カウントダウンが開始された時に発生します
+        /// </summary>
+        public event Action<int>? CountdownStarted;
+
+        /// <summary>
+        /// カウントダウンが更新された時に発生します
+        /// </summary>
+        public event Action<int>? CountdownUpdated;
+
+        /// <summary>
+        /// カウントダウンがキャンセルされた時に発生します
+        /// </summary>
+        public event Action? CountdownCancelled;
+
         #endregion
 
         #region Properties
@@ -210,9 +225,83 @@ namespace CavalryFight.Services.Lobby
             }
             else
             {
-                Debug.LogError($"[NetworkLobbyManager] Failed to add player {playerName} (ID: {clientId}) to slot.");
-                // TODO: クライアントに失敗を通知してキックする
+                Debug.LogError($"[NetworkLobbyManager] Failed to add player {playerName} (ID: {clientId}) to slot. Room is full. Kicking player.");
+
+                // ルームが満員の場合、クライアントを切断
+                if (NetworkManager.Singleton != null)
+                {
+                    NetworkManager.Singleton.DisconnectClient(clientId);
+                    Debug.Log($"[NetworkLobbyManager] Kicked player {clientId} due to room full.");
+                }
             }
+        }
+
+        /// <summary>
+        /// ゲーム開始カウントダウンを開始します（サーバーのみ）
+        /// </summary>
+        /// <param name="initialSeconds">カウントダウン初期秒数</param>
+        [Rpc(SendTo.Server)]
+        public void StartCountdownServerRpc(int initialSeconds)
+        {
+            // ホストのみ実行可能
+            if (!IsServer)
+            {
+                Debug.LogWarning("[NetworkLobbyManager] StartCountdownServerRpc called by non-server!");
+                return;
+            }
+
+            Debug.Log($"[NetworkLobbyManager] Starting countdown: {initialSeconds} seconds");
+
+            // 全クライアントに通知
+            NotifyCountdownStartedClientRpc(initialSeconds);
+
+            // サーバー側でもイベント発火
+            CountdownStarted?.Invoke(initialSeconds);
+        }
+
+        /// <summary>
+        /// カウントダウンを更新します（サーバーのみ）
+        /// </summary>
+        /// <param name="secondsRemaining">残り秒数</param>
+        [Rpc(SendTo.Server)]
+        public void UpdateCountdownServerRpc(int secondsRemaining)
+        {
+            // ホストのみ実行可能
+            if (!IsServer)
+            {
+                Debug.LogWarning("[NetworkLobbyManager] UpdateCountdownServerRpc called by non-server!");
+                return;
+            }
+
+            Debug.Log($"[NetworkLobbyManager] Countdown update: {secondsRemaining} seconds remaining");
+
+            // 全クライアントに通知
+            NotifyCountdownUpdatedClientRpc(secondsRemaining);
+
+            // サーバー側でもイベント発火
+            CountdownUpdated?.Invoke(secondsRemaining);
+        }
+
+        /// <summary>
+        /// ゲーム開始カウントダウンをキャンセルします（サーバーのみ）
+        /// </summary>
+        [Rpc(SendTo.Server)]
+        public void CancelCountdownServerRpc()
+        {
+            // ホストのみ実行可能
+            if (!IsServer)
+            {
+                Debug.LogWarning("[NetworkLobbyManager] CancelCountdownServerRpc called by non-server!");
+                return;
+            }
+
+            Debug.Log("[NetworkLobbyManager] Countdown cancelled");
+
+            // 全クライアントに通知
+            NotifyCountdownCancelledClientRpc();
+
+            // サーバー側でもイベント発火
+            CountdownCancelled?.Invoke();
         }
 
         #endregion
@@ -230,6 +319,47 @@ namespace CavalryFight.Services.Lobby
             if (!IsServer)
             {
                 PlayerJoined?.Invoke(clientId);
+            }
+        }
+
+        /// <summary>
+        /// カウントダウン開始を全クライアントに通知します
+        /// </summary>
+        /// <param name="initialSeconds">カウントダウン初期秒数</param>
+        [Rpc(SendTo.Everyone)]
+        private void NotifyCountdownStartedClientRpc(int initialSeconds)
+        {
+            // クライアント側でもイベントを発火
+            if (!IsServer)
+            {
+                CountdownStarted?.Invoke(initialSeconds);
+            }
+        }
+
+        /// <summary>
+        /// カウントダウン更新を全クライアントに通知します
+        /// </summary>
+        /// <param name="secondsRemaining">残り秒数</param>
+        [Rpc(SendTo.Everyone)]
+        private void NotifyCountdownUpdatedClientRpc(int secondsRemaining)
+        {
+            // クライアント側でもイベントを発火
+            if (!IsServer)
+            {
+                CountdownUpdated?.Invoke(secondsRemaining);
+            }
+        }
+
+        /// <summary>
+        /// カウントダウンキャンセルを全クライアントに通知します
+        /// </summary>
+        [Rpc(SendTo.Everyone)]
+        private void NotifyCountdownCancelledClientRpc()
+        {
+            // クライアント側でもイベントを発火
+            if (!IsServer)
+            {
+                CountdownCancelled?.Invoke();
             }
         }
 
