@@ -552,27 +552,41 @@ namespace CavalryFight.Services.Lobby
                 _networkLobbyManager.RegisterPlayerName(playerName);
             }
 
-            // NetworkRoomDataが初期化されるまで待機（1フレーム待つ）
-            await System.Threading.Tasks.Task.Yield();
+            // NetworkRoomDataのスポーンを待機（タイムアウト付きポーリング）
+            const int maxWaitTimeMs = 5000; // 5秒でタイムアウト
+            const int checkIntervalMs = 50; // 50ms毎にチェック
+            int elapsedMs = 0;
 
-            // NetworkRoomDataの参照を更新
-            if (_networkLobbyManager != null)
+            while (elapsedMs < maxWaitTimeMs)
             {
-                _networkRoomData = _networkLobbyManager.NetworkRoomData;
+                if (_networkLobbyManager != null)
+                {
+                    _networkRoomData = _networkLobbyManager.NetworkRoomData;
+
+                    if (_networkRoomData != null && _networkRoomData.IsSpawned)
+                    {
+                        // スポーン完了
+                        break;
+                    }
+                }
+
+                await System.Threading.Tasks.Task.Delay(checkIntervalMs);
+                elapsedMs += checkIntervalMs;
             }
 
             // NetworkRoomDataの初期設定
-            if (_networkRoomData != null && _networkRoomData.IsSpawned)
+            if (_networkRoomData == null || !_networkRoomData.IsSpawned)
             {
-                _networkRoomData.UpdateRoomSettings(_currentRoomSettings);
+                Debug.LogError("[LobbyService] NetworkRoomData failed to spawn within timeout.");
+                ErrorOccurred?.Invoke("Failed to initialize room data.");
+                return;
+            }
 
-                // ホストを最初のスロットに追加
-                _networkRoomData.AddPlayer(NetworkManager.Singleton.LocalClientId, playerName);
-            }
-            else
-            {
-                Debug.LogWarning("[LobbyService] NetworkRoomData not ready yet. Host player will be added via PlayerJoined event.");
-            }
+            // ルーム設定を適用
+            _networkRoomData.UpdateRoomSettings(_currentRoomSettings);
+
+            // ホストを最初のスロットに追加
+            _networkRoomData.AddPlayer(NetworkManager.Singleton.LocalClientId, playerName);
 
             RoomCreated?.Invoke(joinCode);
             Debug.Log($"[LobbyService] Room created with join code: {joinCode}");
