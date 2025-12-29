@@ -159,7 +159,8 @@ namespace CavalryFight.Services.Lobby
         /// <returns>スロットが空いている場合はtrue</returns>
         public readonly bool IsEmpty()
         {
-            return PlayerId == ulong.MaxValue;
+            // AIプレイヤーは空ではない（AIのPlayerIdは負数をulongにキャストしたものでulong.MaxValueになる可能性がある）
+            return PlayerId == ulong.MaxValue && !IsAI;
         }
 
         /// <summary>

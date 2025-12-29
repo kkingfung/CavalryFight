@@ -48,6 +48,11 @@ namespace CavalryFight.Services.Lobby
         event Action<ulong>? PlayerLeft; // playerId
 
         /// <summary>
+        /// プレイヤースロット情報が変更された時に発生します
+        /// </summary>
+        event Action<int, PlayerSlot>? PlayerSlotChanged; // slotIndex, slot
+
+        /// <summary>
         /// プレイヤーの準備状態が変更された時に発生します
         /// </summary>
         event Action<ulong, bool>? PlayerReadyChanged; // playerId, isReady
@@ -58,6 +63,21 @@ namespace CavalryFight.Services.Lobby
         event Action? MatchStarting;
 
         /// <summary>
+        /// カウントダウンが開始された時に発生します
+        /// </summary>
+        event Action<int>? CountdownStarted; // initialSeconds
+
+        /// <summary>
+        /// カウントダウンが更新された時に発生します
+        /// </summary>
+        event Action<int>? CountdownUpdated; // secondsRemaining
+
+        /// <summary>
+        /// カウントダウンがキャンセルされた時に発生します
+        /// </summary>
+        event Action? CountdownCancelled;
+
+        /// <summary>
         /// エラーが発生した時に発生します
         /// </summary>
         event Action<string>? ErrorOccurred;
@@ -66,6 +86,11 @@ namespace CavalryFight.Services.Lobby
         /// ホストが切断された時に発生します（ゲストのみ）
         /// </summary>
         event Action? HostDisconnected;
+
+        /// <summary>
+        /// 利用可能なルームリストが更新された時に発生します
+        /// </summary>
+        event Action<IReadOnlyList<RoomInfo>>? AvailableRoomsUpdated;
 
         #endregion
 
@@ -100,6 +125,11 @@ namespace CavalryFight.Services.Lobby
         /// 現在のジョインコードを取得します
         /// </summary>
         string? CurrentJoinCode { get; }
+
+        /// <summary>
+        /// 利用可能なルームリストを取得します
+        /// </summary>
+        IReadOnlyList<RoomInfo> AvailableRooms { get; }
 
         #endregion
 
@@ -144,6 +174,14 @@ namespace CavalryFight.Services.Lobby
         bool ChangeCPUDifficulty(int slotIndex, AIDifficulty difficulty);
 
         /// <summary>
+        /// プレイヤーのチームを変更します（ホストのみ）
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        /// <param name="teamIndex">チームインデックス（0=TeamA, 1=TeamB, -1=None）</param>
+        /// <returns>成功した場合はtrue</returns>
+        bool SetPlayerTeam(ulong playerId, int teamIndex);
+
+        /// <summary>
         /// プレイヤーをキックします（ホストのみ）
         /// </summary>
         /// <param name="playerId">プレイヤーID</param>
@@ -155,6 +193,19 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         /// <returns>成功した場合はtrue</returns>
         bool StartMatch();
+
+        /// <summary>
+        /// ゲーム開始カウントダウンを開始します（ホストのみ）
+        /// </summary>
+        /// <param name="initialSeconds">カウントダウン初期秒数</param>
+        /// <returns>成功した場合はtrue</returns>
+        bool StartGameCountdown(int initialSeconds);
+
+        /// <summary>
+        /// ゲーム開始カウントダウンをキャンセルします（ホストのみ）
+        /// </summary>
+        /// <returns>成功した場合はtrue</returns>
+        bool CancelGameCountdown();
 
         #endregion
 
@@ -191,6 +242,12 @@ namespace CavalryFight.Services.Lobby
         void SetCustomizationPreset(string presetName);
 
         /// <summary>
+        /// プレイヤー名を設定します
+        /// </summary>
+        /// <param name="playerName">新しいプレイヤー名</param>
+        void SetPlayerName(string playerName);
+
+        /// <summary>
         /// プレイヤースロット情報を取得します
         /// </summary>
         /// <param name="slotIndex">スロットインデックス</param>
@@ -203,6 +260,23 @@ namespace CavalryFight.Services.Lobby
         /// <param name="playerId">プレイヤーID</param>
         /// <returns>スロットインデックス（見つからない場合は-1）</returns>
         int GetSlotIndexByPlayerId(ulong playerId);
+
+        /// <summary>
+        /// 利用可能なルームリストを更新します
+        /// </summary>
+        void RefreshAvailableRooms();
+
+        /// <summary>
+        /// プレイヤー名を保存します
+        /// </summary>
+        /// <param name="playerName">保存するプレイヤー名</param>
+        void SavePlayerName(string playerName);
+
+        /// <summary>
+        /// 保存されたプレイヤー名を読み込みます
+        /// </summary>
+        /// <returns>保存されたプレイヤー名（存在しない場合はnull）</returns>
+        string? LoadPlayerName();
 
         #endregion
     }
