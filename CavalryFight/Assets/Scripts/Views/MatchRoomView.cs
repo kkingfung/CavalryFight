@@ -8,6 +8,7 @@ using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Audio;
 using CavalryFight.Services.Lobby;
+using CavalryFight.Services.Performance;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.ViewModels;
 using UnityEngine;
@@ -89,7 +90,6 @@ namespace CavalryFight.Views
         #region Fields
 
         private readonly Dictionary<string, VisualElement> _playerItemElements = new Dictionary<string, VisualElement>();
-        private float _countdownTimer = 0f;
         private bool _isCountdownActive = false;
         private bool _isEditMode = false; // ホストの設定編集モード
 
@@ -107,6 +107,7 @@ namespace CavalryFight.Views
             // サービスを取得（例外を回避するためTryGetを使用）
             var lobbyService = ServiceLocator.Instance.TryGet<ILobbyService>();
             var sceneService = ServiceLocator.Instance.TryGet<ISceneManagementService>();
+            var performanceMonitor = ServiceLocator.Instance.TryGet<IPerformanceMonitor>();
 
             if (lobbyService == null || sceneService == null)
             {
@@ -115,8 +116,8 @@ namespace CavalryFight.Views
                 return;
             }
 
-            // ViewModelを作成して設定
-            ViewModel = new MatchRoomViewModel(lobbyService, sceneService);
+            // ViewModelを作成して設定（PerformanceMonitorはオプション）
+            ViewModel = new MatchRoomViewModel(lobbyService, sceneService, performanceMonitor);
         }
 
         /// <summary>
@@ -151,15 +152,11 @@ namespace CavalryFight.Views
         /// </summary>
         private void Update()
         {
+            // ViewModelのカウントダウンタイマーを更新
+            // タイマーロジックはViewModel内で管理されます
             if (_isCountdownActive && ViewModel != null)
             {
-                _countdownTimer += Time.deltaTime;
-
-                if (_countdownTimer >= 1f)
-                {
-                    _countdownTimer = 0f;
-                    ViewModel.UpdateCountdown();
-                }
+                ViewModel.Tick(Time.deltaTime);
             }
         }
 
@@ -1096,7 +1093,6 @@ namespace CavalryFight.Views
         private void OnGameStarting(object? sender, EventArgs e)
         {
             _isCountdownActive = true;
-            _countdownTimer = 0f;
 
             UpdateCountdownDialog();
         }
@@ -1374,21 +1370,47 @@ namespace CavalryFight.Views
         /// </summary>
         private void ApplySettings()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
-            // TODO: 変更検出ロジック
-            // 現在の値と元の値を比較し、変更があればサーバーに通知
+            bool hasChanges = false;
 
-            // ViewModelの設定を更新
+            // ルーム名の変更を検出
             if (_roomNameField != null && _roomNameField.value != ViewModel.RoomName)
             {
                 ViewModel.RoomName = _roomNameField.value;
+                hasChanges = true;
+                Debug.Log($"[MatchRoomView] Room name changed to: {_roomNameField.value}");
             }
 
-            // その他の設定も同様に適用
-            ViewModel.UpdateRoomSettings();
+            // ゲームモードの変更を検出
+            if (_gameModeDropdown != null && _gameModeDropdown.value != ViewModel.GameMode)
+            {
+                ViewModel.GameMode = _gameModeDropdown.value;
+                hasChanges = true;
+                Debug.Log($"[MatchRoomView] Game mode changed to: {_gameModeDropdown.value}");
+            }
 
-            Debug.Log("[MatchRoomView] Room settings applied");
+            // マップの変更を検出
+            if (_mapDropdown != null && _mapDropdown.value != ViewModel.Map)
+            {
+                ViewModel.Map = _mapDropdown.value;
+                hasChanges = true;
+                Debug.Log($"[MatchRoomView] Map changed to: {_mapDropdown.value}");
+            }
+
+            // 変更があった場合のみサーバーに通知
+            if (hasChanges)
+            {
+                ViewModel.UpdateRoomSettings();
+                Debug.Log("[MatchRoomView] Room settings applied and synced to server");
+            }
+            else
+            {
+                Debug.Log("[MatchRoomView] No settings changes detected");
+            }
         }
 
         #endregion

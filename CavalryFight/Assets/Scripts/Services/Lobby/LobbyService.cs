@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.SceneManagement;
 
 namespace CavalryFight.Services.Lobby
 {
@@ -54,6 +56,11 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         private NetworkRoomData? _networkRoomData;
 
+        /// <summary>
+        /// 利用可能なルームリスト
+        /// </summary>
+        private List<RoomInfo> _availableRooms = new List<RoomInfo>();
+
         #endregion
 
         #region Events
@@ -99,6 +106,21 @@ namespace CavalryFight.Services.Lobby
         public event Action? MatchStarting;
 
         /// <summary>
+        /// カウントダウンが開始された時に発生します
+        /// </summary>
+        public event Action<int>? CountdownStarted;
+
+        /// <summary>
+        /// カウントダウンが更新された時に発生します
+        /// </summary>
+        public event Action<int>? CountdownUpdated;
+
+        /// <summary>
+        /// カウントダウンがキャンセルされた時に発生します
+        /// </summary>
+        public event Action? CountdownCancelled;
+
+        /// <summary>
         /// エラーが発生した時に発生します
         /// </summary>
         public event Action<string>? ErrorOccurred;
@@ -107,6 +129,11 @@ namespace CavalryFight.Services.Lobby
         /// ホストが切断された時に発生します（ゲストのみ）
         /// </summary>
         public event Action? HostDisconnected;
+
+        /// <summary>
+        /// 利用可能なルームリストが更新された時に発生します
+        /// </summary>
+        public event Action<IReadOnlyList<RoomInfo>>? AvailableRoomsUpdated;
 
         #endregion
 
@@ -151,6 +178,11 @@ namespace CavalryFight.Services.Lobby
         /// 現在のジョインコードを取得します
         /// </summary>
         public string? CurrentJoinCode => _relayManager.CurrentJoinCode;
+
+        /// <summary>
+        /// 利用可能なルームリストを取得します
+        /// </summary>
+        public IReadOnlyList<RoomInfo> AvailableRooms => _availableRooms.AsReadOnly();
 
         #endregion
 
@@ -243,6 +275,9 @@ namespace CavalryFight.Services.Lobby
             {
                 _networkLobbyManager.PlayerJoined += OnNetworkPlayerJoined;
                 _networkLobbyManager.PlayerLeft += OnNetworkPlayerLeft;
+                _networkLobbyManager.CountdownStarted += OnNetworkCountdownStarted;
+                _networkLobbyManager.CountdownUpdated += OnNetworkCountdownUpdated;
+                _networkLobbyManager.CountdownCancelled += OnNetworkCountdownCancelled;
             }
 
             if (_networkRoomData != null)
@@ -261,6 +296,9 @@ namespace CavalryFight.Services.Lobby
             {
                 _networkLobbyManager.PlayerJoined -= OnNetworkPlayerJoined;
                 _networkLobbyManager.PlayerLeft -= OnNetworkPlayerLeft;
+                _networkLobbyManager.CountdownStarted -= OnNetworkCountdownStarted;
+                _networkLobbyManager.CountdownUpdated -= OnNetworkCountdownUpdated;
+                _networkLobbyManager.CountdownCancelled -= OnNetworkCountdownCancelled;
             }
 
             if (_networkRoomData != null)
@@ -306,6 +344,32 @@ namespace CavalryFight.Services.Lobby
         private void OnNetworkPlayerReadyChanged(ulong playerId, bool isReady)
         {
             PlayerReadyChanged?.Invoke(playerId, isReady);
+        }
+
+        /// <summary>
+        /// ネットワークカウントダウン開始イベントハンドラ
+        /// </summary>
+        /// <param name="initialSeconds">カウントダウン初期秒数</param>
+        private void OnNetworkCountdownStarted(int initialSeconds)
+        {
+            CountdownStarted?.Invoke(initialSeconds);
+        }
+
+        /// <summary>
+        /// ネットワークカウントダウン更新イベントハンドラ
+        /// </summary>
+        /// <param name="secondsRemaining">残り秒数</param>
+        private void OnNetworkCountdownUpdated(int secondsRemaining)
+        {
+            CountdownUpdated?.Invoke(secondsRemaining);
+        }
+
+        /// <summary>
+        /// ネットワークカウントダウンキャンセルイベントハンドラ
+        /// </summary>
+        private void OnNetworkCountdownCancelled()
+        {
+            CountdownCancelled?.Invoke();
         }
 
         /// <summary>
@@ -587,6 +651,49 @@ namespace CavalryFight.Services.Lobby
         }
 
         /// <summary>
+        /// プレイヤーのチームを変更します（ホストのみ）
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        /// <param name="teamIndex">チームインデックス（0=TeamA, 1=TeamB, -1=None）</param>
+        /// <returns>成功した場合はtrue</returns>
+        public bool SetPlayerTeam(ulong playerId, int teamIndex)
+        {
+            if (!IsHost)
+            {
+                Debug.LogError("[LobbyService] Only host can change player teams.");
+                return false;
+            }
+
+            if (_networkRoomData == null)
+            {
+                Debug.LogError("[LobbyService] NetworkRoomData not available.");
+                return false;
+            }
+
+            if (teamIndex < -1 || teamIndex > 1)
+            {
+                Debug.LogError($"[LobbyService] Invalid team index: {teamIndex}. Must be -1, 0, or 1.");
+                return false;
+            }
+
+            // プレイヤーのスロットインデックスを取得
+            int slotIndex = GetSlotIndexByPlayerId(playerId);
+            if (slotIndex == -1)
+            {
+                Debug.LogError($"[LobbyService] Player {playerId} not found in any slot.");
+                return false;
+            }
+
+            var slots = _networkRoomData.GetAllPlayerSlots();
+            var slot = slots[slotIndex];
+            slot.TeamIndex = teamIndex;
+            _networkRoomData.UpdatePlayerSlot(slotIndex, slot);
+
+            Debug.Log($"[LobbyService] Player {playerId} team changed to {teamIndex} (slot {slotIndex})");
+            return true;
+        }
+
+        /// <summary>
         /// プレイヤーをキックします（ホストのみ）
         /// </summary>
         /// <param name="playerId">プレイヤーID</param>
@@ -651,8 +758,72 @@ namespace CavalryFight.Services.Lobby
 
             MatchStarting?.Invoke();
 
-            Debug.Log("[LobbyService] Match starting...");
-            // TODO: Load match scene
+            Debug.Log("[LobbyService] Match starting. Loading match scene...");
+
+            // マッチシーンをロード
+            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            if (sceneService != null)
+            {
+                sceneService.LoadMatch();
+            }
+            else
+            {
+                Debug.LogError("[LobbyService] ISceneManagementService not available. Cannot load match scene.");
+                ErrorOccurred?.Invoke("Failed to load match scene");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// ゲーム開始カウントダウンを開始します（ホストのみ）
+        /// </summary>
+        /// <param name="initialSeconds">カウントダウン初期秒数</param>
+        /// <returns>成功した場合はtrue</returns>
+        public bool StartGameCountdown(int initialSeconds)
+        {
+            if (!IsHost)
+            {
+                Debug.LogError("[LobbyService] Only host can start countdown.");
+                return false;
+            }
+
+            if (_networkLobbyManager == null)
+            {
+                Debug.LogError("[LobbyService] NetworkLobbyManager not available.");
+                return false;
+            }
+
+            // NetworkLobbyManager の ServerRpc を呼び出してすべてのクライアントに通知
+            _networkLobbyManager.StartCountdownServerRpc(initialSeconds);
+
+            Debug.Log($"[LobbyService] Countdown started: {initialSeconds} seconds");
+            return true;
+        }
+
+        /// <summary>
+        /// ゲーム開始カウントダウンをキャンセルします（ホストのみ）
+        /// </summary>
+        /// <returns>成功した場合はtrue</returns>
+        public bool CancelGameCountdown()
+        {
+            if (!IsHost)
+            {
+                Debug.LogError("[LobbyService] Only host can cancel countdown.");
+                return false;
+            }
+
+            if (_networkLobbyManager == null)
+            {
+                Debug.LogError("[LobbyService] NetworkLobbyManager not available.");
+                return false;
+            }
+
+            // NetworkLobbyManager の ServerRpc を呼び出してすべてのクライアントに通知
+            _networkLobbyManager.CancelCountdownServerRpc();
+
+            Debug.Log("[LobbyService] Countdown cancelled");
             return true;
         }
 
@@ -855,6 +1026,39 @@ namespace CavalryFight.Services.Lobby
             }
 
             return _networkRoomData.GetSlotIndexByPlayerId(playerId);
+        }
+
+        /// <summary>
+        /// 利用可能なルームリストを更新します
+        /// </summary>
+        public void RefreshAvailableRooms()
+        {
+            // プレースホルダー: 現在のルーム情報をリストに追加（ホストの場合のみ）
+            _availableRooms.Clear();
+
+            if (IsHost && IsInRoom)
+            {
+                var roomInfo = new RoomInfo
+                {
+                    RoomId = CurrentJoinCode ?? "",
+                    RoomName = CurrentRoomSettings.RoomName.ToString(),
+                    HostName = _localPlayerInfo?.PlayerName ?? "Unknown",
+                    GameMode = CurrentRoomSettings.GameMode,
+                    MapName = CurrentRoomSettings.MapName.ToString(),
+                    CurrentPlayers = PlayerSlots.Count,
+                    MaxPlayers = CurrentRoomSettings.MaxPlayers,
+                    HasPassword = !string.IsNullOrEmpty(CurrentRoomSettings.Password.ToString()),
+                    JoinCode = CurrentJoinCode ?? "",
+                    IsPublic = CurrentRoomSettings.IsPublic
+                };
+
+                _availableRooms.Add(roomInfo);
+            }
+
+            // イベント発火
+            AvailableRoomsUpdated?.Invoke(AvailableRooms);
+
+            Debug.Log($"[LobbyService] Available rooms refreshed. Count: {_availableRooms.Count}");
         }
 
         #endregion

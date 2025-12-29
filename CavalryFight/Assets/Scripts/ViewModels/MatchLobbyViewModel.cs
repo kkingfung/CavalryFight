@@ -82,6 +82,11 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private bool _showJoinDialog = false;
 
+        /// <summary>
+        /// 選択されたルーム
+        /// </summary>
+        private RoomInfo? _selectedRoom = null;
+
         #endregion
 
         #region Properties
@@ -181,6 +186,20 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public string? CurrentJoinCode => _lobbyService.CurrentJoinCode;
 
+        /// <summary>
+        /// 利用可能なルームリスト
+        /// </summary>
+        public IReadOnlyList<RoomInfo> AvailableRooms => _lobbyService.AvailableRooms;
+
+        /// <summary>
+        /// 選択されたルーム
+        /// </summary>
+        public RoomInfo? SelectedRoom
+        {
+            get => _selectedRoom;
+            set => SetProperty(ref _selectedRoom, value);
+        }
+
         #endregion
 
         #region Events
@@ -228,6 +247,7 @@ namespace CavalryFight.ViewModels
             _lobbyService.RoomJoined += OnRoomJoined;
             _lobbyService.RoomLeft += OnRoomLeft;
             _lobbyService.ErrorOccurred += OnLobbyError;
+            _lobbyService.AvailableRoomsUpdated += OnAvailableRoomsUpdated;
         }
 
         /// <summary>
@@ -239,6 +259,7 @@ namespace CavalryFight.ViewModels
             _lobbyService.RoomJoined -= OnRoomJoined;
             _lobbyService.RoomLeft -= OnRoomLeft;
             _lobbyService.ErrorOccurred -= OnLobbyError;
+            _lobbyService.AvailableRoomsUpdated -= OnAvailableRoomsUpdated;
         }
 
         #endregion
@@ -302,6 +323,18 @@ namespace CavalryFight.ViewModels
 
             StatusMessage = $"エラー: {errorMessage}";
             ErrorOccurred?.Invoke(this, errorMessage);
+        }
+
+        /// <summary>
+        /// 利用可能なルームリスト更新イベントハンドラ
+        /// </summary>
+        /// <param name="rooms">ルームリスト</param>
+        private void OnAvailableRoomsUpdated(IReadOnlyList<RoomInfo> rooms)
+        {
+            Debug.Log($"[MatchLobbyViewModel] Available rooms updated. Count: {rooms.Count}");
+
+            // AvailableRoomsプロパティの変更を通知
+            OnPropertyChanged(nameof(AvailableRooms));
         }
 
         #endregion
@@ -481,6 +514,34 @@ namespace CavalryFight.ViewModels
 
             _sceneManagementService.LoadMainMenu();
             Debug.Log("[MatchLobbyViewModel] Returning to main menu.");
+        }
+
+        /// <summary>
+        /// 利用可能なルームリストを更新します
+        /// </summary>
+        public void RefreshRooms()
+        {
+            StatusMessage = "ルームリストを更新中...";
+            _lobbyService.RefreshAvailableRooms();
+            Debug.Log("[MatchLobbyViewModel] Room list refresh requested.");
+        }
+
+        /// <summary>
+        /// ルームを選択します
+        /// </summary>
+        /// <param name="room">選択するルーム</param>
+        public void SelectRoom(RoomInfo? room)
+        {
+            SelectedRoom = room;
+
+            if (room != null)
+            {
+                Debug.Log($"[MatchLobbyViewModel] Room selected: {room.RoomName}");
+            }
+            else
+            {
+                Debug.Log("[MatchLobbyViewModel] Room selection cleared.");
+            }
         }
 
         #endregion

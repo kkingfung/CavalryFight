@@ -9,6 +9,7 @@ using CavalryFight.Services.GameState;
 using CavalryFight.Services.Input;
 using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
+using CavalryFight.Services.Performance;
 using CavalryFight.Services.Replay;
 using CavalryFight.Services.SceneManagement;
 using System;
@@ -139,6 +140,7 @@ namespace CavalryFight.Core.Bootstrap
             ServiceLocator.Instance.Register<IGameSettingsService>(new GameSettingsService());
             ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
             ServiceLocator.Instance.Register<IGameStateService>(new GameStateService());
+            ServiceLocator.Instance.Register<IPerformanceMonitor>(new PerformanceMonitor());
 
             // Gameplay services
             ServiceLocator.Instance.Register<IBlazeAIService>(new BlazeAIService());
@@ -207,6 +209,7 @@ namespace CavalryFight.Core.Bootstrap
             InitializeService<ISceneManagementService>();
             ConfigureSceneManagementService();
             InitializeService<IGameStateService>();
+            InitializeService<IPerformanceMonitor>();
 
             // Gameplay services
             InitializeService<IBlazeAIService>();
@@ -375,6 +378,7 @@ namespace CavalryFight.Core.Bootstrap
             DisposeService<IBlazeAIService>("BlazeAIService");
 
             // 2. Infrastructure Services
+            DisposeService<IPerformanceMonitor>("PerformanceMonitor");
             DisposeService<IGameStateService>("GameStateService");
             DisposeService<ISceneManagementService>("SceneManagementService");
             DisposeService<IGameSettingsService>("GameSettingsService");
