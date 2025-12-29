@@ -80,6 +80,9 @@ namespace CavalryFight.Services.Lobby
 
             if (IsServer)
             {
+                // 既存のスロットをクリア（NetworkRoomDataオブジェクトが再利用される場合に備えて）
+                _playerSlots.Clear();
+
                 // サーバー側: 8つの空スロットを初期化
                 for (int i = 0; i < 8; i++)
                 {

@@ -386,6 +386,77 @@ namespace CavalryFight.Views
             // NPC Difficulty dropdowns are now created dynamically in player cells
         }
 
+        /// <summary>
+        /// ゲームモードに応じてArrow Limitの選択肢を更新します
+        /// </summary>
+        /// <param name="gameMode">ゲームモード</param>
+        private void UpdateArrowLimitChoices(string gameMode)
+        {
+            if (_arrowLimitDropdown == null)
+            {
+                return;
+            }
+
+            // 現在の値を保存
+            string currentValue = _arrowLimitDropdown.value;
+
+            // ゲームモードに応じて選択肢を設定
+            if (gameMode == "ScoreMatch")
+            {
+                // ScoreMatchの場合は"No Limit"を除外
+                _arrowLimitDropdown.choices = new List<string>
+                {
+                    "5", "10", "15", "20"
+                };
+
+                // 現在の値が"No Limit"の場合、デフォルト値に変更
+                if (currentValue == "No Limit")
+                {
+                    _arrowLimitDropdown.value = "10";
+                    if (ViewModel != null)
+                    {
+                        ViewModel.ArrowLimit = 10;
+                    }
+                }
+                else if (_arrowLimitDropdown.choices.Contains(currentValue))
+                {
+                    _arrowLimitDropdown.value = currentValue;
+                }
+                else
+                {
+                    _arrowLimitDropdown.value = "10";
+                    if (ViewModel != null)
+                    {
+                        ViewModel.ArrowLimit = 10;
+                    }
+                }
+            }
+            else
+            {
+                // その他のモードでは全選択肢を表示
+                _arrowLimitDropdown.choices = new List<string>
+                {
+                    "5", "10", "15", "20", "No Limit"
+                };
+
+                // 現在の値が選択肢に含まれていれば復元
+                if (_arrowLimitDropdown.choices.Contains(currentValue))
+                {
+                    _arrowLimitDropdown.value = currentValue;
+                }
+                else
+                {
+                    _arrowLimitDropdown.value = "No Limit";
+                    if (ViewModel != null)
+                    {
+                        ViewModel.ArrowLimit = 0; // 0 = No Limit
+                    }
+                }
+            }
+
+            Debug.Log($"[MatchRoomView] Arrow limit choices updated for game mode: {gameMode}, current value: {_arrowLimitDropdown.value}");
+        }
+
         #endregion
 
         #region Event Handlers Registration
@@ -556,16 +627,22 @@ namespace CavalryFight.Views
 
             // 固定スロット数を作成（MaxPlayers分）
             int maxPlayers = ViewModel.MaxPlayers;
-            var playersList = ViewModel.Players.ToList();
+
+            // プレイヤーをSlotIndexでマップに変換（重複がある場合は最新のものを使用）
+            var playersBySlot = new Dictionary<int, PlayerInfo>();
+            foreach (var player in ViewModel.Players)
+            {
+                playersBySlot[player.SlotIndex] = player;
+            }
 
             for (int i = 0; i < maxPlayers; i++)
             {
                 VisualElement playerItem;
 
-                if (i < playersList.Count)
+                if (playersBySlot.ContainsKey(i))
                 {
-                    // プレイヤーが存在する場合
-                    var player = playersList[i];
+                    // このスロットにプレイヤーが存在する場合
+                    var player = playersBySlot[i];
                     playerItem = CreatePlayerListItem(player);
                     _playerItemElements[player.PlayerId] = playerItem;
                 }
@@ -812,6 +889,9 @@ namespace CavalryFight.Views
                 _gameModeLabel.text = ViewModel.GameMode;
             }
 
+            // Arrow Limitの選択肢をゲームモードに応じて更新
+            UpdateArrowLimitChoices(ViewModel.GameMode);
+
             if (_mapLabel != null)
             {
                 _mapLabel.text = ViewModel.MapName;
@@ -839,6 +919,16 @@ namespace CavalryFight.Views
             {
                 _timeLimitLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                 _timeLimitDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                // Update dropdown value when in edit mode
+                if (ViewModel.IsHost && _isEditMode)
+                {
+                    string timeLimitValue = ViewModel.TimeLimit == 0 ? "No Limit" : $"{ViewModel.TimeLimit / 60}:00";
+                    if (_timeLimitDropdown.value != timeLimitValue)
+                    {
+                        _timeLimitDropdown.value = timeLimitValue;
+                    }
+                }
             }
 
             // Game Settings - Arrow Limit (Toggle between label and dropdown)
@@ -846,6 +936,16 @@ namespace CavalryFight.Views
             {
                 _arrowLimitLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                 _arrowLimitDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                // Update dropdown value when in edit mode
+                if (ViewModel.IsHost && _isEditMode)
+                {
+                    string arrowLimitValue = ViewModel.ArrowLimit == 0 ? "No Limit" : ViewModel.ArrowLimit.ToString();
+                    if (_arrowLimitDropdown.value != arrowLimitValue)
+                    {
+                        _arrowLimitDropdown.value = arrowLimitValue;
+                    }
+                }
             }
 
             // Change Settings Button Section (Host Only)
@@ -902,6 +1002,15 @@ namespace CavalryFight.Views
             {
                 _publicLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                 _publicToggle.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                // Update label text
+                _publicLabel.text = ViewModel.IsPublic ? "Yes" : "No";
+
+                // Update toggle value when in edit mode
+                if (ViewModel.IsHost && _isEditMode && _publicToggle.value != ViewModel.IsPublic)
+                {
+                    _publicToggle.value = ViewModel.IsPublic;
+                }
             }
 
             // Room Info - Max Players (Edit Mode shows Dropdown, otherwise Label)
@@ -909,6 +1018,15 @@ namespace CavalryFight.Views
             {
                 _maxPlayersLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                 _maxPlayersDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                // Update label text
+                _maxPlayersLabel.text = ViewModel.MaxPlayers.ToString();
+
+                // Update dropdown value when in edit mode
+                if (ViewModel.IsHost && _isEditMode && _maxPlayersDropdown.value != ViewModel.MaxPlayers.ToString())
+                {
+                    _maxPlayersDropdown.value = ViewModel.MaxPlayers.ToString();
+                }
             }
 
             // Room Info Dropdowns (Edit Mode shows dropdowns, otherwise labels)
@@ -916,12 +1034,24 @@ namespace CavalryFight.Views
             {
                 _gameModeLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                 _gameModeDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                // Update dropdown value when in edit mode
+                if (ViewModel.IsHost && _isEditMode && _gameModeDropdown.value != ViewModel.GameMode)
+                {
+                    _gameModeDropdown.value = ViewModel.GameMode;
+                }
             }
 
             if (_mapLabel != null && _mapDropdown != null)
             {
                 _mapLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                 _mapDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                // Update dropdown value when in edit mode
+                if (ViewModel.IsHost && _isEditMode && _mapDropdown.value != ViewModel.MapName)
+                {
+                    _mapDropdown.value = ViewModel.MapName;
+                }
             }
 
             // Buttons visibility
@@ -1119,13 +1249,19 @@ namespace CavalryFight.Views
                     break;
 
                 case nameof(MatchRoomViewModel.CurrentPlayers):
-                case nameof(MatchRoomViewModel.MaxPlayers):
                     // プレイヤー数の変更
+                    UpdateUI();
+                    break;
+
+                case nameof(MatchRoomViewModel.MaxPlayers):
+                    // 最大プレイヤー数の変更 - スロット数を再生成
+                    PopulatePlayerList();
                     UpdateUI();
                     break;
 
                 case nameof(MatchRoomViewModel.GameMode):
                     // ゲームモード変更時にドロップダウンの有効/無効を更新
+                    UpdateArrowLimitChoices(ViewModel.GameMode);
                     UpdateGameSettingsAvailability();
                     UpdateUI();
                     break;
@@ -1358,11 +1494,8 @@ namespace CavalryFight.Views
             // ViewModelのPlayerNameプロパティを更新
             ViewModel.PlayerName = newName;
 
-            // PlayerPrefsに保存（他の画面でも使用できるように）
-            PlayerPrefs.SetString("PlayerName", newName);
-            PlayerPrefs.Save();
-
             // LobbyServiceを通じてネットワーク上のプレイヤー名を更新
+            // （LobbyService.SetPlayerName内でPlayerPrefsに保存されます）
             var lobbyService = ServiceLocator.Instance.TryGet<ILobbyService>();
             if (lobbyService != null && lobbyService.IsInRoom)
             {
@@ -1386,6 +1519,10 @@ namespace CavalryFight.Views
             }
 
             ViewModel.GameMode = evt.newValue;
+
+            // ゲームモードに応じてArrow Limitの選択肢を更新
+            UpdateArrowLimitChoices(evt.newValue);
+
             ViewModel.UpdateRoomSettings();
 
             Debug.Log($"[MatchRoomView] Game mode changed to: {evt.newValue}");
@@ -1510,6 +1647,30 @@ namespace CavalryFight.Views
                 Debug.Log($"[MatchRoomView] Room name changed to: {_roomNameField.value}");
             }
 
+            // パスワードの変更を検出
+            if (_passwordField != null && _passwordField.value != ViewModel.Password)
+            {
+                ViewModel.Password = _passwordField.value;
+                hasChanges = true;
+                Debug.Log($"[MatchRoomView] Password changed");
+            }
+
+            // 公開設定の変更を検出
+            if (_publicToggle != null && _publicToggle.value != ViewModel.IsPublic)
+            {
+                ViewModel.IsPublic = _publicToggle.value;
+                hasChanges = true;
+                Debug.Log($"[MatchRoomView] Public setting changed to: {_publicToggle.value}");
+            }
+
+            // 最大プレイヤー数の変更を検出
+            if (_maxPlayersDropdown != null && int.TryParse(_maxPlayersDropdown.value, out int maxPlayers) && maxPlayers != ViewModel.MaxPlayers)
+            {
+                ViewModel.MaxPlayers = maxPlayers;
+                hasChanges = true;
+                Debug.Log($"[MatchRoomView] Max players changed to: {maxPlayers}");
+            }
+
             // ゲームモードの変更を検出
             if (_gameModeDropdown != null && _gameModeDropdown.value != ViewModel.GameMode)
             {
@@ -1524,6 +1685,53 @@ namespace CavalryFight.Views
                 ViewModel.MapName = _mapDropdown.value;
                 hasChanges = true;
                 Debug.Log($"[MatchRoomView] Map changed to: {_mapDropdown.value}");
+            }
+
+            // タイムリミットの変更を検出
+            if (_timeLimitDropdown != null)
+            {
+                int timeLimit = 0;
+                if (_timeLimitDropdown.value == "No Limit")
+                {
+                    timeLimit = 0;
+                }
+                else if (_timeLimitDropdown.value.Contains(":"))
+                {
+                    // "5:00" -> 300 seconds
+                    string[] parts = _timeLimitDropdown.value.Split(':');
+                    if (parts.Length == 2 && int.TryParse(parts[0], out int minutes))
+                    {
+                        timeLimit = minutes * 60;
+                    }
+                }
+
+                if (timeLimit != ViewModel.TimeLimit)
+                {
+                    ViewModel.TimeLimit = timeLimit;
+                    hasChanges = true;
+                    Debug.Log($"[MatchRoomView] Time limit changed to: {timeLimit} seconds");
+                }
+            }
+
+            // 矢の制限の変更を検出
+            if (_arrowLimitDropdown != null)
+            {
+                int arrowLimit = 0;
+                if (_arrowLimitDropdown.value == "No Limit")
+                {
+                    arrowLimit = 0;
+                }
+                else if (int.TryParse(_arrowLimitDropdown.value, out int limit))
+                {
+                    arrowLimit = limit;
+                }
+
+                if (arrowLimit != ViewModel.ArrowLimit)
+                {
+                    ViewModel.ArrowLimit = arrowLimit;
+                    hasChanges = true;
+                    Debug.Log($"[MatchRoomView] Arrow limit changed to: {arrowLimit}");
+                }
             }
 
             // 変更があった場合のみサーバーに通知

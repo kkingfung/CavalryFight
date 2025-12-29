@@ -115,6 +115,16 @@ namespace CavalryFight.ViewModels
         private int _arrowLimit = 0;
 
         /// <summary>
+        /// パスワード
+        /// </summary>
+        private string _password = "";
+
+        /// <summary>
+        /// 公開ルームかどうか
+        /// </summary>
+        private bool _isPublic = false;
+
+        /// <summary>
         /// カウントダウン用のタイマー累積（秒）
         /// </summary>
         private float _countdownAccumulator = 0f;
@@ -271,6 +281,24 @@ namespace CavalryFight.ViewModels
         }
 
         /// <summary>
+        /// パスワード
+        /// </summary>
+        public string Password
+        {
+            get => _password;
+            set => SetProperty(ref _password, value);
+        }
+
+        /// <summary>
+        /// 公開ルームかどうか
+        /// </summary>
+        public bool IsPublic
+        {
+            get => _isPublic;
+            set => SetProperty(ref _isPublic, value);
+        }
+
+        /// <summary>
         /// プレイヤー名
         /// </summary>
         public string PlayerName
@@ -361,10 +389,13 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void SubscribeToLobbyEvents()
         {
+            _lobbyService.RoomCreated += OnRoomCreated;
+            _lobbyService.RoomJoined += OnRoomJoined;
             _lobbyService.HostDisconnected += OnHostDisconnected;
             _lobbyService.PlayerJoined += OnPlayerJoined;
             _lobbyService.PlayerLeft += OnPlayerLeft;
             _lobbyService.PlayerSlotChanged += OnPlayerSlotChanged;
+            _lobbyService.RoomSettingsChanged += OnRoomSettingsChanged;
             _lobbyService.RoomLeft += OnRoomLeft;
         }
 
@@ -373,11 +404,33 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void UnsubscribeFromLobbyEvents()
         {
+            _lobbyService.RoomCreated -= OnRoomCreated;
+            _lobbyService.RoomJoined -= OnRoomJoined;
             _lobbyService.HostDisconnected -= OnHostDisconnected;
             _lobbyService.PlayerJoined -= OnPlayerJoined;
             _lobbyService.PlayerLeft -= OnPlayerLeft;
             _lobbyService.PlayerSlotChanged -= OnPlayerSlotChanged;
+            _lobbyService.RoomSettingsChanged -= OnRoomSettingsChanged;
             _lobbyService.RoomLeft -= OnRoomLeft;
+        }
+
+        /// <summary>
+        /// ルームが作成された時のイベントハンドラ
+        /// </summary>
+        /// <param name="joinCode">作成されたルームのジョインコード</param>
+        private void OnRoomCreated(string joinCode)
+        {
+            // ルームデータを再初期化
+            InitializeRoomData();
+        }
+
+        /// <summary>
+        /// ルームに参加した時のイベントハンドラ
+        /// </summary>
+        private void OnRoomJoined()
+        {
+            // ルームデータを再初期化
+            InitializeRoomData();
         }
 
         /// <summary>
@@ -417,17 +470,32 @@ namespace CavalryFight.ViewModels
         {
             Debug.Log($"[MatchRoomViewModel] Player joined: {playerId}");
 
+            // 既に存在する場合はスキップ（PlayerSlotChangedで処理される）
+            var existingPlayer = Players.FirstOrDefault(p => p.PlayerId == playerId.ToString());
+            if (existingPlayer != null)
+            {
+                Debug.Log($"[MatchRoomViewModel] Player already exists, skipping add: {playerId}");
+                return;
+            }
+
             // PlayerSlotsから該当プレイヤーの情報を取得
             var slot = _lobbyService.PlayerSlots.FirstOrDefault(s => s.PlayerId == playerId);
             if (slot.IsEmpty())
             {
-                Debug.LogWarning($"[MatchRoomViewModel] Joined player slot not found: {playerId}");
                 return;
+            }
+
+            // スロットに既に誰かいる場合は、その人を削除してから追加
+            var playerInSlot = Players.FirstOrDefault(p => p.SlotIndex == slot.SlotIndex);
+            if (playerInSlot != null)
+            {
+                Players.Remove(playerInSlot);
             }
 
             // Playersコレクションに追加
             var playerInfo = new PlayerInfo
             {
+                SlotIndex = slot.SlotIndex,
                 PlayerId = slot.PlayerId.ToString(),
                 PlayerName = slot.PlayerName.ToString(),
                 IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId,
@@ -447,8 +515,6 @@ namespace CavalryFight.ViewModels
             CurrentPlayers = Players.Count;
             OnPropertyChanged(nameof(Players));
             UpdateStatusMessage();
-
-            Debug.Log($"[MatchRoomViewModel] Player added to collection: {playerInfo.PlayerName}");
         }
 
         /// <summary>
@@ -457,8 +523,6 @@ namespace CavalryFight.ViewModels
         /// <param name="playerId">退出したプレイヤーID</param>
         private void OnPlayerLeft(ulong playerId)
         {
-            Debug.Log($"[MatchRoomViewModel] Player left: {playerId}");
-
             // Playersコレクションから削除
             var player = Players.FirstOrDefault(p => p.PlayerId == playerId.ToString());
             if (player != null)
@@ -467,12 +531,6 @@ namespace CavalryFight.ViewModels
                 CurrentPlayers = Players.Count;
                 OnPropertyChanged(nameof(Players));
                 UpdateStatusMessage();
-
-                Debug.Log($"[MatchRoomViewModel] Player removed from collection: {player.PlayerName}");
-            }
-            else
-            {
-                Debug.LogWarning($"[MatchRoomViewModel] Left player not found in collection: {playerId}");
             }
         }
 
@@ -483,60 +541,80 @@ namespace CavalryFight.ViewModels
         /// <param name="slot">変更されたスロット</param>
         private void OnPlayerSlotChanged(int slotIndex, PlayerSlot slot)
         {
-            Debug.Log($"[MatchRoomViewModel] Player slot changed: Index={slotIndex}, PlayerId={slot.PlayerId}, Name={slot.PlayerName}");
-
-            // 空のスロットの場合は無視（プレイヤーが削除された場合はPlayerLeftで処理される）
-            if (slot.IsEmpty())
+            try
             {
-                return;
-            }
-
-            // Playersコレクションから該当プレイヤーを検索
-            var existingPlayer = Players.FirstOrDefault(p => p.PlayerId == slot.PlayerId.ToString());
-
-            if (existingPlayer != null)
-            {
-                // 既存のプレイヤー情報を更新
-                existingPlayer.PlayerName = slot.PlayerName.ToString();
-                existingPlayer.IsReady = slot.IsReady;
-                existingPlayer.Team = slot.TeamIndex switch
+                // 空のスロットの場合、そのスロットにいたプレイヤーを削除
+                if (slot.IsEmpty())
                 {
-                    0 => PlayerTeam.TeamA,
-                    1 => PlayerTeam.TeamB,
-                    _ => PlayerTeam.None
-                };
+                    var playerInSlot = Players.FirstOrDefault(p => p.SlotIndex == slotIndex);
+                    if (playerInSlot != null)
+                    {
+                        Players.Remove(playerInSlot);
+                        CurrentPlayers = Players.Count;
+                        OnPropertyChanged(nameof(Players));
+                        UpdateStatusMessage();
+                    }
+                    return;
+                }
 
-                Debug.Log($"[MatchRoomViewModel] Updated existing player info: {existingPlayer.PlayerName}");
+                // Playersコレクションから該当プレイヤーを検索
+                var existingPlayer = Players.FirstOrDefault(p => p.PlayerId == slot.PlayerId.ToString());
 
-                // UI更新通知
-                OnPropertyChanged(nameof(Players));
-            }
-            else
-            {
-                // 新しいプレイヤー（NPC含む）を追加
-                var playerInfo = new PlayerInfo
+                if (existingPlayer != null)
                 {
-                    PlayerId = slot.PlayerId.ToString(),
-                    PlayerName = slot.PlayerName.ToString(),
-                    IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId,
-                    IsReady = slot.IsReady,
-                    Team = slot.TeamIndex switch
+                    // 既存のプレイヤー情報を更新
+                    existingPlayer.SlotIndex = slotIndex;
+                    existingPlayer.PlayerName = slot.PlayerName.ToString();
+                    existingPlayer.IsReady = slot.IsReady;
+                    existingPlayer.Team = slot.TeamIndex switch
                     {
                         0 => PlayerTeam.TeamA,
                         1 => PlayerTeam.TeamB,
                         _ => PlayerTeam.None
-                    },
-                    IsNPC = slot.IsAI,
-                    Difficulty = slot.IsAI ? slot.AIDifficulty.ToString() : "Normal",
-                    Fps = (slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId) ? (_performanceMonitor?.CurrentFPS ?? 0) : 0
-                };
+                    };
+                    existingPlayer.IsNPC = slot.IsAI;
+                    existingPlayer.Difficulty = slot.IsAI ? slot.AIDifficulty.ToString() : "Normal";
 
-                Players.Add(playerInfo);
-                CurrentPlayers = Players.Count;
-                OnPropertyChanged(nameof(Players));
-                UpdateStatusMessage();
+                    // UI更新通知
+                    OnPropertyChanged(nameof(Players));
+                }
+                else
+                {
+                    // スロットに既に誰かいる場合は、その人を削除してから追加
+                    var playerInSlot = Players.FirstOrDefault(p => p.SlotIndex == slotIndex);
+                    if (playerInSlot != null)
+                    {
+                        Players.Remove(playerInSlot);
+                    }
 
-                Debug.Log($"[MatchRoomViewModel] Added new player to collection: {playerInfo.PlayerName} (IsNPC: {playerInfo.IsNPC})");
+                    // 新しいプレイヤー（NPC含む）を追加
+                    var playerInfo = new PlayerInfo
+                    {
+                        SlotIndex = slotIndex,
+                        PlayerId = slot.PlayerId.ToString(),
+                        PlayerName = slot.PlayerName.ToString(),
+                        IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId,
+                        IsReady = slot.IsReady,
+                        Team = slot.TeamIndex switch
+                        {
+                            0 => PlayerTeam.TeamA,
+                            1 => PlayerTeam.TeamB,
+                            _ => PlayerTeam.None
+                        },
+                        IsNPC = slot.IsAI,
+                        Difficulty = slot.IsAI ? slot.AIDifficulty.ToString() : "Normal",
+                        Fps = (slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId) ? (_performanceMonitor?.CurrentFPS ?? 0) : 0
+                    };
+
+                    Players.Add(playerInfo);
+                    CurrentPlayers = Players.Count;
+                    OnPropertyChanged(nameof(Players));
+                    UpdateStatusMessage();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[MatchRoomViewModel] Error in OnPlayerSlotChanged: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -545,8 +623,6 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void OnRoomLeft()
         {
-            Debug.Log("[MatchRoomViewModel] Room left - clearing all player data.");
-
             // プレイヤーリストをクリア
             Players.Clear();
             CurrentPlayers = 0;
@@ -557,8 +633,49 @@ namespace CavalryFight.ViewModels
             // 準備状態をリセット
             IsReady = false;
 
+            // ルーム設定をデフォルトにリセット（プレイヤー名は保持）
+            RoomName = "";
+            Password = "";
+            IsPublic = true;
+            MaxPlayers = 8;
+            GameMode = "Arena";
+            MapName = "Arena";
+            TimeLimit = 300; // 5 minutes
+            ArrowLimit = 0; // No Limit
+            JoinCode = "";
+            HostName = "";
+            IsHost = false;
+
             OnPropertyChanged(nameof(Players));
             OnPropertyChanged(nameof(CurrentPlayers));
+            OnPropertyChanged(nameof(RoomName));
+            OnPropertyChanged(nameof(Password));
+            OnPropertyChanged(nameof(IsPublic));
+            OnPropertyChanged(nameof(MaxPlayers));
+            OnPropertyChanged(nameof(GameMode));
+            OnPropertyChanged(nameof(MapName));
+            OnPropertyChanged(nameof(TimeLimit));
+            OnPropertyChanged(nameof(ArrowLimit));
+            OnPropertyChanged(nameof(JoinCode));
+            OnPropertyChanged(nameof(HostName));
+            OnPropertyChanged(nameof(IsHost));
+        }
+
+        /// <summary>
+        /// ルーム設定変更イベントハンドラ
+        /// </summary>
+        /// <param name="settings">新しいルーム設定</param>
+        private void OnRoomSettingsChanged(RoomSettings settings)
+        {
+            // ViewModelのプロパティを更新（型変換が必要なものは変換）
+            RoomName = settings.RoomName.ToString();
+            Password = settings.Password.ToString();
+            IsPublic = settings.IsPublic;
+            MaxPlayers = settings.MaxPlayers;
+            GameMode = settings.GameMode.ToString();
+            MapName = settings.MapName.ToString();
+            TimeLimit = settings.TimeLimit;
+            ArrowLimit = settings.ArrowLimit;
         }
 
         /// <summary>
@@ -566,16 +683,17 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void InitializeRoomData()
         {
-            Debug.Log($"[MatchRoomViewModel] InitializeRoomData called. IsInRoom={_lobbyService.IsInRoom}, IsHost={_lobbyService.IsHost}");
-
-            // プレイヤー名をPlayerPrefsから読み込む
-            PlayerName = UnityEngine.PlayerPrefs.GetString("PlayerName", "Player");
+            // プレイヤー名を読み込む（LobbyServiceから統一されたキーで読み込み）
+            PlayerName = _lobbyService.LoadPlayerName() ?? "Player";
 
             // ロビーサービスから現在のルームデータを取得
             if (_lobbyService.IsInRoom)
             {
                 var settings = _lobbyService.CurrentRoomSettings;
+
                 RoomName = settings.RoomName.ToString();
+                Password = settings.Password.ToString();
+                IsPublic = settings.IsPublic;
                 GameMode = settings.GameMode.ToString();
                 MapName = settings.MapName.ToString();
                 MaxPlayers = settings.MaxPlayers;
@@ -604,6 +722,7 @@ namespace CavalryFight.ViewModels
                     {
                         var playerInfo = new PlayerInfo
                         {
+                            SlotIndex = slot.SlotIndex,
                             PlayerId = slot.PlayerId.ToString(),
                             PlayerName = slot.PlayerName.ToString(),
                             IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId, // ホスト判定
@@ -622,8 +741,6 @@ namespace CavalryFight.ViewModels
                         Players.Add(playerInfo);
                     }
                 }
-
-                Debug.Log($"[MatchRoomViewModel] Room data initialized from LobbyService: {RoomName}, Host: {IsHost}, Players: {Players.Count}");
             }
 #if DEBUG
             else
@@ -771,13 +888,11 @@ namespace CavalryFight.ViewModels
         {
             if (!IsHost)
             {
-                Debug.LogWarning("[MatchRoomViewModel] Only host can add NPCs.");
                 return;
             }
 
             if (Players.Count >= MaxPlayers)
             {
-                Debug.LogWarning("[MatchRoomViewModel] Cannot add NPC: room is full.");
                 return;
             }
 
@@ -787,7 +902,6 @@ namespace CavalryFight.ViewModels
 
             if (success)
             {
-                Debug.Log($"[MatchRoomViewModel] Successfully added NPC at slot {slotIndex}");
                 // NPCはPlayerJoinedイベント経由でPlayersコレクションに自動的に追加されます
             }
             else
@@ -1033,6 +1147,9 @@ namespace CavalryFight.ViewModels
 
             // すべての変更可能な設定を更新
             settings.RoomName = new Unity.Collections.FixedString64Bytes(RoomName);
+            settings.Password = new Unity.Collections.FixedString64Bytes(Password);
+            settings.IsPublic = IsPublic;
+            settings.MaxPlayers = MaxPlayers;
 
             // GameMode文字列をenumに変換
             if (System.Enum.TryParse<GameMode>(GameMode, out var parsedGameMode))
@@ -1047,7 +1164,7 @@ namespace CavalryFight.ViewModels
             // ネットワーク経由で設定を送信
             if (_lobbyService.UpdateRoomSettings(settings))
             {
-                Debug.Log($"[MatchRoomViewModel] Room settings updated: RoomName={RoomName}, GameMode={GameMode}, MapName={MapName}, TimeLimit={TimeLimit}, ArrowLimit={ArrowLimit}");
+                Debug.Log($"[MatchRoomViewModel] Room settings updated: RoomName={RoomName}, Password={(string.IsNullOrEmpty(Password) ? "None" : "Set")}, IsPublic={IsPublic}, MaxPlayers={MaxPlayers}, GameMode={GameMode}, MapName={MapName}, TimeLimit={TimeLimit}, ArrowLimit={ArrowLimit}");
             }
             else
             {
@@ -1199,6 +1316,7 @@ namespace CavalryFight.ViewModels
     /// </summary>
     public class PlayerInfo : INotifyPropertyChanged
     {
+        private int _slotIndex = 0;
         private string _playerId = "";
         private string _playerName = "";
         private bool _isHost = false;
@@ -1207,6 +1325,19 @@ namespace CavalryFight.ViewModels
         private int _fps = 0;
         private bool _isNPC = false;
         private string _difficulty = "Normal";
+
+        /// <summary>
+        /// スロットインデックス
+        /// </summary>
+        public int SlotIndex
+        {
+            get => _slotIndex;
+            set
+            {
+                _slotIndex = value;
+                OnPropertyChanged(nameof(SlotIndex));
+            }
+        }
 
         /// <summary>
         /// プレイヤーID

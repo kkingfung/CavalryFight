@@ -483,6 +483,13 @@ namespace CavalryFight.Views
                 case nameof(MatchLobbyViewModel.IsProcessing):
                     UpdateButtonStates();
                     break;
+                case nameof(MatchLobbyViewModel.PlayerName):
+                    // プレイヤー名が変更されたらUIに反映
+                    if (_playerNameInput != null && !string.IsNullOrWhiteSpace(ViewModel.PlayerName))
+                    {
+                        _playerNameInput.SetValueWithoutNotify(ViewModel.PlayerName);
+                    }
+                    break;
             }
         }
 
