@@ -115,6 +115,11 @@ namespace CavalryFight.Services.Lobby
         public event Action<ulong>? PlayerLeft;
 
         /// <summary>
+        /// プレイヤースロット情報が変更された時に発生します
+        /// </summary>
+        public event Action<int, PlayerSlot>? PlayerSlotChanged;
+
+        /// <summary>
         /// プレイヤーの準備状態が変更された時に発生します
         /// </summary>
         public event Action<ulong, bool>? PlayerReadyChanged;
@@ -392,12 +397,10 @@ namespace CavalryFight.Services.Lobby
         /// <param name="slot">新しいスロットデータ</param>
         private void OnNetworkPlayerSlotChanged(int slotIndex, PlayerSlot slot)
         {
-            // 空のスロットから非空のスロットに変更された場合、プレイヤーが参加したとみなす
-            if (!slot.IsEmpty())
-            {
-                Debug.Log($"[LobbyService:{_instanceId}] Player slot changed: Index={slotIndex}, PlayerId={slot.PlayerId}, Name={slot.PlayerName}");
-                PlayerJoined?.Invoke(slot.PlayerId);
-            }
+            Debug.Log($"[LobbyService:{_instanceId}] Player slot changed: Index={slotIndex}, PlayerId={slot.PlayerId}, Name={slot.PlayerName}");
+
+            // プレイヤースロット変更イベントを発火
+            PlayerSlotChanged?.Invoke(slotIndex, slot);
         }
 
         /// <summary>
@@ -1078,6 +1081,36 @@ namespace CavalryFight.Services.Lobby
             _networkRoomData.SetCustomizationPresetServerRpc(presetName);
 
             Debug.Log($"[LobbyService] Customization preset set to: {presetName}");
+        }
+
+        /// <summary>
+        /// プレイヤー名を設定します
+        /// </summary>
+        /// <param name="playerName">新しいプレイヤー名</param>
+        public void SetPlayerName(string playerName)
+        {
+            if (string.IsNullOrWhiteSpace(playerName))
+            {
+                Debug.LogError("[LobbyService] Player name cannot be empty.");
+                return;
+            }
+
+            if (_localPlayerInfo == null)
+            {
+                Debug.LogError("[LobbyService] No local player info.");
+                return;
+            }
+
+            if (_networkRoomData == null)
+            {
+                Debug.LogError("[LobbyService] NetworkRoomData not available.");
+                return;
+            }
+
+            // NetworkRoomDataのServerRPCを呼び出してプレイヤー名を変更
+            _networkRoomData.SetPlayerNameServerRpc(playerName);
+
+            Debug.Log($"[LobbyService] Player name set to: {playerName}");
         }
 
         /// <summary>

@@ -52,6 +52,7 @@ namespace CavalryFight.Views
         private Label? _roomNameLabel;
         private TextField? _roomNameField;
         private Label? _passwordLabel;
+        private VisualElement? _passwordInputContainer;
         private TextField? _passwordField;
         private Label? _passwordAsterisksLabel;
         private Label? _publicLabel;
@@ -267,6 +268,7 @@ namespace CavalryFight.Views
             _roomNameLabel = Q<Label>("RoomNameLabel");
             _roomNameField = Q<TextField>("RoomNameField");
             _passwordLabel = Q<Label>("PasswordLabel");
+            _passwordInputContainer = Q<VisualElement>("PasswordInputContainer");
             _passwordField = Q<TextField>("PasswordField");
             _passwordAsterisksLabel = Q<Label>("PasswordAsterisksLabel");
             _publicLabel = Q<Label>("PublicLabel");
@@ -863,14 +865,13 @@ namespace CavalryFight.Views
                 }
             }
 
-            // Room Info - Password (Edit Mode shows TextField and asterisks label, otherwise normal Label)
-            if (_passwordLabel != null && _passwordField != null && _passwordAsterisksLabel != null)
+            // Room Info - Password (Edit Mode shows input container with invisible TextField and asterisks, otherwise normal Label)
+            if (_passwordLabel != null && _passwordInputContainer != null && _passwordField != null && _passwordAsterisksLabel != null)
             {
                 bool isEditingPassword = ViewModel.IsHost && _isEditMode;
 
                 _passwordLabel.style.display = isEditingPassword ? DisplayStyle.None : DisplayStyle.Flex;
-                _passwordField.style.display = isEditingPassword ? DisplayStyle.Flex : DisplayStyle.None;
-                _passwordAsterisksLabel.style.display = isEditingPassword ? DisplayStyle.Flex : DisplayStyle.None;
+                _passwordInputContainer.style.display = isEditingPassword ? DisplayStyle.Flex : DisplayStyle.None;
 
                 // Update password label (visible when not editing)
                 if (_passwordField.value != null && !string.IsNullOrEmpty(_passwordField.value))
@@ -882,7 +883,7 @@ namespace CavalryFight.Views
                     _passwordLabel.text = "None";
                 }
 
-                // Update asterisks label (visible when editing)
+                // Update asterisks label (visible when editing) - now updated in real-time via OnPasswordChanged callback
                 if (isEditingPassword)
                 {
                     if (!string.IsNullOrEmpty(_passwordField.value))
@@ -1361,7 +1362,17 @@ namespace CavalryFight.Views
             PlayerPrefs.SetString("PlayerName", newName);
             PlayerPrefs.Save();
 
-            Debug.Log($"[MatchRoomView] Player name updated to: {newName}");
+            // LobbyServiceを通じてネットワーク上のプレイヤー名を更新
+            var lobbyService = ServiceLocator.Instance.TryGet<ILobbyService>();
+            if (lobbyService != null && lobbyService.IsInRoom)
+            {
+                lobbyService.SetPlayerName(newName);
+                Debug.Log($"[MatchRoomView] Player name updated in network: {newName}");
+            }
+            else
+            {
+                Debug.Log($"[MatchRoomView] Player name updated locally (not in room): {newName}");
+            }
         }
 
         /// <summary>

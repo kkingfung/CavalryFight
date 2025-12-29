@@ -48,6 +48,11 @@ namespace CavalryFight.Services.Lobby
         event Action<ulong>? PlayerLeft; // playerId
 
         /// <summary>
+        /// プレイヤースロット情報が変更された時に発生します
+        /// </summary>
+        event Action<int, PlayerSlot>? PlayerSlotChanged; // slotIndex, slot
+
+        /// <summary>
         /// プレイヤーの準備状態が変更された時に発生します
         /// </summary>
         event Action<ulong, bool>? PlayerReadyChanged; // playerId, isReady
@@ -235,6 +240,12 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         /// <param name="presetName">プリセット名</param>
         void SetCustomizationPreset(string presetName);
+
+        /// <summary>
+        /// プレイヤー名を設定します
+        /// </summary>
+        /// <param name="playerName">新しいプレイヤー名</param>
+        void SetPlayerName(string playerName);
 
         /// <summary>
         /// プレイヤースロット情報を取得します

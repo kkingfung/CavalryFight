@@ -364,6 +364,7 @@ namespace CavalryFight.ViewModels
             _lobbyService.HostDisconnected += OnHostDisconnected;
             _lobbyService.PlayerJoined += OnPlayerJoined;
             _lobbyService.PlayerLeft += OnPlayerLeft;
+            _lobbyService.PlayerSlotChanged += OnPlayerSlotChanged;
             _lobbyService.RoomLeft += OnRoomLeft;
         }
 
@@ -375,6 +376,7 @@ namespace CavalryFight.ViewModels
             _lobbyService.HostDisconnected -= OnHostDisconnected;
             _lobbyService.PlayerJoined -= OnPlayerJoined;
             _lobbyService.PlayerLeft -= OnPlayerLeft;
+            _lobbyService.PlayerSlotChanged -= OnPlayerSlotChanged;
             _lobbyService.RoomLeft -= OnRoomLeft;
         }
 
@@ -471,6 +473,70 @@ namespace CavalryFight.ViewModels
             else
             {
                 Debug.LogWarning($"[MatchRoomViewModel] Left player not found in collection: {playerId}");
+            }
+        }
+
+        /// <summary>
+        /// プレイヤースロット変更イベントハンドラ
+        /// </summary>
+        /// <param name="slotIndex">スロットインデックス</param>
+        /// <param name="slot">変更されたスロット</param>
+        private void OnPlayerSlotChanged(int slotIndex, PlayerSlot slot)
+        {
+            Debug.Log($"[MatchRoomViewModel] Player slot changed: Index={slotIndex}, PlayerId={slot.PlayerId}, Name={slot.PlayerName}");
+
+            // 空のスロットの場合は無視（プレイヤーが削除された場合はPlayerLeftで処理される）
+            if (slot.IsEmpty())
+            {
+                return;
+            }
+
+            // Playersコレクションから該当プレイヤーを検索
+            var existingPlayer = Players.FirstOrDefault(p => p.PlayerId == slot.PlayerId.ToString());
+
+            if (existingPlayer != null)
+            {
+                // 既存のプレイヤー情報を更新
+                existingPlayer.PlayerName = slot.PlayerName.ToString();
+                existingPlayer.IsReady = slot.IsReady;
+                existingPlayer.Team = slot.TeamIndex switch
+                {
+                    0 => PlayerTeam.TeamA,
+                    1 => PlayerTeam.TeamB,
+                    _ => PlayerTeam.None
+                };
+
+                Debug.Log($"[MatchRoomViewModel] Updated existing player info: {existingPlayer.PlayerName}");
+
+                // UI更新通知
+                OnPropertyChanged(nameof(Players));
+            }
+            else
+            {
+                // 新しいプレイヤー（NPC含む）を追加
+                var playerInfo = new PlayerInfo
+                {
+                    PlayerId = slot.PlayerId.ToString(),
+                    PlayerName = slot.PlayerName.ToString(),
+                    IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId,
+                    IsReady = slot.IsReady,
+                    Team = slot.TeamIndex switch
+                    {
+                        0 => PlayerTeam.TeamA,
+                        1 => PlayerTeam.TeamB,
+                        _ => PlayerTeam.None
+                    },
+                    IsNPC = slot.IsAI,
+                    Difficulty = slot.IsAI ? slot.AIDifficulty.ToString() : "Normal",
+                    Fps = (slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId) ? (_performanceMonitor?.CurrentFPS ?? 0) : 0
+                };
+
+                Players.Add(playerInfo);
+                CurrentPlayers = Players.Count;
+                OnPropertyChanged(nameof(Players));
+                UpdateStatusMessage();
+
+                Debug.Log($"[MatchRoomViewModel] Added new player to collection: {playerInfo.PlayerName} (IsNPC: {playerInfo.IsNPC})");
             }
         }
 

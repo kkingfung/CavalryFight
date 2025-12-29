@@ -264,6 +264,33 @@ namespace CavalryFight.Services.Lobby
         }
 
         /// <summary>
+        /// プレイヤー名を設定します（クライアントからのリクエスト）
+        /// </summary>
+        /// <param name="playerName">新しいプレイヤー名</param>
+        /// <param name="serverRpcParams">RPC parameters</param>
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        public void SetPlayerNameServerRpc(string playerName, RpcParams serverRpcParams = default)
+        {
+            ulong senderId = serverRpcParams.Receive.SenderClientId;
+
+            // プレイヤーのスロットを探す
+            for (int i = 0; i < _playerSlots.Count; i++)
+            {
+                if (_playerSlots[i].PlayerId == senderId)
+                {
+                    var slot = _playerSlots[i];
+                    slot.PlayerName = new Unity.Collections.FixedString64Bytes(playerName);
+                    _playerSlots[i] = slot;
+
+                    Debug.Log($"[NetworkRoomData] Player (ID: {senderId}) name changed to: {playerName}");
+                    return;
+                }
+            }
+
+            Debug.LogWarning($"[NetworkRoomData] Player (ID: {senderId}) not found in any slot.");
+        }
+
+        /// <summary>
         /// プレイヤーの準備状態変更を全クライアントに通知します
         /// </summary>
         /// <param name="playerId">プレイヤーID</param>
