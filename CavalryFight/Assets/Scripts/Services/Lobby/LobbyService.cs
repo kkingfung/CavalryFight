@@ -19,7 +19,21 @@ namespace CavalryFight.Services.Lobby
     /// </remarks>
     public class LobbyService : ILobbyService
     {
+        #region Constants
+
+        /// <summary>
+        /// PlayerPrefsキー: プレイヤー名
+        /// </summary>
+        private const string PlayerNamePrefKey = "CavalryFight_PlayerName";
+
+        #endregion
+
         #region Fields
+
+        /// <summary>
+        /// インスタンスID（デバッグ用）
+        /// </summary>
+        private readonly string _instanceId = System.Guid.NewGuid().ToString().Substring(0, 8);
 
         /// <summary>
         /// 初期化済みフラグ
@@ -45,6 +59,11 @@ namespace CavalryFight.Services.Lobby
         /// ルームに参加しているかどうか
         /// </summary>
         private bool _isInRoom = false;
+
+        /// <summary>
+        /// ローカルプレイヤーがホストかどうか（内部追跡）
+        /// </summary>
+        private bool _isLocalHost = false;
 
         /// <summary>
         /// NetworkLobbyManagerへの参照
@@ -167,7 +186,7 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// ホストかどうかを取得します
         /// </summary>
-        public bool IsHost => NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost;
+        public bool IsHost => _isLocalHost;
 
         /// <summary>
         /// ルームに参加しているかどうかを取得します
@@ -206,6 +225,24 @@ namespace CavalryFight.Services.Lobby
             if (NetworkManager.Singleton != null)
             {
                 NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+            }
+
+            // NetworkLobbyManagerを探して登録（Startupシーンに配置されている前提）
+            var networkLobbyManager = NetworkLobbyManager.Instance;
+            if (networkLobbyManager == null)
+            {
+                // シングルトンがnullの場合はシーンから検索
+                networkLobbyManager = UnityEngine.Object.FindFirstObjectByType<NetworkLobbyManager>();
+            }
+
+            if (networkLobbyManager != null)
+            {
+                SetNetworkLobbyManager(networkLobbyManager);
+                Debug.Log("[LobbyService] NetworkLobbyManager found and registered from Startup scene.");
+            }
+            else
+            {
+                Debug.LogWarning("[LobbyService] NetworkLobbyManager not found. Please ensure NetworkLobbyManager is in the Startup scene.");
             }
 
             _initialized = true;
@@ -284,6 +321,7 @@ namespace CavalryFight.Services.Lobby
             {
                 _networkRoomData.RoomSettingsChanged += OnNetworkRoomSettingsChanged;
                 _networkRoomData.PlayerReadyChanged += OnNetworkPlayerReadyChanged;
+                _networkRoomData.PlayerSlotChanged += OnNetworkPlayerSlotChanged;
             }
         }
 
@@ -305,6 +343,7 @@ namespace CavalryFight.Services.Lobby
             {
                 _networkRoomData.RoomSettingsChanged -= OnNetworkRoomSettingsChanged;
                 _networkRoomData.PlayerReadyChanged -= OnNetworkPlayerReadyChanged;
+                _networkRoomData.PlayerSlotChanged -= OnNetworkPlayerSlotChanged;
             }
         }
 
@@ -347,6 +386,21 @@ namespace CavalryFight.Services.Lobby
         }
 
         /// <summary>
+        /// ネットワークプレイヤースロット変更イベントハンドラ
+        /// </summary>
+        /// <param name="slotIndex">変更されたスロットのインデックス</param>
+        /// <param name="slot">新しいスロットデータ</param>
+        private void OnNetworkPlayerSlotChanged(int slotIndex, PlayerSlot slot)
+        {
+            // 空のスロットから非空のスロットに変更された場合、プレイヤーが参加したとみなす
+            if (!slot.IsEmpty())
+            {
+                Debug.Log($"[LobbyService:{_instanceId}] Player slot changed: Index={slotIndex}, PlayerId={slot.PlayerId}, Name={slot.PlayerName}");
+                PlayerJoined?.Invoke(slot.PlayerId);
+            }
+        }
+
+        /// <summary>
         /// ネットワークカウントダウン開始イベントハンドラ
         /// </summary>
         /// <param name="initialSeconds">カウントダウン初期秒数</param>
@@ -383,6 +437,7 @@ namespace CavalryFight.Services.Lobby
             {
                 Debug.LogWarning("[LobbyService] Host disconnected.");
                 _isInRoom = false;
+                _isLocalHost = false;
                 _localPlayerInfo = null;
 
                 // ホスト切断イベントを発火
@@ -465,6 +520,8 @@ namespace CavalryFight.Services.Lobby
             }
 
             _isInRoom = true;
+            _isLocalHost = true; // ホストフラグを設定
+            Debug.Log($"[LobbyService] Host flags set: _isInRoom={_isInRoom}, _isLocalHost={_isLocalHost}");
 
             // ローカルプレイヤー情報を設定
             _localPlayerInfo = new LobbyPlayerInfo(
@@ -473,6 +530,19 @@ namespace CavalryFight.Services.Lobby
                 true
             );
             _localPlayerInfo.IsLocalPlayer = true;
+
+            // プレイヤー名を保存
+            SavePlayerName(playerName);
+
+            // NetworkLobbyManagerの登録を確認
+            if (_networkLobbyManager == null)
+            {
+                Debug.LogError("[LobbyService] NetworkLobbyManager is not registered! Please ensure it is in the Startup scene.");
+                ErrorOccurred?.Invoke("NetworkLobbyManager not found. Cannot create room.");
+                return;
+            }
+
+            Debug.Log("[LobbyService] NetworkLobbyManager is registered and ready.");
 
             // NetworkLobbyManagerにプレイヤー名を登録
             if (_networkLobbyManager != null)
@@ -487,9 +557,14 @@ namespace CavalryFight.Services.Lobby
                 // ホストを最初のスロットに追加
                 _networkRoomData.AddPlayer(NetworkManager.Singleton.LocalClientId, playerName);
             }
+            else
+            {
+                Debug.LogError("[LobbyService] NetworkRoomData is null! Cannot add host player to slots.");
+            }
 
+            Debug.Log($"[LobbyService:{_instanceId}] Room created successfully. _isInRoom={_isInRoom}, _isLocalHost={_isLocalHost}, IsHost={IsHost}");
             RoomCreated?.Invoke(joinCode);
-            Debug.Log($"[LobbyService] Room created with join code: {joinCode}");
+            Debug.Log($"[LobbyService:{_instanceId}] Room created with join code: {joinCode}");
         }
 
         /// <summary>
@@ -526,9 +601,11 @@ namespace CavalryFight.Services.Lobby
         /// <returns>成功した場合はtrue</returns>
         public bool AddCPUPlayer(AIDifficulty difficulty, int teamIndex = -1)
         {
+            Debug.Log($"[LobbyService:{_instanceId}] AddCPUPlayer called. IsHost={IsHost}, _isLocalHost={_isLocalHost}, _isInRoom={_isInRoom}");
+
             if (!IsHost)
             {
-                Debug.LogError("[LobbyService] Only host can add CPU players.");
+                Debug.LogError($"[LobbyService:{_instanceId}] Only host can add CPU players. IsHost={IsHost}, _isLocalHost={_isLocalHost}, _isInRoom={_isInRoom}");
                 return false;
             }
 
@@ -894,6 +971,7 @@ namespace CavalryFight.Services.Lobby
             }
 
             _isInRoom = true;
+            _isLocalHost = false; // ゲストフラグを設定
 
             // ローカルプレイヤー情報を設定
             _localPlayerInfo = new LobbyPlayerInfo(
@@ -902,6 +980,9 @@ namespace CavalryFight.Services.Lobby
                 false
             );
             _localPlayerInfo.IsLocalPlayer = true;
+
+            // プレイヤー名を保存
+            SavePlayerName(playerName);
 
             // NetworkLobbyManagerにプレイヤー名を登録
             if (_networkLobbyManager != null)
@@ -942,6 +1023,7 @@ namespace CavalryFight.Services.Lobby
             _relayManager.Cleanup();
 
             _isInRoom = false;
+            _isLocalHost = false;
             _localPlayerInfo = null;
 
             RoomLeft?.Invoke();
@@ -1059,6 +1141,44 @@ namespace CavalryFight.Services.Lobby
             AvailableRoomsUpdated?.Invoke(AvailableRooms);
 
             Debug.Log($"[LobbyService] Available rooms refreshed. Count: {_availableRooms.Count}");
+        }
+
+        #endregion
+
+        #region Player Name Persistence
+
+        /// <summary>
+        /// プレイヤー名を保存します
+        /// </summary>
+        /// <param name="playerName">保存するプレイヤー名</param>
+        public void SavePlayerName(string playerName)
+        {
+            if (string.IsNullOrWhiteSpace(playerName))
+            {
+                Debug.LogWarning("[LobbyService] Cannot save empty player name.");
+                return;
+            }
+
+            PlayerPrefs.SetString(PlayerNamePrefKey, playerName);
+            PlayerPrefs.Save();
+            Debug.Log($"[LobbyService] Player name saved: {playerName}");
+        }
+
+        /// <summary>
+        /// 保存されたプレイヤー名を読み込みます
+        /// </summary>
+        /// <returns>保存されたプレイヤー名（存在しない場合はnull）</returns>
+        public string? LoadPlayerName()
+        {
+            if (PlayerPrefs.HasKey(PlayerNamePrefKey))
+            {
+                string playerName = PlayerPrefs.GetString(PlayerNamePrefKey);
+                Debug.Log($"[LobbyService] Player name loaded: {playerName}");
+                return playerName;
+            }
+
+            Debug.Log("[LobbyService] No saved player name found.");
+            return null;
         }
 
         #endregion

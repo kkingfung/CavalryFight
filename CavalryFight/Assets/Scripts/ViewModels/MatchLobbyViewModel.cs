@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
@@ -86,6 +87,16 @@ namespace CavalryFight.ViewModels
         /// 選択されたルーム
         /// </summary>
         private RoomInfo? _selectedRoom = null;
+
+        /// <summary>
+        /// ルームシーンに遷移中かどうか
+        /// </summary>
+        private bool _isNavigatingToRoom = false;
+
+        /// <summary>
+        /// ルーム作成/参加処理中かどうか
+        /// </summary>
+        private bool _isProcessing = false;
 
         #endregion
 
@@ -200,6 +211,15 @@ namespace CavalryFight.ViewModels
             set => SetProperty(ref _selectedRoom, value);
         }
 
+        /// <summary>
+        /// ルーム作成/参加処理中かどうか
+        /// </summary>
+        public bool IsProcessing
+        {
+            get => _isProcessing;
+            private set => SetProperty(ref _isProcessing, value);
+        }
+
         #endregion
 
         #region Events
@@ -227,6 +247,14 @@ namespace CavalryFight.ViewModels
         {
             _lobbyService = lobbyService ?? throw new ArgumentNullException(nameof(lobbyService));
             _sceneManagementService = sceneManagementService ?? throw new ArgumentNullException(nameof(sceneManagementService));
+
+            // 保存されたプレイヤー名を読み込む
+            string? savedPlayerName = _lobbyService.LoadPlayerName();
+            if (!string.IsNullOrWhiteSpace(savedPlayerName))
+            {
+                PlayerName = savedPlayerName;
+                Debug.Log($"[MatchLobbyViewModel] Loaded saved player name: {savedPlayerName}");
+            }
 
             // ロビーサービスのイベントを購読
             SubscribeToLobbyEvents();
@@ -275,6 +303,8 @@ namespace CavalryFight.ViewModels
             Debug.Log($"[MatchLobbyViewModel] Room created with join code: {joinCode}");
 
             IsInRoom = true;
+            IsProcessing = false;
+            _isNavigatingToRoom = true;
             StatusMessage = $"ルームをホスト中: {_roomName}";
             ShowHostDialog = false;
 
@@ -292,6 +322,8 @@ namespace CavalryFight.ViewModels
             Debug.Log("[MatchLobbyViewModel] Successfully joined room.");
 
             IsInRoom = true;
+            IsProcessing = false;
+            _isNavigatingToRoom = true;
             StatusMessage = "ルームに参加しました";
             ShowJoinDialog = false;
 
@@ -322,6 +354,7 @@ namespace CavalryFight.ViewModels
             Debug.LogError($"[MatchLobbyViewModel] Lobby error: {errorMessage}");
 
             StatusMessage = $"エラー: {errorMessage}";
+            IsProcessing = false;
             ErrorOccurred?.Invoke(this, errorMessage);
         }
 
@@ -445,6 +478,7 @@ namespace CavalryFight.ViewModels
                 MapName = new FixedString64Bytes(SelectedMap)
             };
 
+            IsProcessing = true;
             bool success = _lobbyService.CreateRoom(roomSettings, PlayerName);
 
             if (success)
@@ -456,6 +490,7 @@ namespace CavalryFight.ViewModels
             {
                 StatusMessage = "ルーム作成に失敗しました";
                 ErrorOccurred?.Invoke(this, "ルーム作成に失敗しました");
+                IsProcessing = false;
             }
         }
 
@@ -487,6 +522,7 @@ namespace CavalryFight.ViewModels
                 return;
             }
 
+            IsProcessing = true;
             bool success = _lobbyService.JoinRoom(JoinCode, PlayerName);
 
             if (success)
@@ -498,6 +534,7 @@ namespace CavalryFight.ViewModels
             {
                 StatusMessage = "ルーム参加に失敗しました";
                 ErrorOccurred?.Invoke(this, "ルーム参加に失敗しました");
+                IsProcessing = false;
             }
         }
 
@@ -555,9 +592,11 @@ namespace CavalryFight.ViewModels
         {
             UnsubscribeFromLobbyEvents();
 
-            // ルームに参加している場合は退出
-            if (IsInRoom)
+            // ルームシーンに遷移する場合は退出しない（MatchRoomViewModelで引き続き使用するため）
+            // ユーザーがバックボタンなどで明示的に退出する場合のみLeaveRoom()を呼ぶ
+            if (IsInRoom && !_isNavigatingToRoom)
             {
+                Debug.Log("[MatchLobbyViewModel] Leaving room on dispose (not navigating to room).");
                 _lobbyService.LeaveRoom();
             }
 

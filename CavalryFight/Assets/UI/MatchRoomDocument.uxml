@@ -12,8 +12,17 @@
         <!-- Content Area (Two Panels) -->
         <ui:VisualElement name="ContentArea" style="flex-grow: 1; flex-direction: row; margin: 0 2% 2% 2%;">
             <!-- Left Panel: Player List -->
-            <ui:VisualElement name="LeftPanel" style="width: 45%; margin-right: 2%; border-radius: 10px; padding: 20px;">
-                <ui:Label text="Players" name="PlayerListTitleLabel" class="panel-title" style="font-size: 56px; margin-bottom: 20px;"/>
+            <ui:VisualElement name="LeftPanel" style="width: 45%; margin-right: 2%; border-radius: 10px; padding: 20px; flex-direction: column;">
+                <!-- Player List Title and Player Name Input -->
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <ui:Label text="Players" name="PlayerListTitleLabel" class="panel-title" style="font-size: 56px;"/>
+                    <!-- Player Name Input Section -->
+                    <ui:VisualElement style="flex-direction: row; align-items: center; background-color: rgba(0, 0, 0, 0.3); padding: 8px; border-radius: 5px;">
+                        <ui:Label text="Your Name:" style="font-size: 28px; -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium'); color: rgb(255, 255, 255); margin-right: 10px;"/>
+                        <ui:TextField name="PlayerNameInput" placeholder-text="Enter your name" value="Player" style="width: 180px; height: 40px; font-size: 28px; -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium'); background-color: rgba(255, 255, 255, 0.9); color: rgb(0, 0, 0); border-radius: 5px; border-width: 2px; border-color: rgba(120, 120, 120, 0.8); margin-right: 8px;"/>
+                        <ui:Button text="Update" name="UpdatePlayerNameButton" style="width: 100px; height: 40px; font-size: 28px; -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold'); background-color: rgba(100, 180, 100, 0.8); color: rgb(0, 0, 0); border-radius: 5px; border-width: 2px; border-color: rgba(80, 150, 80, 0.8); background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
 
                 <!-- Player List ScrollView -->
                 <ui:ScrollView name="PlayerListScrollView" style="flex-grow: 1;">
@@ -34,13 +43,10 @@
                         <ui:TextField name="RoomNameField" class="setting-textfield" style="display: none;"/>
                     </ui:VisualElement>
                     <ui:VisualElement class="detail-row">
-                        <ui:Label text="Host:" class="detail-label"/>
-                        <ui:Label text="--" name="HostNameLabel" class="detail-value"/>
-                    </ui:VisualElement>
-                    <ui:VisualElement class="detail-row">
                         <ui:Label text="Password:" class="detail-label"/>
                         <ui:Label text="None" name="PasswordLabel" class="detail-value"/>
                         <ui:TextField name="PasswordField" class="setting-textfield" is-password-field="true" style="display: none;"/>
+                        <ui:Label text="" name="PasswordAsterisksLabel" class="detail-value" style="display: none; margin-left: 10px; color: rgb(255, 200, 100);"/>
                     </ui:VisualElement>
                     <ui:VisualElement class="detail-row">
                         <ui:Label text="Public Room:" class="detail-label"/>

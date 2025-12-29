@@ -440,7 +440,7 @@ MonoBehaviour:
   m_activeScene: {fileID: 0}
   m_setActiveSceneWhenOpenedAsAdditive: 0
   m_unloadUnusedAssets: 1
-  m_openAsPersistent: 1
+  m_openAsPersistent: 0
   m_scenesThatShouldNotAutomaticallyOpen: []
   m_loadPriority: -2
   m_events:

@@ -153,6 +153,12 @@ namespace CavalryFight.Views
             UpdateEmptyState();
             UpdateDetailsVisibility();
 
+            // ViewModelの保存されたプレイヤー名をUIに反映
+            if (_playerNameInput != null && ViewModel != null && !string.IsNullOrWhiteSpace(ViewModel.PlayerName))
+            {
+                _playerNameInput.value = ViewModel.PlayerName;
+            }
+
             Debug.Log("[MatchLobbyView] UI initialized.");
         }
 
@@ -474,6 +480,9 @@ namespace CavalryFight.Views
                 case nameof(MatchLobbyViewModel.StatusMessage):
                     UpdateStatusMessage();
                     break;
+                case nameof(MatchLobbyViewModel.IsProcessing):
+                    UpdateButtonStates();
+                    break;
             }
         }
 
@@ -485,6 +494,45 @@ namespace CavalryFight.Views
             if (_statusLabel != null && ViewModel != null)
             {
                 _statusLabel.text = ViewModel.StatusMessage;
+            }
+        }
+
+        /// <summary>
+        /// ボタンの有効/無効状態を更新します
+        /// </summary>
+        private void UpdateButtonStates()
+        {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            bool isEnabled = !ViewModel.IsProcessing;
+
+            // ホスト/参加/戻るボタンを無効化
+            if (_hostRoomButton != null)
+            {
+                _hostRoomButton.SetEnabled(isEnabled);
+            }
+
+            if (_joinByCodeButton != null)
+            {
+                _joinByCodeButton.SetEnabled(isEnabled);
+            }
+
+            if (_joinRoomButton != null)
+            {
+                _joinRoomButton.SetEnabled(isEnabled);
+            }
+
+            if (_backButton != null)
+            {
+                _backButton.SetEnabled(isEnabled);
+            }
+
+            if (_refreshButton != null)
+            {
+                _refreshButton.SetEnabled(isEnabled);
             }
         }
 
@@ -589,11 +637,17 @@ namespace CavalryFight.Views
         {
             PlayButtonClickSfx();
 
-            Debug.Log("[MatchLobbyView] Host room button clicked - navigating to match room");
+            Debug.Log("[MatchLobbyView] Host room button clicked - creating room");
 
-            // Navigate to match room scene
-            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
-            sceneService?.LoadMatchRoom();
+            if (ViewModel == null)
+            {
+                Debug.LogError("[MatchLobbyView] ViewModel is null!");
+                return;
+            }
+
+            // ルームを作成（非同期）
+            // RoomCreated イベントが発火したら OnNavigateToRoomRequested でシーンが遷移します
+            ViewModel.CreateRoom();
         }
 
         /// <summary>

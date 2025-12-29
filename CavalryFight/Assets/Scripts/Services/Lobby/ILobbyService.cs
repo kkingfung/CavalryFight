@@ -255,6 +255,18 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         void RefreshAvailableRooms();
 
+        /// <summary>
+        /// プレイヤー名を保存します
+        /// </summary>
+        /// <param name="playerName">保存するプレイヤー名</param>
+        void SavePlayerName(string playerName);
+
+        /// <summary>
+        /// 保存されたプレイヤー名を読み込みます
+        /// </summary>
+        /// <returns>保存されたプレイヤー名（存在しない場合はnull）</returns>
+        string? LoadPlayerName();
+
         #endregion
     }
 }

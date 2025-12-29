@@ -40,6 +40,10 @@ namespace CavalryFight.Views
         // Header
         private Label? _joinCodeLabel;
 
+        // Player Name
+        private TextField? _playerNameInput;
+        private Button? _updatePlayerNameButton;
+
         // Left Panel - Player List
         private VisualElement? _playerListContainer;
         private ScrollView? _playerListScrollView;
@@ -47,9 +51,9 @@ namespace CavalryFight.Views
         // Right Panel - Room Settings
         private Label? _roomNameLabel;
         private TextField? _roomNameField;
-        private Label? _hostNameLabel;
         private Label? _passwordLabel;
         private TextField? _passwordField;
+        private Label? _passwordAsterisksLabel;
         private Label? _publicLabel;
         private Toggle? _publicToggle;
         private Label? _maxPlayersLabel;
@@ -251,6 +255,10 @@ namespace CavalryFight.Views
             // Header
             _joinCodeLabel = Q<Label>("JoinCodeLabel");
 
+            // Player Name (in Left Panel)
+            _playerNameInput = Q<TextField>("PlayerNameInput");
+            _updatePlayerNameButton = Q<Button>("UpdatePlayerNameButton");
+
             // Left Panel - Player List
             _playerListContainer = Q<VisualElement>("PlayerListContainer");
             _playerListScrollView = Q<ScrollView>("PlayerListScrollView");
@@ -258,9 +266,9 @@ namespace CavalryFight.Views
             // Right Panel - Room Settings
             _roomNameLabel = Q<Label>("RoomNameLabel");
             _roomNameField = Q<TextField>("RoomNameField");
-            _hostNameLabel = Q<Label>("HostNameLabel");
             _passwordLabel = Q<Label>("PasswordLabel");
             _passwordField = Q<TextField>("PasswordField");
+            _passwordAsterisksLabel = Q<Label>("PasswordAsterisksLabel");
             _publicLabel = Q<Label>("PublicLabel");
             _publicToggle = Q<Toggle>("PublicToggle");
             _maxPlayersLabel = Q<Label>("MaxPlayersLabel");
@@ -385,6 +393,12 @@ namespace CavalryFight.Views
         /// </summary>
         private void RegisterEventHandlers()
         {
+            // Player Name Update Button
+            if (_updatePlayerNameButton != null)
+            {
+                _updatePlayerNameButton.clicked += OnUpdatePlayerNameButtonClicked;
+            }
+
             // Footer buttons
             if (_leaveRoomButton != null)
             {
@@ -429,6 +443,12 @@ namespace CavalryFight.Views
                 _mapDropdown.RegisterValueChangedCallback(OnMapChanged);
             }
 
+            // Password field change event (for asterisks display)
+            if (_passwordField != null)
+            {
+                _passwordField.RegisterValueChangedCallback(OnPasswordChanged);
+            }
+
             // Dropdown change events
             if (_timeLimitDropdown != null)
             {
@@ -446,6 +466,12 @@ namespace CavalryFight.Views
         /// </summary>
         private void UnregisterEventHandlers()
         {
+            // Player Name Update Button
+            if (_updatePlayerNameButton != null)
+            {
+                _updatePlayerNameButton.clicked -= OnUpdatePlayerNameButtonClicked;
+            }
+
             // Footer buttons
             if (_leaveRoomButton != null)
             {
@@ -488,6 +514,12 @@ namespace CavalryFight.Views
             if (_mapDropdown != null)
             {
                 _mapDropdown.UnregisterValueChangedCallback(OnMapChanged);
+            }
+
+            // Password field change event
+            if (_passwordField != null)
+            {
+                _passwordField.UnregisterValueChangedCallback(OnPasswordChanged);
             }
 
             // Dropdown change events
@@ -761,15 +793,16 @@ namespace CavalryFight.Views
                 _joinCodeLabel.text = $"Join Code: {ViewModel.JoinCode}";
             }
 
+            // Player Name
+            if (_playerNameInput != null && _playerNameInput.value != ViewModel.PlayerName)
+            {
+                _playerNameInput.value = ViewModel.PlayerName;
+            }
+
             // Room Info
             if (_roomNameLabel != null)
             {
                 _roomNameLabel.text = ViewModel.RoomName;
-            }
-
-            if (_hostNameLabel != null)
-            {
-                _hostNameLabel.text = ViewModel.HostName;
             }
 
             if (_gameModeLabel != null)
@@ -830,20 +863,36 @@ namespace CavalryFight.Views
                 }
             }
 
-            // Room Info - Password (Edit Mode shows TextField, otherwise Label)
-            if (_passwordLabel != null && _passwordField != null)
+            // Room Info - Password (Edit Mode shows TextField and asterisks label, otherwise normal Label)
+            if (_passwordLabel != null && _passwordField != null && _passwordAsterisksLabel != null)
             {
-                _passwordLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
-                _passwordField.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+                bool isEditingPassword = ViewModel.IsHost && _isEditMode;
 
-                // Show "******" if password is set, otherwise "None"
+                _passwordLabel.style.display = isEditingPassword ? DisplayStyle.None : DisplayStyle.Flex;
+                _passwordField.style.display = isEditingPassword ? DisplayStyle.Flex : DisplayStyle.None;
+                _passwordAsterisksLabel.style.display = isEditingPassword ? DisplayStyle.Flex : DisplayStyle.None;
+
+                // Update password label (visible when not editing)
                 if (_passwordField.value != null && !string.IsNullOrEmpty(_passwordField.value))
                 {
-                    _passwordLabel.text = "******";
+                    _passwordLabel.text = "******"; // Fixed asterisks when not editing
                 }
                 else
                 {
                     _passwordLabel.text = "None";
+                }
+
+                // Update asterisks label (visible when editing)
+                if (isEditingPassword)
+                {
+                    if (!string.IsNullOrEmpty(_passwordField.value))
+                    {
+                        _passwordAsterisksLabel.text = new string('*', _passwordField.value.Length);
+                    }
+                    else
+                    {
+                        _passwordAsterisksLabel.text = "(empty)";
+                    }
                 }
             }
 
@@ -1044,6 +1093,14 @@ namespace CavalryFight.Views
 
             switch (e.PropertyName)
             {
+                case nameof(MatchRoomViewModel.PlayerName):
+                    // プレイヤー名が変更された場合、TextFieldを更新
+                    if (_playerNameInput != null && _playerNameInput.value != ViewModel.PlayerName)
+                    {
+                        _playerNameInput.value = ViewModel.PlayerName;
+                    }
+                    break;
+
                 case nameof(MatchRoomViewModel.IsCountingDown):
                     UpdateCountdownDialog();
                     break;
@@ -1057,6 +1114,12 @@ namespace CavalryFight.Views
                 case nameof(MatchRoomViewModel.Players):
                     // プレイヤー情報の変更（チーム変更など）
                     PopulatePlayerList();
+                    UpdateUI();
+                    break;
+
+                case nameof(MatchRoomViewModel.CurrentPlayers):
+                case nameof(MatchRoomViewModel.MaxPlayers):
+                    // プレイヤー数の変更
                     UpdateUI();
                     break;
 
@@ -1272,6 +1335,36 @@ namespace CavalryFight.Views
         }
 
         /// <summary>
+        /// プレイヤー名更新ボタンクリックイベント
+        /// </summary>
+        private void OnUpdatePlayerNameButtonClicked()
+        {
+            if (ViewModel == null || _playerNameInput == null)
+            {
+                return;
+            }
+
+            PlayButtonClickSfx();
+
+            var newName = _playerNameInput.value;
+
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                Debug.LogWarning("[MatchRoomView] Player name cannot be empty.");
+                return;
+            }
+
+            // ViewModelのPlayerNameプロパティを更新
+            ViewModel.PlayerName = newName;
+
+            // PlayerPrefsに保存（他の画面でも使用できるように）
+            PlayerPrefs.SetString("PlayerName", newName);
+            PlayerPrefs.Save();
+
+            Debug.Log($"[MatchRoomView] Player name updated to: {newName}");
+        }
+
+        /// <summary>
         /// ゲームモード変更イベント
         /// </summary>
         private void OnGameModeChanged(ChangeEvent<string> evt)
@@ -1301,6 +1394,27 @@ namespace CavalryFight.Views
             ViewModel.UpdateRoomSettings();
 
             Debug.Log($"[MatchRoomView] Map changed to: {evt.newValue}");
+        }
+
+        /// <summary>
+        /// パスワードフィールド変更イベント（アスタリスク表示を更新）
+        /// </summary>
+        private void OnPasswordChanged(ChangeEvent<string> evt)
+        {
+            if (_passwordAsterisksLabel == null)
+            {
+                return;
+            }
+
+            // Update asterisks label to match password length
+            if (!string.IsNullOrEmpty(evt.newValue))
+            {
+                _passwordAsterisksLabel.text = new string('*', evt.newValue.Length);
+            }
+            else
+            {
+                _passwordAsterisksLabel.text = "(empty)";
+            }
         }
 
         /// <summary>
@@ -1394,9 +1508,9 @@ namespace CavalryFight.Views
             }
 
             // マップの変更を検出
-            if (_mapDropdown != null && _mapDropdown.value != ViewModel.Map)
+            if (_mapDropdown != null && _mapDropdown.value != ViewModel.MapName)
             {
-                ViewModel.Map = _mapDropdown.value;
+                ViewModel.MapName = _mapDropdown.value;
                 hasChanges = true;
                 Debug.Log($"[MatchRoomView] Map changed to: {_mapDropdown.value}");
             }

@@ -119,6 +119,11 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private float _countdownAccumulator = 0f;
 
+        /// <summary>
+        /// プレイヤー名
+        /// </summary>
+        private string _playerName = "";
+
         #endregion
 
         #region Properties
@@ -266,6 +271,15 @@ namespace CavalryFight.ViewModels
         }
 
         /// <summary>
+        /// プレイヤー名
+        /// </summary>
+        public string PlayerName
+        {
+            get => _playerName;
+            set => SetProperty(ref _playerName, value);
+        }
+
+        /// <summary>
         /// 全てのゲストが準備完了しているかどうか
         /// </summary>
         public bool AllGuestsReady
@@ -350,6 +364,7 @@ namespace CavalryFight.ViewModels
             _lobbyService.HostDisconnected += OnHostDisconnected;
             _lobbyService.PlayerJoined += OnPlayerJoined;
             _lobbyService.PlayerLeft += OnPlayerLeft;
+            _lobbyService.RoomLeft += OnRoomLeft;
         }
 
         /// <summary>
@@ -360,6 +375,7 @@ namespace CavalryFight.ViewModels
             _lobbyService.HostDisconnected -= OnHostDisconnected;
             _lobbyService.PlayerJoined -= OnPlayerJoined;
             _lobbyService.PlayerLeft -= OnPlayerLeft;
+            _lobbyService.RoomLeft -= OnRoomLeft;
         }
 
         /// <summary>
@@ -459,10 +475,36 @@ namespace CavalryFight.ViewModels
         }
 
         /// <summary>
+        /// ルーム退出イベントハンドラ
+        /// </summary>
+        private void OnRoomLeft()
+        {
+            Debug.Log("[MatchRoomViewModel] Room left - clearing all player data.");
+
+            // プレイヤーリストをクリア
+            Players.Clear();
+            CurrentPlayers = 0;
+
+            // カウントダウン状態をリセット
+            IsCountingDown = false;
+
+            // 準備状態をリセット
+            IsReady = false;
+
+            OnPropertyChanged(nameof(Players));
+            OnPropertyChanged(nameof(CurrentPlayers));
+        }
+
+        /// <summary>
         /// ルームデータを初期化します
         /// </summary>
         private void InitializeRoomData()
         {
+            Debug.Log($"[MatchRoomViewModel] InitializeRoomData called. IsInRoom={_lobbyService.IsInRoom}, IsHost={_lobbyService.IsHost}");
+
+            // プレイヤー名をPlayerPrefsから読み込む
+            PlayerName = UnityEngine.PlayerPrefs.GetString("PlayerName", "Player");
+
             // ロビーサービスから現在のルームデータを取得
             if (_lobbyService.IsInRoom)
             {
