@@ -1200,7 +1200,7 @@ namespace CavalryFight.Services.Lobby
                     HostName = _localPlayerInfo?.PlayerName ?? "Unknown",
                     GameMode = CurrentRoomSettings.GameMode,
                     MapName = CurrentRoomSettings.MapName.ToString(),
-                    CurrentPlayers = PlayerSlots.Count,
+                    CurrentPlayers = PlayerSlots.Count(s => !s.IsEmpty()),
                     MaxPlayers = CurrentRoomSettings.MaxPlayers,
                     HasPassword = !string.IsNullOrEmpty(CurrentRoomSettings.Password.ToString()),
                     JoinCode = CurrentJoinCode ?? "",

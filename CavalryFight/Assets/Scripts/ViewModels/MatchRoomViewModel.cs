@@ -498,7 +498,7 @@ namespace CavalryFight.ViewModels
                 SlotIndex = slot.SlotIndex,
                 PlayerId = slot.PlayerId.ToString(),
                 PlayerName = slot.PlayerName.ToString(),
-                IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId,
+                IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId && _lobbyService.IsHost,
                 IsReady = slot.IsReady,
                 Team = slot.TeamIndex switch
                 {
@@ -593,7 +593,7 @@ namespace CavalryFight.ViewModels
                         SlotIndex = slotIndex,
                         PlayerId = slot.PlayerId.ToString(),
                         PlayerName = slot.PlayerName.ToString(),
-                        IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId,
+                        IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId && _lobbyService.IsHost,
                         IsReady = slot.IsReady,
                         Team = slot.TeamIndex switch
                         {
@@ -725,7 +725,7 @@ namespace CavalryFight.ViewModels
                             SlotIndex = slot.SlotIndex,
                             PlayerId = slot.PlayerId.ToString(),
                             PlayerName = slot.PlayerName.ToString(),
-                            IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId, // ホスト判定
+                            IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId && _lobbyService.IsHost,
                             IsReady = slot.IsReady,
                             Team = slot.TeamIndex switch
                             {
