@@ -392,7 +392,7 @@ namespace UnusedAssetDetector
         /// </summary>
         private void OnScanProgress(int current, int total, string message)
         {
-            _progress = (float)current / total;
+            _progress = total > 0 ? (float)current / total : 0f;
             _progressMessage = message;
             Repaint();
         }
