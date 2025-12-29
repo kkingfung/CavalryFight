@@ -1,0 +1,34 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/TrainingStyles.uss?fileID=7433441132597879392&amp;guid=PLACEHOLDER&amp;type=3#TrainingStyles" />
+
+    <!-- Root Container -->
+    <ui:VisualElement name="Root" class="root">
+
+        <!-- HUD Container -->
+        <ui:VisualElement name="HUD" class="hud">
+            <!-- Top Left - Statistics -->
+            <ui:VisualElement name="StatisticsPanel" class="statistics-panel">
+                <ui:Label name="ScoreLabel" text="Score: 0" class="stat-label score-label" />
+                <ui:Label name="ArrowsFiredLabel" text="Arrows: 0" class="stat-label" />
+                <ui:Label name="HitsLabel" text="Hits: 0" class="stat-label" />
+                <ui:Label name="AccuracyLabel" text="Accuracy: 0.0%" class="stat-label" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Pause Menu (Hidden by default) -->
+        <ui:VisualElement name="PauseMenu" class="pause-menu hidden">
+            <!-- Dark Overlay -->
+            <ui:VisualElement class="overlay" />
+
+            <!-- Menu Panel -->
+            <ui:VisualElement class="menu-panel">
+                <ui:Label text="PAUSED" class="menu-title" />
+
+                <ui:Button name="ResumeButton" text="Resume" class="menu-button" />
+                <ui:Button name="SettingsButton" text="Settings" class="menu-button" />
+                <ui:Button name="BackToMenuButton" text="Back to Menu" class="menu-button" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>
