@@ -7,9 +7,8 @@ using CavalryFight.Core.Services;
 using CavalryFight.Services.Audio;
 using CavalryFight.Services.Input;
 using CavalryFight.Services.SceneManagement;
+using CavalryFight.Services.Training;
 using CavalryFight.ViewModels;
-using CavalryFight.Gameplay.Training;
-using CavalryFight.UI;
 
 namespace CavalryFight.Views
 {
@@ -66,7 +65,7 @@ namespace CavalryFight.Views
             }
 
             // ViewModel作成
-            SetViewModel(new TrainingViewModel(sceneService));
+            ViewModel = new TrainingViewModel(sceneService);
         }
 
         protected override void OnEnable()

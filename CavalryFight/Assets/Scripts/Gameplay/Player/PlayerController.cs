@@ -4,8 +4,8 @@ using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Input;
 using CavalryFight.Services.Audio;
+using CavalryFight.Services.Training;
 using CavalryFight.Gameplay.Projectiles;
-using CavalryFight.Gameplay.Training;
 
 namespace CavalryFight.Gameplay.Player
 {
@@ -108,7 +108,7 @@ namespace CavalryFight.Gameplay.Player
             if (_cameraTransform == null)
             {
                 // カメラが設定されていない場合は、メインカメラを使用
-                Camera mainCamera = Camera.main;
+                UnityEngine.Camera mainCamera = UnityEngine.Camera.main;
                 if (mainCamera != null)
                 {
                     _cameraTransform = mainCamera.transform;
@@ -386,7 +386,7 @@ namespace CavalryFight.Gameplay.Player
             PlayShootSound();
 
             // TrainingManagerに通知
-            TrainingManager.Instance?.NotifyArrowFired();
+            TrainingManager.Instance?.RecordArrowFired();
 
             Debug.Log($"[PlayerController] Arrow fired! Charge: {chargeAmount:F2}, Speed: {arrowSpeed:F1}");
         }
@@ -482,7 +482,7 @@ namespace CavalryFight.Gameplay.Player
             // タグで見つからない場合は、名前に"Horse"を含むオブジェクトを検索
             if (horses.Length == 0)
             {
-                GameObject[] allObjects = FindObjectsOfType<GameObject>();
+                GameObject[] allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
                 horses = System.Array.FindAll(allObjects, obj => obj.name.Contains("Horse"));
             }
 

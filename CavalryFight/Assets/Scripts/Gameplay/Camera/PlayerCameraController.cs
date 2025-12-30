@@ -1,7 +1,7 @@
 #nullable enable
 
 using UnityEngine;
-using Cinemachine;
+using Unity.Cinemachine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Input;
 
@@ -19,8 +19,8 @@ namespace CavalryFight.Gameplay.Camera
         #region Serialized Fields
 
         [Header("Virtual Cameras")]
-        [SerializeField] private CinemachineVirtualCamera? _thirdPersonCamera;
-        [SerializeField] private CinemachineVirtualCamera? _firstPersonCamera;
+        [SerializeField] private CinemachineCamera? _thirdPersonCamera;
+        [SerializeField] private CinemachineCamera? _firstPersonCamera;
 
         [Header("Camera Settings")]
         [SerializeField] private float _mouseSensitivity = 2f;
@@ -78,6 +78,10 @@ namespace CavalryFight.Gameplay.Camera
 
         private void Start()
         {
+            // カーソルをロック
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
             // カメラターゲットを設定
             if (_followTarget != null && _lookAtTarget != null)
             {
@@ -263,6 +267,8 @@ namespace CavalryFight.Gameplay.Camera
                 _firstPersonCamera.Follow = _followTarget;
                 _firstPersonCamera.LookAt = _lookAtTarget;
             }
+
+            Debug.Log($"[PlayerCameraController] Targets set: Follow={followTarget.name}, LookAt={lookAtTarget.name}");
         }
 
         /// <summary>

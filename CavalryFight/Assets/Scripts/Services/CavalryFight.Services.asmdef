@@ -10,6 +10,8 @@
         "Unity.Services.Core",
         "Unity.Services.Authentication",
         "Unity.Services.Multiplayer",
+        "Unity.TextMeshPro",
+        "Unity.Cinemachine",
         "MalbersAnimations",
         "P09.ModularHumanoid",
         "BlazeAI",

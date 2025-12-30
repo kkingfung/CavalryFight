@@ -1,7 +1,7 @@
 #nullable enable
 
 using UnityEngine;
-using CavalryFight.Gameplay.Training;
+using CavalryFight.Services.Training;
 
 namespace CavalryFight.Gameplay.Projectiles
 {
@@ -108,15 +108,13 @@ namespace CavalryFight.Gameplay.Projectiles
                 // チャージ量に応じてスコアを計算（最大200%）
                 int score = Mathf.RoundToInt(_baseScore * _chargeAmount * 2f);
 
-                // Blaze AIにダメージを与える（体力管理のため）
-                float damage = _baseDamage * _chargeAmount;
-                blazeAI.Hit(damage);
+                // Blaze AIにヒット状態をトリガー（敵GameObjectはnullでOK）
+                blazeAI.Hit(null, false);
 
-                Debug.Log($"[ArrowProjectile] Hit Blaze AI: {hitObject.name} | Score: {score} | Damage: {damage:F1} | Charge: {_chargeAmount:F2}");
+                Debug.Log($"[ArrowProjectile] Hit Blaze AI: {hitObject.name} | Score: {score} | Charge: {_chargeAmount:F2}");
 
                 // TrainingManagerに通知
-                TrainingManager.Instance?.NotifyTargetHit();
-                TrainingManager.Instance?.NotifyScoreEarned(score, hitPoint);
+                TrainingManager.Instance?.RecordHit(score, hitPoint);
             }
 
             // 刺さるか破壊するか
