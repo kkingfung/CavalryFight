@@ -43,11 +43,13 @@ namespace CavalryFight.Services.Lobby
         Deathmatch = 3,
 
         /// <summary>
-        /// Versusモード
+        /// ハンティングモード
         /// </summary>
         /// <remarks>
-        /// AIを相手にした戦闘。スキル向上とトレーニング。
+        /// チームなしプレイヤーはアーチャー（馬に騎乗）、チームありプレイヤーはオオカミとなる。
+        /// アーチャーは個人スコアを稼ぎ、オオカミは制限時間まで生き残ることを目指す。
+        /// オオカミの生存数がチームの合計生存スコアとなる。NPCはスポーンしない。
         /// </remarks>
-        Versus = 4
+        Hunting = 4
     }
 }
