@@ -36,6 +36,10 @@ namespace CavalryFight.Gameplay.Player
         [SerializeField] private float _maxArrowSpeed = 50f;
         [SerializeField] private float _maxChargeTime = 2f;
 
+        [Header("Visual Effects (MasterStylizedProjectiles)")]
+        [Tooltip("発射時のマズルエフェクト（ArrowMuzzle.prefab）")]
+        [SerializeField] private GameObject? _muzzleEffectPrefab;
+
         [Header("Audio")]
         [SerializeField] private AudioClip? _shootSfx;
 
@@ -219,10 +223,8 @@ namespace CavalryFight.Gameplay.Player
 
             Vector3 moveDirection = (forward * moveInput.y + right * moveInput.x).normalized;
 
-            // 移動速度（シフトキーでスプリント）
-            float speed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)
-                ? _sprintSpeed
-                : _walkSpeed;
+            // 移動速度（IInputServiceからスプリント状態を取得）
+            float speed = _inputService!.GetSprintButton() ? _sprintSpeed : _walkSpeed;
 
             // 移動適用
             _characterController.Move(moveDirection * speed * Time.deltaTime);
@@ -353,6 +355,9 @@ namespace CavalryFight.Gameplay.Player
                 return;
             }
 
+            // マズルエフェクトを生成（MasterStylizedProjectiles）
+            SpawnMuzzleEffect();
+
             // チャージ量に応じた矢の速度を計算
             float arrowSpeed = Mathf.Lerp(_minArrowSpeed, _maxArrowSpeed, chargeAmount);
 
@@ -404,6 +409,27 @@ namespace CavalryFight.Gameplay.Player
             {
                 _audioService.PlaySfx(_shootSfx);
             }
+        }
+
+        #endregion
+
+        #region Visual Effects
+
+        /// <summary>
+        /// マズルエフェクトを生成します（MasterStylizedProjectiles）
+        /// </summary>
+        private void SpawnMuzzleEffect()
+        {
+            if (_muzzleEffectPrefab == null || _bowFirePoint == null)
+            {
+                return;
+            }
+
+            // マズルエフェクトを発射位置に生成
+            GameObject muzzle = Instantiate(_muzzleEffectPrefab, _bowFirePoint.position, _bowFirePoint.rotation);
+
+            // 自動削除（パーティクルシステムの場合は自動で消えるが念のため）
+            Destroy(muzzle, 3f);
         }
 
         #endregion

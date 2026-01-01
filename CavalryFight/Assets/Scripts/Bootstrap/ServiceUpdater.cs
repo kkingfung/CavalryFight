@@ -1,7 +1,6 @@
 #nullable enable
 
 using CavalryFight.Core.Services;
-using CavalryFight.Services.AI;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.Replay;
 using UnityEngine;
@@ -26,11 +25,6 @@ namespace CavalryFight.Core.Bootstrap
         private IMatchService? _matchService;
 
         /// <summary>
-        /// AIサービス
-        /// </summary>
-        private IBlazeAIService? _aiService;
-
-        /// <summary>
         /// リプレイ録画サービス
         /// </summary>
         private IReplayRecorder? _replayRecorder;
@@ -51,7 +45,6 @@ namespace CavalryFight.Core.Bootstrap
         {
             // ServiceLocatorから各サービスを取得
             _matchService = ServiceLocator.Instance.Get<IMatchService>();
-            _aiService = ServiceLocator.Instance.Get<IBlazeAIService>();
             _replayRecorder = ServiceLocator.Instance.Get<IReplayRecorder>();
             _replayPlayer = ServiceLocator.Instance.Get<IReplayPlayer>();
 
@@ -59,11 +52,6 @@ namespace CavalryFight.Core.Bootstrap
             if (_matchService == null)
             {
                 Debug.LogWarning("[ServiceUpdater] MatchService not found in ServiceLocator.");
-            }
-
-            if (_aiService == null)
-            {
-                Debug.LogWarning("[ServiceUpdater] BlazeAIService not found in ServiceLocator.");
             }
 
             if (_replayRecorder == null)

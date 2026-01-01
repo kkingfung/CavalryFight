@@ -1,6 +1,7 @@
 #nullable enable
 
 using UnityEngine;
+using CavalryFight.Gameplay.Training;
 using CavalryFight.Services.Training;
 
 namespace CavalryFight.Gameplay.Projectiles
@@ -10,6 +11,7 @@ namespace CavalryFight.Gameplay.Projectiles
     /// </summary>
     /// <remarks>
     /// 物理挙動と衝突検出を管理します。
+    /// MasterStylizedProjectilesのVFXと連携します。
     /// トレーニングモードではスコアを、戦闘モードではダメージを与えます。
     /// </remarks>
     [RequireComponent(typeof(Rigidbody))]
@@ -23,14 +25,23 @@ namespace CavalryFight.Gameplay.Projectiles
         [SerializeField] private int _baseScore = 10;
         [SerializeField] private bool _stickOnImpact = true;
 
-        [Header("Effects")]
+        [Header("Visual Effects (MasterStylizedProjectiles)")]
+        [Tooltip("命中時に生成するエフェクト（ArrowHit.prefab）")]
         [SerializeField] private GameObject? _hitEffectPrefab;
+
+        [Tooltip("矢に付随するトレイルパーティクル（子オブジェクトとして設定）")]
+        [SerializeField] private ParticleSystem? _trailParticles;
+
+        [Header("Audio")]
+        [Tooltip("命中時のサウンド")]
+        [SerializeField] private AudioClip? _hitSound;
 
         #endregion
 
         #region Private Fields
 
         private Rigidbody? _rigidbody;
+        private AudioSource? _audioSource;
         private bool _hasHit = false;
         private float _spawnTime;
         private float _chargeAmount = 1.0f; // デフォルトはフルチャージ
@@ -42,7 +53,16 @@ namespace CavalryFight.Gameplay.Projectiles
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
+            _audioSource = GetComponent<AudioSource>();
             _spawnTime = Time.time;
+
+            // AudioSourceがなければ追加（ヒット音用）
+            if (_audioSource == null && _hitSound != null)
+            {
+                _audioSource = gameObject.AddComponent<AudioSource>();
+                _audioSource.playOnAwake = false;
+                _audioSource.spatialBlend = 1f; // 3Dサウンド
+            }
         }
 
         private void Update()
@@ -94,27 +114,60 @@ namespace CavalryFight.Gameplay.Projectiles
         {
             _hasHit = true;
 
+            // トレイルパーティクルを停止
+            StopTrailParticles();
+
             // ヒットエフェクト再生
             if (_hitEffectPrefab != null)
             {
                 Instantiate(_hitEffectPrefab, hitPoint, Quaternion.identity);
             }
 
-            // Blaze AI敵に当たった場合
-            BlazeAI? blazeAI = hitObject.GetComponent<BlazeAI>();
-            if (blazeAI != null)
+            // ヒット音再生
+            PlayHitSound();
+
+            bool hitTarget = false;
+
+            // TrainingTarget に当たった場合（優先）
+            TrainingTarget? trainingTarget = hitObject.GetComponent<TrainingTarget>();
+            if (trainingTarget == null)
             {
-                // トレーニングモード: スコアを記録
-                // チャージ量に応じてスコアを計算（最大200%）
-                int score = Mathf.RoundToInt(_baseScore * _chargeAmount * 2f);
+                // 親オブジェクトもチェック
+                trainingTarget = hitObject.GetComponentInParent<TrainingTarget>();
+            }
 
-                // Blaze AIにヒット状態をトリガー（敵GameObjectはnullでOK）
-                blazeAI.Hit(null, false);
+            if (trainingTarget != null && trainingTarget.IsActive)
+            {
+                // TrainingTargetが自身でスコア計算とTrainingManager通知を行う
+                trainingTarget.OnHit(hitPoint, _chargeAmount);
+                hitTarget = true;
+                Debug.Log($"[ArrowProjectile] Hit TrainingTarget: {hitObject.name} | Charge: {_chargeAmount:F2}");
+            }
 
-                Debug.Log($"[ArrowProjectile] Hit Blaze AI: {hitObject.name} | Score: {score} | Charge: {_chargeAmount:F2}");
+            // Blaze AI敵に当たった場合
+            if (!hitTarget)
+            {
+                BlazeAI? blazeAI = hitObject.GetComponent<BlazeAI>();
+                if (blazeAI == null)
+                {
+                    // 親オブジェクトもチェック
+                    blazeAI = hitObject.GetComponentInParent<BlazeAI>();
+                }
 
-                // TrainingManagerに通知
-                TrainingManager.Instance?.RecordHit(score, hitPoint);
+                if (blazeAI != null)
+                {
+                    // トレーニングモード: スコアを記録
+                    // チャージ量に応じてスコアを計算（最大200%）
+                    int score = Mathf.RoundToInt(_baseScore * _chargeAmount * 2f);
+
+                    // Blaze AIにヒット状態をトリガー（敵GameObjectはnullでOK）
+                    blazeAI.Hit(null, false);
+
+                    Debug.Log($"[ArrowProjectile] Hit Blaze AI: {hitObject.name} | Score: {score} | Charge: {_chargeAmount:F2}");
+
+                    // TrainingManagerに通知
+                    TrainingManager.Instance?.RecordHit(score, hitPoint);
+                }
             }
 
             // 刺さるか破壊するか
@@ -183,6 +236,39 @@ namespace CavalryFight.Gameplay.Projectiles
         /// スコアを取得します
         /// </summary>
         public int Score => Mathf.RoundToInt(_baseScore * _chargeAmount * 2f);
+
+        #endregion
+
+        #region VFX & Audio
+
+        /// <summary>
+        /// トレイルパーティクルを停止します
+        /// </summary>
+        private void StopTrailParticles()
+        {
+            if (_trailParticles != null)
+            {
+                _trailParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+
+            // 子オブジェクトのすべてのパーティクルも停止
+            var allParticles = GetComponentsInChildren<ParticleSystem>();
+            foreach (var ps in allParticles)
+            {
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+        }
+
+        /// <summary>
+        /// ヒット音を再生します
+        /// </summary>
+        private void PlayHitSound()
+        {
+            if (_hitSound != null && _audioSource != null)
+            {
+                _audioSource.PlayOneShot(_hitSound);
+            }
+        }
 
         #endregion
     }

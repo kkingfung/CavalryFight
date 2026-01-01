@@ -152,10 +152,14 @@ namespace CavalryFight.Services.Input
         /// </remarks>
         public void Initialize()
         {
-            Debug.Log("[InputService] Initializing...");
+            Debug.LogWarning("[InputService] ========== INITIALIZING ==========");
 
             // GameInputActionsを作成
             _inputActions = new GameInputActions();
+            Debug.Log("[InputService] GameInputActions created.");
+
+            // 保存されたキーバインディングを読み込む
+            LoadBindingOverrides();
 
             // イベントを購読
             _inputActions.Gameplay.Attack.started += OnAttackStarted;
@@ -165,11 +169,52 @@ namespace CavalryFight.Services.Input
             _inputActions.Gameplay.Mount.performed += OnMountPerformed;
             _inputActions.Gameplay.Jump.performed += OnJumpPerformed;
             _inputActions.UI.Menu.performed += OnMenuPerformed;
+            Debug.Log("[InputService] Event handlers subscribed.");
 
             // 入力を有効化
             _inputActions.Enable();
 
-            Debug.Log("[InputService] Initialized.");
+            Debug.LogWarning($"[InputService] ========== INITIALIZED (InputEnabled={_inputEnabled}) ==========");
+        }
+
+        /// <summary>
+        /// 保存されたキーバインディングオーバーライドを読み込みます。
+        /// </summary>
+        /// <remarks>
+        /// KeyBindingViewModelで保存されたカスタムバインディングを読み込んで適用します。
+        /// PlayerPrefsの "InputBindings" キーからJSON形式で読み込みます。
+        /// </remarks>
+        private void LoadBindingOverrides()
+        {
+            if (_inputActions == null)
+            {
+                return;
+            }
+
+            string rebinds = PlayerPrefs.GetString("InputBindings", string.Empty);
+
+            if (!string.IsNullOrEmpty(rebinds))
+            {
+                _inputActions.asset.LoadBindingOverridesFromJson(rebinds);
+                Debug.Log("[InputService] Custom key bindings loaded from PlayerPrefs.");
+            }
+            else
+            {
+                Debug.Log("[InputService] No custom key bindings found, using defaults.");
+            }
+        }
+
+        /// <summary>
+        /// キーバインディングを再読み込みします。
+        /// </summary>
+        /// <remarks>
+        /// 設定画面でバインディングが変更された後に呼び出して、
+        /// 変更を即座に反映させます。
+        /// </remarks>
+        public void ReloadBindingOverrides()
+        {
+            LoadBindingOverrides();
+            Debug.Log("[InputService] Key bindings reloaded.");
         }
 
         /// <summary>
@@ -217,12 +262,26 @@ namespace CavalryFight.Services.Input
         /// <returns>移動ベクトル（X: 水平、Y: 垂直）</returns>
         public Vector2 GetMovementInput()
         {
-            if (!_inputEnabled || _inputActions == null)
+            if (_inputActions == null)
             {
+                Debug.LogWarning("[InputService] GetMovementInput: _inputActions is null!");
+                return Vector2.zero;
+            }
+
+            if (!_inputEnabled)
+            {
+                // 入力無効時は静かにゼロを返す（毎フレームログは出さない）
                 return Vector2.zero;
             }
 
             Vector2 input = _inputActions.Gameplay.Move.ReadValue<Vector2>();
+
+            // デバッグ: 入力があった時のみログ出力
+            if (input.magnitude > 0.01f)
+            {
+                Debug.Log($"[InputService] Move input detected: {input}");
+            }
+
             input *= _movementSensitivity;
 
             // 正規化（斜め移動が速くならないように）
@@ -400,6 +459,25 @@ namespace CavalryFight.Services.Input
             }
 
             return _inputActions.Gameplay.Jump.WasPressedThisFrame();
+        }
+
+        /// <summary>
+        /// スプリントボタンが押されているかを取得します。
+        /// </summary>
+        /// <remarks>
+        /// 継続的な高速移動に使用します。
+        /// ボタンを押し続けている間、スプリント状態が維持されます。
+        /// デフォルトではShiftキーに割り当てられます。
+        /// </remarks>
+        /// <returns>押されている場合true</returns>
+        public bool GetSprintButton()
+        {
+            if (!_inputEnabled || _inputActions == null)
+            {
+                return false;
+            }
+
+            return _inputActions.Gameplay.Sprint.IsPressed();
         }
 
         #endregion

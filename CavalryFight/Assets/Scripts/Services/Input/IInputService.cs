@@ -182,6 +182,17 @@ namespace CavalryFight.Services.Input
         /// <returns>押された瞬間の場合true</returns>
         bool GetBoostButtonDown();
 
+        /// <summary>
+        /// スプリントボタンが押されているかを取得します。
+        /// </summary>
+        /// <remarks>
+        /// 継続的な高速移動に使用します。
+        /// ボタンを押し続けている間、スプリント状態が維持されます。
+        /// デフォルトではShiftキーに割り当てられます。
+        /// </remarks>
+        /// <returns>押されている場合true</returns>
+        bool GetSprintButton();
+
         #endregion
 
         #region UI Input
@@ -214,6 +225,15 @@ namespace CavalryFight.Services.Input
         /// 入力を有効化します。
         /// </summary>
         void EnableInput();
+
+        /// <summary>
+        /// キーバインディングを再読み込みします。
+        /// </summary>
+        /// <remarks>
+        /// 設定画面でバインディングが変更された後に呼び出して、
+        /// 変更を即座に反映させます。
+        /// </remarks>
+        void ReloadBindingOverrides();
 
         #endregion
     }

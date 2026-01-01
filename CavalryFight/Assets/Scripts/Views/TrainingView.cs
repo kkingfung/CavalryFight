@@ -1,10 +1,13 @@
 #nullable enable
 
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Audio;
+using CavalryFight.Services.GameSettings;
 using CavalryFight.Services.Input;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.Services.Training;
@@ -30,20 +33,49 @@ namespace CavalryFight.Views
         [Header("Score Popup")]
         [SerializeField] private GameObject? _scorePopupPrefab;
 
+        [Header("Key Bindings")]
+        [SerializeField] private KeyBindingView? _keyBindingView;
+
         #endregion
 
         #region Private Fields
 
         private IAudioService? _audioService;
         private IInputService? _inputService;
+        private IGameSettingsService? _gameSettingsService;
+        private SettingsViewModel? _settingsViewModel;
         private Label? _scoreLabel;
         private Label? _arrowsFiredLabel;
         private Label? _hitsLabel;
         private Label? _accuracyLabel;
-        private VisualElement? _pauseMenu;
+
+        // Settings/Pause Popup
+        private VisualElement? _pauseSettingsPopup;
         private Button? _resumeButton;
-        private Button? _settingsButton;
         private Button? _backToMenuButton;
+
+        // Audio
+        private Slider? _masterVolumeSlider;
+        private Slider? _bgmVolumeSlider;
+        private Slider? _sfxVolumeSlider;
+
+        // Video
+        private DropdownField? _displayModeDropdown;
+        private DropdownField? _resolutionDropdown;
+        private DropdownField? _qualityDropdown;
+        private Toggle? _vSyncToggle;
+        private DropdownField? _targetFpsDropdown;
+        private DropdownField? _antiAliasingDropdown;
+
+        // Gameplay
+        private Slider? _movementSensitivitySlider;
+        private Slider? _cameraSensitivitySlider;
+        private Toggle? _invertYAxisToggle;
+
+        // Settings Buttons
+        private Button? _keyBindingsButton;
+        private Button? _applySettingsButton;
+        private Button? _resetSettingsButton;
 
         #endregion
 
@@ -56,6 +88,7 @@ namespace CavalryFight.Views
             // サービス取得
             _audioService = ServiceLocator.Instance.Get<IAudioService>();
             _inputService = ServiceLocator.Instance.Get<IInputService>();
+            _gameSettingsService = ServiceLocator.Instance.Get<IGameSettingsService>();
             var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
 
             if (sceneService == null)
@@ -66,6 +99,9 @@ namespace CavalryFight.Views
 
             // ViewModel作成
             ViewModel = new TrainingViewModel(sceneService);
+
+            // 設定用ViewModel作成
+            _settingsViewModel = new SettingsViewModel();
         }
 
         protected override void OnEnable()
@@ -95,6 +131,15 @@ namespace CavalryFight.Views
                 TrainingManager.Instance.ArrowFired -= OnArrowFired;
                 TrainingManager.Instance.TargetHit -= OnTargetHit;
                 TrainingManager.Instance.ScoreEarned -= OnScoreEarned;
+            }
+
+            // シーン離脱時にTime.timeScaleを必ずリセット（ポーズ中でも）
+            Time.timeScale = 1f;
+
+            // 入力を有効化
+            if (_inputService != null)
+            {
+                _inputService.InputEnabled = true;
             }
 
             // BGMは停止しない（シーン遷移時の継続再生のため）
@@ -128,8 +173,8 @@ namespace CavalryFight.Views
             RegisterEventHandlers();
             UpdateUIFromViewModel();
 
-            // 初期状態ではポーズメニューを非表示
-            _pauseMenu?.AddToClassList("hidden");
+            // 初期状態では設定ポップアップを非表示
+            _pauseSettingsPopup?.AddToClassList("hidden");
         }
 
         protected override void BindViewModel(TrainingViewModel viewModel)
@@ -169,14 +214,39 @@ namespace CavalryFight.Views
                 return;
             }
 
+            // HUD
             _scoreLabel = Q<Label>("ScoreLabel");
             _arrowsFiredLabel = Q<Label>("ArrowsFiredLabel");
             _hitsLabel = Q<Label>("HitsLabel");
             _accuracyLabel = Q<Label>("AccuracyLabel");
-            _pauseMenu = Q<VisualElement>("PauseMenu");
+
+            // Settings/Pause Popup
+            _pauseSettingsPopup = Q<VisualElement>("PauseSettingsPopup");
             _resumeButton = Q<Button>("ResumeButton");
-            _settingsButton = Q<Button>("SettingsButton");
             _backToMenuButton = Q<Button>("BackToMenuButton");
+
+            // Audio Settings
+            _masterVolumeSlider = Q<Slider>("MasterVolumeSlider");
+            _bgmVolumeSlider = Q<Slider>("BgmVolumeSlider");
+            _sfxVolumeSlider = Q<Slider>("SfxVolumeSlider");
+
+            // Video Settings
+            _displayModeDropdown = Q<DropdownField>("DisplayModeDropdown");
+            _resolutionDropdown = Q<DropdownField>("ResolutionDropdown");
+            _qualityDropdown = Q<DropdownField>("QualityDropdown");
+            _vSyncToggle = Q<Toggle>("VSyncToggle");
+            _targetFpsDropdown = Q<DropdownField>("TargetFpsDropdown");
+            _antiAliasingDropdown = Q<DropdownField>("AntiAliasingDropdown");
+
+            // Gameplay Settings
+            _movementSensitivitySlider = Q<Slider>("MovementSensitivitySlider");
+            _cameraSensitivitySlider = Q<Slider>("CameraSensitivitySlider");
+            _invertYAxisToggle = Q<Toggle>("InvertYAxisToggle");
+
+            // Settings Buttons
+            _keyBindingsButton = Q<Button>("KeyBindingsButton");
+            _applySettingsButton = Q<Button>("ApplySettingsButton");
+            _resetSettingsButton = Q<Button>("ResetSettingsButton");
         }
 
         /// <summary>
@@ -184,19 +254,94 @@ namespace CavalryFight.Views
         /// </summary>
         private void RegisterEventHandlers()
         {
+            // Settings/Pause Popup Buttons
             if (_resumeButton != null)
             {
                 _resumeButton.clicked += OnResumeClicked;
             }
 
-            if (_settingsButton != null)
-            {
-                _settingsButton.clicked += OnSettingsClicked;
-            }
-
             if (_backToMenuButton != null)
             {
                 _backToMenuButton.clicked += OnBackToMenuClicked;
+            }
+
+            // Settings Buttons
+            if (_keyBindingsButton != null)
+            {
+                _keyBindingsButton.clicked += OnKeyBindingsClicked;
+            }
+
+            if (_applySettingsButton != null)
+            {
+                _applySettingsButton.clicked += OnApplySettingsClicked;
+            }
+
+            if (_resetSettingsButton != null)
+            {
+                _resetSettingsButton.clicked += OnResetSettingsClicked;
+            }
+
+            // Audio Settings
+            if (_masterVolumeSlider != null)
+            {
+                _masterVolumeSlider.RegisterValueChangedCallback(OnMasterVolumeChanged);
+            }
+
+            if (_bgmVolumeSlider != null)
+            {
+                _bgmVolumeSlider.RegisterValueChangedCallback(OnBgmVolumeChanged);
+            }
+
+            if (_sfxVolumeSlider != null)
+            {
+                _sfxVolumeSlider.RegisterValueChangedCallback(OnSfxVolumeChanged);
+            }
+
+            // Video Settings
+            if (_displayModeDropdown != null)
+            {
+                _displayModeDropdown.RegisterValueChangedCallback(OnDisplayModeChanged);
+            }
+
+            if (_resolutionDropdown != null)
+            {
+                _resolutionDropdown.RegisterValueChangedCallback(OnResolutionChanged);
+            }
+
+            if (_qualityDropdown != null)
+            {
+                _qualityDropdown.RegisterValueChangedCallback(OnQualityChanged);
+            }
+
+            if (_vSyncToggle != null)
+            {
+                _vSyncToggle.RegisterValueChangedCallback(OnVSyncChanged);
+            }
+
+            if (_targetFpsDropdown != null)
+            {
+                _targetFpsDropdown.RegisterValueChangedCallback(OnTargetFpsChanged);
+            }
+
+            if (_antiAliasingDropdown != null)
+            {
+                _antiAliasingDropdown.RegisterValueChangedCallback(OnAntiAliasingChanged);
+            }
+
+            // Gameplay Settings
+            if (_movementSensitivitySlider != null)
+            {
+                _movementSensitivitySlider.RegisterValueChangedCallback(OnMovementSensitivityChanged);
+            }
+
+            if (_cameraSensitivitySlider != null)
+            {
+                _cameraSensitivitySlider.RegisterValueChangedCallback(OnCameraSensitivityChanged);
+            }
+
+            if (_invertYAxisToggle != null)
+            {
+                _invertYAxisToggle.RegisterValueChangedCallback(OnInvertYAxisChanged);
             }
         }
 
@@ -205,19 +350,94 @@ namespace CavalryFight.Views
         /// </summary>
         private void UnregisterEventHandlers()
         {
+            // Settings/Pause Popup Buttons
             if (_resumeButton != null)
             {
                 _resumeButton.clicked -= OnResumeClicked;
             }
 
-            if (_settingsButton != null)
-            {
-                _settingsButton.clicked -= OnSettingsClicked;
-            }
-
             if (_backToMenuButton != null)
             {
                 _backToMenuButton.clicked -= OnBackToMenuClicked;
+            }
+
+            // Settings Buttons
+            if (_keyBindingsButton != null)
+            {
+                _keyBindingsButton.clicked -= OnKeyBindingsClicked;
+            }
+
+            if (_applySettingsButton != null)
+            {
+                _applySettingsButton.clicked -= OnApplySettingsClicked;
+            }
+
+            if (_resetSettingsButton != null)
+            {
+                _resetSettingsButton.clicked -= OnResetSettingsClicked;
+            }
+
+            // Audio Settings
+            if (_masterVolumeSlider != null)
+            {
+                _masterVolumeSlider.UnregisterValueChangedCallback(OnMasterVolumeChanged);
+            }
+
+            if (_bgmVolumeSlider != null)
+            {
+                _bgmVolumeSlider.UnregisterValueChangedCallback(OnBgmVolumeChanged);
+            }
+
+            if (_sfxVolumeSlider != null)
+            {
+                _sfxVolumeSlider.UnregisterValueChangedCallback(OnSfxVolumeChanged);
+            }
+
+            // Video Settings
+            if (_displayModeDropdown != null)
+            {
+                _displayModeDropdown.UnregisterValueChangedCallback(OnDisplayModeChanged);
+            }
+
+            if (_resolutionDropdown != null)
+            {
+                _resolutionDropdown.UnregisterValueChangedCallback(OnResolutionChanged);
+            }
+
+            if (_qualityDropdown != null)
+            {
+                _qualityDropdown.UnregisterValueChangedCallback(OnQualityChanged);
+            }
+
+            if (_vSyncToggle != null)
+            {
+                _vSyncToggle.UnregisterValueChangedCallback(OnVSyncChanged);
+            }
+
+            if (_targetFpsDropdown != null)
+            {
+                _targetFpsDropdown.UnregisterValueChangedCallback(OnTargetFpsChanged);
+            }
+
+            if (_antiAliasingDropdown != null)
+            {
+                _antiAliasingDropdown.UnregisterValueChangedCallback(OnAntiAliasingChanged);
+            }
+
+            // Gameplay Settings
+            if (_movementSensitivitySlider != null)
+            {
+                _movementSensitivitySlider.UnregisterValueChangedCallback(OnMovementSensitivityChanged);
+            }
+
+            if (_cameraSensitivitySlider != null)
+            {
+                _cameraSensitivitySlider.UnregisterValueChangedCallback(OnCameraSensitivityChanged);
+            }
+
+            if (_invertYAxisToggle != null)
+            {
+                _invertYAxisToggle.UnregisterValueChangedCallback(OnInvertYAxisChanged);
             }
         }
 
@@ -271,11 +491,11 @@ namespace CavalryFight.Views
 
             if (ViewModel.IsPaused)
             {
-                ShowPauseMenu();
+                ShowPauseSettingsPopup();
             }
             else
             {
-                HidePauseMenu();
+                HidePauseSettingsPopup();
             }
         }
 
@@ -289,31 +509,21 @@ namespace CavalryFight.Views
         }
 
         /// <summary>
-        /// Settings ボタンクリック時の処理
-        /// </summary>
-        private void OnSettingsClicked()
-        {
-            PlayButtonClickSfx();
-
-            // 設定画面を開く
-            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
-            if (sceneService != null)
-            {
-                sceneService.LoadSettings();
-                Debug.Log("[TrainingView] Opening Settings scene.");
-            }
-            else
-            {
-                Debug.LogWarning("[TrainingView] ISceneManagementService not available.");
-            }
-        }
-
-        /// <summary>
         /// Back to Menu ボタンクリック時の処理
         /// </summary>
         private void OnBackToMenuClicked()
         {
             PlayButtonClickSfx();
+
+            // シーン遷移前にTime.timeScaleをリセット
+            Time.timeScale = 1f;
+
+            // 入力を有効化
+            if (_inputService != null)
+            {
+                _inputService.InputEnabled = true;
+            }
+
             ViewModel?.BackToMainMenu();
         }
 
@@ -353,11 +563,18 @@ namespace CavalryFight.Views
         }
 
         /// <summary>
-        /// ポーズメニューを表示します
+        /// ポーズ設定ポップアップを表示します
         /// </summary>
-        private void ShowPauseMenu()
+        private void ShowPauseSettingsPopup()
         {
-            _pauseMenu?.RemoveFromClassList("hidden");
+            // ドロップダウンを設定
+            SetupSettingsDropdowns();
+
+            // 現在の設定を読み込んでUIに反映
+            LoadCurrentSettings();
+
+            // ポップアップを表示
+            _pauseSettingsPopup?.RemoveFromClassList("hidden");
 
             // ゲーム時間を停止
             Time.timeScale = 0f;
@@ -368,15 +585,15 @@ namespace CavalryFight.Views
                 _inputService.InputEnabled = false;
             }
 
-            Debug.Log("[TrainingView] Pause menu shown.");
+            Debug.Log("[TrainingView] Pause settings popup shown.");
         }
 
         /// <summary>
-        /// ポーズメニューを非表示にします
+        /// ポーズ設定ポップアップを非表示にします
         /// </summary>
-        private void HidePauseMenu()
+        private void HidePauseSettingsPopup()
         {
-            _pauseMenu?.AddToClassList("hidden");
+            _pauseSettingsPopup?.AddToClassList("hidden");
 
             // ゲーム時間を再開
             Time.timeScale = 1f;
@@ -387,7 +604,7 @@ namespace CavalryFight.Views
                 _inputService.InputEnabled = true;
             }
 
-            Debug.Log("[TrainingView] Pause menu hidden.");
+            Debug.Log("[TrainingView] Pause settings popup hidden.");
         }
 
         #endregion
@@ -402,6 +619,307 @@ namespace CavalryFight.Views
             if (_buttonClickSfx != null && _audioService != null)
             {
                 _audioService.PlaySfx(_buttonClickSfx);
+            }
+        }
+
+        #endregion
+
+        #region Settings Popup
+
+        /// <summary>
+        /// ドロップダウンの選択肢を設定します
+        /// </summary>
+        private void SetupSettingsDropdowns()
+        {
+            if (_settingsViewModel == null)
+            {
+                return;
+            }
+
+            // Display Mode
+            if (_displayModeDropdown != null)
+            {
+                _displayModeDropdown.choices = new List<string> { "Fullscreen", "Windowed", "Borderless Window" };
+            }
+
+            // Resolution
+            if (_resolutionDropdown != null)
+            {
+                _resolutionDropdown.choices = _settingsViewModel.AvailableResolutions
+                    .Select(r => $"{r.width} x {r.height}")
+                    .ToList();
+            }
+
+            // Quality
+            if (_qualityDropdown != null)
+            {
+                _qualityDropdown.choices = _settingsViewModel.QualityLevelNames;
+            }
+
+            // Target FPS
+            if (_targetFpsDropdown != null)
+            {
+                _targetFpsDropdown.choices = new List<string> { "30 FPS", "60 FPS", "120 FPS", "144 FPS", "Unlimited" };
+            }
+
+            // Anti-Aliasing
+            if (_antiAliasingDropdown != null)
+            {
+                _antiAliasingDropdown.choices = new List<string> { "Off", "2x MSAA", "4x MSAA", "8x MSAA" };
+            }
+        }
+
+        /// <summary>
+        /// 現在の設定を読み込みます
+        /// </summary>
+        private void LoadCurrentSettings()
+        {
+            if (_settingsViewModel == null)
+            {
+                return;
+            }
+
+            // Audio
+            if (_masterVolumeSlider != null)
+            {
+                _masterVolumeSlider.SetValueWithoutNotify(_settingsViewModel.MasterVolume);
+            }
+
+            if (_bgmVolumeSlider != null)
+            {
+                _bgmVolumeSlider.SetValueWithoutNotify(_settingsViewModel.BgmVolume);
+            }
+
+            if (_sfxVolumeSlider != null)
+            {
+                _sfxVolumeSlider.SetValueWithoutNotify(_settingsViewModel.SfxVolume);
+            }
+
+            // Video
+            if (_displayModeDropdown != null)
+            {
+                _displayModeDropdown.index = _settingsViewModel.DisplayModeIndex;
+            }
+
+            if (_resolutionDropdown != null)
+            {
+                _resolutionDropdown.index = _settingsViewModel.ResolutionIndex;
+            }
+
+            if (_qualityDropdown != null)
+            {
+                _qualityDropdown.index = _settingsViewModel.QualityLevelIndex;
+            }
+
+            if (_vSyncToggle != null)
+            {
+                _vSyncToggle.SetValueWithoutNotify(_settingsViewModel.VSync);
+            }
+
+            if (_targetFpsDropdown != null)
+            {
+                _targetFpsDropdown.index = _settingsViewModel.TargetFrameRateIndex;
+            }
+
+            if (_antiAliasingDropdown != null)
+            {
+                _antiAliasingDropdown.index = _settingsViewModel.AntiAliasingIndex;
+            }
+
+            // Gameplay
+            if (_movementSensitivitySlider != null)
+            {
+                _movementSensitivitySlider.SetValueWithoutNotify(_settingsViewModel.MovementSensitivity);
+            }
+
+            if (_cameraSensitivitySlider != null)
+            {
+                _cameraSensitivitySlider.SetValueWithoutNotify(_settingsViewModel.CameraSensitivity);
+            }
+
+            if (_invertYAxisToggle != null)
+            {
+                _invertYAxisToggle.SetValueWithoutNotify(_settingsViewModel.InvertYAxis);
+            }
+        }
+
+        /// <summary>
+        /// Key Bindings ボタンクリック時の処理
+        /// </summary>
+        private void OnKeyBindingsClicked()
+        {
+            PlayButtonClickSfx();
+
+            if (_keyBindingView != null)
+            {
+                _keyBindingView.Show();
+                Debug.Log("[TrainingView] Key Bindings popup shown.");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] KeyBindingView is not assigned!");
+            }
+        }
+
+        /// <summary>
+        /// Apply ボタンクリック時の処理
+        /// </summary>
+        private void OnApplySettingsClicked()
+        {
+            PlayButtonClickSfx();
+            _settingsViewModel?.ApplySettingsCommand.Execute(null);
+            Debug.Log("[TrainingView] Settings applied.");
+        }
+
+        /// <summary>
+        /// Reset ボタンクリック時の処理
+        /// </summary>
+        private void OnResetSettingsClicked()
+        {
+            PlayButtonClickSfx();
+            _settingsViewModel?.ResetSettingsCommand.Execute(null);
+
+            // UIを再読み込み
+            LoadCurrentSettings();
+            Debug.Log("[TrainingView] Settings reset.");
+        }
+
+        #endregion
+
+        #region Settings Change Handlers
+
+        // Audio Change Handlers
+        /// <summary>
+        /// マスターボリューム変更時の処理
+        /// </summary>
+        private void OnMasterVolumeChanged(ChangeEvent<float> evt)
+        {
+            if (_settingsViewModel != null)
+            {
+                _settingsViewModel.MasterVolume = evt.newValue;
+            }
+        }
+
+        /// <summary>
+        /// BGMボリューム変更時の処理
+        /// </summary>
+        private void OnBgmVolumeChanged(ChangeEvent<float> evt)
+        {
+            if (_settingsViewModel != null)
+            {
+                _settingsViewModel.BgmVolume = evt.newValue;
+            }
+        }
+
+        /// <summary>
+        /// SFXボリューム変更時の処理
+        /// </summary>
+        private void OnSfxVolumeChanged(ChangeEvent<float> evt)
+        {
+            if (_settingsViewModel != null)
+            {
+                _settingsViewModel.SfxVolume = evt.newValue;
+            }
+        }
+
+        // Video Change Handlers
+        /// <summary>
+        /// 表示モード変更時の処理
+        /// </summary>
+        private void OnDisplayModeChanged(ChangeEvent<string> evt)
+        {
+            if (_settingsViewModel != null && _displayModeDropdown != null)
+            {
+                _settingsViewModel.DisplayModeIndex = _displayModeDropdown.index;
+            }
+        }
+
+        /// <summary>
+        /// 解像度変更時の処理
+        /// </summary>
+        private void OnResolutionChanged(ChangeEvent<string> evt)
+        {
+            if (_settingsViewModel != null && _resolutionDropdown != null)
+            {
+                _settingsViewModel.ResolutionIndex = _resolutionDropdown.index;
+            }
+        }
+
+        /// <summary>
+        /// 品質プリセット変更時の処理
+        /// </summary>
+        private void OnQualityChanged(ChangeEvent<string> evt)
+        {
+            if (_settingsViewModel != null && _qualityDropdown != null)
+            {
+                _settingsViewModel.QualityLevelIndex = _qualityDropdown.index;
+            }
+        }
+
+        /// <summary>
+        /// VSync変更時の処理
+        /// </summary>
+        private void OnVSyncChanged(ChangeEvent<bool> evt)
+        {
+            if (_settingsViewModel != null)
+            {
+                _settingsViewModel.VSync = evt.newValue;
+            }
+        }
+
+        /// <summary>
+        /// ターゲットFPS変更時の処理
+        /// </summary>
+        private void OnTargetFpsChanged(ChangeEvent<string> evt)
+        {
+            if (_settingsViewModel != null && _targetFpsDropdown != null)
+            {
+                _settingsViewModel.TargetFrameRateIndex = _targetFpsDropdown.index;
+            }
+        }
+
+        /// <summary>
+        /// アンチエイリアシング変更時の処理
+        /// </summary>
+        private void OnAntiAliasingChanged(ChangeEvent<string> evt)
+        {
+            if (_settingsViewModel != null && _antiAliasingDropdown != null)
+            {
+                _settingsViewModel.AntiAliasingIndex = _antiAliasingDropdown.index;
+            }
+        }
+
+        // Gameplay Change Handlers
+        /// <summary>
+        /// 移動感度変更時の処理
+        /// </summary>
+        private void OnMovementSensitivityChanged(ChangeEvent<float> evt)
+        {
+            if (_settingsViewModel != null)
+            {
+                _settingsViewModel.MovementSensitivity = evt.newValue;
+            }
+        }
+
+        /// <summary>
+        /// カメラ感度変更時の処理
+        /// </summary>
+        private void OnCameraSensitivityChanged(ChangeEvent<float> evt)
+        {
+            if (_settingsViewModel != null)
+            {
+                _settingsViewModel.CameraSensitivity = evt.newValue;
+            }
+        }
+
+        /// <summary>
+        /// Y軸反転変更時の処理
+        /// </summary>
+        private void OnInvertYAxisChanged(ChangeEvent<bool> evt)
+        {
+            if (_settingsViewModel != null)
+            {
+                _settingsViewModel.InvertYAxis = evt.newValue;
             }
         }
 

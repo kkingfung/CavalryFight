@@ -9,6 +9,21 @@ using CavalryFight.Core.Services;
 namespace CavalryFight.Services.SceneManagement
 {
     /// <summary>
+    /// 設定画面からの戻り先を表す列挙型
+    /// </summary>
+    public enum ReturnDestination
+    {
+        /// <summary>メインメニューへ戻る</summary>
+        MainMenu,
+        /// <summary>トレーニングシーンへ戻る</summary>
+        Training,
+        /// <summary>マッチシーンへ戻る</summary>
+        Match,
+        /// <summary>ロビーシーンへ戻る</summary>
+        Lobby
+    }
+
+    /// <summary>
     /// シーン管理サービスのインターフェース
     /// </summary>
     /// <remarks>
@@ -47,6 +62,11 @@ namespace CavalryFight.Services.SceneManagement
         /// 現在のロード進捗を取得します（0.0～1.0）
         /// </summary>
         float LoadProgress { get; }
+
+        /// <summary>
+        /// 設定画面からの戻り先を取得します。
+        /// </summary>
+        ReturnDestination CurrentReturnDestination { get; }
 
         #endregion
 
@@ -100,6 +120,17 @@ namespace CavalryFight.Services.SceneManagement
         /// 設定シーンをロードします。
         /// </summary>
         void LoadSettings();
+
+        /// <summary>
+        /// 設定シーンをロードします（戻り先を指定）。
+        /// </summary>
+        /// <param name="returnDestination">設定画面を閉じた時の戻り先</param>
+        void LoadSettingsWithReturn(ReturnDestination returnDestination);
+
+        /// <summary>
+        /// 設定画面からの戻り先に遷移します。
+        /// </summary>
+        void ReturnFromSettings();
 
         /// <summary>
         /// カスタマイゼーションシーンをロードします。

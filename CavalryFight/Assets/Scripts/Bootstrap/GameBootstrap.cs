@@ -1,7 +1,6 @@
 #nullable enable
 
 using CavalryFight.Core.Services;
-using CavalryFight.Services.AI;
 using CavalryFight.Services.Audio;
 using CavalryFight.Services.Customization;
 using CavalryFight.Services.GameSettings;
@@ -68,6 +67,17 @@ namespace CavalryFight.Core.Bootstrap
         /// </summary>
         private void Awake()
         {
+            Debug.LogWarning($"[GameBootstrap] Awake called on scene: {gameObject.scene.name}");
+
+            // 重複チェック - 既に別のGameBootstrapが存在する場合は自身を破棄
+            var existingBootstraps = FindObjectsByType<GameBootstrap>(FindObjectsSortMode.None);
+            if (existingBootstraps.Length > 1)
+            {
+                Debug.LogWarning($"[GameBootstrap] Duplicate detected! {existingBootstraps.Length} instances found. Destroying this one.");
+                Destroy(gameObject);
+                return;
+            }
+
             // シーン遷移時も破棄されないようにする
             DontDestroyOnLoad(gameObject);
 
@@ -109,7 +119,7 @@ namespace CavalryFight.Core.Bootstrap
         /// </summary>
         private void OnDestroy()
         {
-            Debug.Log("[GameBootstrap] Starting cleanup...");
+            Debug.LogWarning($"[GameBootstrap] OnDestroy called! Scene: {gameObject.scene.name}, IsPlaying: {Application.isPlaying}");
 
             // 全サービスを破棄（初期化の逆順）
             DisposeServices();
@@ -141,9 +151,6 @@ namespace CavalryFight.Core.Bootstrap
             ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
             ServiceLocator.Instance.Register<IGameStateService>(new GameStateService());
             ServiceLocator.Instance.Register<IPerformanceMonitor>(new PerformanceMonitor());
-
-            // Gameplay services
-            ServiceLocator.Instance.Register<IBlazeAIService>(new BlazeAIService());
 
             // Customization service (with appliers)
             var characterApplier = new P09CharacterApplier();
@@ -212,7 +219,6 @@ namespace CavalryFight.Core.Bootstrap
             InitializeService<IPerformanceMonitor>();
 
             // Gameplay services
-            InitializeService<IBlazeAIService>();
             InitializeService<ICustomizationService>();
             InitializeService<IReplayService>();
             InitializeService<IReplayRecorder>();
@@ -375,7 +381,6 @@ namespace CavalryFight.Core.Bootstrap
             DisposeService<IReplayRecorder>("ReplayRecorder");
             DisposeService<IReplayService>("ReplayService");
             DisposeService<ICustomizationService>("CustomizationService");
-            DisposeService<IBlazeAIService>("BlazeAIService");
 
             // 2. Infrastructure Services
             DisposeService<IPerformanceMonitor>("PerformanceMonitor");

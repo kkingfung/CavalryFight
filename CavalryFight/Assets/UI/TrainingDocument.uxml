@@ -15,18 +15,64 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Pause Menu (Hidden by default) -->
-        <ui:VisualElement name="PauseMenu" class="pause-menu hidden">
+        <!-- Settings/Pause Popup (Hidden by default) -->
+        <ui:VisualElement name="PauseSettingsPopup" class="full-settings-popup hidden">
             <!-- Dark Overlay -->
             <ui:VisualElement class="overlay" />
 
-            <!-- Menu Panel -->
-            <ui:VisualElement class="menu-panel">
-                <ui:Label text="PAUSED" class="menu-title" />
+            <!-- Settings Panel -->
+            <ui:VisualElement class="full-settings-panel">
+                <!-- Header -->
+                <ui:VisualElement class="settings-header">
+                    <ui:Label text="Settings" class="settings-title" />
+                    <ui:Button name="KeyBindingsButton" text="Key Configuration" class="header-button" />
+                </ui:VisualElement>
 
-                <ui:Button name="ResumeButton" text="Resume" class="menu-button" />
-                <ui:Button name="SettingsButton" text="Settings" class="menu-button" />
-                <ui:Button name="BackToMenuButton" text="Back to Menu" class="menu-button" />
+                <!-- Scrollable Content -->
+                <ui:ScrollView class="settings-scroll">
+
+                    <!-- Audio Section -->
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Audio Settings" class="section-header" />
+                        <ui:Slider label="Master Volume" value="1" high-value="1" name="MasterVolumeSlider" class="setting-control" />
+                        <ui:Slider label="BGM Volume" value="0.8" high-value="1" name="BgmVolumeSlider" class="setting-control" />
+                        <ui:Slider label="SFX Volume" value="0.8" high-value="1" name="SfxVolumeSlider" class="setting-control" />
+                    </ui:VisualElement>
+
+                    <!-- Video Section -->
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Video Settings" class="section-header" />
+                        <ui:DropdownField label="Display Mode" name="DisplayModeDropdown" class="setting-control" />
+                        <ui:DropdownField label="Resolution" name="ResolutionDropdown" class="setting-control" />
+                        <ui:DropdownField label="Quality Preset" name="QualityDropdown" class="setting-control" />
+                        <ui:DropdownField label="Anti-Aliasing" name="AntiAliasingDropdown" class="setting-control" />
+                        <ui:DropdownField label="Target FPS" name="TargetFpsDropdown" class="setting-control" />
+                        <ui:Toggle label="VSync" name="VSyncToggle" value="true" class="setting-control" />
+                    </ui:VisualElement>
+
+                    <!-- Gameplay Section -->
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Gameplay Settings" class="section-header" />
+                        <ui:Slider label="Movement Sensitivity" value="1" high-value="1" name="MovementSensitivitySlider" class="setting-control" />
+                        <ui:Slider label="Camera Sensitivity" value="0.5" high-value="1" name="CameraSensitivitySlider" class="setting-control" />
+                        <ui:Toggle label="Invert Y-Axis" name="InvertYAxisToggle" value="false" class="setting-control" />
+                    </ui:VisualElement>
+
+                </ui:ScrollView>
+
+                <!-- Footer Buttons -->
+                <ui:VisualElement class="settings-footer">
+                    <!-- Left side: Resume and Back to Menu -->
+                    <ui:VisualElement class="footer-left">
+                        <ui:Button name="ResumeButton" text="Resume" class="footer-button primary-button" />
+                        <ui:Button name="BackToMenuButton" text="Back to Menu" class="footer-button" />
+                    </ui:VisualElement>
+                    <!-- Right side: Apply and Reset -->
+                    <ui:VisualElement class="footer-right">
+                        <ui:Button name="ApplySettingsButton" text="Apply" class="footer-button" />
+                        <ui:Button name="ResetSettingsButton" text="Reset" class="footer-button" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
 

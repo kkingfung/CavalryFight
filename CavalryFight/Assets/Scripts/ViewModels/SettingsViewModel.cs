@@ -724,12 +724,12 @@ namespace CavalryFight.ViewModels
         }
 
         /// <summary>
-        /// メインメニューに戻ります
+        /// 設定画面を閉じて前のシーンに戻ります
         /// </summary>
         private void OnBackToMenu()
         {
-            Debug.Log("[SettingsViewModel] Returning to Main Menu...");
-            _sceneManagementService?.LoadMainMenu();
+            Debug.Log($"[SettingsViewModel] Returning to {_sceneManagementService?.CurrentReturnDestination}...");
+            _sceneManagementService?.ReturnFromSettings();
         }
 
         #endregion

@@ -125,6 +125,263 @@
 }
 
 /* =====================================
+   Full Settings Popup Styles
+   ===================================== */
+
+.full-settings-popup {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+}
+
+.full-settings-panel {
+    background-color: rgba(30, 30, 30, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    width: 80%;
+    height: 85%;
+    max-width: 1400px;
+    border-width: 2px;
+    border-color: rgb(100, 100, 100);
+    flex-direction: column;
+}
+
+/* Settings Header */
+.settings-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+.settings-title {
+    color: rgb(255, 255, 255);
+    font-size: 48px;
+    -unity-font-style: bold;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+}
+
+.header-button {
+    width: 300px;
+    height: 50px;
+    font-size: 24px;
+    background-color: rgb(70, 70, 70);
+    color: rgb(255, 255, 255);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgb(100, 100, 100);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.header-button:hover {
+    background-color: rgb(90, 90, 90);
+    border-color: rgb(150, 150, 150);
+}
+
+.header-button:active {
+    background-color: rgb(50, 50, 50);
+}
+
+/* Scrollable Content */
+.settings-scroll {
+    flex-grow: 1;
+    margin-bottom: 15px;
+}
+
+/* Settings Section Panel */
+.settings-section {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Section Header */
+.section-header {
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 255, 255);
+    margin-bottom: 15px;
+}
+
+/* Setting Control Container (for all controls) */
+.setting-control {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding: 0;
+    font-size: 22px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(255, 255, 255);
+}
+
+/* Control Label (for all controls) */
+.setting-control > Label {
+    min-width: 200px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+    margin-right: 20px;
+}
+
+/* Slider Input Container */
+.setting-control .unity-base-slider__input {
+    flex-grow: 1;
+    flex-shrink: 0;
+    min-width: 400px;
+}
+
+/* Slider Track */
+.setting-control .unity-base-slider__tracker {
+    height: 16px;
+    border-radius: 8px;
+    background-color: rgba(128, 128, 128, 0.5);
+}
+
+/* Slider Dragger (the knob) */
+.setting-control .unity-base-slider__dragger {
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background-color: rgb(200, 200, 200);
+    border-width: 3px;
+    border-color: rgb(255, 255, 255);
+}
+
+/* Toggle Container */
+.setting-control.unity-toggle {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Toggle Label */
+.setting-control.unity-toggle > Label {
+    flex-grow: 1;
+}
+
+/* Toggle Checkmark Container */
+.setting-control .unity-toggle__input {
+    width: 36px;
+    height: 36px;
+    margin-left: 10px;
+    margin-right: 0px;
+    flex-shrink: 0;
+    align-self: center;
+    justify-content: flex-end;
+}
+
+/* Toggle Checkmark */
+.setting-control .unity-toggle__checkmark {
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    border-width: 2px;
+    border-color: rgb(200, 200, 200);
+    background-color: rgba(128, 128, 128, 0.3);
+}
+
+/* Toggle Checkmark (when checked) */
+.setting-control:checked .unity-toggle__checkmark {
+    background-color: rgba(255, 255, 255, 1);
+    border-color: rgba(128, 128, 128, 0.3);
+}
+
+/* Dropdown Input Container */
+.setting-control .unity-base-popup-field__input {
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-width: 300px;
+    max-width: 400px;
+    height: 36px;
+    padding: 5px 10px;
+    background-color: rgba(128, 128, 128, 0.3);
+    border-radius: 5px;
+    border-width: 2px;
+    border-color: rgb(150, 150, 150);
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+}
+
+/* Dropdown Arrow */
+.setting-control .unity-base-popup-field__arrow {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+/* Dropdown Hover Effect */
+.setting-control:hover .unity-base-popup-field__input {
+    border-color: rgb(200, 200, 200);
+    background-color: rgba(150, 150, 150, 0.4);
+}
+
+/* Settings Footer */
+.settings-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top-width: 2px;
+    border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.footer-left {
+    flex-direction: row;
+}
+
+.footer-right {
+    flex-direction: row;
+}
+
+.footer-button {
+    width: 200px;
+    height: 50px;
+    margin-left: 10px;
+    font-size: 24px;
+    background-color: rgb(70, 70, 70);
+    color: rgb(255, 255, 255);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgb(100, 100, 100);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.footer-button:hover {
+    background-color: rgb(90, 90, 90);
+    border-color: rgb(150, 150, 150);
+}
+
+.footer-button:active {
+    background-color: rgb(50, 50, 50);
+}
+
+/* Primary Button (Resume) */
+.primary-button {
+    background-color: rgb(60, 120, 80);
+    border-color: rgb(80, 160, 100);
+}
+
+.primary-button:hover {
+    background-color: rgb(70, 140, 90);
+    border-color: rgb(100, 180, 120);
+}
+
+.primary-button:active {
+    background-color: rgb(50, 100, 70);
+}
+
+/* =====================================
    Utility Classes
    ===================================== */
 

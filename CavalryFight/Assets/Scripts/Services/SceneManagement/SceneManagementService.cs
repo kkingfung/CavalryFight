@@ -46,6 +46,7 @@ namespace CavalryFight.Services.SceneManagement
         private SceneOperation? _currentOperation;
         private float _loadStartTime;
         private string _currentSceneName = string.Empty;
+        private ReturnDestination _returnDestination = ReturnDestination.MainMenu;
 
         // シーンコレクション参照
         private SceneCollection? _startupCollection;
@@ -72,6 +73,11 @@ namespace CavalryFight.Services.SceneManagement
         /// 現在のロード進捗を取得します（0.0～1.0）
         /// </summary>
         public float LoadProgress => _loadProgress;
+
+        /// <summary>
+        /// 設定画面からの戻り先を取得します。
+        /// </summary>
+        public ReturnDestination CurrentReturnDestination => _returnDestination;
 
         #endregion
 
@@ -237,12 +243,25 @@ namespace CavalryFight.Services.SceneManagement
         /// </summary>
         public void LoadSettings()
         {
+            // デフォルトはメインメニューに戻る
+            LoadSettingsWithReturn(ReturnDestination.MainMenu);
+        }
+
+        /// <summary>
+        /// 設定シーンをロードします（戻り先を指定）。
+        /// </summary>
+        /// <param name="returnDestination">設定画面を閉じた時の戻り先</param>
+        public void LoadSettingsWithReturn(ReturnDestination returnDestination)
+        {
             if (_settingsCollection == null)
             {
                 Debug.LogError("[SceneManagementService] Settings collection is not registered!");
                 SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Settings", "Settings collection is not registered"));
                 return;
             }
+
+            _returnDestination = returnDestination;
+            Debug.Log($"[SceneManagementService] Loading Settings with return destination: {returnDestination}");
 
             try
             {
@@ -252,6 +271,34 @@ namespace CavalryFight.Services.SceneManagement
             {
                 Debug.LogError($"[SceneManagementService] Failed to open Settings collection: {ex.Message}");
                 SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Settings", ex.Message, ex));
+            }
+        }
+
+        /// <summary>
+        /// 設定画面からの戻り先に遷移します。
+        /// </summary>
+        public void ReturnFromSettings()
+        {
+            Debug.Log($"[SceneManagementService] Returning from Settings to: {_returnDestination}");
+
+            switch (_returnDestination)
+            {
+                case ReturnDestination.MainMenu:
+                    LoadMainMenu();
+                    break;
+                case ReturnDestination.Training:
+                    LoadTraining();
+                    break;
+                case ReturnDestination.Match:
+                    LoadMatch();
+                    break;
+                case ReturnDestination.Lobby:
+                    LoadLobby();
+                    break;
+                default:
+                    Debug.LogWarning($"[SceneManagementService] Unknown return destination: {_returnDestination}. Defaulting to MainMenu.");
+                    LoadMainMenu();
+                    break;
             }
         }
 

@@ -2,6 +2,8 @@
 
 using System.Collections.Generic;
 using CavalryFight.Core.MVVM;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.Input;
 using CavalryFight.ViewModels;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -33,38 +35,38 @@ namespace CavalryFight.Views
         /// <summary>非表示時の不透明度</summary>
         private const float OpacityHidden = 0.0f;
 
-        // Row Colors
-        /// <summary>通常時の行の背景色（ダークブラウン）</summary>
-        private static readonly Color RowBackgroundNormal = new Color(0.15f, 0.12f, 0.08f, 0.8f);
+        // Row Colors (ダークテーマに合わせた色)
+        /// <summary>通常時の行の背景色</summary>
+        private static readonly Color RowBackgroundNormal = new Color(0.24f, 0.24f, 0.24f, 0.6f);
 
-        /// <summary>リバインディング中の行の背景色（明るいオレンジ）</summary>
-        private static readonly Color RowBackgroundHighlight = new Color(0.8f, 0.5f, 0.1f, 0.9f);
+        /// <summary>リバインディング中の行の背景色</summary>
+        private static readonly Color RowBackgroundHighlight = new Color(0.4f, 0.55f, 0.35f, 0.9f);
 
-        /// <summary>リバインディング中の行のボーダー色（明るいイエロー）</summary>
-        private static readonly Color RowBorderHighlight = new Color(1.0f, 0.7f, 0.2f);
+        /// <summary>リバインディング中の行のボーダー色</summary>
+        private static readonly Color RowBorderHighlight = new Color(0.5f, 0.7f, 0.4f);
 
         // Prompt Colors
-        /// <summary>プロンプトの明るい背景色（明るいオレンジ）</summary>
-        private static readonly Color PromptBackgroundBright = new Color(1.0f, 0.4f, 0.0f);
+        /// <summary>プロンプトの明るい背景色</summary>
+        private static readonly Color PromptBackgroundBright = new Color(0.78f, 0.4f, 0.2f);
 
-        /// <summary>プロンプトの明るいボーダー色（明るいイエロー）</summary>
-        private static readonly Color PromptBorderBright = new Color(1.0f, 0.8f, 0.0f);
+        /// <summary>プロンプトの明るいボーダー色</summary>
+        private static readonly Color PromptBorderBright = new Color(1.0f, 0.6f, 0.2f);
 
-        /// <summary>プロンプトの暗い背景色（暗いオレンジ）</summary>
-        private static readonly Color PromptBackgroundDim = new Color(0.8f, 0.3f, 0.0f);
+        /// <summary>プロンプトの暗い背景色</summary>
+        private static readonly Color PromptBackgroundDim = new Color(0.6f, 0.3f, 0.15f);
 
-        /// <summary>プロンプトの暗いボーダー色（暗いイエロー）</summary>
-        private static readonly Color PromptBorderDim = new Color(0.8f, 0.6f, 0.0f);
+        /// <summary>プロンプトの暗いボーダー色</summary>
+        private static readonly Color PromptBorderDim = new Color(0.8f, 0.5f, 0.2f);
 
         // Label Colors
-        /// <summary>アクション名ラベルの色（ウォームホワイト）</summary>
-        private static readonly Color ActionLabelColor = new Color(1.0f, 0.95f, 0.8f);
+        /// <summary>アクション名ラベルの色</summary>
+        private static readonly Color ActionLabelColor = new Color(1.0f, 1.0f, 1.0f);
 
         /// <summary>キーラベルの色（明るいシアン）</summary>
-        private static readonly Color KeyLabelColor = new Color(0.4f, 0.9f, 1.0f);
+        private static readonly Color KeyLabelColor = new Color(0.4f, 0.78f, 1.0f);
 
-        /// <summary>キーコンテナの背景色（ダークブルーグレー）</summary>
-        private static readonly Color KeyContainerBackground = new Color(0.2f, 0.25f, 0.35f);
+        /// <summary>キーコンテナの背景色</summary>
+        private static readonly Color KeyContainerBackground = new Color(0.18f, 0.22f, 0.28f);
 
         // Font Sizes
         /// <summary>アクション名のフォントサイズ</summary>
@@ -418,10 +420,19 @@ namespace CavalryFight.Views
         /// </summary>
         public void Show()
         {
+            // UIDocumentのソートオーダーを高くして、他のUIの上に表示
+            var uiDocument = GetComponent<UIDocument>();
+            if (uiDocument != null)
+            {
+                uiDocument.sortingOrder = 100;
+            }
+
             if (_root != null)
             {
                 _root.style.display = DisplayStyle.Flex;
                 _root.pickingMode = PickingMode.Position;
+                // 最前面に移動
+                _root.BringToFront();
             }
 
             if (_overlay != null)
@@ -614,6 +625,10 @@ namespace CavalryFight.Views
         private void OnCloseRequested(object? sender, System.EventArgs e)
         {
             Hide();
+
+            // InputServiceに変更を反映
+            var inputService = ServiceLocator.Instance.Get<IInputService>();
+            inputService?.ReloadBindingOverrides();
         }
 
         /// <summary>
