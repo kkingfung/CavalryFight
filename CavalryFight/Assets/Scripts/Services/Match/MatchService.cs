@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using CavalryFight.Services.Lobby;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -34,6 +35,11 @@ namespace CavalryFight.Services.Match
         public event Action<ulong, int>? PlayerScoreChanged;
 
         /// <summary>
+        /// プレイヤーがスコアを獲得した時に発生します（詳細情報付き）
+        /// </summary>
+        public event Action<ulong, int, HitLocation>? PlayerScored;
+
+        /// <summary>
         /// マッチが開始された時に発生します
         /// </summary>
         public event Action? MatchStarted;
@@ -42,6 +48,21 @@ namespace CavalryFight.Services.Match
         /// マッチが終了した時に発生します
         /// </summary>
         public event Action<ulong>? MatchEnded;
+
+        /// <summary>
+        /// マッチが終了した時に発生します（詳細情報付き）
+        /// </summary>
+        public event Action<MatchEndResult>? MatchEndedWithResult;
+
+        /// <summary>
+        /// マッチ状態が変更された時に発生します
+        /// </summary>
+        public event Action<MatchState>? MatchStateChanged;
+
+        /// <summary>
+        /// カウントダウンが更新された時に発生します
+        /// </summary>
+        public event Action<int>? CountdownUpdated;
 
         #endregion
 
@@ -57,6 +78,21 @@ namespace CavalryFight.Services.Match
         /// </summary>
         private bool _wasMatchStarted = false;
 
+        /// <summary>
+        /// 前回のマッチ状態
+        /// </summary>
+        private MatchState _previousState = MatchState.WaitingForPlayers;
+
+        /// <summary>
+        /// マッチ開始時刻
+        /// </summary>
+        private float _matchStartTime;
+
+        /// <summary>
+        /// 現在のゲームモード
+        /// </summary>
+        private GameMode _currentGameMode = GameMode.Hunting;
+
         #endregion
 
         #region Properties
@@ -65,6 +101,53 @@ namespace CavalryFight.Services.Match
         /// マッチが開始されているかどうかを取得します
         /// </summary>
         public bool IsMatchStarted => _networkMatchManager?.IsMatchStarted ?? false;
+
+        /// <summary>
+        /// 現在のマッチ状態を取得します
+        /// </summary>
+        public MatchState CurrentState
+        {
+            get
+            {
+                if (_networkMatchManager == null) return MatchState.WaitingForPlayers;
+
+                // NetworkMatchManagerの状態を確認
+                if (!_networkMatchManager.IsMatchStarted)
+                {
+                    return MatchState.WaitingForPlayers;
+                }
+
+                // マッチが終了している場合
+                if (_networkMatchManager.IsMatchEnded)
+                {
+                    return MatchState.Ended;
+                }
+
+                return MatchState.InProgress;
+            }
+        }
+
+        /// <summary>
+        /// 現在のゲームモードを取得します
+        /// </summary>
+        public GameMode CurrentGameMode => _currentGameMode;
+
+        /// <summary>
+        /// 残り時間（秒）を取得します
+        /// </summary>
+        public float RemainingTime => _networkMatchManager?.RemainingTime ?? 0f;
+
+        /// <summary>
+        /// マッチ経過時間（秒）を取得します
+        /// </summary>
+        public float MatchTime
+        {
+            get
+            {
+                if (!IsMatchStarted) return 0f;
+                return Time.time - _matchStartTime;
+            }
+        }
 
         /// <summary>
         /// 現在のスコアリング設定を取得します
@@ -124,10 +207,19 @@ namespace CavalryFight.Services.Match
                 if (isMatchStarted && !_wasMatchStarted)
                 {
                     // マッチが開始された
+                    _matchStartTime = Time.time;
                     MatchStarted?.Invoke();
                 }
 
                 _wasMatchStarted = isMatchStarted;
+
+                // 状態変化を監視
+                var currentState = CurrentState;
+                if (currentState != _previousState)
+                {
+                    _previousState = currentState;
+                    MatchStateChanged?.Invoke(currentState);
+                }
             }
         }
 
@@ -293,6 +385,51 @@ namespace CavalryFight.Services.Match
             }
 
             return _networkMatchManager.GetAllPlayerScores();
+        }
+
+        /// <summary>
+        /// チームスコアを取得します
+        /// </summary>
+        /// <param name="teamIndex">チームインデックス</param>
+        /// <returns>チームのスコア</returns>
+        public int GetTeamScore(int teamIndex)
+        {
+            if (_networkMatchManager == null)
+            {
+                return 0;
+            }
+
+            return _networkMatchManager.GetTeamScore(teamIndex);
+        }
+
+        /// <summary>
+        /// プレイヤーがハンターかどうかを取得します（ハンティングモード用）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <returns>ハンターの場合true</returns>
+        public bool IsHunter(ulong clientId)
+        {
+            if (_networkMatchManager == null)
+            {
+                return false;
+            }
+
+            return _networkMatchManager.IsHunter(clientId);
+        }
+
+        /// <summary>
+        /// プレイヤーがスタン中かどうかを取得します
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <returns>スタン中の場合true</returns>
+        public bool IsStunned(ulong clientId)
+        {
+            if (_networkMatchManager == null)
+            {
+                return false;
+            }
+
+            return _networkMatchManager.IsStunned(clientId);
         }
 
         #endregion

@@ -36,6 +36,36 @@ namespace CavalryFight.Services.Match
         /// </summary>
         public bool IsNPC { get; set; }
 
+        /// <summary>
+        /// ローカルプレイヤーかどうか
+        /// </summary>
+        public bool IsLocalPlayer { get; set; }
+
+        /// <summary>
+        /// 生存中かどうか
+        /// </summary>
+        public bool IsAlive { get; set; } = true;
+
+        /// <summary>
+        /// ランク順位（1位から）
+        /// </summary>
+        public int Rank { get; set; }
+
+        /// <summary>
+        /// ホストかどうか
+        /// </summary>
+        public bool IsHost { get; set; }
+
+        /// <summary>
+        /// ルームを退出したかどうか
+        /// </summary>
+        public bool HasLeft { get; set; }
+
+        /// <summary>
+        /// リマッチに投票したかどうか
+        /// </summary>
+        public bool HasVotedRematch { get; set; }
+
         #endregion
 
         #region Combat Stats

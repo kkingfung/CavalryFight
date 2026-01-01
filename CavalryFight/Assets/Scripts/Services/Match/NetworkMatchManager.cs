@@ -50,6 +50,52 @@ namespace CavalryFight.Services.Match
             NetworkVariableWritePermission.Server
         );
 
+        /// <summary>
+        /// マッチ終了済みフラグ
+        /// </summary>
+        private NetworkVariable<bool> _matchEnded = new NetworkVariable<bool>(
+            false,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        /// <summary>
+        /// 残り時間（秒）
+        /// </summary>
+        private NetworkVariable<float> _remainingTime = new NetworkVariable<float>(
+            0f,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        /// <summary>
+        /// チーム0のスコア
+        /// </summary>
+        private NetworkVariable<int> _team0Score = new NetworkVariable<int>(
+            0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        /// <summary>
+        /// チーム1のスコア
+        /// </summary>
+        private NetworkVariable<int> _team1Score = new NetworkVariable<int>(
+            0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        /// <summary>
+        /// ハンターのクライアントIDセット
+        /// </summary>
+        private HashSet<ulong> _hunterClientIds = new HashSet<ulong>();
+
+        /// <summary>
+        /// スタン中のプレイヤーと解除時刻
+        /// </summary>
+        private Dictionary<ulong, float> _stunnedPlayers = new Dictionary<ulong, float>();
+
         #endregion
 
         #region Fields
@@ -105,6 +151,16 @@ namespace CavalryFight.Services.Match
         /// マッチが開始されているかどうかを取得します
         /// </summary>
         public bool IsMatchStarted => _matchStarted.Value;
+
+        /// <summary>
+        /// マッチが終了したかどうかを取得します
+        /// </summary>
+        public bool IsMatchEnded => _matchEnded.Value;
+
+        /// <summary>
+        /// 残り時間（秒）を取得します
+        /// </summary>
+        public float RemainingTime => _remainingTime.Value;
 
         #endregion
 
@@ -191,6 +247,13 @@ namespace CavalryFight.Services.Match
                 return;
             }
 
+            // マッチ状態をリセット
+            _matchEnded.Value = false;
+            _team0Score.Value = 0;
+            _team1Score.Value = 0;
+            _hunterClientIds.Clear();
+            _stunnedPlayers.Clear();
+
             // プレイヤースコアを初期化
             _playerScores.Clear();
 
@@ -226,6 +289,7 @@ namespace CavalryFight.Services.Match
             }
 
             _matchStarted.Value = false;
+            _matchEnded.Value = true;
 
             // 勝者を通知
             NotifyMatchEndedClientRpc(winnerClientId);
@@ -459,6 +523,156 @@ namespace CavalryFight.Services.Match
                 scores[i] = _playerScores[i];
             }
             return scores;
+        }
+
+        /// <summary>
+        /// チームスコアを取得します
+        /// </summary>
+        /// <param name="teamIndex">チームインデックス</param>
+        /// <returns>チームのスコア</returns>
+        public int GetTeamScore(int teamIndex)
+        {
+            return teamIndex switch
+            {
+                0 => _team0Score.Value,
+                1 => _team1Score.Value,
+                _ => 0
+            };
+        }
+
+        /// <summary>
+        /// プレイヤーがハンターかどうかを取得します（ハンティングモード用）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <returns>ハンターの場合true</returns>
+        public bool IsHunter(ulong clientId)
+        {
+            return _hunterClientIds.Contains(clientId);
+        }
+
+        /// <summary>
+        /// プレイヤーをハンターとして設定します（サーバーのみ）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <param name="isHunter">ハンターかどうか</param>
+        public void SetHunter(ulong clientId, bool isHunter)
+        {
+            if (!IsServer)
+            {
+                Debug.LogWarning("[NetworkMatchManager] Only server can set hunter status.");
+                return;
+            }
+
+            if (isHunter)
+            {
+                _hunterClientIds.Add(clientId);
+            }
+            else
+            {
+                _hunterClientIds.Remove(clientId);
+            }
+        }
+
+        /// <summary>
+        /// プレイヤーがスタン中かどうかを取得します
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <returns>スタン中の場合true</returns>
+        public bool IsStunned(ulong clientId)
+        {
+            if (!_stunnedPlayers.TryGetValue(clientId, out float endTime))
+            {
+                return false;
+            }
+
+            // スタン終了時刻を過ぎていたら解除
+            if (Time.time >= endTime)
+            {
+                _stunnedPlayers.Remove(clientId);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// プレイヤーをスタンさせます（サーバーのみ）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <param name="duration">スタン時間（秒）</param>
+        public void StunPlayer(ulong clientId, float duration)
+        {
+            if (!IsServer)
+            {
+                Debug.LogWarning("[NetworkMatchManager] Only server can stun players.");
+                return;
+            }
+
+            _stunnedPlayers[clientId] = Time.time + duration;
+            Debug.Log($"[NetworkMatchManager] Player {clientId} stunned for {duration} seconds.");
+        }
+
+        /// <summary>
+        /// チームスコアを設定します（サーバーのみ）
+        /// </summary>
+        /// <param name="teamIndex">チームインデックス</param>
+        /// <param name="score">スコア</param>
+        public void SetTeamScore(int teamIndex, int score)
+        {
+            if (!IsServer)
+            {
+                Debug.LogWarning("[NetworkMatchManager] Only server can set team score.");
+                return;
+            }
+
+            switch (teamIndex)
+            {
+                case 0:
+                    _team0Score.Value = score;
+                    break;
+                case 1:
+                    _team1Score.Value = score;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// チームスコアを加算します（サーバーのみ）
+        /// </summary>
+        /// <param name="teamIndex">チームインデックス</param>
+        /// <param name="scoreToAdd">加算するスコア</param>
+        public void AddTeamScore(int teamIndex, int scoreToAdd)
+        {
+            if (!IsServer)
+            {
+                Debug.LogWarning("[NetworkMatchManager] Only server can add team score.");
+                return;
+            }
+
+            switch (teamIndex)
+            {
+                case 0:
+                    _team0Score.Value += scoreToAdd;
+                    break;
+                case 1:
+                    _team1Score.Value += scoreToAdd;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 残り時間を設定します（サーバーのみ）
+        /// </summary>
+        /// <param name="time">残り時間（秒）</param>
+        public void SetRemainingTime(float time)
+        {
+            if (!IsServer)
+            {
+                Debug.LogWarning("[NetworkMatchManager] Only server can set remaining time.");
+                return;
+            }
+
+            _remainingTime.Value = time;
         }
 
         #endregion

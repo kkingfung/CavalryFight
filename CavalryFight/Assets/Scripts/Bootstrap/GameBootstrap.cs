@@ -355,7 +355,8 @@ namespace CavalryFight.Core.Bootstrap
                 training: _sceneCollectionConfig.Training,
                 results: _sceneCollectionConfig.Results,
                 replay: _sceneCollectionConfig.Replay,
-                history: _sceneCollectionConfig.History
+                history: _sceneCollectionConfig.History,
+                hunting: _sceneCollectionConfig.Hunting
             );
 
             Debug.Log("[GameBootstrap] SceneManagementService configured with scene collections.");

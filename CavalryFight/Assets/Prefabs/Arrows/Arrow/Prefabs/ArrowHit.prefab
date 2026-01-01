@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6034555717285837731}
   - component: {fileID: 1716389755108557820}
   - component: {fileID: 8250962415083600152}
-  m_Layer: 11
+  m_Layer: 0
   m_Name: CoreSpike
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4816,7 +4816,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &8250962415083600152
 ParticleSystemRenderer:
-  serializedVersion: 7
+  serializedVersion: 6
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4832,11 +4832,6 @@ ParticleSystemRenderer:
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4858,11 +4853,9 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -4894,6 +4887,7 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+  m_MaskInteraction: 0
 --- !u!1 &4186470608034871016
 GameObject:
   m_ObjectHideFlags: 0
@@ -4905,7 +4899,7 @@ GameObject:
   - component: {fileID: 6324283893382468811}
   - component: {fileID: 7917120168021017062}
   - component: {fileID: 6951045033159309328}
-  m_Layer: 11
+  m_Layer: 0
   m_Name: ArrowHit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9717,7 +9711,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &6951045033159309328
 ParticleSystemRenderer:
-  serializedVersion: 7
+  serializedVersion: 6
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -9733,11 +9727,6 @@ ParticleSystemRenderer:
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -9759,11 +9748,9 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -9795,6 +9782,7 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+  m_MaskInteraction: 0
 --- !u!1001 &92965274031062807
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9812,16 +9800,12 @@ PrefabInstance:
       value: -5
       objectReference: {fileID: 0}
     - target: {fileID: 223321868137019655, guid: 052066e230b9bf94c862cd214264425d, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: abcbc6773954d89449f2acbca82ab0ce, type: 2}
     - target: {fileID: 340623526033932231, guid: 052066e230b9bf94c862cd214264425d, type: 3}
       propertyPath: m_Name
       value: BloodRing
-      objectReference: {fileID: 0}
-    - target: {fileID: 340623526033932231, guid: 052066e230b9bf94c862cd214264425d, type: 3}
-      propertyPath: m_Layer
-      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 340623526033932231, guid: 052066e230b9bf94c862cd214264425d, type: 3}
       propertyPath: m_IsActive
@@ -10046,10 +10030,6 @@ PrefabInstance:
       value: BloodRing (1)
       objectReference: {fileID: 0}
     - target: {fileID: 3914852966663086068, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
-      propertyPath: m_Layer
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 3914852966663086068, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -10066,7 +10046,7 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4714072814772465690, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 1f6b4d99e0b799e46a8fcaf502be22db, type: 2}
     - target: {fileID: 4800450082434276417, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
@@ -10500,10 +10480,6 @@ PrefabInstance:
       value: BloodRing
       objectReference: {fileID: 0}
     - target: {fileID: 3914852966663086068, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
-      propertyPath: m_Layer
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 3914852966663086068, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
@@ -10520,7 +10496,7 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4714072814772465690, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 1f6b4d99e0b799e46a8fcaf502be22db, type: 2}
     - target: {fileID: 4800450082434276417, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
@@ -11017,10 +10993,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: VolumetricBlood (2)
       objectReference: {fileID: 0}
-    - target: {fileID: 3914852966663086068, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
-      propertyPath: m_Layer
-      value: 11
-      objectReference: {fileID: 0}
     - target: {fileID: 4714072814772465690, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -11384,10 +11356,6 @@ PrefabInstance:
       value: VolumetricBlood (3)
       objectReference: {fileID: 0}
     - target: {fileID: 3914852966663086068, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
-      propertyPath: m_Layer
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 3914852966663086068, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -11400,7 +11368,7 @@ PrefabInstance:
       value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 4714072814772465690, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: af4db6e27782b1847b84597aaa4b449d, type: 2}
     - target: {fileID: 4800450082434276417, guid: a14381a5505a810418fd0bf8c2479dad, type: 3}
@@ -11568,10 +11536,6 @@ PrefabInstance:
     - target: {fileID: 340623526033932231, guid: 052066e230b9bf94c862cd214264425d, type: 3}
       propertyPath: m_Name
       value: Slash (3)
-      objectReference: {fileID: 0}
-    - target: {fileID: 340623526033932231, guid: 052066e230b9bf94c862cd214264425d, type: 3}
-      propertyPath: m_Layer
-      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 6167600070980352871, guid: 052066e230b9bf94c862cd214264425d, type: 3}
       propertyPath: randomSeed

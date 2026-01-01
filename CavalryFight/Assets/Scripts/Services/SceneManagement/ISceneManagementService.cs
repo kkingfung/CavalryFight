@@ -20,7 +20,9 @@ namespace CavalryFight.Services.SceneManagement
         /// <summary>マッチシーンへ戻る</summary>
         Match,
         /// <summary>ロビーシーンへ戻る</summary>
-        Lobby
+        Lobby,
+        /// <summary>ハンティングシーンへ戻る</summary>
+        Hunting
     }
 
     /// <summary>
@@ -86,6 +88,7 @@ namespace CavalryFight.Services.SceneManagement
         /// <param name="results">Resultsシーンコレクション</param>
         /// <param name="replay">Replayシーンコレクション</param>
         /// <param name="history">Historyシーンコレクション</param>
+        /// <param name="hunting">Huntingシーンコレクション</param>
         void RegisterSceneCollections(
             SceneCollection? startup,
             SceneCollection? mainMenu,
@@ -97,7 +100,8 @@ namespace CavalryFight.Services.SceneManagement
             SceneCollection? training,
             SceneCollection? results,
             SceneCollection? replay,
-            SceneCollection? history);
+            SceneCollection? history,
+            SceneCollection? hunting);
 
         #endregion
 
@@ -163,6 +167,11 @@ namespace CavalryFight.Services.SceneManagement
         /// リプレイ履歴シーンをロードします。
         /// </summary>
         void LoadHistory();
+
+        /// <summary>
+        /// ハンティングシーンをロードします。
+        /// </summary>
+        void LoadHunting();
 
         #endregion
 

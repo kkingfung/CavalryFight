@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance"
+         engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements"
+         noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
+         editor-extension-mode="False">
+
+    <Style src="MatchStyles.uss" />
+
+    <ui:VisualElement name="Root" class="root">
+
+        <!-- HUD Panel (Top) -->
+        <ui:VisualElement name="HUDPanel" class="hud-panel">
+
+            <!-- Left: Player Stats -->
+            <ui:VisualElement name="PlayerStatsPanel" class="player-stats-panel">
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Score" class="stat-label" />
+                    <ui:Label name="ScoreLabel" text="0" class="stat-value stat-value--score" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Arrows" class="stat-label" />
+                    <ui:Label name="ArrowsLabel" text="∞" class="stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Hits" class="stat-label" />
+                    <ui:Label name="HitsLabel" text="0" class="stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Accuracy" class="stat-label" />
+                    <ui:Label name="AccuracyLabel" text="0.0%" class="stat-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Center: Timer and Mode -->
+            <ui:VisualElement name="CenterPanel" class="center-panel">
+                <ui:Label name="GameModeBadge" text="Arena" class="game-mode-badge" />
+                <ui:Label name="TimerLabel" text="5:00" class="timer-label" />
+            </ui:VisualElement>
+
+            <!-- Right: Team Scores (TeamFight mode only) -->
+            <ui:VisualElement name="TeamScorePanel" class="team-score-panel" style="display: none;">
+                <ui:VisualElement class="team-score team-score--team0">
+                    <ui:Label text="Team A" class="team-name" />
+                    <ui:Label name="Team0ScoreLabel" text="0" class="team-score-value" />
+                </ui:VisualElement>
+                <ui:Label text="vs" class="team-vs" />
+                <ui:VisualElement class="team-score team-score--team1">
+                    <ui:Label text="Team B" class="team-name" />
+                    <ui:Label name="Team1ScoreLabel" text="0" class="team-score-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- Countdown Panel (Center) -->
+        <ui:VisualElement name="CountdownPanel" class="countdown-panel" style="display: none;">
+            <ui:Label name="CountdownLabel" text="3" class="countdown-label" />
+        </ui:VisualElement>
+
+        <!-- Score Popup Container -->
+        <ui:VisualElement name="ScorePopupContainer" class="score-popup-container" />
+
+        <!-- Scoreboard Panel (Tab to show) -->
+        <ui:VisualElement name="ScoreboardPanel" class="scoreboard-panel" style="display: none;">
+            <ui:VisualElement class="scoreboard-overlay" />
+            <ui:VisualElement class="scoreboard-content">
+                <ui:Label text="SCOREBOARD" class="scoreboard-title" />
+                <ui:VisualElement class="scoreboard-header">
+                    <ui:Label text="Player" class="scoreboard-header-cell scoreboard-header-name" />
+                    <ui:Label text="Score" class="scoreboard-header-cell" />
+                    <ui:Label text="Hits" class="scoreboard-header-cell" />
+                    <ui:Label text="Accuracy" class="scoreboard-header-cell" />
+                </ui:VisualElement>
+                <ui:VisualElement name="ScoreboardContainer" class="scoreboard-container" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Pause Panel -->
+        <ui:VisualElement name="PausePanel" class="pause-panel" style="display: none;">
+            <ui:VisualElement class="pause-overlay" />
+            <ui:VisualElement class="pause-content">
+                <ui:Label text="PAUSED" class="pause-title" />
+                <ui:Button name="ResumeButton" text="Resume" class="pause-button pause-button--primary" />
+                <ui:Button name="SettingsButton" text="Settings" class="pause-button" />
+                <ui:Button name="LeaveMatchButton" text="Leave Match" class="pause-button pause-button--danger" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Match End Panel -->
+        <ui:VisualElement name="MatchEndPanel" class="match-end-panel" style="display: none;">
+            <ui:VisualElement class="match-end-overlay" />
+            <ui:VisualElement class="match-end-content">
+                <ui:Label name="MatchResultLabel" text="VICTORY" class="match-result-label result-victory" />
+                <ui:Label name="FinalScoreLabel" text="Score: 0" class="final-score-label" />
+                <ui:Button name="ContinueButton" text="Continue" class="continue-button" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Bottom Info Bar -->
+        <ui:VisualElement name="BottomBar" class="bottom-bar">
+            <ui:Label text="[Tab] Scoreboard  |  [Esc] Pause" class="hint-text" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

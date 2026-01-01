@@ -1,9 +1,10 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using CavalryFight.Core.Commands;
 using CavalryFight.Core.MVVM;
-using CavalryFight.Core.Services;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.Replay;
 using CavalryFight.Services.SceneManagement;
@@ -23,7 +24,7 @@ namespace CavalryFight.ViewModels
         #region Fields
 
         private readonly IReplayService? _replayService;
-        private readonly ISceneManagementService? _sceneManagementService;
+        private readonly ISceneManagementService _sceneManagementService;
         private MatchResult _matchResult;
         private bool _isReplaySaved;
         private bool _isSavingReplay;
@@ -145,6 +146,11 @@ namespace CavalryFight.ViewModels
         public PlayerStatistics LocalStats => MatchResult.LocalPlayerStats;
 
         /// <summary>
+        /// スコア順でソートされた全プレイヤー統計リスト
+        /// </summary>
+        public IReadOnlyList<PlayerStatistics> SortedPlayerStats { get; private set; } = new List<PlayerStatistics>();
+
+        /// <summary>
         /// リプレイが保存されたかどうか
         /// </summary>
         public bool IsReplaySaved
@@ -250,7 +256,7 @@ namespace CavalryFight.ViewModels
         /// <summary>
         /// 全プレイヤーがリマッチに同意したかどうか
         /// </summary>
-        public bool AllPlayersAgreed => TotalPlayers > 0 && RematchVoteCount >= TotalPlayers;
+        public bool AllPlayersAgreed => ActivePlayerCount > 0 && RematchVoteCount >= ActivePlayerCount;
 
         /// <summary>
         /// リマッチに投票可能かどうか
@@ -261,6 +267,21 @@ namespace CavalryFight.ViewModels
         /// リマッチ投票をキャンセル可能かどうか
         /// </summary>
         public bool CanCancelVote => IsMultiplayerMatch && HasVotedRematch && !AllPlayersAgreed;
+
+        /// <summary>
+        /// ルームに戻るボタンが無効かどうか（投票済みの場合は無効）
+        /// </summary>
+        public bool IsReturnToRoomDisabled => HasVotedRematch;
+
+        /// <summary>
+        /// アクティブなプレイヤー数（退出していないプレイヤー）
+        /// </summary>
+        public int ActivePlayerCount => SortedPlayerStats.Count(p => !p.HasLeft && !p.IsNPC);
+
+        /// <summary>
+        /// リマッチ投票テキスト（アクティブプレイヤー数ベース）
+        /// </summary>
+        public string VoteCountText => $"{RematchVoteCount} / {ActivePlayerCount} voted";
 
         #endregion
 
@@ -320,6 +341,21 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public event EventHandler? AllPlayersAgreedToRematch;
 
+        /// <summary>
+        /// プレイヤーがルームを退出したイベント
+        /// </summary>
+        public event EventHandler<PlayerStatistics>? PlayerLeft;
+
+        /// <summary>
+        /// ホストがルームを退出したイベント
+        /// </summary>
+        public event EventHandler? HostLeft;
+
+        /// <summary>
+        /// リーダーボード更新イベント
+        /// </summary>
+        public event EventHandler? LeaderboardUpdated;
+
         #endregion
 
         #region Constructor
@@ -328,11 +364,13 @@ namespace CavalryFight.ViewModels
         /// ResultsViewModelの新しいインスタンスを初期化します
         /// </summary>
         /// <param name="matchResult">マッチ結果データ</param>
-        public ResultsViewModel(MatchResult matchResult)
+        /// <param name="sceneManagementService">シーン管理サービス</param>
+        /// <param name="replayService">リプレイサービス（オプション）</param>
+        public ResultsViewModel(MatchResult matchResult, ISceneManagementService sceneManagementService, IReplayService? replayService = null)
         {
             _matchResult = matchResult ?? throw new ArgumentNullException(nameof(matchResult));
-            _replayService = ServiceLocator.Instance.Get<IReplayService>();
-            _sceneManagementService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            _sceneManagementService = sceneManagementService ?? throw new ArgumentNullException(nameof(sceneManagementService));
+            _replayService = replayService;
 
             // コマンド初期化
             SaveReplayCommand = new RelayCommand(ExecuteSaveReplay, () => CanSaveReplay);
@@ -343,7 +381,34 @@ namespace CavalryFight.ViewModels
             VoteRematchCommand = new RelayCommand(ExecuteVoteRematch, () => CanVoteRematch);
             CancelVoteCommand = new RelayCommand(ExecuteCancelVote, () => CanCancelVote);
 
+            // プレイヤー統計をソート
+            SortPlayerStats();
+
             Debug.Log($"[ResultsViewModel] Initialized with result: {ResultText} ({ScoreText})");
+        }
+
+        /// <summary>
+        /// プレイヤー統計をスコア順（降順）でソートし、ランクを設定します
+        /// </summary>
+        private void SortPlayerStats()
+        {
+            var allStats = MatchResult.AllPlayerStats;
+
+            // スコア順にソート（同スコアの場合はK/D比、次にキル数でソート）
+            var sorted = allStats
+                .OrderByDescending(p => p.Score)
+                .ThenByDescending(p => p.KDRatio)
+                .ThenByDescending(p => p.Kills)
+                .ToList();
+
+            // ランクを設定
+            for (int i = 0; i < sorted.Count; i++)
+            {
+                sorted[i].Rank = i + 1;
+            }
+
+            SortedPlayerStats = sorted;
+            OnPropertyChanged(nameof(SortedPlayerStats));
         }
 
         #endregion
@@ -397,7 +462,8 @@ namespace CavalryFight.ViewModels
         private void ExecuteMainMenu()
         {
             Debug.Log("[ResultsViewModel] Returning to main menu...");
-            _sceneManagementService?.LoadMainMenu();
+            HandleLocalPlayerLeaving();
+            _sceneManagementService.LoadMainMenu();
         }
 
         /// <summary>
@@ -406,7 +472,8 @@ namespace CavalryFight.ViewModels
         private void ExecuteLobby()
         {
             Debug.Log("[ResultsViewModel] Returning to lobby...");
-            _sceneManagementService?.LoadLobby();
+            HandleLocalPlayerLeaving();
+            _sceneManagementService.LoadLobby();
         }
 
         /// <summary>
@@ -414,14 +481,15 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void ExecuteReturnToRoom()
         {
-            if (!CanReturnToRoom)
+            if (!CanReturnToRoom || IsReturnToRoomDisabled)
             {
-                Debug.LogWarning("[ResultsViewModel] Cannot return to room: room is closed");
+                Debug.LogWarning("[ResultsViewModel] Cannot return to room: room is closed or voted for rematch");
                 return;
             }
 
             Debug.Log($"[ResultsViewModel] Returning to room: {MatchResult.OriginalRoomId}");
-            _sceneManagementService?.LoadMatchRoom();
+            HandleLocalPlayerLeaving();
+            _sceneManagementService.LoadMatchRoom();
         }
 
         /// <summary>
@@ -430,7 +498,7 @@ namespace CavalryFight.ViewModels
         private void ExecutePlayAgain()
         {
             Debug.Log("[ResultsViewModel] Playing again...");
-            _sceneManagementService?.LoadMatch();
+            _sceneManagementService.LoadMatch();
         }
 
         /// <summary>
@@ -447,8 +515,20 @@ namespace CavalryFight.ViewModels
             HasVotedRematch = true;
             RematchVoteCount++;
 
-            Debug.Log($"[ResultsViewModel] Voted for rematch ({RematchVoteCount}/{TotalPlayers})");
+            // ローカルプレイヤーの統計も更新
+            var localPlayer = SortedPlayerStats.FirstOrDefault(p => p.IsLocalPlayer);
+            if (localPlayer != null)
+            {
+                localPlayer.HasVotedRematch = true;
+            }
+
+            Debug.Log($"[ResultsViewModel] Voted for rematch ({RematchVoteCount}/{ActivePlayerCount})");
+
+            // プロパティ変更通知
+            OnPropertyChanged(nameof(VoteCountText));
+            OnPropertyChanged(nameof(IsReturnToRoomDisabled));
             RematchVoteChanged?.Invoke(this, EventArgs.Empty);
+            LeaderboardUpdated?.Invoke(this, EventArgs.Empty);
 
             // 全員が同意したかチェック
             CheckAllPlayersAgreed();
@@ -468,8 +548,20 @@ namespace CavalryFight.ViewModels
             HasVotedRematch = false;
             RematchVoteCount--;
 
-            Debug.Log($"[ResultsViewModel] Cancelled rematch vote ({RematchVoteCount}/{TotalPlayers})");
+            // ローカルプレイヤーの統計も更新
+            var localPlayer = SortedPlayerStats.FirstOrDefault(p => p.IsLocalPlayer);
+            if (localPlayer != null)
+            {
+                localPlayer.HasVotedRematch = false;
+            }
+
+            Debug.Log($"[ResultsViewModel] Cancelled rematch vote ({RematchVoteCount}/{ActivePlayerCount})");
+
+            // プロパティ変更通知
+            OnPropertyChanged(nameof(VoteCountText));
+            OnPropertyChanged(nameof(IsReturnToRoomDisabled));
             RematchVoteChanged?.Invoke(this, EventArgs.Empty);
+            LeaderboardUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -483,7 +575,7 @@ namespace CavalryFight.ViewModels
                 AllPlayersAgreedToRematch?.Invoke(this, EventArgs.Empty);
 
                 // 全員同意したらマッチに遷移
-                _sceneManagementService?.LoadMatch();
+                _sceneManagementService.LoadMatch();
             }
         }
 
@@ -495,10 +587,99 @@ namespace CavalryFight.ViewModels
         {
             RematchVoteCount = voteCount;
             OnPropertyChanged(nameof(RematchStatusText));
+            OnPropertyChanged(nameof(VoteCountText));
             RematchVoteChanged?.Invoke(this, EventArgs.Empty);
 
             // 全員が同意したかチェック
             CheckAllPlayersAgreed();
+        }
+
+        /// <summary>
+        /// プレイヤーの投票状態を更新します（ネットワーク経由で呼ばれる）
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        /// <param name="hasVoted">投票したかどうか</param>
+        public void UpdatePlayerVoteStatus(string playerId, bool hasVoted)
+        {
+            var player = SortedPlayerStats.FirstOrDefault(p => p.PlayerId == playerId);
+            if (player != null)
+            {
+                player.HasVotedRematch = hasVoted;
+
+                // 投票数を再計算
+                RematchVoteCount = SortedPlayerStats.Count(p => p.HasVotedRematch && !p.HasLeft && !p.IsNPC);
+
+                OnPropertyChanged(nameof(VoteCountText));
+                OnPropertyChanged(nameof(RematchStatusText));
+                LeaderboardUpdated?.Invoke(this, EventArgs.Empty);
+                RematchVoteChanged?.Invoke(this, EventArgs.Empty);
+
+                Debug.Log($"[ResultsViewModel] Player {player.PlayerName} vote updated: {hasVoted} ({RematchVoteCount}/{ActivePlayerCount})");
+
+                // 全員が同意したかチェック
+                CheckAllPlayersAgreed();
+            }
+        }
+
+        /// <summary>
+        /// プレイヤーがルームを退出したことを処理します（ネットワーク経由で呼ばれる）
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        public void HandlePlayerLeft(string playerId)
+        {
+            var player = SortedPlayerStats.FirstOrDefault(p => p.PlayerId == playerId);
+            if (player != null)
+            {
+                player.HasLeft = true;
+                player.HasVotedRematch = false; // 退出 = 投票取り消し
+
+                // 投票数を再計算
+                RematchVoteCount = SortedPlayerStats.Count(p => p.HasVotedRematch && !p.HasLeft && !p.IsNPC);
+
+                Debug.Log($"[ResultsViewModel] Player {player.PlayerName} left the room ({RematchVoteCount}/{ActivePlayerCount})");
+
+                // プロパティ変更通知
+                OnPropertyChanged(nameof(ActivePlayerCount));
+                OnPropertyChanged(nameof(VoteCountText));
+                OnPropertyChanged(nameof(RematchStatusText));
+
+                // イベント発火
+                PlayerLeft?.Invoke(this, player);
+                LeaderboardUpdated?.Invoke(this, EventArgs.Empty);
+                RematchVoteChanged?.Invoke(this, EventArgs.Empty);
+
+                // ホストが退出した場合
+                if (player.IsHost)
+                {
+                    Debug.Log("[ResultsViewModel] Host has left the room!");
+                    HostLeft?.Invoke(this, EventArgs.Empty);
+                }
+                else
+                {
+                    // 残りのプレイヤーで全員同意チェック
+                    CheckAllPlayersAgreed();
+                }
+            }
+        }
+
+        /// <summary>
+        /// ローカルプレイヤーがルームを退出する際の処理
+        /// </summary>
+        /// <remarks>
+        /// MainMenu, Lobby, ReturnToRoomボタン押下時に呼ばれ、投票取り消しとして扱われます
+        /// </remarks>
+        public void HandleLocalPlayerLeaving()
+        {
+            // ローカルプレイヤーの投票をキャンセル
+            if (HasVotedRematch)
+            {
+                HasVotedRematch = false;
+                RematchVoteCount--;
+                Debug.Log($"[ResultsViewModel] Local player leaving, vote cancelled ({RematchVoteCount}/{ActivePlayerCount})");
+            }
+
+            // ネットワークに退出を通知する処理はここに追加
+            // TODO: NetworkService.NotifyPlayerLeaving();
         }
 
         #endregion

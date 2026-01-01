@@ -1,8 +1,8 @@
 #nullable enable
 
+using System;
 using CavalryFight.Core.Commands;
 using CavalryFight.Core.MVVM;
-using CavalryFight.Core.Services;
 using CavalryFight.Services.SceneManagement;
 using UnityEngine;
 
@@ -18,7 +18,7 @@ namespace CavalryFight.ViewModels
     {
         #region Fields
 
-        private readonly ISceneManagementService? _sceneManagementService;
+        private readonly ISceneManagementService _sceneManagementService;
         private string _title = "CavalryFight";
         private string _subtitle = "Main Menu";
 
@@ -85,10 +85,10 @@ namespace CavalryFight.ViewModels
         /// <summary>
         /// MainMenuViewModelの新しいインスタンスを初期化します。
         /// </summary>
-        public MainMenuViewModel()
+        /// <param name="sceneManagementService">シーン管理サービス</param>
+        public MainMenuViewModel(ISceneManagementService sceneManagementService)
         {
-            // サービスを取得
-            _sceneManagementService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            _sceneManagementService = sceneManagementService ?? throw new ArgumentNullException(nameof(sceneManagementService));
 
             // コマンドを初期化
             StartTrainingCommand = new RelayCommand(OnStartTraining, CanStartTraining);
@@ -109,7 +109,7 @@ namespace CavalryFight.ViewModels
         /// <returns>開始可能な場合はtrue</returns>
         private bool CanStartTraining()
         {
-            return _sceneManagementService != null && !_sceneManagementService.IsLoading;
+            return !_sceneManagementService.IsLoading;
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace CavalryFight.ViewModels
         private void OnStartTraining()
         {
             Debug.Log("[MainMenuViewModel] Starting Training Mode...");
-            _sceneManagementService?.LoadTraining();
+            _sceneManagementService.LoadTraining();
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace CavalryFight.ViewModels
         /// <returns>開ける場合はtrue</returns>
         private bool CanOpenMatchLobby()
         {
-            return _sceneManagementService != null && !_sceneManagementService.IsLoading;
+            return !_sceneManagementService.IsLoading;
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace CavalryFight.ViewModels
         private void OnOpenMatchLobby()
         {
             Debug.Log("[MainMenuViewModel] Opening Match Lobby...");
-            _sceneManagementService?.LoadLobby();
+            _sceneManagementService.LoadLobby();
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace CavalryFight.ViewModels
         /// <returns>開ける場合はtrue</returns>
         private bool CanOpenCustomization()
         {
-            return _sceneManagementService != null && !_sceneManagementService.IsLoading;
+            return !_sceneManagementService.IsLoading;
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace CavalryFight.ViewModels
         private void OnOpenCustomization()
         {
             Debug.Log("[MainMenuViewModel] Opening Customization...");
-            _sceneManagementService?.LoadCustomization();
+            _sceneManagementService.LoadCustomization();
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace CavalryFight.ViewModels
         /// <returns>開ける場合はtrue</returns>
         private bool CanOpenReplayHistory()
         {
-            return _sceneManagementService != null && !_sceneManagementService.IsLoading;
+            return !_sceneManagementService.IsLoading;
         }
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace CavalryFight.ViewModels
         private void OnOpenReplayHistory()
         {
             Debug.Log("[MainMenuViewModel] Opening Replay History...");
-            _sceneManagementService?.LoadReplay();
+            _sceneManagementService.LoadHistory();
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace CavalryFight.ViewModels
         /// <returns>開ける場合はtrue</returns>
         private bool CanOpenSettings()
         {
-            return _sceneManagementService != null && !_sceneManagementService.IsLoading;
+            return !_sceneManagementService.IsLoading;
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace CavalryFight.ViewModels
         private void OnOpenSettings()
         {
             Debug.Log("[MainMenuViewModel] Opening Settings...");
-            _sceneManagementService?.LoadSettings();
+            _sceneManagementService.LoadSettings();
         }
 
         /// <summary>

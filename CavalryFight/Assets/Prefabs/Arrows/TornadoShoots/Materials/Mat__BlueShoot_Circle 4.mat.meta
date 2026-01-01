@@ -6,3 +6,11 @@ NativeFormatImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 255608
+  packageName: Master Stylized Projectile
+  packageVersion: 1.0
+  assetPath: Assets/Prefabs/Arrows/TornadoShoots/Materials/Mat__BlueShoot_Circle
+    4.mat
+  uploadId: 825804

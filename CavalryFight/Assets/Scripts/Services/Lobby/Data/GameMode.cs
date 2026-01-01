@@ -43,11 +43,13 @@ namespace CavalryFight.Services.Lobby
         Deathmatch = 3,
 
         /// <summary>
-        /// Versusモード
+        /// ハンティングモード
         /// </summary>
         /// <remarks>
-        /// AIを相手にした戦闘。スキル向上とトレーニング。
+        /// チーム対抗の狩猟モード。各チームに1人のハンター（騎馬弓兵）と複数のウルフ。
+        /// ハンターは相手チームのウルフを狩り、ウルフはハンターをスタンさせる。
+        /// 最低4人必要。
         /// </remarks>
-        Versus = 4
+        Hunting = 4
     }
 }

@@ -60,6 +60,7 @@ namespace CavalryFight.Services.SceneManagement
         private SceneCollection? _resultsCollection;
         private SceneCollection? _replayCollection;
         private SceneCollection? _historyCollection;
+        private SceneCollection? _huntingCollection;
 
         #endregion
 
@@ -141,6 +142,7 @@ namespace CavalryFight.Services.SceneManagement
         /// <param name="results">Resultsシーンコレクション</param>
         /// <param name="replay">Replayシーンコレクション</param>
         /// <param name="history">Historyシーンコレクション</param>
+        /// <param name="hunting">Huntingシーンコレクション</param>
         public void RegisterSceneCollections(
             SceneCollection? startup,
             SceneCollection? mainMenu,
@@ -152,7 +154,8 @@ namespace CavalryFight.Services.SceneManagement
             SceneCollection? training,
             SceneCollection? results,
             SceneCollection? replay,
-            SceneCollection? history)
+            SceneCollection? history,
+            SceneCollection? hunting)
         {
             _startupCollection = startup;
             _mainMenuCollection = mainMenu;
@@ -165,6 +168,7 @@ namespace CavalryFight.Services.SceneManagement
             _resultsCollection = results;
             _replayCollection = replay;
             _historyCollection = history;
+            _huntingCollection = hunting;
 
             Debug.Log("[SceneManagementService] Scene collections registered.");
         }
@@ -298,6 +302,9 @@ namespace CavalryFight.Services.SceneManagement
                     break;
                 case ReturnDestination.Lobby:
                     LoadLobby();
+                    break;
+                case ReturnDestination.Hunting:
+                    LoadHunting();
                     break;
                 default:
                     Debug.LogWarning($"[SceneManagementService] Unknown return destination: {_returnDestination}. Defaulting to MainMenu.");
@@ -433,6 +440,29 @@ namespace CavalryFight.Services.SceneManagement
             {
                 Debug.LogError($"[SceneManagementService] Failed to open History collection: {ex.Message}");
                 SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("History", ex.Message, ex));
+            }
+        }
+
+        /// <summary>
+        /// ハンティングシーンをロードします。
+        /// </summary>
+        public void LoadHunting()
+        {
+            if (_huntingCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] Hunting collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Hunting", "Hunting collection is not registered"));
+                return;
+            }
+
+            try
+            {
+                OpenCollection(_huntingCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open Hunting collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Hunting", ex.Message, ex));
             }
         }
 

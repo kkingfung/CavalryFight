@@ -5,3 +5,10 @@ PrefabImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 255608
+  packageName: Master Stylized Projectile
+  packageVersion: 1.0
+  assetPath: Assets/Prefabs/Arrows/OrangeSparkleShoot/Prefabs/Par_OrangeShoot_Bullet.prefab
+  uploadId: 825804
