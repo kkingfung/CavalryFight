@@ -36,7 +36,6 @@ Update処理が必要なサービスを毎フレーム更新します。
 
 **更新対象サービス:**
 - `IMatchService` - マッチ状態の追跡
-- `IBlazeAIService` - AI状態変更の検出
 - `IReplayRecorder` - リプレイ録画の更新
 - `IReplayPlayer` - リプレイ再生の更新
 
@@ -60,7 +59,6 @@ Update処理が必要なサービスを毎フレーム更新します。
    - GameStateService (SceneManagementServiceに依存)
 
 3. Gameplay Services
-   - BlazeAIService
    - CustomizationService
    - ReplayRecorder
    - ReplayPlayer
@@ -128,7 +126,6 @@ private Dictionary<Type, List<Type>> BuildDependencyMap()
 例：
 - `IAudioService` - 音声が再生されないだけでゲームは続行可能
 - `IReplayRecorder` - リプレイ録画機能が使えないだけで本編はプレイ可能
-- `IBlazeAIService` - AI対戦ができないだけでマルチプレイは可能
 
 ### クリティカルサービスの追加
 
@@ -215,7 +212,6 @@ Startup シーン
 
 3. ServiceUpdater.Update() (毎フレーム)
    ├── MatchService.Update()
-   ├── BlazeAIService.Update()
    ├── ReplayRecorder.UpdateRecording()
    └── ReplayPlayer.UpdatePlayback()
 
@@ -362,7 +358,7 @@ NetworkMatchManagerを破棄
 
 ### Updateが呼ばれない
 
-**症状:** MatchServiceやAIServiceのUpdate処理が実行されない
+**症状:** MatchServiceのUpdate処理が実行されない
 
 **原因:**
 - ServiceUpdaterがGameBootstrapと同じGameObjectにない

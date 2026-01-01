@@ -26,6 +26,7 @@ namespace CavalryFight.Views
             _characterPanel = Q<VisualElement>("CharacterPanel");
             _mountPanel = Q<VisualElement>("MountPanel");
             _previewContainer = Q<VisualElement>("PreviewContainer");
+            _arrowPreviewVisualElement = Q<VisualElement>("ArrowPreviewContainer");
 
             // キャラクターコントロール
             _genderRadioGroup = Q<RadioButtonGroup>("GenderRadioGroup");
@@ -82,6 +83,10 @@ namespace CavalryFight.Views
             _bowPrevButton = Q<Button>("BowPrevButton");
             _bowValue = Q<Label>("BowValue");
             _bowNextButton = Q<Button>("BowNextButton");
+
+            _arrowTypePrevButton = Q<Button>("ArrowTypePrevButton");
+            _arrowTypeValue = Q<Label>("ArrowTypeValue");
+            _arrowTypeNextButton = Q<Button>("ArrowTypeNextButton");
 
             // 馬コントロール
             _coatColorPrevButton = Q<Button>("CoatColorPrevButton");

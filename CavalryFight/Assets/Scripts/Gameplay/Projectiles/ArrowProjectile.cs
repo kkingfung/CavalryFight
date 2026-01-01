@@ -126,9 +126,7 @@ namespace CavalryFight.Gameplay.Projectiles
             // ヒット音再生
             PlayHitSound();
 
-            bool hitTarget = false;
-
-            // TrainingTarget に当たった場合（優先）
+            // TrainingTarget に当たった場合
             TrainingTarget? trainingTarget = hitObject.GetComponent<TrainingTarget>();
             if (trainingTarget == null)
             {
@@ -140,34 +138,7 @@ namespace CavalryFight.Gameplay.Projectiles
             {
                 // TrainingTargetが自身でスコア計算とTrainingManager通知を行う
                 trainingTarget.OnHit(hitPoint, _chargeAmount);
-                hitTarget = true;
                 Debug.Log($"[ArrowProjectile] Hit TrainingTarget: {hitObject.name} | Charge: {_chargeAmount:F2}");
-            }
-
-            // Blaze AI敵に当たった場合
-            if (!hitTarget)
-            {
-                BlazeAI? blazeAI = hitObject.GetComponent<BlazeAI>();
-                if (blazeAI == null)
-                {
-                    // 親オブジェクトもチェック
-                    blazeAI = hitObject.GetComponentInParent<BlazeAI>();
-                }
-
-                if (blazeAI != null)
-                {
-                    // トレーニングモード: スコアを記録
-                    // チャージ量に応じてスコアを計算（最大200%）
-                    int score = Mathf.RoundToInt(_baseScore * _chargeAmount * 2f);
-
-                    // Blaze AIにヒット状態をトリガー（敵GameObjectはnullでOK）
-                    blazeAI.Hit(null, false);
-
-                    Debug.Log($"[ArrowProjectile] Hit Blaze AI: {hitObject.name} | Score: {score} | Charge: {_chargeAmount:F2}");
-
-                    // TrainingManagerに通知
-                    TrainingManager.Instance?.RecordHit(score, hitPoint);
-                }
             }
 
             // 刺さるか破壊するか

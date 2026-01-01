@@ -103,6 +103,11 @@ namespace CavalryFight.Services.Customization
         /// </summary>
         public int BowId = 10;
 
+        /// <summary>
+        /// 矢のタイプ（MasterStylizedProjectilesのプレハブ選択）
+        /// </summary>
+        public ArrowType ArrowType = ArrowType.Arrow;
+
         #endregion
 
         #region Constructors
@@ -193,7 +198,8 @@ namespace CavalryFight.Services.Customization
                 ArmsArmorId = this.ArmsArmorId,
                 WaistArmorId = this.WaistArmorId,
                 LegsArmorId = this.LegsArmorId,
-                BowId = this.BowId
+                BowId = this.BowId,
+                ArrowType = this.ArrowType
             };
         }
 

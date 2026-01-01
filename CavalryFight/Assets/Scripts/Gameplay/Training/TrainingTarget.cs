@@ -10,7 +10,7 @@ namespace CavalryFight.Gameplay.Training
     /// </summary>
     /// <remarks>
     /// 矢が命中した際にスコアを記録し、TrainingManagerに通知します。
-    /// BlazeAIと併用することで、動く的としても使用できます。
+    /// 動く的として使用する場合は、アニメーションや移動スクリプトを追加してください。
     /// </remarks>
     public class TrainingTarget : MonoBehaviour
     {

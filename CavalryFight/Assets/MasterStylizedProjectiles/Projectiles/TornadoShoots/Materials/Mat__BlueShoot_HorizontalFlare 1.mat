@@ -136,10 +136,12 @@ Material:
     - _Cutoff: 0.5
     - _DEPTHFADE: 0
     - _DepthFade: 0.88
+    - _DepthFadeDistance: 100
     - _DepthFadeMax: 0.209
     - _DepthFadeMin: 0
     - _DetailNormalMapScale: 1
     - _DstBlend: 10
+    - _DstBlendAlpha: 10
     - _EDGEFADE: 1
     - _EdgeFade: 0.652
     - _EdgeFadeMax: 1
@@ -168,6 +170,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 5
+    - _SrcBlendAlpha: 1
     - _Surface: 1
     - _USEMASK: 0
     - _USEMASK2: 0

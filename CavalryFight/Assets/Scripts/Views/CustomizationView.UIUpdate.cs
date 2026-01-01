@@ -100,6 +100,10 @@ namespace CavalryFight.Views
             {
                 _bowValue.text = character.BowId.ToString();
             }
+            if (_arrowTypeValue != null)
+            {
+                _arrowTypeValue.text = character.ArrowType.ToString();
+            }
         }
 
         /// <summary>

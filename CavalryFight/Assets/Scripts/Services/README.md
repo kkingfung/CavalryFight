@@ -12,7 +12,6 @@
 | **AudioService** | BGM・SE再生管理 | `Audio/` |
 | **InputService** | プレイヤー入力管理 | `Input/` |
 | **InputBindingService** | キーバインディング管理 | `Input/` |
-| **BlazeAIService** | AI敵管理（Blaze AIラッパー） | `AI/` |
 | **GameSettingsService** | ゲーム設定管理（保存/読込/適用） | `GameSettings/` |
 | **ReplayRecorder** | リプレイ録画管理 | `Replay/` |
 | **ReplayPlayer** | リプレイ再生管理 | `Replay/` |
@@ -82,7 +81,6 @@
 | 0.7.1 | 2025-12-13 | Replay サービスをReplayRecorderとReplayPlayerに分離（録画と再生を独立したサービスに） |
 | 0.7.0 | 2025-12-12 | Replay サービス追加（リプレイ録画・再生システム） |
 | 0.6.0 | 2025-12-12 | GameSettings サービス追加（設定管理システム） |
-| 0.5.0 | 2025-12-11 | BlazeAI サービス追加（AI敵管理） |
 | 0.4.0 | 2025-12-11 | InputBinding サービス追加（キーバインディングシステム） |
 | 0.3.0 | 2025-12-11 | Input サービス追加 |
 | 0.2.0 | 2025-12-11 | Audio サービス追加 |

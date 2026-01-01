@@ -65,7 +65,7 @@ namespace CavalryFight.Core.Bootstrap
             }
 
             // すべてのサービスが見つからない場合はコンポーネントを無効化
-            if (_matchService == null && _aiService == null && _replayRecorder == null && _replayPlayer == null)
+            if (_matchService == null && _replayRecorder == null && _replayPlayer == null)
             {
                 Debug.LogError("[ServiceUpdater] No services found. Disabling ServiceUpdater.");
                 enabled = false;

@@ -138,10 +138,12 @@ Material:
     - _Cutoff: 0.5
     - _DEPTHFADE: 0
     - _DepthFade: 0.88
+    - _DepthFadeDistance: 100
     - _DepthFadeMax: 0.209
     - _DepthFadeMin: 0
     - _DetailNormalMapScale: 1
     - _DstBlend: 10
+    - _DstBlendAlpha: 10
     - _EDGEFADE: 1
     - _EdgeFade: 0.652
     - _EdgeFadeMax: 1
@@ -154,6 +156,8 @@ Material:
     - _MESHEDGETRANSPARENT: 1
     - _MaskFeather: 0.564
     - _MaskFeather2: 0.249
+    - _MaskIntensity: 0
+    - _MaskIntensity2: 0
     - _MaskRepeat: 0
     - _MaskRepeat2: 0
     - _Metallic: 0
@@ -168,6 +172,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 5
+    - _SrcBlendAlpha: 1
     - _Surface: 1
     - _USEMASK: 0
     - _USEMASK2: 0
@@ -184,6 +189,7 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _InitOffset: {r: 0, g: 0, b: 0, a: 0}
     - _MaskOffset: {r: 0, g: 0, b: 0, a: 0}
     - _MaskOffset2: {r: 0, g: 0, b: 0, a: 0}
     - _MaskScroll: {r: 0, g: 0, b: 0, a: 0}
