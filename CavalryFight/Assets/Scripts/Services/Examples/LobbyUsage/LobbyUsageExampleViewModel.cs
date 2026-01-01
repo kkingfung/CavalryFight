@@ -87,7 +87,10 @@ namespace CavalryFight.Examples.LobbyUsage
         /// </summary>
         private void SubscribeToEvents()
         {
-            if (_lobbyService == null) return;
+            if (_lobbyService == null)
+            {
+                return;
+            }
 
             _lobbyService.RoomCreated += OnRoomCreated;
             _lobbyService.RoomJoined += OnRoomJoined;
@@ -105,7 +108,10 @@ namespace CavalryFight.Examples.LobbyUsage
         /// </summary>
         private void UnsubscribeFromEvents()
         {
-            if (_lobbyService == null) return;
+            if (_lobbyService == null)
+            {
+                return;
+            }
 
             _lobbyService.RoomCreated -= OnRoomCreated;
             _lobbyService.RoomJoined -= OnRoomJoined;

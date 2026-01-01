@@ -207,6 +207,26 @@ namespace CavalryFight.Services.Input
         /// <returns>押された瞬間の場合true</returns>
         bool GetMenuButtonDown();
 
+        /// <summary>
+        /// スコアボードボタンが押された瞬間かを取得します。
+        /// </summary>
+        /// <remarks>
+        /// マッチ中のスコアボードを表示する際に使用します。
+        /// デフォルトではTabキーに割り当てられます。
+        /// </remarks>
+        /// <returns>押された瞬間の場合true</returns>
+        bool GetScoreboardButtonDown();
+
+        /// <summary>
+        /// スコアボードボタンが離された瞬間かを取得します。
+        /// </summary>
+        /// <remarks>
+        /// スコアボードを閉じる際に使用します。
+        /// デフォルトではTabキーに割り当てられます。
+        /// </remarks>
+        /// <returns>離された瞬間の場合true</returns>
+        bool GetScoreboardButtonUp();
+
         #endregion
 
         #region Utility

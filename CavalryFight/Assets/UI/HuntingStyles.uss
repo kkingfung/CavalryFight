@@ -56,7 +56,9 @@
     margin-bottom: 8px;
 }
 
-.stat-row:last-child {
+/* NOTE: :last-child is not supported in Unity UI Toolkit.
+   Apply .stat-row--last class manually in C# if needed. */
+.stat-row--last {
     margin-bottom: 0;
 }
 
@@ -211,7 +213,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    pointer-events: none;
+    picking-mode: ignore;
 }
 
 .score-popup {

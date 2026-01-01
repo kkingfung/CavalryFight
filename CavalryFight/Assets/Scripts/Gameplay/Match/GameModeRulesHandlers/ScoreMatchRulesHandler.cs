@@ -37,7 +37,10 @@ namespace CavalryFight.Gameplay.Match
         {
             get
             {
-                if (_manager == null) return false;
+                if (_manager == null)
+                {
+                    return false;
+                }
 
                 foreach (var slot in _manager.PlayerSlots)
                 {
@@ -61,7 +64,10 @@ namespace CavalryFight.Gameplay.Match
             winnerId = 0;
 
             // 時間切れまたは全員の矢が尽きた場合
-            if (!IsTimeUp && !AllArrowsUsed) return false;
+            if (!IsTimeUp && !AllArrowsUsed)
+            {
+                return false;
+            }
 
             // 最高スコアのプレイヤーが勝者
             winnerId = GetHighestScoringPlayer();

@@ -39,7 +39,10 @@ namespace CavalryFight.Gameplay.Match
             winnerId = 0;
 
             // 時間制限に達した場合のみ勝者を決定
-            if (!IsTimeUp) return false;
+            if (!IsTimeUp)
+            {
+                return false;
+            }
 
             // 最高スコアのチームが勝者
             int winningTeam = GetHighestScoringTeam();

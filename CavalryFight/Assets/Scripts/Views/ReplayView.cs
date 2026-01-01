@@ -173,7 +173,10 @@ namespace CavalryFight.Views
 
         private void SetupSpeedDropdown()
         {
-            if (_speedDropdown == null || ViewModel == null) return;
+            if (_speedDropdown == null || ViewModel == null)
+            {
+                return;
+            }
 
             var choices = new List<string>();
             foreach (var speed in ViewModel.AvailableSpeeds)
@@ -237,7 +240,10 @@ namespace CavalryFight.Views
 
         private void UpdateUIFromViewModel()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             UpdateHeader();
             UpdateTimeline();
@@ -249,7 +255,10 @@ namespace CavalryFight.Views
 
         private void UpdateHeader()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             if (_mapLabel != null)
             {
@@ -269,7 +278,10 @@ namespace CavalryFight.Views
 
         private void UpdateTimeline()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             if (_timelineSlider != null)
             {
@@ -290,21 +302,30 @@ namespace CavalryFight.Views
 
         private void UpdatePlayPauseButton()
         {
-            if (_playPauseButton == null || ViewModel == null) return;
+            if (_playPauseButton == null || ViewModel == null)
+            {
+                return;
+            }
 
             _playPauseButton.text = ViewModel.PlayPauseButtonText;
         }
 
         private void UpdateCameraMode()
         {
-            if (_cameraModeLabel == null || ViewModel == null) return;
+            if (_cameraModeLabel == null || ViewModel == null)
+            {
+                return;
+            }
 
             _cameraModeLabel.text = ViewModel.CameraModeText;
         }
 
         private void UpdateHighlights()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             bool hasHighlights = ViewModel.HasHighlights;
 
@@ -328,7 +349,10 @@ namespace CavalryFight.Views
 
         private void UpdateUIVisibility()
         {
-            if (_uiContainer == null || ViewModel == null) return;
+            if (_uiContainer == null || ViewModel == null)
+            {
+                return;
+            }
 
             _uiContainer.style.display = ViewModel.IsUIVisible
                 ? DisplayStyle.Flex
@@ -346,7 +370,10 @@ namespace CavalryFight.Views
 
         private void HandleKeyboardInput()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             // Toggle UI
             if (Input.GetKeyDown(_toggleUIKey))
@@ -414,7 +441,10 @@ namespace CavalryFight.Views
 
         private void OnSpeedChanged(ChangeEvent<string> evt)
         {
-            if (ViewModel == null || _speedDropdown == null) return;
+            if (ViewModel == null || _speedDropdown == null)
+            {
+                return;
+            }
 
             ViewModel.PlaybackSpeedIndex = _speedDropdown.index;
         }

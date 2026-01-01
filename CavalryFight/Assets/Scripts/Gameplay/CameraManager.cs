@@ -112,7 +112,10 @@ namespace CavalryFight.Gameplay
         /// <param name="spawner">PlayerSpawner</param>
         public void SubscribeToPlayerSpawner(Player.PlayerSpawner spawner)
         {
-            if (spawner == null) return;
+            if (spawner == null)
+            {
+                return;
+            }
 
             // スポーン完了時にターゲットを設定
             if (spawner.IsSpawned)
@@ -127,7 +130,10 @@ namespace CavalryFight.Gameplay
         /// <param name="spawner">PlayerSpawner</param>
         public void SetTargetFromSpawner(Player.PlayerSpawner spawner)
         {
-            if (spawner == null) return;
+            if (spawner == null)
+            {
+                return;
+            }
 
             if (_targetMountByDefault && spawner.SpawnedMount != null)
             {

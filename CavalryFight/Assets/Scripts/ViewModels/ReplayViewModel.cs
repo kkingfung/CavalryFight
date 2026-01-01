@@ -300,9 +300,18 @@ namespace CavalryFight.ViewModels
         {
             get
             {
-                if (ReplayData == null) return "";
-                if (ReplayData.FinalPlayerScore > ReplayData.FinalEnemyScore) return "Victory";
-                if (ReplayData.FinalPlayerScore < ReplayData.FinalEnemyScore) return "Defeat";
+                if (ReplayData == null)
+                {
+                    return "";
+                }
+                if (ReplayData.FinalPlayerScore > ReplayData.FinalEnemyScore)
+                {
+                    return "Victory";
+                }
+                if (ReplayData.FinalPlayerScore < ReplayData.FinalEnemyScore)
+                {
+                    return "Defeat";
+                }
                 return "Draw";
             }
         }
@@ -440,7 +449,10 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public void Play()
         {
-            if (!HasReplay) return;
+            if (!HasReplay)
+            {
+                return;
+            }
 
             IsPlaying = true;
             IsPaused = false;
@@ -491,7 +503,10 @@ namespace CavalryFight.ViewModels
         /// <param name="deltaTime">経過時間</param>
         public void Tick(float deltaTime)
         {
-            if (!IsPlaying || IsPaused || !HasReplay) return;
+            if (!IsPlaying || IsPaused || !HasReplay)
+            {
+                return;
+            }
 
             CurrentTime += deltaTime * PlaybackSpeed;
 
@@ -540,7 +555,10 @@ namespace CavalryFight.ViewModels
 
         private void ExecutePreviousHighlight()
         {
-            if (!HasHighlights) return;
+            if (!HasHighlights)
+            {
+                return;
+            }
 
             // 現在時間より前のハイライトを探す
             for (int i = Highlights.Count - 1; i >= 0; i--)
@@ -561,7 +579,10 @@ namespace CavalryFight.ViewModels
 
         private void ExecuteNextHighlight()
         {
-            if (!HasHighlights) return;
+            if (!HasHighlights)
+            {
+                return;
+            }
 
             // 現在時間より後のハイライトを探す
             for (int i = 0; i < Highlights.Count; i++)

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CavalryFight.Core.Commands;
 using CavalryFight.Core.MVVM;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.Replay;
 using CavalryFight.Services.SceneManagement;
@@ -678,8 +680,13 @@ namespace CavalryFight.ViewModels
                 Debug.Log($"[ResultsViewModel] Local player leaving, vote cancelled ({RematchVoteCount}/{ActivePlayerCount})");
             }
 
-            // ネットワークに退出を通知する処理はここに追加
-            // TODO: NetworkService.NotifyPlayerLeaving();
+            // ネットワークに退出を通知
+            var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+            if (lobbyService != null && lobbyService.IsInRoom)
+            {
+                Debug.Log("[ResultsViewModel] Notifying lobby service of player leaving");
+                lobbyService.LeaveRoom();
+            }
         }
 
         #endregion

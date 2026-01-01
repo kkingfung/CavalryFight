@@ -93,6 +93,11 @@ namespace CavalryFight.Services.Match
         /// </summary>
         private GameMode _currentGameMode = GameMode.Hunting;
 
+        /// <summary>
+        /// 最後のマッチ結果
+        /// </summary>
+        private MatchResult? _lastMatchResult;
+
         #endregion
 
         #region Properties
@@ -109,7 +114,10 @@ namespace CavalryFight.Services.Match
         {
             get
             {
-                if (_networkMatchManager == null) return MatchState.WaitingForPlayers;
+                if (_networkMatchManager == null)
+                {
+                    return MatchState.WaitingForPlayers;
+                }
 
                 // NetworkMatchManagerの状態を確認
                 if (!_networkMatchManager.IsMatchStarted)
@@ -144,7 +152,10 @@ namespace CavalryFight.Services.Match
         {
             get
             {
-                if (!IsMatchStarted) return 0f;
+                if (!IsMatchStarted)
+                {
+                    return 0f;
+                }
                 return Time.time - _matchStartTime;
             }
         }
@@ -305,7 +316,95 @@ namespace CavalryFight.Services.Match
         /// </summary>
         private void OnMatchEnded(ulong winnerClientId)
         {
+            // マッチ結果を生成して保存
+            _lastMatchResult = CreateMatchResult(winnerClientId);
+
             MatchEnded?.Invoke(winnerClientId);
+
+            // 詳細結果も発火
+            if (_lastMatchResult != null)
+            {
+                var endResult = new MatchEndResult
+                {
+                    WinnerId = winnerClientId,
+                    MatchDuration = _lastMatchResult.MatchDuration,
+                    GameMode = _currentGameMode,
+                    IsTeamMode = _lastMatchResult.IsTeamMatch
+                };
+                MatchEndedWithResult?.Invoke(endResult);
+            }
+        }
+
+        /// <summary>
+        /// マッチ結果を生成します
+        /// </summary>
+        /// <param name="winnerClientId">勝者のクライアントID</param>
+        /// <returns>マッチ結果</returns>
+        private MatchResult CreateMatchResult(ulong winnerClientId)
+        {
+            var result = new MatchResult();
+
+            // 基本情報
+            result.GameMode = _currentGameMode.ToString();
+            result.MatchDuration = MatchTime;
+            result.FinishedAt = System.DateTime.Now;
+
+            // ローカルプレイヤーのスコア情報を取得
+            ulong localClientId = 0;
+            if (Unity.Netcode.NetworkManager.Singleton != null)
+            {
+                localClientId = Unity.Netcode.NetworkManager.Singleton.LocalClientId;
+            }
+
+            var localScore = GetPlayerScore(localClientId);
+            var allScores = GetAllPlayerScores();
+
+            if (localScore.HasValue)
+            {
+                result.PlayerScore = localScore.Value.Score;
+
+                // ローカルプレイヤーの統計を設定
+                result.LocalPlayerStats = new PlayerStatistics
+                {
+                    PlayerId = localClientId.ToString(),
+                    PlayerName = localScore.Value.PlayerName.ToString(),
+                    Score = localScore.Value.Score,
+                    Hits = localScore.Value.HitCount,
+                    ArrowsFired = localScore.Value.ShotCount,
+                    IsLocalPlayer = true
+                };
+            }
+
+            // 敵スコアを計算（全プレイヤーのスコア合計からローカルを除く）
+            int enemyTotalScore = 0;
+            foreach (var score in allScores)
+            {
+                if (score.ClientId != localClientId)
+                {
+                    enemyTotalScore += score.Score;
+                }
+
+                // 全プレイヤーの統計を追加
+                result.AllPlayerStats.Add(new PlayerStatistics
+                {
+                    PlayerId = score.ClientId.ToString(),
+                    PlayerName = score.PlayerName.ToString(),
+                    Score = score.Score,
+                    Hits = score.HitCount,
+                    ArrowsFired = score.ShotCount,
+                    IsLocalPlayer = score.ClientId == localClientId
+                });
+            }
+            result.EnemyScore = enemyTotalScore;
+
+            // マルチプレイヤー情報
+            result.IsMultiplayerMatch = Unity.Netcode.NetworkManager.Singleton != null
+                && Unity.Netcode.NetworkManager.Singleton.IsConnectedClient;
+            result.CurrentPlayerCount = allScores.Length;
+
+            Debug.Log($"[MatchService] Match result created: {result.PlayerScore} vs {result.EnemyScore}, Duration: {result.DurationText}");
+
+            return result;
         }
 
         #endregion
@@ -385,6 +484,15 @@ namespace CavalryFight.Services.Match
             }
 
             return _networkMatchManager.GetAllPlayerScores();
+        }
+
+        /// <summary>
+        /// 最後に完了したマッチの結果を取得します
+        /// </summary>
+        /// <returns>マッチ結果（存在しない場合はnull）</returns>
+        public MatchResult? GetLastMatchResult()
+        {
+            return _lastMatchResult;
         }
 
         /// <summary>

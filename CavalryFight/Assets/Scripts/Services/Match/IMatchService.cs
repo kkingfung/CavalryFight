@@ -157,6 +157,12 @@ namespace CavalryFight.Services.Match
         /// <returns>プレイヤースコア配列</returns>
         PlayerScore[] GetAllPlayerScores();
 
+        /// <summary>
+        /// 最後に完了したマッチの結果を取得します
+        /// </summary>
+        /// <returns>マッチ結果（存在しない場合はnull）</returns>
+        MatchResult? GetLastMatchResult();
+
         #endregion
 
         #region Methods - Server Only

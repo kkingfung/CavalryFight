@@ -502,6 +502,44 @@ namespace CavalryFight.Services.Input
             return _inputActions.UI.Menu.WasPressedThisFrame();
         }
 
+        /// <summary>
+        /// スコアボードボタンが押された瞬間かを取得します。
+        /// </summary>
+        /// <remarks>
+        /// マッチ中のスコアボードを表示する際に使用します。
+        /// デフォルトではTabキーに割り当てられます。
+        /// </remarks>
+        /// <returns>押された瞬間の場合true</returns>
+        public bool GetScoreboardButtonDown()
+        {
+            if (!_inputEnabled)
+            {
+                return false;
+            }
+
+            // Tabキーを直接チェック（Input Actionsに追加されていない場合のフォールバック）
+            return UnityEngine.Input.GetKeyDown(KeyCode.Tab);
+        }
+
+        /// <summary>
+        /// スコアボードボタンが離された瞬間かを取得します。
+        /// </summary>
+        /// <remarks>
+        /// スコアボードを閉じる際に使用します。
+        /// デフォルトではTabキーに割り当てられます。
+        /// </remarks>
+        /// <returns>離された瞬間の場合true</returns>
+        public bool GetScoreboardButtonUp()
+        {
+            if (!_inputEnabled)
+            {
+                return false;
+            }
+
+            // Tabキーを直接チェック（Input Actionsに追加されていない場合のフォールバック）
+            return UnityEngine.Input.GetKeyUp(KeyCode.Tab);
+        }
+
         #endregion
 
         #region Utility

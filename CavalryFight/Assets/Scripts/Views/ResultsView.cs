@@ -12,6 +12,11 @@ using CavalryFight.ViewModels;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+#if UNITY_EDITOR
+using CavalryFight.Editor.MockData;
+using CavalryFight.Editor.MockData.MockServices;
+#endif
+
 namespace CavalryFight.Views
 {
     /// <summary>
@@ -202,7 +207,10 @@ namespace CavalryFight.Views
 
         private void UpdateUIFromViewModel()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             UpdateResultHeader();
             UpdateMatchInfo();
@@ -215,7 +223,10 @@ namespace CavalryFight.Views
 
         private void UpdateResultHeader()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             // 結果ラベル
             if (_resultLabel != null)
@@ -269,7 +280,10 @@ namespace CavalryFight.Views
 
         private void UpdateMatchInfo()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             if (_mapLabel != null)
             {
@@ -289,7 +303,10 @@ namespace CavalryFight.Views
 
         private void UpdateGameSettings()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             if (_maxPlayersLabel != null)
             {
@@ -309,7 +326,10 @@ namespace CavalryFight.Views
 
         private void UpdateLeaderboard()
         {
-            if (ViewModel == null || _leaderboardContainer == null) return;
+            if (ViewModel == null || _leaderboardContainer == null)
+            {
+                return;
+            }
 
             // 既存の行をクリア
             _leaderboardContainer.Clear();
@@ -454,7 +474,10 @@ namespace CavalryFight.Views
 
         private void UpdateReplayButtons()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             // リプレイ保存済みバッジ
             if (_replaySavedBadge != null)
@@ -476,7 +499,10 @@ namespace CavalryFight.Views
 
         private void UpdateNavigationButtons()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             // シングルプレイヤーの場合はPlay Againセクションを表示、マルチの場合はVoteセクションを表示
             if (_playAgainSection != null)
@@ -506,7 +532,10 @@ namespace CavalryFight.Views
 
         private void UpdateVoteSection()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             // 投票状態ラベル
             if (_rematchStatusLabel != null)
@@ -607,7 +636,10 @@ namespace CavalryFight.Views
 
         private void PlayResultBGM()
         {
-            if (_audioService == null || ViewModel == null) return;
+            if (_audioService == null || ViewModel == null)
+            {
+                return;
+            }
 
             AudioClip? bgm = null;
 
@@ -770,19 +802,55 @@ namespace CavalryFight.Views
         /// マッチ結果を取得します
         /// </summary>
         /// <remarks>
-        /// TODO: 実際の実装では IMatchService から結果を取得する
+        /// DevBootstrapで初期化された場合はモックサービスからデータを取得します。
+        /// 本番環境ではIMatchServiceから結果を取得します。
         /// </remarks>
         private MatchResult GetMatchResult()
         {
-            // TODO: IMatchService から実際のマッチ結果を取得
-            // var matchService = ServiceLocator.Instance.Get<IMatchService>();
-            // return matchService?.GetLastMatchResult() ?? CreateMockResult();
+#if UNITY_EDITOR
+            // DevBootstrapで初期化された場合はモックサービスからデータを取得
+            if (DevBootstrap.IsDevMode)
+            {
+                var matchService = ServiceLocator.Instance.Get<IMatchService>();
+                if (matchService is MockMatchService mockMatchService)
+                {
+                    Debug.Log("[ResultsView] Using mock match result from DevBootstrap");
+                    return mockMatchService.GetMockMatchResult();
+                }
+            }
+#endif
 
+            // IMatchServiceから最後のマッチ結果を取得
+            var matchService = ServiceLocator.Instance.Get<IMatchService>();
+            var result = matchService?.GetLastMatchResult();
+            if (result != null)
+            {
+                Debug.Log("[ResultsView] Using match result from IMatchService");
+                return result;
+            }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.LogWarning("[ResultsView] Match result not available from service, using fallback mock data (development only)");
             return CreateMockResult();
+#else
+            // 本番ビルドではサービスからの結果を使用
+            // 結果がない場合は空のMatchResultを返す
+            Debug.LogWarning("[ResultsView] Match result not available from IMatchService, returning empty result.");
+            return new MatchResult
+            {
+                MapName = "Unknown",
+                GameMode = "Unknown",
+                MatchDuration = 0f,
+                PlayerScore = 0,
+                EnemyScore = 0,
+                AllPlayerStats = new System.Collections.Generic.List<PlayerStatistics>()
+            };
+#endif
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         /// <summary>
-        /// モックのマッチ結果を作成します（開発用）
+        /// モックのマッチ結果を作成します（開発用のみ）
         /// </summary>
         private MatchResult CreateMockResult()
         {
@@ -813,7 +881,7 @@ namespace CavalryFight.Views
                 EnemyScore = 7,
                 HasReplayData = true,
                 IsMultiplayerMatch = true, // マルチプレイヤーとしてテスト
-                CanReturnToRoom = true,
+                IsRoomStillOpen = true, // CanReturnToRoom = IsMultiplayerMatch && IsRoomStillOpen
                 LocalPlayerStats = localPlayer,
                 AllPlayerStats = new System.Collections.Generic.List<PlayerStatistics>
                 {
@@ -884,6 +952,7 @@ namespace CavalryFight.Views
 
             return result;
         }
+#endif
 
         #endregion
     }

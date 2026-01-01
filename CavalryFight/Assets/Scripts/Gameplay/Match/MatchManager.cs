@@ -116,7 +116,10 @@ namespace CavalryFight.Gameplay.Match
         {
             get
             {
-                if (_playerSlots == null) return Array.Empty<PlayerSlot>();
+                if (_playerSlots == null)
+                {
+                    return Array.Empty<PlayerSlot>();
+                }
                 var list = new List<PlayerSlot>();
                 foreach (var slot in _playerSlots)
                 {
@@ -209,7 +212,10 @@ namespace CavalryFight.Gameplay.Match
 
         private void Update()
         {
-            if (!IsServer) return;
+            if (!IsServer)
+            {
+                return;
+            }
 
             switch (_matchState.Value)
             {
@@ -235,7 +241,10 @@ namespace CavalryFight.Gameplay.Match
         [ServerRpc(RequireOwnership = false)]
         public void InitializeMatchServerRpc(RoomSettings settings, PlayerSlot[] slots)
         {
-            if (!IsServer) return;
+            if (!IsServer)
+            {
+                return;
+            }
 
             _roomSettings.Value = settings;
 
@@ -280,8 +289,14 @@ namespace CavalryFight.Gameplay.Match
         [ServerRpc(RequireOwnership = false)]
         public void StartCountdownServerRpc()
         {
-            if (!IsServer) return;
-            if (_matchState.Value != MatchState.WaitingForPlayers) return;
+            if (!IsServer)
+            {
+                return;
+            }
+            if (_matchState.Value != MatchState.WaitingForPlayers)
+            {
+                return;
+            }
 
             _countdownTimer = _countdownDuration;
             _matchState.Value = MatchState.Countdown;
@@ -296,7 +311,10 @@ namespace CavalryFight.Gameplay.Match
         [ServerRpc(RequireOwnership = false)]
         public void ForceEndMatchServerRpc(ulong winnerId)
         {
-            if (!IsServer) return;
+            if (!IsServer)
+            {
+                return;
+            }
 
             EndMatch(winnerId);
         }
@@ -307,7 +325,10 @@ namespace CavalryFight.Gameplay.Match
         [ServerRpc(RequireOwnership = false)]
         public void AddPlayerScoreServerRpc(ulong clientId, int score, HitLocation hitLocation)
         {
-            if (!IsServer || _playerScores == null) return;
+            if (!IsServer || _playerScores == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < _playerScores.Count; i++)
             {
@@ -336,7 +357,10 @@ namespace CavalryFight.Gameplay.Match
         [ServerRpc(RequireOwnership = false)]
         public void RecordArrowFiredServerRpc(ulong clientId)
         {
-            if (!IsServer || _playerScores == null) return;
+            if (!IsServer || _playerScores == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < _playerScores.Count; i++)
             {
@@ -363,7 +387,10 @@ namespace CavalryFight.Gameplay.Match
         [ServerRpc(RequireOwnership = false)]
         public void RecordPlayerDeathServerRpc(ulong clientId, ulong killerId)
         {
-            if (!IsServer) return;
+            if (!IsServer)
+            {
+                return;
+            }
 
             _activeHandler?.OnPlayerDeath(clientId, killerId);
             NotifyPlayerDiedClientRpc(clientId, killerId);
@@ -412,7 +439,10 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         public Services.Match.PlayerScore? GetPlayerScore(ulong clientId)
         {
-            if (_playerScores == null) return null;
+            if (_playerScores == null)
+            {
+                return null;
+            }
 
             foreach (var score in _playerScores)
             {
@@ -429,7 +459,10 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         public Services.Match.PlayerScore[] GetAllPlayerScores()
         {
-            if (_playerScores == null) return Array.Empty<Services.Match.PlayerScore>();
+            if (_playerScores == null)
+            {
+                return Array.Empty<Services.Match.PlayerScore>();
+            }
 
             var list = new List<Services.Match.PlayerScore>();
             foreach (var score in _playerScores)

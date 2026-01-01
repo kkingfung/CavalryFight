@@ -207,7 +207,10 @@ namespace CavalryFight.Views
         /// </summary>
         private void GetUIElements()
         {
-            if (RootVisualElement == null) return;
+            if (RootVisualElement == null)
+            {
+                return;
+            }
 
             // Header
             _refreshButton = Q<Button>("RefreshButton");
@@ -610,7 +613,10 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnJoinRoomButtonClicked()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             PlayButtonClickSfx();
 

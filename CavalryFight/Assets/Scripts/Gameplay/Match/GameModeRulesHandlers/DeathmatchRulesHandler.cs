@@ -43,7 +43,10 @@ namespace CavalryFight.Gameplay.Match
         {
             get
             {
-                if (_manager == null) return 0;
+                if (_manager == null)
+                {
+                    return 0;
+                }
                 return _manager.PlayerSlots.Count - _eliminatedPlayers.Count;
             }
         }
@@ -73,7 +76,10 @@ namespace CavalryFight.Gameplay.Match
             winnerId = 0;
 
             // 生存者が1人以下になった場合
-            if (AlivePlayerCount > 1) return false;
+            if (AlivePlayerCount > 1)
+            {
+                return false;
+            }
 
             // 最後の生存者を見つける
             if (_manager != null)

@@ -252,7 +252,10 @@ namespace CavalryFight.Views
         /// </summary>
         private void GetUIElements()
         {
-            if (RootVisualElement == null) return;
+            if (RootVisualElement == null)
+            {
+                return;
+            }
 
             // Header
             _joinCodeLabel = Q<Label>("JoinCodeLabel");
@@ -867,7 +870,10 @@ namespace CavalryFight.Views
         /// </summary>
         private void UpdateUI()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             // Join Code
             if (_joinCodeLabel != null)
@@ -1066,7 +1072,10 @@ namespace CavalryFight.Views
         /// </summary>
         private void UpdateButtonVisibility()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             // Leave Room Button - 準備中は無効
             if (_leaveRoomButton != null)
@@ -1118,7 +1127,10 @@ namespace CavalryFight.Views
         /// </summary>
         private void UpdateCountdownDialog()
         {
-            if (ViewModel == null || _countdownDialog == null) return;
+            if (ViewModel == null || _countdownDialog == null)
+            {
+                return;
+            }
 
             _countdownDialog.style.display = ViewModel.IsCountingDown ? DisplayStyle.Flex : DisplayStyle.None;
 
@@ -1133,7 +1145,10 @@ namespace CavalryFight.Views
         /// </summary>
         private void UpdateGameSettingsAvailability()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             // GameMode文字列をenumに変換
             if (!System.Enum.TryParse<GameMode>(ViewModel.GameMode, out var parsedMode))
@@ -1166,7 +1181,10 @@ namespace CavalryFight.Views
         /// </summary>
         private void UpdateGameSettingsDropdownValues()
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             // タイムリミットの表示を更新
             if (_timeLimitDropdown != null)
@@ -1391,7 +1409,10 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnTeamButtonClicked(string playerId)
         {
-            if (ViewModel == null) return;
+            if (ViewModel == null)
+            {
+                return;
+            }
 
             PlayButtonClickSfx();
 
