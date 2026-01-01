@@ -59,9 +59,9 @@ namespace CavalryFight.ViewModels
         private int _selectedMaxPlayers = 8;
 
         /// <summary>
-        /// 選択されたマップ
+        /// 選択されたマップ（フィールドプレハブ名と一致）
         /// </summary>
-        private string _selectedMap = "DefaultArena";
+        private string _selectedMap = "Arena";
 
         /// <summary>
         /// ステータスメッセージ

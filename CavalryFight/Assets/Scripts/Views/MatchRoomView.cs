@@ -344,21 +344,23 @@ namespace CavalryFight.Views
             }
 
             // Map dropdown (Room Info - Host only)
+            // フィールドプレハブと一致（TrainingRoomを除く）
             if (_mapDropdown != null)
             {
                 _mapDropdown.choices = new List<string>
                 {
-                    "DefaultArena", "Desert Arena", "Forest Arena", "Snow Arena"
+                    "Arena", "Forest", "Nature", "PlayGround"
                 };
-                _mapDropdown.value = "DefaultArena";
+                _mapDropdown.value = "Arena";
             }
 
             // Max Players dropdown (Room Info - Host only)
+            // 最大プレイヤー数は2〜8の範囲（RoomSettingsと一致）
             if (_maxPlayersDropdown != null)
             {
                 _maxPlayersDropdown.choices = new List<string>
                 {
-                    "2", "4", "6", "8", "10", "12", "16"
+                    "2", "3", "4", "5", "6", "7", "8"
                 };
                 _maxPlayersDropdown.value = "8";
             }
@@ -1395,14 +1397,33 @@ namespace CavalryFight.Views
             var player = ViewModel.Players.FirstOrDefault(p => p.PlayerId == playerId);
             if (player != null)
             {
+                // TeamFightモードかどうかを確認
+                bool isTeamFightMode = ViewModel.GameMode == "TeamFight";
+
                 // チームをローテーション
-                var newTeam = player.Team switch
+                PlayerTeam newTeam;
+                if (isTeamFightMode)
                 {
-                    PlayerTeam.None => PlayerTeam.TeamA,
-                    PlayerTeam.TeamA => PlayerTeam.TeamB,
-                    PlayerTeam.TeamB => PlayerTeam.None,
-                    _ => PlayerTeam.None
-                };
+                    // TeamFightモードではNoneをスキップ（TeamA ↔ TeamB のみ）
+                    newTeam = player.Team switch
+                    {
+                        PlayerTeam.None => PlayerTeam.TeamA,
+                        PlayerTeam.TeamA => PlayerTeam.TeamB,
+                        PlayerTeam.TeamB => PlayerTeam.TeamA,
+                        _ => PlayerTeam.TeamA
+                    };
+                }
+                else
+                {
+                    // 通常モード: None → TeamA → TeamB → None
+                    newTeam = player.Team switch
+                    {
+                        PlayerTeam.None => PlayerTeam.TeamA,
+                        PlayerTeam.TeamA => PlayerTeam.TeamB,
+                        PlayerTeam.TeamB => PlayerTeam.None,
+                        _ => PlayerTeam.None
+                    };
+                }
 
                 ViewModel.ChangePlayerTeam(playerId, newTeam);
             }

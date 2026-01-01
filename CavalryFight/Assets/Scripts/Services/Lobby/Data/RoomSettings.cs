@@ -91,7 +91,7 @@ namespace CavalryFight.Services.Lobby
                 IsPublic = false,
                 TimeLimit = 300, // 5分
                 ArrowLimit = 0, // 無制限（Arenaモード）
-                MapName = new FixedString64Bytes("DefaultArena")
+                MapName = new FixedString64Bytes("Arena") // フィールドプレハブ名と一致
             };
         }
 
@@ -110,7 +110,7 @@ namespace CavalryFight.Services.Lobby
             IsPublic = false;
             TimeLimit = 300;
             ArrowLimit = 0; // デフォルトは無制限
-            MapName = new FixedString64Bytes("DefaultArena");
+            MapName = new FixedString64Bytes("Arena"); // フィールドプレハブ名と一致
         }
 
         #endregion

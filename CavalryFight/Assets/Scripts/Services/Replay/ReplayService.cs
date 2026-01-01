@@ -341,9 +341,9 @@ namespace CavalryFight.Services.Replay
         {
             _replayMetadataList.Clear();
 
-            // サンプルリプレイを5つ生成
-            string[] maps = { "Arena", "Forest", "Canyon", "Desert", "Tundra" };
-            string[] modes = { "Deathmatch", "Team Battle", "Training", "Skirmish" };
+            // サンプルリプレイを生成（フィールドプレハブ名と一致）
+            string[] maps = { "Arena", "Forest", "Nature", "PlayGround" };
+            string[] modes = { "Arena", "ScoreMatch", "TeamFight", "Deathmatch", "Versus" };
 
             var random = new System.Random();
             var baseDate = DateTime.Now.AddDays(-30);

@@ -750,7 +750,7 @@ namespace CavalryFight.ViewModels
                 RoomName = "Test Room";
                 HostName = "Player1";
                 GameMode = "Arena";
-                MapName = "DefaultArena";
+                MapName = "Arena"; // フィールドプレハブ名と一致
                 CurrentPlayers = 1;
                 MaxPlayers = 8;
                 JoinCode = "ABC123";

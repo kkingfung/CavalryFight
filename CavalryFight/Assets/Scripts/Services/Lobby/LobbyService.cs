@@ -635,11 +635,50 @@ namespace CavalryFight.Services.Lobby
                 }
             }
 
+            // TeamFightモードに変更された場合、チーム未割り当てのプレイヤーを自動割り当て
+            bool wasTeamFight = _currentRoomSettings.GameMode == GameMode.TeamFight;
+            bool isTeamFight = roomSettings.GameMode == GameMode.TeamFight;
+
             _currentRoomSettings = roomSettings;
             _networkRoomData.UpdateRoomSettings(roomSettings);
 
+            // TeamFightモードに新しく変更された場合
+            if (isTeamFight && !wasTeamFight)
+            {
+                AutoAssignTeamsForTeamFight();
+            }
+
             Debug.Log("[LobbyService] Room settings updated.");
             return true;
+        }
+
+        /// <summary>
+        /// TeamFightモード用にチーム未割り当てのプレイヤーを自動割り当てします
+        /// </summary>
+        private void AutoAssignTeamsForTeamFight()
+        {
+            if (_networkRoomData == null)
+            {
+                return;
+            }
+
+            var slots = _networkRoomData.GetAllPlayerSlots();
+
+            // チーム未割り当て（TeamIndex == -1）のプレイヤーを交互にチームに割り当て
+            bool assignToTeamA = true;
+            for (int i = 0; i < slots.Length; i++)
+            {
+                if (!slots[i].IsEmpty() && slots[i].TeamIndex == -1)
+                {
+                    var slot = slots[i];
+                    slot.TeamIndex = assignToTeamA ? 0 : 1; // 0=TeamA, 1=TeamB
+                    _networkRoomData.UpdatePlayerSlot(i, slot);
+
+                    Debug.Log($"[LobbyService] Auto-assigned player {slot.PlayerId} to Team{(assignToTeamA ? "A" : "B")} for TeamFight mode");
+
+                    assignToTeamA = !assignToTeamA; // 次のプレイヤーは別チームへ
+                }
+            }
         }
 
         /// <summary>
@@ -687,11 +726,22 @@ namespace CavalryFight.Services.Lobby
             // CPUプレイヤーを追加（負のインデックスを使用）
             int aiIndex = -(CountCPUPlayers() + 1);
             PlayerSlot cpuSlot = new PlayerSlot(emptySlotIndex, aiIndex, difficulty);
+
+            // TeamFightモードの場合、チームを自動割り当て
+            if (CurrentRoomSettings.GameMode == GameMode.TeamFight && teamIndex == -1)
+            {
+                // 人数の少ないチームに割り当て
+                int teamACount = CountPlayersInTeam(0);
+                int teamBCount = CountPlayersInTeam(1);
+                teamIndex = teamACount <= teamBCount ? 0 : 1;
+                Debug.Log($"[LobbyService] Auto-assigning CPU to Team{(teamIndex == 0 ? "A" : "B")} (TeamA: {teamACount}, TeamB: {teamBCount})");
+            }
+
             cpuSlot.TeamIndex = teamIndex;
 
             _networkRoomData.UpdatePlayerSlot(emptySlotIndex, cpuSlot);
 
-            Debug.Log($"[LobbyService] CPU player added at slot {emptySlotIndex} with difficulty {difficulty}");
+            Debug.Log($"[LobbyService] CPU player added at slot {emptySlotIndex} with difficulty {difficulty}, team {teamIndex}");
             return true;
         }
 
@@ -803,6 +853,26 @@ namespace CavalryFight.Services.Lobby
                 return false;
             }
 
+            // TeamFightモードの場合、チームバランスを検証
+            if (CurrentRoomSettings.GameMode == GameMode.TeamFight)
+            {
+                // TeamFightモードではNone（-1）は許可しない
+                if (teamIndex == -1)
+                {
+                    Debug.LogError("[LobbyService] TeamFight mode requires all players to be in a team.");
+                    ErrorOccurred?.Invoke("TeamFight mode requires all players to be in a team.");
+                    return false;
+                }
+
+                // 変更後も両チームにプレイヤーがいることを確認
+                if (!WouldTeamChangeBeValid(playerId, teamIndex))
+                {
+                    Debug.LogError("[LobbyService] Cannot change team: would leave one team empty in TeamFight mode.");
+                    ErrorOccurred?.Invoke("Cannot leave a team empty in TeamFight mode.");
+                    return false;
+                }
+            }
+
             // プレイヤーのスロットインデックスを取得
             int slotIndex = GetSlotIndexByPlayerId(playerId);
             if (slotIndex == -1)
@@ -881,6 +951,17 @@ namespace CavalryFight.Services.Lobby
                 Debug.LogError("[LobbyService] Not all players are ready.");
                 ErrorOccurred?.Invoke("Not all players are ready.");
                 return false;
+            }
+
+            // TeamFightモードの場合、チームバランスを検証
+            if (CurrentRoomSettings.GameMode == GameMode.TeamFight)
+            {
+                if (!IsTeamBalanceValid())
+                {
+                    Debug.LogError("[LobbyService] Cannot start TeamFight: both teams must have at least one player.");
+                    ErrorOccurred?.Invoke("Both teams must have at least one player to start TeamFight.");
+                    return false;
+                }
             }
 
             MatchStarting?.Invoke();
@@ -1285,6 +1366,91 @@ namespace CavalryFight.Services.Lobby
 
             var slots = _networkRoomData.GetAllPlayerSlots();
             return slots.Count(s => s.IsAI);
+        }
+
+        /// <summary>
+        /// 指定されたチームのプレイヤー数をカウントします
+        /// </summary>
+        /// <param name="teamIndex">チームインデックス（0=TeamA, 1=TeamB）</param>
+        /// <returns>チームのプレイヤー数</returns>
+        private int CountPlayersInTeam(int teamIndex)
+        {
+            if (_networkRoomData == null)
+            {
+                return 0;
+            }
+
+            var slots = _networkRoomData.GetAllPlayerSlots();
+            return slots.Count(s => !s.IsEmpty() && s.TeamIndex == teamIndex);
+        }
+
+        /// <summary>
+        /// チームバランスが有効かどうかを検証します（TeamFightモード用）
+        /// </summary>
+        /// <returns>両チームに少なくとも1人ずつプレイヤーがいる場合はtrue</returns>
+        private bool IsTeamBalanceValid()
+        {
+            int teamACount = CountPlayersInTeam(0); // TeamA
+            int teamBCount = CountPlayersInTeam(1); // TeamB
+            return teamACount > 0 && teamBCount > 0;
+        }
+
+        /// <summary>
+        /// チーム変更後のバランスを検証します
+        /// </summary>
+        /// <param name="playerId">チームを変更するプレイヤーID</param>
+        /// <param name="newTeamIndex">新しいチームインデックス</param>
+        /// <returns>変更後も両チームにプレイヤーがいる場合はtrue</returns>
+        private bool WouldTeamChangeBeValid(ulong playerId, int newTeamIndex)
+        {
+            if (_networkRoomData == null)
+            {
+                return false;
+            }
+
+            var slots = _networkRoomData.GetAllPlayerSlots();
+
+            // 現在のプレイヤーのチームを取得
+            int currentTeamIndex = -1;
+            foreach (var slot in slots)
+            {
+                if (!slot.IsEmpty() && slot.PlayerId == playerId)
+                {
+                    currentTeamIndex = slot.TeamIndex;
+                    break;
+                }
+            }
+
+            // 同じチームへの変更なら問題なし
+            if (currentTeamIndex == newTeamIndex)
+            {
+                return true;
+            }
+
+            // 変更後の各チームの人数をシミュレート
+            int teamACount = 0;
+            int teamBCount = 0;
+
+            foreach (var slot in slots)
+            {
+                if (slot.IsEmpty())
+                {
+                    continue;
+                }
+
+                int teamIndex = slot.PlayerId == playerId ? newTeamIndex : slot.TeamIndex;
+
+                if (teamIndex == 0)
+                {
+                    teamACount++;
+                }
+                else if (teamIndex == 1)
+                {
+                    teamBCount++;
+                }
+            }
+
+            return teamACount > 0 && teamBCount > 0;
         }
 
         #endregion
