@@ -1,0 +1,145 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="ResultsStyles.uss"/>
+    <ui:VisualElement name="Root" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/Textures/bg_settings.png?fileID=2800000&amp;guid=d8dea11677d243e4ba74ad29acc19fa9&amp;type=3#bg_settings&quot;); flex-direction: column;">
+        <!-- Header -->
+        <ui:VisualElement name="Header" style="flex-direction: row; justify-content: space-between; align-items: center; margin: 1% 2%;">
+            <ui:Label text="Match Results" name="TitleLabel" style="-unity-font-definition: resource(&quot;FlatSkin/Font/Roboto-Black&quot;); font-size: 96px; -unity-text-outline-width: 5px; -unity-text-outline-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"/>
+            <ui:VisualElement name="ResultBadge" class="result-badge">
+                <ui:Label text="VICTORY" name="ResultLabel" class="result-badge-text"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Content Area -->
+        <ui:VisualElement name="ContentArea" style="flex-grow: 1; flex-direction: row; margin: 0 2% 2% 2%;">
+            <!-- Left Panel: Score & Match Info -->
+            <ui:VisualElement name="LeftPanel" style="width: 45%; margin-right: 2%; border-radius: 10px; padding: 20px;">
+                <!-- Score Section -->
+                <ui:VisualElement name="ScoreSection" style="margin-bottom: 40px;">
+                    <ui:Label text="Final Score" class="panel-title" style="font-size: 56px; margin-bottom: 20px;"/>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px;">
+                        <ui:VisualElement class="score-box player-score">
+                            <ui:Label text="You" name="PlayerTeamLabel" class="score-team-label"/>
+                            <ui:Label text="10" name="PlayerScoreLabel" class="score-value"/>
+                        </ui:VisualElement>
+                        <ui:Label text="VS" class="score-separator"/>
+                        <ui:VisualElement class="score-box enemy-score">
+                            <ui:Label text="Enemy" name="EnemyTeamLabel" class="score-team-label"/>
+                            <ui:Label text="7" name="EnemyScoreLabel" class="score-value"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Match Info Section -->
+                <ui:VisualElement name="MatchInfoSection">
+                    <ui:Label text="Match Information" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Map:" class="detail-label"/>
+                        <ui:Label text="Arena" name="MapLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Game Mode:" class="detail-label"/>
+                        <ui:Label text="Deathmatch" name="GameModeLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Duration:" class="detail-label"/>
+                        <ui:Label text="5:00" name="DurationLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Game Settings Section -->
+                <ui:VisualElement name="GameSettingsSection" style="margin-top: 30px;">
+                    <ui:Label text="Game Settings" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Players:" class="detail-label"/>
+                        <ui:Label text="8" name="MaxPlayersLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Time Limit:" class="detail-label"/>
+                        <ui:Label text="5:00" name="TimeLimitLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Arrow Limit:" class="detail-label"/>
+                        <ui:Label text="Unlimited" name="ArrowLimitLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Right Panel: Stats & Rematch -->
+            <ui:VisualElement name="RightPanel" style="width: 53%; border-radius: 10px; padding: 20px; flex-direction: column;">
+                <!-- Player Stats Section -->
+                <ui:VisualElement name="StatsSection" style="flex-grow: 1;">
+                    <ui:Label text="Your Performance" class="panel-title" style="font-size: 56px; margin-bottom: 20px;"/>
+
+                    <!-- Stats Grid -->
+                    <ui:VisualElement name="StatsGrid" class="stats-grid">
+                        <ui:VisualElement class="stat-item">
+                            <ui:Label text="Arrows Fired" class="stat-label"/>
+                            <ui:Label text="50" name="ArrowsFiredValue" class="stat-value"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="stat-item">
+                            <ui:Label text="Hits" class="stat-label"/>
+                            <ui:Label text="15" name="HitsValue" class="stat-value"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="stat-item">
+                            <ui:Label text="Accuracy" class="stat-label"/>
+                            <ui:Label text="30%" name="AccuracyValue" class="stat-value"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="stat-item">
+                            <ui:Label text="Kills" class="stat-label"/>
+                            <ui:Label text="10" name="KillsValue" class="stat-value"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="stat-item">
+                            <ui:Label text="Deaths" class="stat-label"/>
+                            <ui:Label text="3" name="DeathsValue" class="stat-value"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="stat-item">
+                            <ui:Label text="K/D Ratio" class="stat-label"/>
+                            <ui:Label text="3.33" name="KDRatioValue" class="stat-value"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Replay Section -->
+                <ui:VisualElement name="ReplaySection" style="margin-top: 30px;">
+                    <ui:Label text="Replay" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
+                    <ui:VisualElement style="flex-direction: row; align-items: center;">
+                        <ui:VisualElement name="ReplaySavedBadge" class="replay-saved-badge" style="display: none;">
+                            <ui:Label text="Saved" class="badge-text"/>
+                        </ui:VisualElement>
+                        <ui:Button text="Save Replay" name="SaveReplayButton" class="action-button secondary-button" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Rematch Section (Multiplayer only) -->
+                <ui:VisualElement name="RematchSection" style="margin-top: 30px; display: none;">
+                    <ui:Label text="Rematch" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
+                    <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between;">
+                        <ui:VisualElement style="flex-direction: column;">
+                            <ui:Label text="Waiting for players..." name="RematchStatusLabel" class="rematch-status-label"/>
+                            <ui:Label text="2 / 4 players agreed" name="RematchCountLabel" class="rematch-count-label"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement style="flex-direction: row;">
+                            <ui:Button text="Vote Rematch" name="VoteRematchButton" class="action-button primary-button" style="margin-right: 15px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                            <ui:Button text="Cancel Vote" name="CancelVoteButton" class="action-button secondary-button" style="display: none; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Footer -->
+        <ui:VisualElement name="Footer" style="flex-direction: row; justify-content: space-between; margin: 0 2% 2% 2%;">
+            <!-- Left: Navigation buttons -->
+            <ui:VisualElement name="NavigationButtons" style="flex-direction: row;">
+                <ui:Button text="Main Menu" name="MainMenuButton" class="footer-button" style="margin-right: 15px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                <ui:Button text="Lobby" name="LobbyButton" class="footer-button" style="margin-right: 15px; display: none; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                <ui:Button text="Return to Room" name="ReturnToRoomButton" class="footer-button" style="display: none; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+            </ui:VisualElement>
+
+            <!-- Right: Play Again (Single player/VS AI only) -->
+            <ui:VisualElement name="PlayAgainSection" style="flex-direction: row;">
+                <ui:Button text="Play Again" name="PlayAgainButton" class="footer-button primary-button" style="display: none; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

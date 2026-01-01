@@ -85,6 +85,7 @@ namespace CavalryFight.Services.SceneManagement
         /// <param name="training">Trainingシーンコレクション</param>
         /// <param name="results">Resultsシーンコレクション</param>
         /// <param name="replay">Replayシーンコレクション</param>
+        /// <param name="history">Historyシーンコレクション</param>
         void RegisterSceneCollections(
             SceneCollection? startup,
             SceneCollection? mainMenu,
@@ -95,7 +96,8 @@ namespace CavalryFight.Services.SceneManagement
             SceneCollection? match,
             SceneCollection? training,
             SceneCollection? results,
-            SceneCollection? replay);
+            SceneCollection? replay,
+            SceneCollection? history);
 
         #endregion
 
@@ -156,6 +158,11 @@ namespace CavalryFight.Services.SceneManagement
         /// リプレイシーンをロードします。
         /// </summary>
         void LoadReplay();
+
+        /// <summary>
+        /// リプレイ履歴シーンをロードします。
+        /// </summary>
+        void LoadHistory();
 
         #endregion
 

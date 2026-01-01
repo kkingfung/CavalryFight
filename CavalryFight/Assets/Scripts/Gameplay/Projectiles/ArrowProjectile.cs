@@ -208,6 +208,15 @@ namespace CavalryFight.Gameplay.Projectiles
         /// </summary>
         public int Score => Mathf.RoundToInt(_baseScore * _chargeAmount * 2f);
 
+        /// <summary>
+        /// ヒットエフェクトプレハブを設定します
+        /// </summary>
+        /// <param name="hitEffectPrefab">ヒットエフェクトプレハブ</param>
+        public void SetHitEffectPrefab(GameObject hitEffectPrefab)
+        {
+            _hitEffectPrefab = hitEffectPrefab;
+        }
+
         #endregion
 
         #region VFX & Audio

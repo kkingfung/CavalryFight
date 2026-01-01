@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8937892604406022455
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2380998145250911558}
+  - component: {fileID: 44799179510054464}
+  m_Layer: 0
+  m_Name: FieldLoader
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2380998145250911558
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8937892604406022455}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &44799179510054464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8937892604406022455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d16278500c445a4fac3d16bac8d5071, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Gameplay.FieldLoader
+  _fieldPrefabs:
+  - {fileID: 258029488021878844, guid: 3faf27fe6e02a02499cd5826046a961e, type: 3}
+  - {fileID: 726086245243862947, guid: f004cf0cfa968d245ae51ec99f723c9f, type: 3}
+  - {fileID: 5737750326801843015, guid: 748fe8aeda1981647b2c126be0287562, type: 3}
+  - {fileID: 6070379242774429732, guid: 9322f42f818a45946b5a049e09d41eed, type: 3}
+  - {fileID: 2577814836489027979, guid: ebd633ea32db3a64d8c9b9a44fd1815f, type: 3}
+  _defaultFieldIndex: 0
+  _fieldParent: {fileID: 0}
+  _spawnPosition: {x: 0, y: 0, z: 0}
+  _spawnRotation: {x: 0, y: 0, z: 0}
+  _debugLog: 1

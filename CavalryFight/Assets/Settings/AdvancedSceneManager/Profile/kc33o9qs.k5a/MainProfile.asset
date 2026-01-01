@@ -44,6 +44,50 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
   m_isIncluded: 1
+--- !u!114 &-6680066067423469299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: MainProfile - History
+  m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
+  m_id: j5hh8arl.t0e
+  m_isHidden: 0
+  m_scenes:
+  - {fileID: 11400000, guid: aa7fc8ad87878634abc784b702f0af78, type: 2}
+  m_description: 
+  m_isLocked: 0
+  m_lockMessage: 
+  m_userData: {fileID: 0}
+  m_title: History
+  m_prefix: 'MainProfile - '
+  m_inputBindings: []
+  m_ignoreInputBindingsForScenes: []
+  m_startupOption: 0
+  m_loadingScreenUsage: 1
+  m_loadingScene: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_loadPriority: -2
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+    OnOpenChanged:
+      m_PersistentCalls:
+        m_Calls: []
+  m_isIncluded: 1
 --- !u!114 &-2292065768625389036
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -184,6 +228,7 @@ MonoBehaviour:
   - {fileID: 2841897788759262390}
   - {fileID: 7113116682740546260}
   - {fileID: -1573807098921246094}
+  - {fileID: -6680066067423469299}
   m_dynamicCollectionsList: []
   m_standaloneCollection: {fileID: -2265142666104476371}
   m_defaultASMScenes: {fileID: 0}
@@ -207,7 +252,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
   m_id: rua9y6c2.ih4
   m_isHidden: 0
-  m_scenes: []
+  m_scenes:
+  - {fileID: 11400000, guid: c9984d1f7cb53b84ebe18208f13e592d, type: 2}
   m_description: 
   m_isLocked: 0
   m_lockMessage: 
@@ -295,7 +341,7 @@ MonoBehaviour:
   m_id: kavzjt6l.gpf
   m_isHidden: 0
   m_scenes:
-  - {fileID: 11400000, guid: aa7fc8ad87878634abc784b702f0af78, type: 2}
+  - {fileID: 11400000, guid: bbc21e319085bfd4c9367141ab10a312, type: 2}
   m_description: 
   m_isLocked: 0
   m_lockMessage: 
@@ -338,7 +384,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: AdvancedSceneManager::AdvancedSceneManager.Models.SceneCollection
   m_id: 6q5vmaj3.reh
   m_isHidden: 0
-  m_scenes: []
+  m_scenes:
+  - {fileID: 11400000, guid: f310bc347bdbea244a3fd67a6499257a, type: 2}
   m_description: 
   m_isLocked: 0
   m_lockMessage: 

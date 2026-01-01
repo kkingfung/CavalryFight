@@ -22,3 +22,4 @@ MonoBehaviour:
   _training: {fileID: -8042267033748032890, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
   _results: {fileID: 4155319312566489168, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
   _replay: {fileID: 2841897788759262390, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}
+  _history: {fileID: -6680066067423469299, guid: 16356741b24c97c419df7ee117f2bb13, type: 2}

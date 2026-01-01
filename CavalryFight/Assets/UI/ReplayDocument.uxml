@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance"
+         engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements"
+         noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
+         editor-extension-mode="False">
+
+    <Style src="ReplayStyles.uss" />
+
+    <ui:VisualElement name="Root" class="root">
+
+        <!-- UI Container (can be hidden) -->
+        <ui:VisualElement name="UIContainer" class="ui-container">
+
+            <!-- Header Panel -->
+            <ui:VisualElement name="HeaderPanel" class="header-panel">
+                <ui:VisualElement class="header-left">
+                    <ui:Label name="MapLabel" text="Arena" class="map-label" />
+                    <ui:Label name="GameModeLabel" text="Deathmatch" class="mode-label" />
+                </ui:VisualElement>
+                <ui:Label name="ScoreLabel" text="10 - 7" class="score-label" />
+            </ui:VisualElement>
+
+            <!-- Spacer for 3D viewport -->
+            <ui:VisualElement class="viewport-spacer" />
+
+            <!-- Bottom Controls -->
+            <ui:VisualElement name="BottomControls" class="bottom-controls">
+
+                <!-- Timeline -->
+                <ui:VisualElement name="TimelinePanel" class="timeline-panel">
+                    <ui:Label name="CurrentTimeLabel" text="0:00" class="time-label current-time" />
+                    <ui:Slider name="TimelineSlider" low-value="0" high-value="300" value="0" class="timeline-slider" />
+                    <ui:Label name="DurationLabel" text="5:00" class="time-label duration-time" />
+                </ui:VisualElement>
+
+                <!-- Playback Controls Row -->
+                <ui:VisualElement name="ControlsRow" class="controls-row">
+
+                    <!-- Left: Highlights -->
+                    <ui:VisualElement name="HighlightsPanel" class="highlights-panel">
+                        <ui:Button name="PrevHighlightButton" text="&lt;&lt;" class="highlight-button" />
+                        <ui:Label name="HighlightLabel" text="Highlights" class="highlight-label" />
+                        <ui:Button name="NextHighlightButton" text="&gt;&gt;" class="highlight-button" />
+                    </ui:VisualElement>
+
+                    <!-- Center: Main Controls -->
+                    <ui:VisualElement name="ControlsPanel" class="controls-panel">
+                        <ui:Button name="SkipBackButton" text="-10s" class="control-button skip-button" />
+                        <ui:Button name="PlayPauseButton" text="Play" class="control-button play-button" />
+                        <ui:Button name="SkipForwardButton" text="+10s" class="control-button skip-button" />
+                        <ui:Button name="StopButton" text="Stop" class="control-button stop-button" />
+                    </ui:VisualElement>
+
+                    <!-- Right: Speed & Camera -->
+                    <ui:VisualElement name="OptionsPanel" class="options-panel">
+                        <ui:VisualElement class="speed-control">
+                            <ui:Label text="Speed" class="option-label" />
+                            <ui:DropdownField name="SpeedDropdown" class="speed-dropdown" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="camera-control">
+                            <ui:Button name="CameraModeButton" text="Camera" class="camera-button" />
+                            <ui:Label name="CameraModeLabel" text="Follow" class="camera-mode-label" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                </ui:VisualElement>
+
+                <!-- Footer -->
+                <ui:VisualElement name="FooterPanel" class="footer-panel">
+                    <ui:Button name="ToggleUIButton" text="Hide UI (H)" class="footer-button toggle-ui-button" />
+                    <ui:Button name="ExitButton" text="Exit" class="footer-button exit-button" />
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

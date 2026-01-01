@@ -11837,6 +11837,7 @@ GameObject:
   - component: {fileID: 1366740481293382561}
   - component: {fileID: 7146159406108264228}
   - component: {fileID: 191341252304011860}
+  - component: {fileID: 7559201910854365854}
   m_Layer: 20
   m_Name: PlayerRider
   m_TagString: Animal
@@ -11862,6 +11863,7 @@ Transform:
   - {fileID: 6655703643340004887}
   - {fileID: 142562559162529893}
   - {fileID: 9141832074392431756}
+  - {fileID: 1940677612892033681}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &3389001211574954058
@@ -29146,6 +29148,21 @@ MonoBehaviour:
         debug: 0
         Target: {fileID: 2044488546439604855}
         Condition: 7
+--- !u!114 &7559201910854365854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6015852618751096838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7e9b6be07ddf7c4aa2dfb25b5405686, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Gameplay.Player.ArrowTypeApplier
+  _arrowTypeConfig: {fileID: 11400000, guid: ec095341219672148a5968aed4d6827f, type: 2}
+  _weaponManager: {fileID: 1366740481293382561}
+  _debugLog: 1
 --- !u!1 &6054484592042123968
 GameObject:
   m_ObjectHideFlags: 0
@@ -38064,6 +38081,104 @@ MonoBehaviour:
     UseConstant: 1
     ConstantValue: {x: 0, y: 0, z: 0}
     Variable: {fileID: 0}
+--- !u!1001 &3861683291566347999
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 457333718727768976}
+    m_Modifications:
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5812732255395409695, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: animal
+      value: 
+      objectReference: {fileID: 2044488546439604855}
+    - target: {fileID: 5812732255395409695, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5812732255395409695, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: Trackers.Array.data[0].RelativeTo
+      value: 
+      objectReference: {fileID: 457333718727768976}
+    - target: {fileID: 5812732255395409695, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: Trackers.Array.data[1].RelativeTo
+      value: 
+      objectReference: {fileID: 457333718727768976}
+    - target: {fileID: 5812732255395409695, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: Trackers.Array.data[2].RelativeTo
+      value: 
+      objectReference: {fileID: 457333718727768976}
+    - target: {fileID: 5812732255395409695, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: Trackers.Array.data[3].RelativeTo
+      value: 
+      objectReference: {fileID: 457333718727768976}
+    - target: {fileID: 5812732255395409695, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: Trackers.Array.data[4].RelativeTo
+      value: 
+      objectReference: {fileID: 457333718727768976}
+    - target: {fileID: 5812732255395409695, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: Trackers.Array.data[5].RelativeTo
+      value: 
+      objectReference: {fileID: 457333718727768976}
+    - target: {fileID: 5812732255395409695, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: Trackers.Array.data[6].RelativeTo
+      value: 
+      objectReference: {fileID: 457333718727768976}
+    - target: {fileID: 7600888982406466425, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+      propertyPath: m_Name
+      value: Tracker
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+--- !u!4 &1940677612892033681 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3421003435814945870, guid: 1be075780b6ae4643ad42f80eff4f028, type: 3}
+  m_PrefabInstance: {fileID: 3861683291566347999}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3901372303324711449
 PrefabInstance:
   m_ObjectHideFlags: 0

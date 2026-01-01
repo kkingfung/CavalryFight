@@ -59,6 +59,7 @@ namespace CavalryFight.Services.SceneManagement
         private SceneCollection? _trainingCollection;
         private SceneCollection? _resultsCollection;
         private SceneCollection? _replayCollection;
+        private SceneCollection? _historyCollection;
 
         #endregion
 
@@ -139,6 +140,7 @@ namespace CavalryFight.Services.SceneManagement
         /// <param name="training">Trainingシーンコレクション</param>
         /// <param name="results">Resultsシーンコレクション</param>
         /// <param name="replay">Replayシーンコレクション</param>
+        /// <param name="history">Historyシーンコレクション</param>
         public void RegisterSceneCollections(
             SceneCollection? startup,
             SceneCollection? mainMenu,
@@ -149,7 +151,8 @@ namespace CavalryFight.Services.SceneManagement
             SceneCollection? match,
             SceneCollection? training,
             SceneCollection? results,
-            SceneCollection? replay)
+            SceneCollection? replay,
+            SceneCollection? history)
         {
             _startupCollection = startup;
             _mainMenuCollection = mainMenu;
@@ -161,6 +164,7 @@ namespace CavalryFight.Services.SceneManagement
             _trainingCollection = training;
             _resultsCollection = results;
             _replayCollection = replay;
+            _historyCollection = history;
 
             Debug.Log("[SceneManagementService] Scene collections registered.");
         }
@@ -406,6 +410,29 @@ namespace CavalryFight.Services.SceneManagement
             {
                 Debug.LogError($"[SceneManagementService] Failed to open Replay collection: {ex.Message}");
                 SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Replay", ex.Message, ex));
+            }
+        }
+
+        /// <summary>
+        /// リプレイ履歴シーンをロードします。
+        /// </summary>
+        public void LoadHistory()
+        {
+            if (_historyCollection == null)
+            {
+                Debug.LogError("[SceneManagementService] History collection is not registered!");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("History", "History collection is not registered"));
+                return;
+            }
+
+            try
+            {
+                OpenCollection(_historyCollection);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SceneManagementService] Failed to open History collection: {ex.Message}");
+                SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("History", ex.Message, ex));
             }
         }
 

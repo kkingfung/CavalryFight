@@ -1,0 +1,327 @@
+/* ============================================
+   Replay Screen Styles
+   ============================================ */
+
+/* Root */
+.root {
+    flex-grow: 1;
+}
+
+.ui-container {
+    flex-grow: 1;
+    justify-content: space-between;
+}
+
+.viewport-spacer {
+    flex-grow: 1;
+}
+
+/* ============================================
+   Header Panel
+   ============================================ */
+
+.header-panel {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.header-left {
+    flex-direction: row;
+    align-items: center;
+}
+
+.map-label {
+    font-size: 32px;
+    color: white;
+    -unity-font-style: bold;
+    margin-right: 25px;
+}
+
+.mode-label {
+    font-size: 24px;
+    color: rgb(180, 180, 200);
+}
+
+.score-label {
+    font-size: 36px;
+    color: white;
+    -unity-font-style: bold;
+}
+
+/* ============================================
+   Bottom Controls Container
+   ============================================ */
+
+.bottom-controls {
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 20px 30px;
+}
+
+/* ============================================
+   Timeline Panel
+   ============================================ */
+
+.timeline-panel {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.time-label {
+    font-size: 20px;
+    color: white;
+    min-width: 70px;
+}
+
+.current-time {
+    text-align: right;
+    margin-right: 15px;
+}
+
+.duration-time {
+    text-align: left;
+    margin-left: 15px;
+}
+
+.timeline-slider {
+    flex-grow: 1;
+}
+
+.timeline-slider .unity-base-slider__tracker {
+    background-color: rgb(60, 60, 80);
+    height: 8px;
+    border-radius: 4px;
+}
+
+.timeline-slider .unity-base-slider__dragger {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background-color: rgb(100, 180, 255);
+    margin-top: -6px;
+}
+
+.timeline-slider .unity-base-slider__dragger:hover {
+    background-color: rgb(130, 200, 255);
+    scale: 1.1;
+}
+
+.timeline-slider .unity-base-slider__fill {
+    background-color: rgb(80, 140, 200);
+}
+
+/* ============================================
+   Controls Row
+   ============================================ */
+
+.controls-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* ============================================
+   Highlights Panel
+   ============================================ */
+
+.highlights-panel {
+    flex-direction: row;
+    align-items: center;
+    width: 25%;
+}
+
+.highlight-button {
+    font-size: 18px;
+    padding: 12px 18px;
+    background-color: rgb(70, 70, 100);
+    border-radius: 6px;
+    border-width: 0;
+    color: white;
+    transition-duration: 0.15s;
+}
+
+.highlight-button:hover {
+    background-color: rgb(90, 90, 120);
+}
+
+.highlight-button:active {
+    scale: 0.95;
+}
+
+.highlight-button:disabled {
+    background-color: rgb(50, 50, 60);
+    color: rgb(100, 100, 110);
+}
+
+.highlight-label {
+    font-size: 18px;
+    color: rgb(180, 180, 200);
+    margin: 0 18px;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* ============================================
+   Main Controls Panel
+   ============================================ */
+
+.controls-panel {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.control-button {
+    font-size: 20px;
+    padding: 15px 28px;
+    margin: 0 10px;
+    border-radius: 10px;
+    border-width: 0;
+    color: white;
+    transition-duration: 0.15s;
+}
+
+.control-button:hover {
+    scale: 1.05;
+}
+
+.control-button:active {
+    scale: 0.95;
+}
+
+.skip-button {
+    background-color: rgb(70, 70, 100);
+}
+
+.skip-button:hover {
+    background-color: rgb(90, 90, 120);
+}
+
+.play-button {
+    background-color: rgb(50, 140, 50);
+    padding: 15px 45px;
+    font-size: 22px;
+    -unity-font-style: bold;
+}
+
+.play-button:hover {
+    background-color: rgb(70, 160, 70);
+}
+
+.stop-button {
+    background-color: rgb(140, 60, 60);
+}
+
+.stop-button:hover {
+    background-color: rgb(160, 80, 80);
+}
+
+/* ============================================
+   Options Panel
+   ============================================ */
+
+.options-panel {
+    flex-direction: row;
+    align-items: center;
+    width: 25%;
+    justify-content: flex-end;
+}
+
+.speed-control {
+    flex-direction: row;
+    align-items: center;
+    margin-right: 25px;
+}
+
+.option-label {
+    font-size: 16px;
+    color: rgb(150, 150, 170);
+    margin-right: 10px;
+}
+
+.speed-dropdown {
+    width: 100px;
+}
+
+.speed-dropdown .unity-base-popup-field__input {
+    background-color: rgb(60, 60, 80);
+    border-radius: 5px;
+    border-width: 0;
+    padding: 8px 12px;
+    color: white;
+}
+
+.camera-control {
+    flex-direction: row;
+    align-items: center;
+}
+
+.camera-button {
+    font-size: 18px;
+    padding: 12px 22px;
+    background-color: rgb(70, 70, 100);
+    border-radius: 6px;
+    border-width: 0;
+    color: white;
+    transition-duration: 0.15s;
+}
+
+.camera-button:hover {
+    background-color: rgb(90, 90, 120);
+}
+
+.camera-mode-label {
+    font-size: 16px;
+    color: rgb(180, 180, 200);
+    margin-left: 12px;
+    min-width: 80px;
+}
+
+/* ============================================
+   Footer Panel
+   ============================================ */
+
+.footer-panel {
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 15px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.footer-button {
+    font-size: 18px;
+    padding: 14px 35px;
+    border-radius: 8px;
+    border-width: 0;
+    color: white;
+    transition-duration: 0.15s;
+}
+
+.footer-button:hover {
+    scale: 1.03;
+}
+
+.footer-button:active {
+    scale: 0.97;
+}
+
+.toggle-ui-button {
+    background-color: rgb(60, 60, 80);
+}
+
+.toggle-ui-button:hover {
+    background-color: rgb(80, 80, 100);
+}
+
+.exit-button {
+    background-color: rgb(120, 60, 60);
+}
+
+.exit-button:hover {
+    background-color: rgb(150, 80, 80);
+}

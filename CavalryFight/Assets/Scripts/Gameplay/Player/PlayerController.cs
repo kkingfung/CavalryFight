@@ -5,6 +5,7 @@ using CavalryFight.Core.Services;
 using CavalryFight.Services.Input;
 using CavalryFight.Services.Audio;
 using CavalryFight.Services.Training;
+using CavalryFight.Services.Customization;
 using CavalryFight.Gameplay.Projectiles;
 
 namespace CavalryFight.Gameplay.Player
@@ -31,13 +32,18 @@ namespace CavalryFight.Gameplay.Player
 
         [Header("Bow Settings")]
         [SerializeField] private Transform? _bowFirePoint;
+        [Tooltip("デフォルトの矢プレハブ（ArrowType配列が設定されていない場合に使用）")]
         [SerializeField] private GameObject? _arrowPrefab;
         [SerializeField] private float _minArrowSpeed = 15f;
         [SerializeField] private float _maxArrowSpeed = 50f;
         [SerializeField] private float _maxChargeTime = 2f;
 
+        [Header("Arrow Types (MasterStylizedProjectiles)")]
+        [Tooltip("矢タイプ設定（ScriptableObject）- Assets/Settings/ArrowTypeConfig.asset")]
+        [SerializeField] private ArrowTypeConfig? _arrowTypeConfig;
+
         [Header("Visual Effects (MasterStylizedProjectiles)")]
-        [Tooltip("発射時のマズルエフェクト（ArrowMuzzle.prefab）")]
+        [Tooltip("発射時のマズルエフェクト（デフォルト、配列が設定されていない場合に使用）")]
         [SerializeField] private GameObject? _muzzleEffectPrefab;
 
         [Header("Audio")]
@@ -66,6 +72,12 @@ namespace CavalryFight.Gameplay.Player
         private bool _isCharging;
         private float _chargeStartTime;
         private float _currentCharge;
+
+        // カスタマイズから適用された現在の矢タイプ
+        private ArrowType _currentArrowType = ArrowType.Arrow;
+        private GameObject? _currentArrowPrefab;
+        private GameObject? _currentMuzzleEffectPrefab;
+        private GameObject? _currentHitEffectPrefab;
 
         /// <summary>Animatorパラメータ: Speed</summary>
         private static readonly int SpeedParam = Animator.StringToHash("Speed");
@@ -118,6 +130,9 @@ namespace CavalryFight.Gameplay.Player
                     _cameraTransform = mainCamera.transform;
                 }
             }
+
+            // カスタマイズサービスから矢タイプを適用
+            ApplyArrowTypeFromCustomization();
         }
 
         private void Start()
@@ -349,7 +364,10 @@ namespace CavalryFight.Gameplay.Player
         /// <param name="chargeAmount">チャージ量（0.0～1.0）</param>
         private void FireArrow(float chargeAmount)
         {
-            if (_arrowPrefab == null || _bowFirePoint == null)
+            // カスタマイズで設定された矢プレハブを優先、なければデフォルトを使用
+            GameObject? arrowPrefabToUse = _currentArrowPrefab ?? _arrowPrefab;
+
+            if (arrowPrefabToUse == null || _bowFirePoint == null)
             {
                 Debug.LogWarning("[PlayerController] Arrow prefab or bow fire point not assigned!");
                 return;
@@ -362,7 +380,7 @@ namespace CavalryFight.Gameplay.Player
             float arrowSpeed = Mathf.Lerp(_minArrowSpeed, _maxArrowSpeed, chargeAmount);
 
             // 矢をインスタンス化
-            GameObject arrowObj = Instantiate(_arrowPrefab, _bowFirePoint.position, _bowFirePoint.rotation);
+            GameObject arrowObj = Instantiate(arrowPrefabToUse, _bowFirePoint.position, _bowFirePoint.rotation);
 
             // ArrowProjectileコンポーネントを取得して速度を設定
             var arrowProjectile = arrowObj.GetComponent<ArrowProjectile>();
@@ -373,6 +391,12 @@ namespace CavalryFight.Gameplay.Player
 
                 // チャージ量も設定（スコア計算に使用）
                 arrowProjectile.SetChargeAmount(chargeAmount);
+
+                // ヒットエフェクトを設定（カスタマイズから）
+                if (_currentHitEffectPrefab != null)
+                {
+                    arrowProjectile.SetHitEffectPrefab(_currentHitEffectPrefab);
+                }
             }
             else
             {
@@ -393,7 +417,7 @@ namespace CavalryFight.Gameplay.Player
             // TrainingManagerに通知
             TrainingManager.Instance?.RecordArrowFired();
 
-            Debug.Log($"[PlayerController] Arrow fired! Charge: {chargeAmount:F2}, Speed: {arrowSpeed:F1}");
+            Debug.Log($"[PlayerController] Arrow fired! Type: {_currentArrowType}, Charge: {chargeAmount:F2}, Speed: {arrowSpeed:F1}");
         }
 
         #endregion
@@ -420,13 +444,16 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void SpawnMuzzleEffect()
         {
-            if (_muzzleEffectPrefab == null || _bowFirePoint == null)
+            // カスタマイズで設定されたマズルエフェクトを優先、なければデフォルトを使用
+            GameObject? muzzlePrefab = _currentMuzzleEffectPrefab ?? _muzzleEffectPrefab;
+
+            if (muzzlePrefab == null || _bowFirePoint == null)
             {
                 return;
             }
 
             // マズルエフェクトを発射位置に生成
-            GameObject muzzle = Instantiate(_muzzleEffectPrefab, _bowFirePoint.position, _bowFirePoint.rotation);
+            GameObject muzzle = Instantiate(muzzlePrefab, _bowFirePoint.position, _bowFirePoint.rotation);
 
             // 自動削除（パーティクルシステムの場合は自動で消えるが念のため）
             Destroy(muzzle, 3f);
@@ -571,6 +598,57 @@ namespace CavalryFight.Gameplay.Player
         /// 騎乗状態を取得します
         /// </summary>
         public bool IsMounted => _isMounted;
+
+        #endregion
+
+        #region Arrow Customization
+
+        /// <summary>
+        /// カスタマイズサービスから矢タイプを適用します
+        /// </summary>
+        private void ApplyArrowTypeFromCustomization()
+        {
+            var customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
+            if (customizationService == null)
+            {
+                Debug.Log("[PlayerController] ICustomizationService が取得できませんでした。デフォルトの矢を使用します。");
+                return;
+            }
+
+            ArrowType arrowType = customizationService.CurrentCharacter.ArrowType;
+            SetArrowType(arrowType);
+        }
+
+        /// <summary>
+        /// 矢タイプを設定します
+        /// </summary>
+        /// <param name="arrowType">設定する矢タイプ</param>
+        public void SetArrowType(ArrowType arrowType)
+        {
+            _currentArrowType = arrowType;
+
+            if (_arrowTypeConfig == null)
+            {
+                Debug.LogWarning("[PlayerController] ArrowTypeConfig が設定されていません。デフォルトの矢を使用します。");
+                _currentArrowPrefab = null;
+                _currentMuzzleEffectPrefab = null;
+                _currentHitEffectPrefab = null;
+                return;
+            }
+
+            // ScriptableObjectからプレハブを取得
+            var prefabs = _arrowTypeConfig.GetAllPrefabs(arrowType);
+            _currentArrowPrefab = prefabs.arrow;
+            _currentMuzzleEffectPrefab = prefabs.muzzle;
+            _currentHitEffectPrefab = prefabs.hit;
+
+            Debug.Log($"[PlayerController] 矢タイプを設定: {arrowType} (Arrow: {(_currentArrowPrefab != null ? _currentArrowPrefab.name : "null")})");
+        }
+
+        /// <summary>
+        /// 現在の矢タイプを取得します
+        /// </summary>
+        public ArrowType CurrentArrowType => _currentArrowType;
 
         #endregion
     }
