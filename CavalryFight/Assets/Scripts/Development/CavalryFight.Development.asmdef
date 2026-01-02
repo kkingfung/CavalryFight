@@ -1,12 +1,11 @@
 {
-    "name": "CavalryFight.Views",
-    "rootNamespace": "CavalryFight.Views",
+    "name": "CavalryFight.Development",
+    "rootNamespace": "CavalryFight.Development",
     "references": [
         "CavalryFight.Core",
         "CavalryFight.Services",
-        "CavalryFight.ViewModels",
-        "CavalryFight.Development",
-        "Unity.InputSystem"
+        "Unity.Netcode.Runtime",
+        "AdvancedSceneManager"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

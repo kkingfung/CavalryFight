@@ -13,8 +13,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 #if UNITY_EDITOR
-using CavalryFight.Editor.MockData;
-using CavalryFight.Editor.MockData.MockServices;
+using CavalryFight.Development.MockData;
+using CavalryFight.Development.MockData.MockServices;
 #endif
 
 namespace CavalryFight.Views
@@ -811,8 +811,8 @@ namespace CavalryFight.Views
             // DevBootstrapで初期化された場合はモックサービスからデータを取得
             if (DevBootstrap.IsDevMode)
             {
-                var matchService = ServiceLocator.Instance.Get<IMatchService>();
-                if (matchService is MockMatchService mockMatchService)
+                var mockService = ServiceLocator.Instance.Get<IMatchService>();
+                if (mockService is MockMatchService mockMatchService)
                 {
                     Debug.Log("[ResultsView] Using mock match result from DevBootstrap");
                     return mockMatchService.GetMockMatchResult();

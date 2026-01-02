@@ -18,9 +18,6 @@ namespace CavalryFight.Gameplay.Hunting
     {
         #region Serialized Fields
 
-        [Header("Stun Settings")]
-        [SerializeField] private float _defaultStunDuration = 3f;
-
         [Header("Visual Effects")]
         [SerializeField] private GameObject? _stunEffectPrefab;
         [SerializeField] private Transform? _stunEffectSpawnPoint;
@@ -162,8 +159,8 @@ namespace CavalryFight.Gameplay.Hunting
         /// <summary>
         /// チームを設定します（サーバーのみ）
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void SetTeamServerRpc(int teamIndex)
+        [Rpc(SendTo.Server)]
+        public void SetTeamRpc(int teamIndex)
         {
             _teamIndex.Value = teamIndex;
         }
@@ -171,8 +168,8 @@ namespace CavalryFight.Gameplay.Hunting
         /// <summary>
         /// スタンを適用します（サーバーのみ）
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void ApplyStunServerRpc(float duration)
+        [Rpc(SendTo.Server)]
+        public void ApplyStunRpc(float duration)
         {
             ApplyStun(duration);
         }
@@ -229,8 +226,8 @@ namespace CavalryFight.Gameplay.Hunting
         /// <summary>
         /// スタンを強制終了します
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void ForceEndStunServerRpc()
+        [Rpc(SendTo.Server)]
+        public void ForceEndStunRpc()
         {
             EndStun();
         }

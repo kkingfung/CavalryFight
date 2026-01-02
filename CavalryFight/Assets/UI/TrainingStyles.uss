@@ -35,7 +35,7 @@
     color: rgb(255, 255, 255);
     font-size: 18px;
     margin-bottom: 5px;
-    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=6baf05084dbc11f4da7f2e3fb5dd3e29&type=3#NotInter-Regular");
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
 }
 
 /* Controls Panel (Top Right) */
@@ -51,15 +51,14 @@
     color: rgb(255, 255, 255);
     font-size: 20px;
     margin-bottom: 10px;
-    -unity-font-style: bold;
-    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=6baf05084dbc11f4da7f2e3fb5dd3e29&type=3#NotInter-Regular");
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
 }
 
 .control-label {
     color: rgb(200, 200, 200);
     font-size: 14px;
     margin-bottom: 3px;
-    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=6baf05084dbc11f4da7f2e3fb5dd3e29&type=3#NotInter-Regular");
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
 }
 
 /* =====================================
@@ -97,9 +96,8 @@
     color: rgb(255, 255, 255);
     font-size: 36px;
     margin-bottom: 30px;
-    -unity-font-style: bold;
     -unity-text-align: middle-center;
-    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=6baf05084dbc11f4da7f2e3fb5dd3e29&type=3#NotInter-Regular");
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
 }
 
 .menu-button {
@@ -112,7 +110,8 @@
     border-radius: 8px;
     border-width: 2px;
     border-color: rgb(100, 100, 100);
-    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=6baf05084dbc11f4da7f2e3fb5dd3e29&type=3#NotInter-Regular");
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
 }
 
 .menu-button:hover {
@@ -122,6 +121,7 @@
 
 .menu-button:active {
     background-color: rgb(50, 50, 50);
+    scale: 0.98;
 }
 
 /* =====================================
@@ -176,6 +176,7 @@
     border-width: 2px;
     border-color: rgb(100, 100, 100);
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
 }
 
 .header-button:hover {
@@ -185,6 +186,7 @@
 
 .header-button:active {
     background-color: rgb(50, 50, 50);
+    scale: 0.98;
 }
 
 /* Scrollable Content */
@@ -254,6 +256,13 @@
     background-color: rgb(200, 200, 200);
     border-width: 3px;
     border-color: rgb(255, 255, 255);
+    transition-duration: 0.15s;
+}
+
+/* Slider Dragger Hover */
+.setting-control:hover .unity-base-slider__dragger {
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(200, 200, 200);
 }
 
 /* Toggle Container */
@@ -289,6 +298,7 @@
     border-width: 2px;
     border-color: rgb(200, 200, 200);
     background-color: rgba(128, 128, 128, 0.3);
+    transition-duration: 0.15s;
 }
 
 /* Toggle Checkmark (when checked) */
@@ -311,6 +321,7 @@
     border-color: rgb(150, 150, 150);
     -unity-text-align: middle-left;
     color: rgb(255, 255, 255);
+    transition-duration: 0.15s;
 }
 
 /* Dropdown Arrow */
@@ -355,6 +366,7 @@
     border-width: 2px;
     border-color: rgb(100, 100, 100);
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
 }
 
 .footer-button:hover {
@@ -364,12 +376,14 @@
 
 .footer-button:active {
     background-color: rgb(50, 50, 50);
+    scale: 0.98;
 }
 
 /* Primary Button (Resume) */
 .primary-button {
     background-color: rgb(60, 120, 80);
     border-color: rgb(80, 160, 100);
+    transition-duration: 0.15s;
 }
 
 .primary-button:hover {
@@ -379,6 +393,7 @@
 
 .primary-button:active {
     background-color: rgb(50, 100, 70);
+    scale: 0.98;
 }
 
 /* =====================================

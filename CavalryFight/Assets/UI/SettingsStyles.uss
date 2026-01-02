@@ -9,6 +9,16 @@
     height: 100%;
 }
 
+/* Title Label */
+#TitleLabel {
+    font-size: 96px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    margin: 1% 2%;
+}
+
 /* Settings Section Panel */
 .settings-section {
     background-color: rgba(0, 0, 0, 0.3);
@@ -71,6 +81,13 @@
     background-color: rgb(200, 200, 200);
     border-width: 5px;
     border-color: rgb(255, 255, 255);
+    transition-duration: 0.15s;
+}
+
+/* Slider Dragger Hover */
+.setting-control:hover .unity-base-slider__dragger {
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(200, 200, 200);
 }
 
 /* Toggle Container - ensure proper right alignment */
@@ -107,6 +124,7 @@
     border-width: 3px;
     border-color: rgb(200, 200, 200);
     background-color: rgba(128, 128, 128, 0.3);
+    transition-duration: 0.15s;
 }
 
 /* Toggle Checkmark (when checked) */
@@ -134,6 +152,7 @@
     border-color: rgb(150, 150, 150);
     -unity-text-align: middle-left;
     color: rgb(255, 255, 255);
+    transition-duration: 0.15s;
 }
 
 /* Dropdown Arrow */

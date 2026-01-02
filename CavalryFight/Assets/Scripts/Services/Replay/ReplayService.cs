@@ -29,7 +29,7 @@ namespace CavalryFight.Services.Replay
         private readonly List<ReplayMetadata> _replayMetadataList = new List<ReplayMetadata>();
         private ReplayData? _currentReplay;
         private readonly string _replayFolderPath;
-        private bool _useMockData = true; // モックデータ使用フラグ
+        private readonly bool _useMockData; // モックデータ使用フラグ
 
         #endregion
 
@@ -61,8 +61,11 @@ namespace CavalryFight.Services.Replay
         /// <summary>
         /// ReplayServiceの新しいインスタンスを初期化します
         /// </summary>
-        public ReplayService()
+        /// <param name="useMockData">モックデータを使用する場合はtrue（デフォルト: false）</param>
+        public ReplayService(bool useMockData = false)
         {
+            _useMockData = useMockData;
+
             // リプレイ保存フォルダのパスを設定
             _replayFolderPath = Path.Combine(Application.persistentDataPath, ReplayDirectory);
 

@@ -2,7 +2,6 @@
 
 using System;
 using CavalryFight.Core.MVVM;
-using CavalryFight.Gameplay.Match;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.SceneManagement;
 using UnityEngine;
@@ -205,6 +204,11 @@ namespace CavalryFight.ViewModels
             get => _team1Score;
             protected set => SetProperty(ref _team1Score, value);
         }
+
+        /// <summary>
+        /// ローカルクライアントID
+        /// </summary>
+        public ulong LocalClientId => Unity.Netcode.NetworkManager.Singleton?.LocalClientId ?? 0;
 
         #endregion
 

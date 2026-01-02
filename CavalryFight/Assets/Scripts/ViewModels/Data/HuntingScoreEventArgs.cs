@@ -1,7 +1,7 @@
 #nullable enable
 
 using System;
-using CavalryFight.Gameplay.Match;
+using CavalryFight.Services.Match;
 
 namespace CavalryFight.ViewModels.Data
 {

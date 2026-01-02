@@ -40,10 +40,16 @@
     background-color: rgba(100, 100, 100, 0.5);
     border-radius: 8px;
     border-width: 0;
+    transition-duration: 0.15s;
 }
 
 .header-button:hover {
     background-color: rgba(150, 150, 150, 0.7);
+}
+
+.header-button:active {
+    background-color: rgba(80, 80, 80, 0.6);
+    scale: 0.98;
 }
 
 /* ===========================================
@@ -119,7 +125,6 @@
 .room-item-selected {
     background-color: rgba(100, 150, 255, 0.3);
     border-color: rgb(100, 150, 255);
-    border-width: 3px;
 }
 
 .room-item-header {
@@ -236,6 +241,7 @@
     border-color: rgba(150, 150, 150, 0.5);
     color: rgb(255, 255, 255);
     padding: 5px 10px;
+    transition-duration: 0.15s;
 }
 
 .form-input:focus {
@@ -269,10 +275,16 @@
 .primary-button {
     background-color: rgba(50, 150, 255, 0.7);
     height: 100px;
+    transition-duration: 0.15s;
 }
 
 .primary-button:hover {
     background-color: rgba(70, 170, 255, 0.9);
+}
+
+.primary-button:active {
+    background-color: rgba(40, 130, 220, 0.9);
+    scale: 0.98;
 }
 
 .footer-button {
@@ -283,10 +295,16 @@
     background-color: rgba(100, 100, 100, 0.7);
     border-radius: 10px;
     border-width: 0;
+    transition-duration: 0.15s;
 }
 
 .footer-button:hover {
     background-color: rgba(120, 120, 120, 0.9);
+}
+
+.footer-button:active {
+    background-color: rgba(80, 80, 80, 0.8);
+    scale: 0.98;
 }
 
 .footer-button.primary-button {
@@ -295,4 +313,9 @@
 
 .footer-button.primary-button:hover {
     background-color: rgba(70, 170, 255, 0.9);
+}
+
+.footer-button.primary-button:active {
+    background-color: rgba(40, 130, 220, 0.9);
+    scale: 0.98;
 }

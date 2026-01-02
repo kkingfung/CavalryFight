@@ -10,6 +10,7 @@ using CavalryFight.Services.Match;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.Services.Training;
 using CavalryFight.ViewModels;
+using CavalryFight.ViewModels.Data;
 using CavalryFight.Views.Components;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -422,7 +423,11 @@ namespace CavalryFight.Views
             _matchEndPanel.style.display = DisplayStyle.Flex;
 
             // 結果テキストを設定
-            var localClientId = Unity.Netcode.NetworkManager.Singleton?.LocalClientId ?? 0;
+            ulong localClientId = 0;
+            if (ViewModel != null)
+            {
+                localClientId = ViewModel.LocalClientId;
+            }
             bool isDraw = result.WinnerId == ulong.MaxValue;
             bool isWinner = !isDraw && result.WinnerId == localClientId;
 

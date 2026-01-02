@@ -248,12 +248,18 @@
     border-color: rgba(120, 120, 120, 0.8);
     margin-right: 8px;
     color: rgb(40, 40, 40);
+    transition-duration: 0.15s;
 }
 
 .team-button:hover {
     background-color: rgba(200, 200, 200, 0.9);
     border-color: rgba(80, 80, 80, 1);
     color: rgb(0, 0, 0);
+}
+
+.team-button:active {
+    background-color: rgba(160, 160, 160, 0.9);
+    scale: 0.98;
 }
 
 .kick-button {
@@ -266,12 +272,18 @@
     border-width: 2px;
     border-color: rgba(150, 50, 50, 0.8);
     color: rgb(255, 255, 255);
+    transition-duration: 0.15s;
 }
 
 .kick-button:hover {
     background-color: rgba(220, 100, 100, 0.9);
     border-color: rgba(180, 60, 60, 1);
     color: rgb(255, 255, 255);
+}
+
+.kick-button:active {
+    background-color: rgba(180, 60, 60, 0.9);
+    scale: 0.98;
 }
 
 /* Add NPC Button */
@@ -286,12 +298,18 @@
     border-color: rgba(80, 150, 80, 0.8);
     color: rgb(255, 255, 255);
     margin-right: 8px;
+    transition-duration: 0.15s;
 }
 
 .add-npc-button:hover {
     background-color: rgba(120, 200, 120, 0.9);
     border-color: rgba(100, 180, 100, 1);
     color: rgb(255, 255, 255);
+}
+
+.add-npc-button:active {
+    background-color: rgba(80, 160, 80, 0.9);
+    scale: 0.98;
 }
 
 /* ===========================================
@@ -358,6 +376,7 @@
     padding-left: 10px;
     padding-right: 10px;
     margin-left: auto;
+    transition-duration: 0.15s;
 }
 
 /* Dropdown text right-alignment */
@@ -422,6 +441,7 @@
     padding-left: 10px;
     padding-right: 10px;
     margin-left: auto;
+    transition-duration: 0.15s;
 }
 
 .setting-textfield:hover {
@@ -488,10 +508,16 @@
     background-color: rgba(100, 100, 100, 0.5);
     border-radius: 8px;
     border-width: 0;
+    transition-duration: 0.15s;
 }
 
 .header-button:hover {
     background-color: rgba(150, 150, 150, 0.7);
+}
+
+.header-button:active {
+    background-color: rgba(80, 80, 80, 0.6);
+    scale: 0.98;
 }
 
 .action-button {
@@ -506,19 +532,31 @@
 .primary-button {
     background-color: rgba(100, 100, 100, 0.7);
     height: 100px;
+    transition-duration: 0.15s;
 }
 
 .primary-button:hover {
     background-color: rgba(150, 150, 150, 0.9);
 }
 
+.primary-button:active {
+    background-color: rgba(80, 80, 80, 0.8);
+    scale: 0.98;
+}
+
 .danger-button {
     background-color: rgba(255, 50, 50, 0.7);
     height: 80px;
+    transition-duration: 0.15s;
 }
 
 .danger-button:hover {
     background-color: rgba(255, 70, 70, 0.9);
+}
+
+.danger-button:active {
+    background-color: rgba(220, 40, 40, 0.9);
+    scale: 0.98;
 }
 
 .footer-button {
@@ -529,10 +567,16 @@
     background-color: rgba(100, 100, 100, 0.7);
     border-radius: 10px;
     border-width: 0;
+    transition-duration: 0.15s;
 }
 
 .footer-button:hover {
     background-color: rgba(120, 120, 120, 0.9);
+}
+
+.footer-button:active {
+    background-color: rgba(80, 80, 80, 0.8);
+    scale: 0.98;
 }
 
 .footer-button.primary-button {
@@ -541,6 +585,11 @@
 
 .footer-button.primary-button:hover {
     background-color: rgba(70, 170, 255, 0.9);
+}
+
+.footer-button.primary-button:active {
+    background-color: rgba(40, 130, 220, 0.9);
+    scale: 0.98;
 }
 
 /* ===========================================
@@ -580,6 +629,7 @@
     padding-left: 10px;
     padding-right: 10px;
     flex-shrink: 0;
+    transition-duration: 0.15s;
 }
 
 .npc-difficulty-dropdown .unity-base-popup-field__text {

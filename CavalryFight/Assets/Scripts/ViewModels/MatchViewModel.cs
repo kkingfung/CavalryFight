@@ -6,7 +6,6 @@ using System.ComponentModel;
 using CavalryFight.Core.Commands;
 using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
-using CavalryFight.Gameplay.Match;
 using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.SceneManagement;
@@ -209,6 +208,11 @@ namespace CavalryFight.ViewModels
             get => _countdownValue;
             private set => SetProperty(ref _countdownValue, value);
         }
+
+        /// <summary>
+        /// ローカルクライアントID
+        /// </summary>
+        public ulong LocalClientId => _localPlayerId;
 
         /// <summary>
         /// ローカルプレイヤーのスコア

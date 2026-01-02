@@ -202,12 +202,13 @@ namespace CavalryFight.Gameplay.Match
             base.OnNetworkDespawn();
         }
 
-        private void OnDestroy()
+        public override void OnDestroy()
         {
             if (_instance == this)
             {
                 _instance = null;
             }
+            base.OnDestroy();
         }
 
         private void Update()
@@ -238,8 +239,8 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         /// <param name="settings">ルーム設定</param>
         /// <param name="slots">プレイヤースロット</param>
-        [ServerRpc(RequireOwnership = false)]
-        public void InitializeMatchServerRpc(RoomSettings settings, PlayerSlot[] slots)
+        [Rpc(SendTo.Server)]
+        public void InitializeMatchRpc(RoomSettings settings, PlayerSlot[] slots)
         {
             if (!IsServer)
             {
@@ -286,8 +287,8 @@ namespace CavalryFight.Gameplay.Match
         /// <summary>
         /// カウントダウンを開始します（サーバーのみ）
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void StartCountdownServerRpc()
+        [Rpc(SendTo.Server)]
+        public void StartCountdownRpc()
         {
             if (!IsServer)
             {
@@ -308,8 +309,8 @@ namespace CavalryFight.Gameplay.Match
         /// マッチを強制終了します（サーバーのみ）
         /// </summary>
         /// <param name="winnerId">勝者のクライアントID</param>
-        [ServerRpc(RequireOwnership = false)]
-        public void ForceEndMatchServerRpc(ulong winnerId)
+        [Rpc(SendTo.Server)]
+        public void ForceEndMatchRpc(ulong winnerId)
         {
             if (!IsServer)
             {
@@ -322,8 +323,8 @@ namespace CavalryFight.Gameplay.Match
         /// <summary>
         /// プレイヤーのスコアを追加します（サーバーのみ）
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void AddPlayerScoreServerRpc(ulong clientId, int score, HitLocation hitLocation)
+        [Rpc(SendTo.Server)]
+        public void AddPlayerScoreRpc(ulong clientId, int score, HitLocation hitLocation)
         {
             if (!IsServer || _playerScores == null)
             {
@@ -354,8 +355,8 @@ namespace CavalryFight.Gameplay.Match
         /// <summary>
         /// プレイヤーの矢発射を記録します（サーバーのみ）
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void RecordArrowFiredServerRpc(ulong clientId)
+        [Rpc(SendTo.Server)]
+        public void RecordArrowFiredRpc(ulong clientId)
         {
             if (!IsServer || _playerScores == null)
             {
@@ -384,8 +385,8 @@ namespace CavalryFight.Gameplay.Match
         /// <summary>
         /// プレイヤーの死亡を記録します（サーバーのみ）
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void RecordPlayerDeathServerRpc(ulong clientId, ulong killerId)
+        [Rpc(SendTo.Server)]
+        public void RecordPlayerDeathRpc(ulong clientId, ulong killerId)
         {
             if (!IsServer)
             {

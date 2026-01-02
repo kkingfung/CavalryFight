@@ -1,11 +1,15 @@
-/* Loading Screen Styles */
+/* ===========================================
+   Loading Screen Styles
+   =========================================== */
 
+/* Root Container */
 .root-container {
     flex-grow: 1;
     align-items: center;
     justify-content: center;
 }
 
+/* Background */
 .background-texture {
     position: absolute;
     width: 100%;
@@ -16,56 +20,69 @@
     transition-timing-function: ease-in-out;
 }
 
+/* Content Container */
 .content-container {
     align-items: center;
     justify-content: center;
     padding: 50px;
+    min-width: 600px;
 }
 
+/* Game Title */
 .game-title {
-    font-size: 128px;
+    font-size: 96px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
     color: rgb(255, 255, 255);
-    -unity-font-style: bold;
     -unity-text-align: middle-center;
-    margin-bottom: 100px;
-    text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.8);
+    margin-bottom: 80px;
 }
 
+/* Loading Message */
 .loading-message {
-    font-size: 48px;
-    color: rgb(255, 255, 255);
+    font-size: 42px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(220, 220, 220);
     -unity-text-align: middle-center;
-    margin-bottom: 40px;
-    opacity: 0.9;
+    margin-bottom: 30px;
 }
 
+/* Progress Bar Container */
 .progress-bar-container {
     width: 100%;
-    height: 40px;
+    height: 30px;
     background-color: rgba(50, 50, 50, 0.8);
-    border-radius: 20px;
+    border-radius: 10px;
     border-color: rgb(100, 100, 100);
     border-width: 2px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
+/* Progress Bar Fill */
 .progress-bar {
     height: 100%;
-    background-color: rgb(0, 180, 255);
+    background-color: rgb(50, 150, 255);
+    border-radius: 8px;
     transition-property: width;
     transition-duration: 0.2s;
     transition-timing-function: ease-out;
 }
 
+/* Progress Percentage */
 .progress-percentage {
-    font-size: 36px;
-    color: rgb(200, 200, 200);
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(180, 180, 180);
     -unity-text-align: middle-center;
     margin-top: 10px;
 }
 
-/* Animation classes (optional - can be applied via script) */
+/* ===========================================
+   Animation Classes
+   =========================================== */
+
 .fade-in {
     transition-property: opacity;
     transition-duration: 0.5s;

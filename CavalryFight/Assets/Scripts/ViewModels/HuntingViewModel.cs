@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using CavalryFight.Core.MVVM;
-using CavalryFight.Gameplay.Match;
 using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.SceneManagement;

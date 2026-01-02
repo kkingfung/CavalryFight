@@ -9,6 +9,7 @@ using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.ViewModels;
+using CavalryFight.ViewModels.Data;
 using UnityEngine;
 using UnityEngine.UIElements;
 

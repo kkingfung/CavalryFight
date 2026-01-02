@@ -48,7 +48,6 @@ namespace CavalryFight.Gameplay.Player
         private ICustomizationService? _customizationService;
         private GameObject? _spawnedMount;
         private GameObject? _spawnedRider;
-        private bool _isWaitingForField;
 
         #endregion
 
@@ -163,7 +162,6 @@ namespace CavalryFight.Gameplay.Player
             }
 
             // フィールドのロード完了を待つ
-            _isWaitingForField = true;
             FieldLoader.Instance.FieldLoaded += OnFieldLoaded;
 
             if (_debugLog)
@@ -181,8 +179,6 @@ namespace CavalryFight.Gameplay.Player
             {
                 FieldLoader.Instance.FieldLoaded -= OnFieldLoaded;
             }
-
-            _isWaitingForField = false;
 
             if (_debugLog)
             {

@@ -36,9 +36,6 @@ namespace CavalryFight.Gameplay.Hunting
         [SerializeField] private Transform[]? _team0SpawnPoints;
         [SerializeField] private Transform[]? _team1SpawnPoints;
 
-        [Header("Spawn Settings")]
-        [SerializeField] private float _spawnDelay = 0.5f;
-
         #endregion
 
         #region Private Fields
@@ -61,12 +58,13 @@ namespace CavalryFight.Gameplay.Hunting
             _instance = this;
         }
 
-        private void OnDestroy()
+        public override void OnDestroy()
         {
             if (_instance == this)
             {
                 _instance = null;
             }
+            base.OnDestroy();
         }
 
         #endregion
@@ -159,7 +157,7 @@ namespace CavalryFight.Gameplay.Hunting
                 var wolfController = wolfInstance.GetComponent<WolfController>();
                 if (wolfController != null)
                 {
-                    wolfController.SetTeamServerRpc(teamIndex);
+                    wolfController.SetTeamRpc(teamIndex);
                 }
 
                 _spawnedWolves[clientId] = networkObject;

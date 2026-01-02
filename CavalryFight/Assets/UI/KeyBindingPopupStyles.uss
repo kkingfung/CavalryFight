@@ -78,6 +78,7 @@
     margin-bottom: 8px;
     background-color: rgba(60, 60, 60, 0.6);
     border-radius: 8px;
+    transition-duration: 0.15s;
 }
 
 .binding-row:hover {
@@ -109,6 +110,7 @@
     border-width: 2px;
     border-color: rgb(100, 100, 100);
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
 }
 
 .binding-rebind-button:hover {
@@ -118,6 +120,7 @@
 
 .binding-rebind-button:active {
     background-color: rgb(50, 50, 50);
+    scale: 0.98;
 }
 
 /* Rebinding Prompt */
@@ -157,6 +160,7 @@
     border-width: 2px;
     border-color: rgb(100, 100, 100);
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
 }
 
 .keybinding-button:hover {
@@ -166,12 +170,14 @@
 
 .keybinding-button:active {
     background-color: rgb(50, 50, 50);
+    scale: 0.98;
 }
 
 /* Primary Button (Close) */
 .primary-button {
     background-color: rgb(60, 120, 80);
     border-color: rgb(80, 160, 100);
+    transition-duration: 0.15s;
 }
 
 .primary-button:hover {
@@ -181,4 +187,5 @@
 
 .primary-button:active {
     background-color: rgb(50, 100, 70);
+    scale: 0.98;
 }

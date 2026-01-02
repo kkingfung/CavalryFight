@@ -160,8 +160,8 @@ namespace CavalryFight.Gameplay.Hunting
         /// <summary>
         /// チームを設定します（サーバーのみ）
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void SetTeamServerRpc(int teamIndex)
+        [Rpc(SendTo.Server)]
+        public void SetTeamRpc(int teamIndex)
         {
             _teamIndex.Value = teamIndex;
         }
@@ -207,7 +207,7 @@ namespace CavalryFight.Gameplay.Hunting
                 if (hunterStunHandler != null && hunterStunHandler.TeamIndex != _teamIndex.Value)
                 {
                     // 相手チームのハンターにヒット
-                    hunterStunHandler.ApplyStunServerRpc(_stunDuration);
+                    hunterStunHandler.ApplyStunRpc(_stunDuration);
                     HunterStunned?.Invoke(hunterStunHandler.OwnerClientId);
 
                     // ヒット音を再生
