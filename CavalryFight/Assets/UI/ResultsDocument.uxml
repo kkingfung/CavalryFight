@@ -1,0 +1,125 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="ResultsStyles.uss"/>
+    <ui:VisualElement name="Root" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/Textures/bg_settings.png?fileID=2800000&amp;guid=d8dea11677d243e4ba74ad29acc19fa9&amp;type=3#bg_settings&quot;); flex-direction: column;">
+        <!-- Header -->
+        <ui:VisualElement name="Header" style="flex-direction: row; justify-content: flex-start; align-items: center; margin: 1% 2%;">
+            <ui:Label text="Match Results" name="TitleLabel"/>
+        </ui:VisualElement>
+
+        <!-- Content Area -->
+        <ui:VisualElement name="ContentArea" style="flex-grow: 1; flex-direction: row; margin: 0 2% 2% 2%;">
+            <!-- Left Panel: Result Badge & Match Info -->
+            <ui:VisualElement name="LeftPanel" style="width: 35%; margin-right: 2%; border-radius: 10px; padding: 20px; flex-direction: column;">
+                <!-- Result Badge Section (Victory/Defeat/Draw) -->
+                <ui:VisualElement name="ResultSection" style="margin-bottom: 30px; align-items: center;">
+                    <ui:VisualElement name="ResultBadge" class="result-badge" style="padding: 40px 100px;">
+                        <ui:Label text="VICTORY" name="ResultLabel" class="result-badge-text" style="font-size: 144px;"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Match Info Section -->
+                <ui:VisualElement name="MatchInfoSection" style="flex-grow: 1;">
+                    <ui:Label text="Match Information" class="section-header" style="font-size: 48px; margin-bottom: 15px;"/>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Map:" class="detail-label"/>
+                        <ui:Label text="Arena" name="MapLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Game Mode:" class="detail-label"/>
+                        <ui:Label text="Deathmatch" name="GameModeLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Duration:" class="detail-label"/>
+                        <ui:Label text="5:00" name="DurationLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Players:" class="detail-label"/>
+                        <ui:Label text="8" name="MaxPlayersLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Time Limit:" class="detail-label"/>
+                        <ui:Label text="5:00" name="TimeLimitLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="detail-row">
+                        <ui:Label text="Arrow Limit:" class="detail-label"/>
+                        <ui:Label text="Unlimited" name="ArrowLimitLabel" class="detail-value"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Replay Section (at bottom right) -->
+                <ui:VisualElement name="ReplaySection" style="flex-direction: row; justify-content: flex-end; align-items: center; margin-top: 20px;">
+                    <ui:VisualElement name="ReplaySavedBadge" class="replay-saved-badge" style="display: none;">
+                        <ui:Label text="Saved" class="badge-text"/>
+                    </ui:VisualElement>
+                    <ui:Button text="Save Replay" name="SaveReplayButton" class="action-button secondary-button" style="background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Right Panel: Player Leaderboard & Rematch -->
+            <ui:VisualElement name="RightPanel" style="width: 63%; border-radius: 10px; padding: 20px; flex-direction: column;">
+                <!-- Player Leaderboard Section -->
+                <ui:VisualElement name="LeaderboardSection" style="flex-grow: 1;">
+                    <ui:Label text="Player Performance" class="panel-title" style="font-size: 56px; margin-bottom: 20px;"/>
+
+                    <!-- Leaderboard Header -->
+                    <ui:VisualElement name="LeaderboardHeader" class="leaderboard-header">
+                        <ui:Label text="#" class="leaderboard-col leaderboard-col-rank"/>
+                        <ui:Label text="Player" class="leaderboard-col leaderboard-col-name"/>
+                        <ui:VisualElement class="leaderboard-col leaderboard-col-bar"/>
+                        <ui:Label text="Score" class="leaderboard-col leaderboard-col-score"/>
+                        <ui:Label text="Team" class="leaderboard-col leaderboard-col-team"/>
+                        <ui:Label text="K" class="leaderboard-col leaderboard-col-stat"/>
+                        <ui:Label text="D" class="leaderboard-col leaderboard-col-stat"/>
+                        <ui:Label text="K/D" class="leaderboard-col leaderboard-col-stat"/>
+                        <ui:Label text="Acc" class="leaderboard-col leaderboard-col-stat"/>
+                        <ui:Label text="Status" class="leaderboard-col leaderboard-col-status"/>
+                        <ui:Label text="In Room" class="leaderboard-col leaderboard-col-inroom"/>
+                    </ui:VisualElement>
+
+                    <!-- Leaderboard Container (populated dynamically) -->
+                    <ui:ScrollView name="LeaderboardContainer" class="leaderboard-container">
+                        <!-- Player rows will be added here dynamically -->
+                    </ui:ScrollView>
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Host Left Notification Overlay -->
+        <ui:VisualElement name="HostLeftOverlay" class="notification-overlay" style="display: none;">
+            <ui:VisualElement class="notification-panel">
+                <ui:Label text="Host has left the room" name="HostLeftTitle" class="notification-title"/>
+                <ui:Label text="Returning to lobby..." name="HostLeftMessage" class="notification-message"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Footer -->
+        <ui:VisualElement name="Footer" style="flex-direction: row; justify-content: space-between; align-items: flex-end; margin: 0 2% 2% 2%;">
+            <!-- Left: Navigation buttons -->
+            <ui:VisualElement name="NavigationButtons" style="flex-direction: row;">
+                <ui:Button text="Back to Menu" name="MainMenuButton" class="footer-button" style="width: 320px; margin-right: 15px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                <ui:Button text="Back to Lobby" name="LobbyButton" class="footer-button" style="width: 320px; margin-right: 15px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                <ui:Button text="Return to Room" name="ReturnToRoomButton" class="footer-button" style="width: 360px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+            </ui:VisualElement>
+
+            <!-- Right: Vote/Rematch Section (Multiplayer) or Play Again (Single player) -->
+            <ui:VisualElement name="VoteSection" style="flex-direction: column; align-items: flex-end;">
+                <!-- Vote Status Info -->
+                <ui:VisualElement name="VoteStatusContainer" style="flex-direction: row; align-items: center; margin-bottom: 10px;">
+                    <ui:Label text="Waiting for players..." name="RematchStatusLabel" class="rematch-status-label"/>
+                    <ui:Label text="2 / 4 voted" name="RematchCountLabel" class="rematch-count-label" style="margin-left: 15px;"/>
+                </ui:VisualElement>
+                <!-- Vote Buttons -->
+                <ui:VisualElement name="VoteButtons" style="flex-direction: row;">
+                    <ui:Button text="Vote Play Again" name="VoteRematchButton" class="footer-button primary-button" style="margin-right: 15px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                    <ui:Button text="Withdraw Vote" name="CancelVoteButton" class="footer-button secondary-button" style="display: none; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Play Again Section (Single player/VS AI only) -->
+            <ui:VisualElement name="PlayAgainSection" style="flex-direction: row; display: none;">
+                <ui:Button text="Play Again" name="PlayAgainButton" class="footer-button primary-button" style="background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

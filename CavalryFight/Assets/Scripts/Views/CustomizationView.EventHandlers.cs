@@ -204,6 +204,16 @@ namespace CavalryFight.Views
             {
                 _bowNextButton.clicked += () => OnArrowButtonClicked("Bow", 1, 10, 13);
             }
+
+            // ArrowType
+            if (_arrowTypePrevButton != null)
+            {
+                _arrowTypePrevButton.clicked += () => OnCharacterEnumArrowClicked("ArrowType", -1);
+            }
+            if (_arrowTypeNextButton != null)
+            {
+                _arrowTypeNextButton.clicked += () => OnCharacterEnumArrowClicked("ArrowType", 1);
+            }
         }
 
         /// <summary>
@@ -563,6 +573,38 @@ namespace CavalryFight.Views
             {
                 ViewModel.NotifyMountChanged();
             }
+        }
+
+        /// <summary>
+        /// キャラクターの列挙型プロパティ用の矢印ボタンクリックハンドラ
+        /// </summary>
+        private void OnCharacterEnumArrowClicked(string propertyName, int direction)
+        {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            switch (propertyName)
+            {
+                case "ArrowType":
+                    {
+                        int currentValue = (int)ViewModel.WorkingCharacter.ArrowType;
+                        int enumLength = Enum.GetValues(typeof(ArrowType)).Length;
+                        int newValue = (currentValue + direction + enumLength) % enumLength;
+                        ViewModel.WorkingCharacter.ArrowType = (ArrowType)newValue;
+                        if (_arrowTypeValue != null)
+                        {
+                            _arrowTypeValue.text = ((ArrowType)newValue).ToString();
+                        }
+                        // 矢プレビューを更新
+                        UpdateArrowPreview();
+                        break;
+                    }
+            }
+
+            // 変更を通知
+            ViewModel.NotifyCharacterChanged();
         }
 
         /// <summary>

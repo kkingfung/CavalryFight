@@ -29,7 +29,7 @@ namespace CavalryFight.Services.Replay
         private readonly List<ReplayMetadata> _replayMetadataList = new List<ReplayMetadata>();
         private ReplayData? _currentReplay;
         private readonly string _replayFolderPath;
-        private bool _useMockData = true; // モックデータ使用フラグ
+        private readonly bool _useMockData; // モックデータ使用フラグ
 
         #endregion
 
@@ -61,8 +61,11 @@ namespace CavalryFight.Services.Replay
         /// <summary>
         /// ReplayServiceの新しいインスタンスを初期化します
         /// </summary>
-        public ReplayService()
+        /// <param name="useMockData">モックデータを使用する場合はtrue（デフォルト: false）</param>
+        public ReplayService(bool useMockData = false)
         {
+            _useMockData = useMockData;
+
             // リプレイ保存フォルダのパスを設定
             _replayFolderPath = Path.Combine(Application.persistentDataPath, ReplayDirectory);
 
@@ -341,9 +344,9 @@ namespace CavalryFight.Services.Replay
         {
             _replayMetadataList.Clear();
 
-            // サンプルリプレイを5つ生成
-            string[] maps = { "Arena", "Forest", "Canyon", "Desert", "Tundra" };
-            string[] modes = { "Deathmatch", "Team Battle", "Training", "Skirmish" };
+            // サンプルリプレイを生成（フィールドプレハブ名と一致）
+            string[] maps = { "Arena", "Forest", "Nature", "PlayGround" };
+            string[] modes = { "Arena", "ScoreMatch", "TeamFight", "Deathmatch", "Versus" };
 
             var random = new System.Random();
             var baseDate = DateTime.Now.AddDays(-30);

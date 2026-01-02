@@ -49,6 +49,11 @@ namespace CavalryFight.ViewModels
         private string _joinCode = "";
 
         /// <summary>
+        /// パスワード（パスワード保護されたルームに参加する場合）
+        /// </summary>
+        private string _password = "";
+
+        /// <summary>
         /// 選択されたゲームモード
         /// </summary>
         private GameMode _selectedGameMode = GameMode.Arena;
@@ -59,14 +64,14 @@ namespace CavalryFight.ViewModels
         private int _selectedMaxPlayers = 8;
 
         /// <summary>
-        /// 選択されたマップ
+        /// 選択されたマップ（フィールドプレハブ名と一致）
         /// </summary>
-        private string _selectedMap = "DefaultArena";
+        private string _selectedMap = "Arena";
 
         /// <summary>
         /// ステータスメッセージ
         /// </summary>
-        private string _statusMessage = "ルームをホストするか、参加してください";
+        private string _statusMessage = "Host or join a room";
 
         /// <summary>
         /// ルームに参加しているかどうか
@@ -98,9 +103,19 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private bool _isProcessing = false;
 
+        /// <summary>
+        /// 操作がキャンセルされたかどうか
+        /// </summary>
+        private bool _isCancelled = false;
+
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// プレイヤー名の最大文字数
+        /// </summary>
+        public const int MaxPlayerNameLength = 12;
 
         /// <summary>
         /// プレイヤー名
@@ -108,7 +123,14 @@ namespace CavalryFight.ViewModels
         public string PlayerName
         {
             get => _playerName;
-            set => SetProperty(ref _playerName, value);
+            set
+            {
+                // 12文字を超える場合は切り詰める
+                string truncated = value?.Length > MaxPlayerNameLength
+                    ? value.Substring(0, MaxPlayerNameLength)
+                    : value ?? "";
+                SetProperty(ref _playerName, truncated);
+            }
         }
 
         /// <summary>
@@ -127,6 +149,15 @@ namespace CavalryFight.ViewModels
         {
             get => _joinCode;
             set => SetProperty(ref _joinCode, value);
+        }
+
+        /// <summary>
+        /// パスワード（パスワード保護されたルームに参加する場合）
+        /// </summary>
+        public string Password
+        {
+            get => _password;
+            set => SetProperty(ref _password, value);
         }
 
         /// <summary>
@@ -302,10 +333,20 @@ namespace CavalryFight.ViewModels
         {
             Debug.Log($"[MatchLobbyViewModel] Room created with join code: {joinCode}");
 
-            IsInRoom = true;
             IsProcessing = false;
+
+            // キャンセルされた場合はルームから退出して遷移しない
+            if (_isCancelled)
+            {
+                Debug.Log("[MatchLobbyViewModel] Operation was cancelled, leaving room.");
+                _lobbyService.LeaveRoom();
+                _isCancelled = false;
+                return;
+            }
+
+            IsInRoom = true;
             _isNavigatingToRoom = true;
-            StatusMessage = $"ルームをホスト中: {_roomName}";
+            StatusMessage = $"Hosting room: {_roomName}";
             ShowHostDialog = false;
 
             OnPropertyChanged(nameof(CurrentJoinCode));
@@ -321,10 +362,20 @@ namespace CavalryFight.ViewModels
         {
             Debug.Log("[MatchLobbyViewModel] Successfully joined room.");
 
-            IsInRoom = true;
             IsProcessing = false;
+
+            // キャンセルされた場合はルームから退出して遷移しない
+            if (_isCancelled)
+            {
+                Debug.Log("[MatchLobbyViewModel] Operation was cancelled, leaving room.");
+                _lobbyService.LeaveRoom();
+                _isCancelled = false;
+                return;
+            }
+
+            IsInRoom = true;
             _isNavigatingToRoom = true;
-            StatusMessage = "ルームに参加しました";
+            StatusMessage = "Successfully joined room";
             ShowJoinDialog = false;
 
             // ルームシーンに遷移
@@ -339,7 +390,7 @@ namespace CavalryFight.ViewModels
             Debug.Log("[MatchLobbyViewModel] Left room.");
 
             IsInRoom = false;
-            StatusMessage = "ルームをホストするか、参加してください";
+            StatusMessage = "Host or join a room";
             JoinCode = "";
 
             OnPropertyChanged(nameof(CurrentJoinCode));
@@ -353,7 +404,7 @@ namespace CavalryFight.ViewModels
         {
             Debug.LogError($"[MatchLobbyViewModel] Lobby error: {errorMessage}");
 
-            StatusMessage = $"エラー: {errorMessage}";
+            StatusMessage = $"Error: {errorMessage}";
             IsProcessing = false;
             ErrorOccurred?.Invoke(this, errorMessage);
         }
@@ -381,7 +432,7 @@ namespace CavalryFight.ViewModels
         {
             if (IsInRoom)
             {
-                StatusMessage = "既にルームに参加しています";
+                StatusMessage = "Already in a room";
                 return;
             }
 
@@ -405,7 +456,7 @@ namespace CavalryFight.ViewModels
         {
             if (IsInRoom)
             {
-                StatusMessage = "既にルームに参加しています";
+                StatusMessage = "Already in a room";
                 return;
             }
 
@@ -429,39 +480,39 @@ namespace CavalryFight.ViewModels
         {
             if (string.IsNullOrWhiteSpace(RoomName))
             {
-                StatusMessage = "ルーム名を入力してください";
-                ErrorOccurred?.Invoke(this, "ルーム名を入力してください");
+                StatusMessage = "Please enter a room name";
+                ErrorOccurred?.Invoke(this, "Please enter a room name");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(PlayerName))
             {
-                StatusMessage = "プレイヤー名を入力してください";
-                ErrorOccurred?.Invoke(this, "プレイヤー名を入力してください");
+                StatusMessage = "Please enter a player name";
+                ErrorOccurred?.Invoke(this, "Please enter a player name");
                 return;
             }
 
-            // FixedString64Bytesのバイト数制限をチェック（UTF-8で64バイトまで）
-            if (System.Text.Encoding.UTF8.GetByteCount(PlayerName) > 64)
+            // プレイヤー名の長さチェック（12文字まで）
+            if (PlayerName.Length > MaxPlayerNameLength)
             {
-                StatusMessage = "プレイヤー名が長すぎます（64バイトまで）";
-                ErrorOccurred?.Invoke(this, "プレイヤー名が長すぎます。日本語の場合は約21文字までです。");
-                Debug.LogWarning($"[MatchLobbyViewModel] Player name too long: {PlayerName} ({System.Text.Encoding.UTF8.GetByteCount(PlayerName)} bytes)");
+                StatusMessage = $"Player name is too long (max {MaxPlayerNameLength} characters)";
+                ErrorOccurred?.Invoke(this, $"Player name is too long (max {MaxPlayerNameLength} characters)");
+                Debug.LogWarning($"[MatchLobbyViewModel] Player name too long: {PlayerName} ({PlayerName.Length} characters)");
                 return;
             }
 
             if (System.Text.Encoding.UTF8.GetByteCount(RoomName) > 64)
             {
-                StatusMessage = "ルーム名が長すぎます（64バイトまで）";
-                ErrorOccurred?.Invoke(this, "ルーム名が長すぎます。日本語の場合は約21文字までです。");
+                StatusMessage = "Room name is too long (max 64 bytes)";
+                ErrorOccurred?.Invoke(this, "Room name is too long (max 64 bytes)");
                 Debug.LogWarning($"[MatchLobbyViewModel] Room name too long: {RoomName} ({System.Text.Encoding.UTF8.GetByteCount(RoomName)} bytes)");
                 return;
             }
 
             if (System.Text.Encoding.UTF8.GetByteCount(SelectedMap) > 64)
             {
-                StatusMessage = "マップ名が長すぎます（64バイトまで）";
-                ErrorOccurred?.Invoke(this, "マップ名が長すぎます。");
+                StatusMessage = "Map name is too long (max 64 bytes)";
+                ErrorOccurred?.Invoke(this, "Map name is too long (max 64 bytes)");
                 Debug.LogWarning($"[MatchLobbyViewModel] Map name too long: {SelectedMap} ({System.Text.Encoding.UTF8.GetByteCount(SelectedMap)} bytes)");
                 return;
             }
@@ -478,18 +529,19 @@ namespace CavalryFight.ViewModels
                 MapName = new FixedString64Bytes(SelectedMap)
             };
 
+            _isCancelled = false;
             IsProcessing = true;
             bool success = _lobbyService.CreateRoom(roomSettings, PlayerName);
 
             if (success)
             {
-                StatusMessage = "ルームを作成中...";
+                StatusMessage = "Creating room...";
                 Debug.Log("[MatchLobbyViewModel] Creating room...");
             }
             else
             {
-                StatusMessage = "ルーム作成に失敗しました";
-                ErrorOccurred?.Invoke(this, "ルーム作成に失敗しました");
+                StatusMessage = "Failed to create room";
+                ErrorOccurred?.Invoke(this, "Failed to create room");
                 IsProcessing = false;
             }
         }
@@ -501,41 +553,53 @@ namespace CavalryFight.ViewModels
         {
             if (string.IsNullOrWhiteSpace(JoinCode))
             {
-                StatusMessage = "ジョインコードを入力してください";
-                ErrorOccurred?.Invoke(this, "ジョインコードを入力してください");
+                StatusMessage = "Please enter a join code";
+                ErrorOccurred?.Invoke(this, "Please enter a join code");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(PlayerName))
             {
-                StatusMessage = "プレイヤー名を入力してください";
-                ErrorOccurred?.Invoke(this, "プレイヤー名を入力してください");
+                StatusMessage = "Please enter a player name";
+                ErrorOccurred?.Invoke(this, "Please enter a player name");
                 return;
             }
 
-            // FixedString64Bytesのバイト数制限をチェック（UTF-8で64バイトまで）
-            if (System.Text.Encoding.UTF8.GetByteCount(PlayerName) > 64)
+            // プレイヤー名の長さチェック（12文字まで）
+            if (PlayerName.Length > MaxPlayerNameLength)
             {
-                StatusMessage = "プレイヤー名が長すぎます（64バイトまで）";
-                ErrorOccurred?.Invoke(this, "プレイヤー名が長すぎます。日本語の場合は約21文字までです。");
-                Debug.LogWarning($"[MatchLobbyViewModel] Player name too long: {PlayerName} ({System.Text.Encoding.UTF8.GetByteCount(PlayerName)} bytes)");
+                StatusMessage = $"Player name is too long (max {MaxPlayerNameLength} characters)";
+                ErrorOccurred?.Invoke(this, $"Player name is too long (max {MaxPlayerNameLength} characters)");
+                Debug.LogWarning($"[MatchLobbyViewModel] Player name too long: {PlayerName} ({PlayerName.Length} characters)");
                 return;
             }
 
+            // パスワード保護されたルームに参加する場合のチェック
+            if (SelectedRoom != null && SelectedRoom.HasPassword && string.IsNullOrWhiteSpace(Password))
+            {
+                StatusMessage = "Please enter the room password";
+                ErrorOccurred?.Invoke(this, "This room requires a password");
+                return;
+            }
+
+            _isCancelled = false;
             IsProcessing = true;
-            bool success = _lobbyService.JoinRoom(JoinCode, PlayerName);
+            bool success = _lobbyService.JoinRoom(JoinCode, PlayerName, Password);
 
             if (success)
             {
-                StatusMessage = "ルームに参加中...";
+                StatusMessage = "Joining room...";
                 Debug.Log("[MatchLobbyViewModel] Joining room...");
             }
             else
             {
-                StatusMessage = "ルーム参加に失敗しました";
-                ErrorOccurred?.Invoke(this, "ルーム参加に失敗しました");
+                StatusMessage = "Failed to join room";
+                ErrorOccurred?.Invoke(this, "Failed to join room");
                 IsProcessing = false;
             }
+
+            // パスワードをクリア（セキュリティのため）
+            Password = "";
         }
 
         /// <summary>
@@ -558,9 +622,25 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public void RefreshRooms()
         {
-            StatusMessage = "ルームリストを更新中...";
+            StatusMessage = "Refreshing room list...";
             _lobbyService.RefreshAvailableRooms();
             Debug.Log("[MatchLobbyViewModel] Room list refresh requested.");
+        }
+
+        /// <summary>
+        /// 現在の操作をキャンセルします
+        /// </summary>
+        public void CancelOperation()
+        {
+            if (!IsProcessing)
+            {
+                return;
+            }
+
+            _isCancelled = true;
+            IsProcessing = false;
+            StatusMessage = "Operation cancelled";
+            Debug.Log("[MatchLobbyViewModel] Operation cancelled.");
         }
 
         /// <summary>

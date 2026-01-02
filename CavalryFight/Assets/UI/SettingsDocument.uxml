@@ -4,7 +4,7 @@
 
         <!-- Header -->
         <ui:VisualElement name="Header" style="flex-direction: row; justify-content: space-between; align-items: center; margin: 1% 2%;">
-            <ui:Label text="Settings" name="TitleLabel" style="-unity-font-definition: resource(&apos;FlatSkin/Font/Roboto-Black&apos;); font-size: 96px; -unity-text-outline-width: 5px; -unity-text-outline-color: rgb(255, 255, 255); color: rgb(0, 0, 0);" />
+            <ui:Label text="Settings" name="TitleLabel"/>
             <ui:Button text="Key Configuration" name="KeyBindingButton" class="header-button" style="width: 500px; height: 80px; font-size: 48px; background-image: url(&quot;project://database/Assets/Malbers%20Animations/Common/Materials%20&amp;%20Textures/UI/Button%20Square.png?fileID=21300000&amp;guid=fa7e93601de362c40a29723e685a532e&amp;type=3#Button Square&quot;);" />
         </ui:VisualElement>
 

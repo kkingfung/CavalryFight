@@ -8,90 +8,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: UpDown.active
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.size
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].key
-      value: 113
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].name
-      value: Fly
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].type
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].input
-      value: InputValue
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[0].GetPressed
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].GetPressed
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].DoubleTapTime
-      value: 0.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].LongPressTime
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].active.UseConstant
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[2].active.ConstantValue
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[6].active.ConstantValue
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].active.ConstantValue
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[7].ignoreOnPause.UseConstant
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 7347014586590915200}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: State_InputTrue
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: MalbersAnimations.Controller.MAnimal, MalbersAnimations
-      objectReference: {fileID: 0}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
-      value: 
-      objectReference: {fileID: 11400000, guid: c44e7e8d6840aa243b6c33ec85052763, type: 2}
-    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
-      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: MalbersAnimations.StateID, MalbersAnimations
-      objectReference: {fileID: 0}
     - target: {fileID: 57854266, guid: 6c7a70b07cc96cb42bf7239369521199, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -840,6 +756,90 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: f668d8047970c2c4c883e2a1d7e8034b, type: 2}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: UpDown.active
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.size
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].key
+      value: 113
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].name
+      value: Fly
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].input
+      value: InputValue
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[0].GetPressed
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].GetPressed
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].DoubleTapTime
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].LongPressTime
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].active.UseConstant
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[2].active.ConstantValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[6].active.ConstantValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].active.ConstantValue
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[7].ignoreOnPause.UseConstant
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 7347014586590915200}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: State_InputTrue
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: MalbersAnimations.Controller.MAnimal, MalbersAnimations
+      objectReference: {fileID: 0}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
+      value: 
+      objectReference: {fileID: 11400000, guid: c44e7e8d6840aa243b6c33ec85052763, type: 2}
+    - target: {fileID: 7156126842977918216, guid: d3aa6de16e8fb9a4ca8d48506859e701, type: 3}
+      propertyPath: inputs.Array.data[0].OnDoubleTap.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: MalbersAnimations.StateID, MalbersAnimations
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:

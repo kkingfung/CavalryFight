@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance"
+         engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements"
+         noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
+         editor-extension-mode="False">
+
+    <Style src="HuntingStyles.uss" />
+
+    <ui:VisualElement name="Root" class="root">
+
+        <!-- HUD Panel (Top) -->
+        <ui:VisualElement name="HUDPanel" class="hud-panel">
+
+            <!-- Left: Player Stats -->
+            <ui:VisualElement name="PlayerStatsPanel" class="player-stats-panel">
+                <!-- Role Badge -->
+                <ui:VisualElement class="role-badge-container">
+                    <ui:Label name="RoleLabel" text="Hunter" class="role-badge role--hunter" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Score" class="stat-label" />
+                    <ui:Label name="ScoreLabel" text="0" class="stat-value stat-value--score" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Hits" class="stat-label" />
+                    <ui:Label name="HitsLabel" text="0" class="stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Accuracy" class="stat-label" />
+                    <ui:Label name="AccuracyLabel" text="0.0%" class="stat-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Center: Timer -->
+            <ui:VisualElement name="CenterPanel" class="center-panel">
+                <ui:Label text="Hunting" class="game-mode-badge" />
+                <ui:Label name="TimerLabel" text="10:00" class="timer-label" />
+            </ui:VisualElement>
+
+            <!-- Right: Team Scores -->
+            <ui:VisualElement name="TeamScorePanel" class="team-score-panel">
+                <ui:VisualElement class="team-score team-score--team0">
+                    <ui:Label text="Blue Team" class="team-name" />
+                    <ui:Label name="Team0ScoreLabel" text="0" class="team-score-value" />
+                </ui:VisualElement>
+                <ui:Label text="vs" class="team-vs" />
+                <ui:VisualElement class="team-score team-score--team1">
+                    <ui:Label text="Red Team" class="team-name" />
+                    <ui:Label name="Team1ScoreLabel" text="0" class="team-score-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- Stun Indicator (Center-Top) -->
+        <ui:VisualElement name="StunPanel" class="stun-panel" style="display: none;">
+            <ui:VisualElement class="stun-content">
+                <ui:Label name="StunLabel" text="STUNNED" class="stun-label" />
+                <ui:VisualElement class="stun-progress-container">
+                    <ui:VisualElement name="StunProgressBar" class="stun-progress-bar" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Countdown Panel (Center) -->
+        <ui:VisualElement name="CountdownPanel" class="countdown-panel" style="display: none;">
+            <ui:Label name="CountdownLabel" text="3" class="countdown-label" />
+        </ui:VisualElement>
+
+        <!-- Score Popup Container -->
+        <ui:VisualElement name="ScorePopupContainer" class="score-popup-container" />
+
+        <!-- Scoreboard Panel (Tab to show) -->
+        <ui:VisualElement name="ScoreboardPanel" class="scoreboard-panel" style="display: none;">
+            <ui:VisualElement class="scoreboard-overlay" />
+            <ui:VisualElement class="scoreboard-content">
+                <ui:Label text="SCOREBOARD" class="scoreboard-title" />
+
+                <!-- Team Headers -->
+                <ui:VisualElement class="scoreboard-teams">
+                    <ui:VisualElement class="scoreboard-team scoreboard-team--team0">
+                        <ui:Label text="Blue Team" class="scoreboard-team-name" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="scoreboard-team scoreboard-team--team1">
+                        <ui:Label text="Red Team" class="scoreboard-team-name" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="scoreboard-header">
+                    <ui:Label text="Role" class="scoreboard-header-cell scoreboard-header-role" />
+                    <ui:Label text="Player" class="scoreboard-header-cell scoreboard-header-name" />
+                    <ui:Label text="Score" class="scoreboard-header-cell" />
+                    <ui:Label text="Hits" class="scoreboard-header-cell" />
+                    <ui:Label text="Accuracy" class="scoreboard-header-cell" />
+                </ui:VisualElement>
+                <ui:VisualElement name="ScoreboardContainer" class="scoreboard-container" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Pause Panel -->
+        <ui:VisualElement name="PausePanel" class="pause-panel" style="display: none;">
+            <ui:VisualElement class="pause-overlay" />
+            <ui:VisualElement class="pause-content">
+                <ui:Label text="PAUSED" class="pause-title" />
+                <ui:Button name="ResumeButton" text="Resume" class="pause-button pause-button--primary" />
+                <ui:Button name="SettingsButton" text="Settings" class="pause-button" />
+                <ui:Button name="LeaveMatchButton" text="Leave Match" class="pause-button pause-button--danger" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Settings Popup (Hidden by default) -->
+        <ui:VisualElement name="SettingsPopup" class="full-settings-popup hidden">
+            <!-- Dark Overlay -->
+            <ui:VisualElement class="pause-overlay" />
+
+            <!-- Settings Panel -->
+            <ui:VisualElement class="full-settings-panel">
+                <!-- Header -->
+                <ui:VisualElement class="settings-header">
+                    <ui:Label text="Settings" class="settings-title" />
+                    <ui:Button name="KeyBindingsButton" text="Key Configuration" class="header-button" />
+                </ui:VisualElement>
+
+                <!-- Scrollable Content -->
+                <ui:ScrollView class="settings-scroll">
+
+                    <!-- Audio Section -->
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Audio Settings" class="section-header" />
+                        <ui:Slider label="Master Volume" value="1" high-value="1" name="MasterVolumeSlider" class="setting-control" />
+                        <ui:Slider label="BGM Volume" value="0.8" high-value="1" name="BgmVolumeSlider" class="setting-control" />
+                        <ui:Slider label="SFX Volume" value="0.8" high-value="1" name="SfxVolumeSlider" class="setting-control" />
+                    </ui:VisualElement>
+
+                    <!-- Video Section -->
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Video Settings" class="section-header" />
+                        <ui:DropdownField label="Display Mode" name="DisplayModeDropdown" class="setting-control" />
+                        <ui:DropdownField label="Resolution" name="ResolutionDropdown" class="setting-control" />
+                        <ui:DropdownField label="Quality Preset" name="QualityDropdown" class="setting-control" />
+                        <ui:DropdownField label="Anti-Aliasing" name="AntiAliasingDropdown" class="setting-control" />
+                        <ui:DropdownField label="Target FPS" name="TargetFpsDropdown" class="setting-control" />
+                        <ui:Toggle label="VSync" name="VSyncToggle" value="true" class="setting-control" />
+                    </ui:VisualElement>
+
+                    <!-- Gameplay Section -->
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Gameplay Settings" class="section-header" />
+                        <ui:Slider label="Movement Sensitivity" value="1" high-value="1" name="MovementSensitivitySlider" class="setting-control" />
+                        <ui:Slider label="Camera Sensitivity" value="0.5" high-value="1" name="CameraSensitivitySlider" class="setting-control" />
+                        <ui:Toggle label="Invert Y-Axis" name="InvertYAxisToggle" value="false" class="setting-control" />
+                    </ui:VisualElement>
+
+                </ui:ScrollView>
+
+                <!-- Footer Buttons -->
+                <ui:VisualElement class="settings-footer">
+                    <!-- Left side: Resume and Back to Menu -->
+                    <ui:VisualElement class="footer-left">
+                        <ui:Button name="SettingsResumeButton" text="Resume" class="footer-button primary-button" />
+                        <ui:Button name="BackToMenuButton" text="Back to Menu" class="footer-button" />
+                    </ui:VisualElement>
+                    <!-- Right side: Apply and Reset -->
+                    <ui:VisualElement class="footer-right">
+                        <ui:Button name="ApplySettingsButton" text="Apply" class="footer-button" />
+                        <ui:Button name="ResetSettingsButton" text="Reset" class="footer-button" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Match End Panel -->
+        <ui:VisualElement name="MatchEndPanel" class="match-end-panel" style="display: none;">
+            <ui:VisualElement class="match-end-overlay" />
+            <ui:VisualElement class="match-end-content">
+                <ui:Label name="MatchResultLabel" text="VICTORY" class="match-result-label result-victory" />
+                <ui:Label name="FinalScoreLabel" text="Team Score: 0" class="final-score-label" />
+                <ui:Button name="ContinueButton" text="Continue" class="continue-button" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Bottom Info Bar -->
+        <ui:VisualElement name="BottomBar" class="bottom-bar">
+            <ui:Label text="[Tab] Scoreboard  |  [Esc] Pause" class="hint-text" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

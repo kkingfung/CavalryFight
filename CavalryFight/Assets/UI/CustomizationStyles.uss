@@ -17,7 +17,8 @@
     font-size: 96px;
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
     -unity-text-outline-width: 5px;
-    -unity-text-outline-color: rgb(255, 255, 255);
+    -unity-text-outline-color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
     margin: 1%;
     width: 100%;
     height: auto;
@@ -61,6 +62,7 @@
     background-color: rgba(128, 128, 128, 0.3);
     border-width: 0;
     margin: 0 5px;
+    transition-duration: 0.15s;
 }
 
 /* Active Tab */
@@ -73,6 +75,12 @@
 /* Tab Hover Effect */
 .category-tab:hover {
     background-color: rgba(200, 200, 200, 0.3);
+}
+
+/* Tab Active/Pressed Effect */
+.category-tab:active {
+    background-color: rgba(150, 150, 150, 0.4);
+    scale: 0.98;
 }
 
 /* Customization Panels */
@@ -134,6 +142,7 @@
     margin-left: 3px;
     margin-right: 3px;
     flex-shrink: 0;
+    transition-duration: 0.15s;
 }
 
 .arrow-button:hover {
@@ -143,6 +152,7 @@
 
 .arrow-button:active {
     background-color: rgba(100, 100, 100, 0.5);
+    scale: 0.98;
 }
 
 .arrow-value {
@@ -423,6 +433,7 @@ DropdownField:focus .unity-base-popup-field__input {
     background-color: rgba(188, 188, 188, 0);
     margin-left: 10px;
     margin-right: 10px;
+    transition-duration: 0.15s;
 }
 
 /* Button Hover Effect */
@@ -433,6 +444,7 @@ Button:hover {
 /* Button Active/Pressed Effect */
 Button:active {
     background-color: rgba(100, 100, 100, 0.2);
+    scale: 0.98;
 }
 
 /* ScrollView Styling */

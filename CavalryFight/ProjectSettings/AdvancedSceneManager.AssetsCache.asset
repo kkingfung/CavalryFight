@@ -19,9 +19,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9dcd0cad8ed6c6b42921a33913ab2659, type: 2}
   - {fileID: 11400000, guid: 64dc76f34486aba4a969f411027df128, type: 2}
   - {fileID: 11400000, guid: 99d9e04dba8f4bb48bf0f23d57548b94, type: 2}
+  - {fileID: 11400000, guid: bbc21e319085bfd4c9367141ab10a312, type: 2}
+  - {fileID: 11400000, guid: 75531a8cdf60c7d43b1dd5c246ae7b0b, type: 2}
+  - {fileID: 11400000, guid: f310bc347bdbea244a3fd67a6499257a, type: 2}
+  - {fileID: 11400000, guid: 201e10c192e83824a820f260a8a55559, type: 2}
   - {fileID: 11400000, guid: 34015f3346313bd469dc6da2d5e97286, type: 2}
   - {fileID: 11400000, guid: 704655fc0cde9534399a385d22bf131a, type: 2}
   - {fileID: 11400000, guid: aa7fc8ad87878634abc784b702f0af78, type: 2}
   - {fileID: 11400000, guid: 8916a5f16a042fc4e9e4fea646903e60, type: 2}
   - {fileID: 11400000, guid: 7ffdce87831619646b85116370c0a571, type: 2}
+  - {fileID: 11400000, guid: c9984d1f7cb53b84ebe18208f13e592d, type: 2}
   m_collectionTemplates: []

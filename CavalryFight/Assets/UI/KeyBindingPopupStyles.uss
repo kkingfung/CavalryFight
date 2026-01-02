@@ -1,88 +1,191 @@
-/* Key Binding Popup Styles */
+/* =====================================
+   Key Binding Popup Styles
+   Brighter theme for better visibility
+   ===================================== */
 
-.overlay {
+/* Root Container */
+.keybinding-root {
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Overlay - lighter to show settings behind */
+.keybinding-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
     align-items: center;
     justify-content: center;
 }
 
-.popup-container {
-    background-color: rgb(40, 40, 40);
-    border-radius: 10px;
-    border-width: 3px;
-    border-color: rgb(100, 100, 100);
+/* Popup Container - significantly brighter */
+.keybinding-popup-container {
+    background-color: rgba(75, 75, 80, 0.97);
+    border-radius: 15px;
     padding: 30px;
+    width: 85%;
+    height: 80%;
+    max-width: 1600px;
+    min-width: 1000px;
+    border-width: 2px;
+    border-color: rgba(160, 160, 170, 0.9);
+    flex-direction: column;
 }
 
-.title-label {
-    font-size: 64px;
+/* Header */
+.keybinding-header {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.keybinding-title {
     color: rgb(255, 255, 255);
+    font-size: 48px;
     -unity-font-style: bold;
-    -unity-text-align: upper-center;
-    margin-bottom: 20px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    -unity-text-align: middle-center;
 }
 
-.rebinding-prompt {
-    font-size: 36px;
-    color: rgb(255, 200, 0);
-    -unity-text-align: upper-center;
-    margin-bottom: 20px;
+/* Scrollable Content - brighter background */
+.keybinding-scroll {
+    flex-grow: 1;
+    margin-bottom: 15px;
+    background-color: rgba(55, 55, 60, 0.6);
+    border-radius: 10px;
+    padding: 10px;
 }
 
 .bindings-container {
     flex-grow: 1;
 }
 
+/* Binding Row - much brighter */
 .binding-row {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: rgba(60, 60, 60, 0.8);
-    border-radius: 5px;
+    padding: 15px 20px;
+    margin-bottom: 8px;
+    background-color: rgba(95, 95, 100, 0.8);
+    border-radius: 8px;
+    transition-duration: 0.15s;
 }
 
 .binding-row:hover {
-    background-color: rgba(80, 80, 80, 0.9);
+    background-color: rgba(115, 115, 120, 0.9);
 }
 
 .binding-action-name {
-    font-size: 32px;
+    font-size: 28px;
     color: rgb(255, 255, 255);
     min-width: 300px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
 }
 
 .binding-current-key {
-    font-size: 32px;
-    color: rgb(150, 200, 255);
+    font-size: 28px;
+    color: rgb(100, 200, 255);
     min-width: 200px;
     -unity-text-align: middle-center;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
 }
 
 .binding-rebind-button {
-    width: 200px;
-    height: 60px;
-    font-size: 28px;
+    width: 180px;
+    height: 50px;
+    font-size: 22px;
+    background-color: rgb(100, 100, 105);
+    color: rgb(255, 255, 255);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgb(140, 140, 145);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
 }
 
-.button-section {
+.binding-rebind-button:hover {
+    background-color: rgb(120, 120, 125);
+    border-color: rgb(180, 180, 185);
+}
+
+.binding-rebind-button:active {
+    background-color: rgb(80, 80, 85);
+    scale: 0.98;
+}
+
+/* Rebinding Prompt */
+.rebinding-prompt {
+    font-size: 32px;
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-center;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    background-color: rgb(200, 100, 50);
+    border-radius: 10px;
+    padding: 15px 30px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-width: 3px;
+    border-color: rgb(255, 150, 50);
+    min-height: 60px;
+    opacity: 0;
+}
+
+/* Footer */
+.keybinding-footer {
     flex-direction: row;
     justify-content: space-between;
-    margin-top: 20px;
+    align-items: center;
+    padding-top: 15px;
+    border-top-width: 2px;
+    border-top-color: rgba(255, 255, 255, 0.3);
 }
 
-.reset-button {
-    width: 400px;
-    height: 80px;
-    font-size: 36px;
+.keybinding-button {
+    width: 220px;
+    height: 50px;
+    font-size: 24px;
+    background-color: rgb(100, 100, 105);
+    color: rgb(255, 255, 255);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgb(140, 140, 145);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
 }
 
-.close-button {
-    width: 400px;
-    height: 80px;
-    font-size: 36px;
+.keybinding-button:hover {
+    background-color: rgb(120, 120, 125);
+    border-color: rgb(180, 180, 185);
+}
+
+.keybinding-button:active {
+    background-color: rgb(80, 80, 85);
+    scale: 0.98;
+}
+
+/* Primary Button (Close) */
+.primary-button {
+    background-color: rgb(70, 140, 95);
+    border-color: rgb(90, 180, 120);
+    transition-duration: 0.15s;
+}
+
+.primary-button:hover {
+    background-color: rgb(85, 160, 110);
+    border-color: rgb(110, 200, 140);
+}
+
+.primary-button:active {
+    background-color: rgb(55, 115, 75);
+    scale: 0.98;
 }

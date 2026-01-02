@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 
 namespace CavalryFight.Services.Replay
 {
@@ -55,6 +56,36 @@ namespace CavalryFight.Services.Replay
         /// 最終敵スコア
         /// </summary>
         public int FinalEnemyScore { get; set; }
+
+        /// <summary>
+        /// プレイヤー数
+        /// </summary>
+        public int PlayerCount { get; set; }
+
+        /// <summary>
+        /// キル数
+        /// </summary>
+        public int Kills { get; set; }
+
+        /// <summary>
+        /// デス数
+        /// </summary>
+        public int Deaths { get; set; }
+
+        /// <summary>
+        /// 命中率（%）
+        /// </summary>
+        public float Accuracy { get; set; }
+
+        /// <summary>
+        /// 順位（FFA/Deathmatchの場合）
+        /// </summary>
+        public int Rank { get; set; }
+
+        /// <summary>
+        /// 他プレイヤーの統計情報
+        /// </summary>
+        public List<OtherPlayerStats> OtherPlayers { get; set; } = new List<OtherPlayerStats>();
 
         /// <summary>
         /// 勝敗結果（プレイヤーが勝った場合true）
@@ -143,5 +174,27 @@ namespace CavalryFight.Services.Replay
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// 他プレイヤーの統計情報
+    /// </summary>
+    [Serializable]
+    public class OtherPlayerStats
+    {
+        /// <summary>プレイヤー名</summary>
+        public string PlayerName { get; set; } = string.Empty;
+
+        /// <summary>キル数</summary>
+        public int Kills { get; set; }
+
+        /// <summary>デス数</summary>
+        public int Deaths { get; set; }
+
+        /// <summary>スコア</summary>
+        public int Score { get; set; }
+
+        /// <summary>順位</summary>
+        public int Rank { get; set; }
     }
 }

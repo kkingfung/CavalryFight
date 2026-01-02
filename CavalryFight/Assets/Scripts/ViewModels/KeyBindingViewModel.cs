@@ -148,18 +148,105 @@ namespace CavalryFight.ViewModels
         private void InitializeBindings()
         {
             // Gameplayアクションマップのバインディングを追加
-            AddActionBindings(_inputActions.Gameplay.Move, "Move");
-            AddActionBindings(_inputActions.Gameplay.Camera, "Camera");
+
+            // Move（コンポジット - 個別キーを表示）
+            AddCompositeActionBindings(_inputActions.Gameplay.Move, "Move");
+
+            // Camera（マウスデルタ - リバインド不要なので省略可）
+            // AddActionBindings(_inputActions.Gameplay.Camera, "Camera");
+
+            // 通常ボタンアクション
             AddActionBindings(_inputActions.Gameplay.Attack, "Attack / Aim");
             AddActionBindings(_inputActions.Gameplay.CancelAttack, "Cancel Attack (while aiming)");
             AddActionBindings(_inputActions.Gameplay.Boost, "Boost (when mounted, not aiming)");
             AddActionBindings(_inputActions.Gameplay.Mount, "Mount / Unmount");
             AddActionBindings(_inputActions.Gameplay.Jump, "Jump");
+            AddActionBindings(_inputActions.Gameplay.Sprint, "Sprint (Hold)");
 
             // UIアクションマップのバインディングを追加
             AddActionBindings(_inputActions.UI.Menu, "Menu (Pause)");
 
             Debug.LogWarning($"=== [KeyBindingViewModel] InitializeBindings completed with {_bindings.Count} total bindings ===");
+        }
+
+        /// <summary>
+        /// コンポジットアクション（WASDなど）のバインディングをリストに追加します
+        /// </summary>
+        /// <remarks>
+        /// コンポジットバインディングの個々のパーツ（Up, Down, Left, Right）を
+        /// 個別のエントリとして表示します。
+        /// </remarks>
+        private void AddCompositeActionBindings(InputAction action, string displayName)
+        {
+            // Keyboard&Mouseスキームのコンポジットバインディングを検索
+            for (int i = 0; i < action.bindings.Count; i++)
+            {
+                var binding = action.bindings[i];
+
+                // コンポジットの開始を探す（例: "WASD"）
+                if (!binding.isComposite)
+                {
+                    continue;
+                }
+
+                // Keyboard&Mouseグループのみ（Gamepadコンポジットはスキップ）
+                // コンポジット自体にはgroupsが設定されていないため、最初のパートを確認
+                int partIndex = i + 1;
+                if (partIndex < action.bindings.Count)
+                {
+                    var firstPart = action.bindings[partIndex];
+                    if (!string.IsNullOrEmpty(firstPart.groups) && !firstPart.groups.Contains("Keyboard&Mouse"))
+                    {
+                        Debug.Log($"[KeyBindingViewModel] Skipping non-Keyboard&Mouse composite: {binding.name}");
+                        continue;
+                    }
+                }
+
+                string compositeName = binding.name; // 例: "WASD", "Arrow Keys"
+                Debug.Log($"[KeyBindingViewModel] Found composite '{compositeName}' for {displayName}");
+
+                // コンポジットの個々のパーツを追加
+                for (int j = i + 1; j < action.bindings.Count && action.bindings[j].isPartOfComposite; j++)
+                {
+                    var partBinding = action.bindings[j];
+
+                    // Keyboard&Mouseグループのみ
+                    if (!string.IsNullOrEmpty(partBinding.groups) && !partBinding.groups.Contains("Keyboard&Mouse"))
+                    {
+                        continue;
+                    }
+
+                    // パーツ名を取得（up, down, left, right）
+                    string partName = partBinding.name;
+                    string partDisplayName = GetDirectionDisplayName(partName);
+
+                    var entry = new KeyBindingEntry
+                    {
+                        Action = action,
+                        BindingIndex = j,
+                        ActionName = $"{displayName} {partDisplayName}",
+                        CurrentBinding = GetBindingDisplayString(action, j)
+                    };
+
+                    _bindings.Add(entry);
+                    Debug.Log($"[KeyBindingViewModel] Added composite part: {entry.ActionName} = {entry.CurrentBinding}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 方向名を表示用の文字列に変換します
+        /// </summary>
+        private string GetDirectionDisplayName(string directionName)
+        {
+            return directionName.ToLower() switch
+            {
+                "up" => "(Forward)",
+                "down" => "(Backward)",
+                "left" => "(Left)",
+                "right" => "(Right)",
+                _ => $"({directionName})"
+            };
         }
 
         /// <summary>

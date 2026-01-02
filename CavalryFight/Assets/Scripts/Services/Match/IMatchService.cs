@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using CavalryFight.Core.Services;
+using CavalryFight.Services.Lobby;
 using UnityEngine;
 
 namespace CavalryFight.Services.Match
@@ -47,6 +48,11 @@ namespace CavalryFight.Services.Match
         event Action<ulong, int>? PlayerScoreChanged; // clientId, newScore
 
         /// <summary>
+        /// プレイヤーがスコアを獲得した時に発生します（詳細情報付き）
+        /// </summary>
+        event Action<ulong, int, HitLocation>? PlayerScored; // clientId, score, hitLocation
+
+        /// <summary>
         /// マッチが開始された時に発生します
         /// </summary>
         event Action? MatchStarted;
@@ -55,6 +61,16 @@ namespace CavalryFight.Services.Match
         /// マッチが終了した時に発生します
         /// </summary>
         event Action<ulong>? MatchEnded; // winnerClientId
+
+        /// <summary>
+        /// マッチが終了した時に発生します（詳細情報付き）
+        /// </summary>
+        event Action<MatchEndResult>? MatchEndedWithResult;
+
+        /// <summary>
+        /// マッチ状態が変更された時に発生します
+        /// </summary>
+        event Action<MatchState>? MatchStateChanged;
 
         #endregion
 
@@ -66,9 +82,50 @@ namespace CavalryFight.Services.Match
         bool IsMatchStarted { get; }
 
         /// <summary>
+        /// 現在のマッチ状態を取得します
+        /// </summary>
+        MatchState CurrentState { get; }
+
+        /// <summary>
+        /// 現在のゲームモードを取得します
+        /// </summary>
+        GameMode CurrentGameMode { get; }
+
+        /// <summary>
+        /// 残り時間（秒）を取得します
+        /// </summary>
+        float RemainingTime { get; }
+
+        /// <summary>
+        /// マッチ経過時間（秒）を取得します
+        /// </summary>
+        float MatchTime { get; }
+
+        /// <summary>
         /// 現在のスコアリング設定を取得します
         /// </summary>
         ScoringConfig CurrentScoringConfig { get; }
+
+        /// <summary>
+        /// チームスコアを取得します
+        /// </summary>
+        /// <param name="teamIndex">チームインデックス</param>
+        /// <returns>チームのスコア</returns>
+        int GetTeamScore(int teamIndex);
+
+        /// <summary>
+        /// ローカルプレイヤーがハンターかどうかを取得します（ハンティングモード用）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <returns>ハンターの場合true</returns>
+        bool IsHunter(ulong clientId);
+
+        /// <summary>
+        /// プレイヤーがスタン中かどうかを取得します
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <returns>スタン中の場合true</returns>
+        bool IsStunned(ulong clientId);
 
         #endregion
 
@@ -94,6 +151,12 @@ namespace CavalryFight.Services.Match
         /// </summary>
         /// <returns>プレイヤースコア配列</returns>
         PlayerScore[] GetAllPlayerScores();
+
+        /// <summary>
+        /// 最後に完了したマッチの結果を取得します
+        /// </summary>
+        /// <returns>マッチ結果（存在しない場合はnull）</returns>
+        MatchResult? GetLastMatchResult();
 
         #endregion
 

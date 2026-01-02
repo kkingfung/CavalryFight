@@ -3,6 +3,7 @@
 using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Audio;
+using CavalryFight.Services.SceneManagement;
 using CavalryFight.ViewModels;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -49,8 +50,11 @@ namespace CavalryFight.Views
         {
             base.Awake();
 
+            // サービスを取得
+            var sceneManagementService = ServiceLocator.Instance.Get<ISceneManagementService>();
+
             // ViewModelを作成してバインド
-            ViewModel = new MainMenuViewModel();
+            ViewModel = new MainMenuViewModel(sceneManagementService!);
         }
 
         /// <summary>

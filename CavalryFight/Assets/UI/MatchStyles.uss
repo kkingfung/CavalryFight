@@ -1,0 +1,748 @@
+/* ==========================================
+   Match Scene Styles
+   ========================================== */
+
+/* Root */
+.root {
+    flex-grow: 1;
+    justify-content: space-between;
+}
+
+/* ==========================================
+   HUD Panel
+   ========================================== */
+
+.hud-panel {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 30px;
+}
+
+/* Player Stats */
+.player-stats-panel {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 15px 20px;
+    border-radius: 10px;
+    min-width: 200px;
+}
+
+.stat-row {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+/* NOTE: :last-child is not supported in Unity UI Toolkit.
+   Apply .stat-row--last class manually in C# if needed. */
+.stat-row--last {
+    margin-bottom: 0;
+}
+
+.stat-label {
+    font-size: 18px;
+    color: rgb(255, 255, 255);
+    min-width: 100px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.stat-value {
+    font-size: 20px;
+    color: white;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    min-width: 80px;
+    -unity-text-align: middle-right;
+}
+
+.stat-value--score {
+    font-size: 28px;
+    color: rgb(255, 215, 0);
+}
+
+/* Center Panel */
+.center-panel {
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    translate: -50% 0;
+    align-items: center;
+}
+
+.game-mode-badge {
+    font-size: 16px;
+    color: rgb(200, 200, 200);
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 8px 20px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.timer-label {
+    font-size: 48px;
+    color: white;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 10px 30px;
+    border-radius: 10px;
+}
+
+/* Team Score Panel */
+.team-score-panel {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 15px 25px;
+    border-radius: 10px;
+}
+
+.team-score {
+    align-items: center;
+    min-width: 100px;
+}
+
+.team-name {
+    font-size: 14px;
+    color: rgb(180, 180, 180);
+    margin-bottom: 5px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.team-score-value {
+    font-size: 36px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+}
+
+.team-score--team0 .team-score-value {
+    color: rgb(100, 150, 255);
+}
+
+.team-score--team1 .team-score-value {
+    color: rgb(255, 100, 100);
+}
+
+.team-vs {
+    font-size: 20px;
+    color: rgb(150, 150, 150);
+    margin: 0 20px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+/* ==========================================
+   Countdown Panel
+   ========================================== */
+
+.countdown-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.countdown-label {
+    font-size: 200px;
+    color: white;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
+    text-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+/* ==========================================
+   Score Popup
+   ========================================== */
+
+.score-popup-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    /* NOTE: Set pickingMode = PickingMode.Ignore in C# code */
+}
+
+.score-popup {
+    position: absolute;
+    font-size: 32px;
+    color: rgb(100, 255, 100);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    transition: opacity 0.5s ease-out, translate 0.5s ease-out;
+}
+
+.score-popup--high {
+    color: rgb(255, 215, 0);
+    font-size: 40px;
+}
+
+.score-popup--critical {
+    color: rgb(255, 100, 100);
+    font-size: 48px;
+}
+
+/* ==========================================
+   Scoreboard
+   ========================================== */
+
+.scoreboard-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.scoreboard-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.scoreboard-content {
+    background-color: rgba(20, 20, 30, 0.95);
+    padding: 30px 40px;
+    border-radius: 15px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.2);
+    min-width: 600px;
+}
+
+.scoreboard-title {
+    font-size: 32px;
+    color: white;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    -unity-text-align: middle-center;
+    margin-bottom: 20px;
+}
+
+.scoreboard-header {
+    flex-direction: row;
+    padding: 10px 0;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 10px;
+}
+
+.scoreboard-header-cell {
+    font-size: 16px;
+    color: rgb(180, 180, 180);
+    min-width: 100px;
+    -unity-text-align: middle-center;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.scoreboard-header-name {
+    min-width: 200px;
+    -unity-text-align: middle-left;
+}
+
+.scoreboard-container {
+    max-height: 400px;
+}
+
+.scoreboard-row {
+    flex-direction: row;
+    padding: 12px 0;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.scoreboard-row--local {
+    background-color: rgba(100, 150, 255, 0.2);
+    border-radius: 5px;
+}
+
+.scoreboard-name {
+    font-size: 18px;
+    color: white;
+    min-width: 200px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.scoreboard-score {
+    font-size: 18px;
+    color: rgb(255, 215, 0);
+    min-width: 100px;
+    -unity-text-align: middle-center;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+}
+
+.scoreboard-hits {
+    font-size: 18px;
+    color: white;
+    min-width: 100px;
+    -unity-text-align: middle-center;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.scoreboard-accuracy {
+    font-size: 18px;
+    color: rgb(150, 200, 255);
+    min-width: 100px;
+    -unity-text-align: middle-center;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+/* ==========================================
+   Pause Panel
+   ========================================== */
+
+.pause-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.pause-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.pause-content {
+    background-color: rgba(30, 30, 40, 0.95);
+    padding: 40px 60px;
+    border-radius: 15px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.2);
+    align-items: center;
+}
+
+.pause-title {
+    font-size: 48px;
+    color: white;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    margin-bottom: 40px;
+}
+
+.pause-button {
+    font-size: 24px;
+    color: white;
+    background-color: rgb(60, 60, 80);
+    padding: 15px 50px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    min-width: 250px;
+    -unity-text-align: middle-center;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
+}
+
+.pause-button:hover {
+    background-color: rgb(80, 80, 100);
+}
+
+.pause-button:active {
+    background-color: rgb(50, 50, 70);
+    scale: 0.98;
+}
+
+.pause-button--primary {
+    background-color: rgb(60, 140, 60);
+}
+
+.pause-button--primary:hover {
+    background-color: rgb(80, 160, 80);
+}
+
+.pause-button--primary:active {
+    background-color: rgb(50, 120, 50);
+    scale: 0.98;
+}
+
+.pause-button--danger {
+    background-color: rgb(140, 60, 60);
+}
+
+.pause-button--danger:hover {
+    background-color: rgb(160, 80, 80);
+}
+
+.pause-button--danger:active {
+    background-color: rgb(120, 50, 50);
+    scale: 0.98;
+}
+
+/* ==========================================
+   Match End Panel
+   ========================================== */
+
+.match-end-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.match-end-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.match-end-content {
+    align-items: center;
+}
+
+.match-result-label {
+    font-size: 96px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
+    margin-bottom: 20px;
+    text-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.result-victory {
+    color: rgb(100, 255, 100);
+}
+
+.result-defeat {
+    color: rgb(255, 100, 100);
+}
+
+.result-draw {
+    color: rgb(200, 200, 200);
+}
+
+.final-score-label {
+    font-size: 36px;
+    color: white;
+    margin-bottom: 40px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+.continue-button {
+    font-size: 28px;
+    color: white;
+    background-color: rgb(60, 120, 200);
+    padding: 20px 60px;
+    border-radius: 10px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    transition-duration: 0.15s;
+}
+
+.continue-button:hover {
+    background-color: rgb(80, 140, 220);
+}
+
+.continue-button:active {
+    background-color: rgb(50, 100, 180);
+    scale: 0.98;
+}
+
+/* ==========================================
+   Bottom Bar
+   ========================================== */
+
+.bottom-bar {
+    flex-direction: row;
+    justify-content: center;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.hint-text {
+    font-size: 14px;
+    color: rgb(150, 150, 150);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+/* ==========================================
+   Full Settings Popup Styles
+   ========================================== */
+
+.full-settings-popup {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.full-settings-panel {
+    background-color: rgba(30, 30, 30, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    width: 80%;
+    height: 85%;
+    max-width: 1400px;
+    border-width: 2px;
+    border-color: rgb(100, 100, 100);
+    flex-direction: column;
+}
+
+/* Settings Header */
+.settings-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+.settings-title {
+    color: rgb(255, 255, 255);
+    font-size: 48px;
+    -unity-font-style: bold;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+}
+
+.header-button {
+    width: 300px;
+    height: 50px;
+    font-size: 24px;
+    background-color: rgb(70, 70, 70);
+    color: rgb(255, 255, 255);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgb(100, 100, 100);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
+}
+
+.header-button:hover {
+    background-color: rgb(90, 90, 90);
+    border-color: rgb(150, 150, 150);
+}
+
+.header-button:active {
+    background-color: rgb(50, 50, 50);
+    scale: 0.98;
+}
+
+/* Scrollable Content */
+.settings-scroll {
+    flex-grow: 1;
+    margin-bottom: 15px;
+}
+
+/* Settings Section Panel */
+.settings-section {
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Section Header */
+.section-header {
+    font-size: 32px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 255, 255);
+    margin-bottom: 15px;
+}
+
+/* Setting Control Container (for all controls) */
+.setting-control {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding: 0;
+    font-size: 22px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(255, 255, 255);
+}
+
+/* Control Label (for all controls) */
+.setting-control > Label {
+    min-width: 200px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+    margin-right: 20px;
+}
+
+/* Slider Input Container */
+.setting-control .unity-base-slider__input {
+    flex-grow: 1;
+    flex-shrink: 0;
+    min-width: 400px;
+}
+
+/* Slider Track */
+.setting-control .unity-base-slider__tracker {
+    height: 16px;
+    border-radius: 8px;
+    background-color: rgba(128, 128, 128, 0.5);
+}
+
+/* Slider Dragger (the knob) */
+.setting-control .unity-base-slider__dragger {
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background-color: rgb(200, 200, 200);
+    border-width: 3px;
+    border-color: rgb(255, 255, 255);
+    transition-duration: 0.15s;
+}
+
+/* Slider Dragger Hover */
+.setting-control:hover .unity-base-slider__dragger {
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(200, 200, 200);
+}
+
+/* Toggle Container */
+.setting-control.unity-toggle {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Toggle Label */
+.setting-control.unity-toggle > Label {
+    flex-grow: 1;
+}
+
+/* Toggle Checkmark Container */
+.setting-control .unity-toggle__input {
+    width: 36px;
+    height: 36px;
+    margin-left: 10px;
+    margin-right: 0px;
+    flex-shrink: 0;
+    align-self: center;
+    justify-content: flex-end;
+}
+
+/* Toggle Checkmark */
+.setting-control .unity-toggle__checkmark {
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    border-width: 2px;
+    border-color: rgb(200, 200, 200);
+    background-color: rgba(128, 128, 128, 0.3);
+    transition-duration: 0.15s;
+}
+
+/* Toggle Checkmark (when checked) */
+.setting-control:checked .unity-toggle__checkmark {
+    background-color: rgba(255, 255, 255, 1);
+    border-color: rgba(128, 128, 128, 0.3);
+}
+
+/* Dropdown Input Container */
+.setting-control .unity-base-popup-field__input {
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-width: 300px;
+    max-width: 400px;
+    height: 36px;
+    padding: 5px 10px;
+    background-color: rgba(128, 128, 128, 0.3);
+    border-radius: 5px;
+    border-width: 2px;
+    border-color: rgb(150, 150, 150);
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+    transition-duration: 0.15s;
+}
+
+/* Dropdown Arrow */
+.setting-control .unity-base-popup-field__arrow {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+/* Dropdown Hover Effect */
+.setting-control:hover .unity-base-popup-field__input {
+    border-color: rgb(200, 200, 200);
+    background-color: rgba(150, 150, 150, 0.4);
+}
+
+/* Settings Footer */
+.settings-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top-width: 2px;
+    border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.footer-left {
+    flex-direction: row;
+}
+
+.footer-right {
+    flex-direction: row;
+}
+
+.footer-button {
+    width: 200px;
+    height: 50px;
+    margin-left: 10px;
+    font-size: 24px;
+    background-color: rgb(70, 70, 70);
+    color: rgb(255, 255, 255);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgb(100, 100, 100);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    transition-duration: 0.15s;
+}
+
+.footer-button:hover {
+    background-color: rgb(90, 90, 90);
+    border-color: rgb(150, 150, 150);
+}
+
+.footer-button:active {
+    background-color: rgb(50, 50, 50);
+    scale: 0.98;
+}
+
+/* Primary Button (Resume) */
+.primary-button {
+    background-color: rgb(60, 120, 80);
+    border-color: rgb(80, 160, 100);
+    transition-duration: 0.15s;
+}
+
+.primary-button:hover {
+    background-color: rgb(70, 140, 90);
+    border-color: rgb(100, 180, 120);
+}
+
+.primary-button:active {
+    background-color: rgb(50, 100, 70);
+    scale: 0.98;
+}
+
+/* ==========================================
+   Utility Classes
+   ========================================== */
+
+.hidden {
+    display: none;
+}

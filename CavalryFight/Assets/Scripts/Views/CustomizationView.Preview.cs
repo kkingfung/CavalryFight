@@ -111,6 +111,12 @@ namespace CavalryFight.Views
                 _currentPreviewMount = null;
             }
 
+            if (_currentArrowPreview != null)
+            {
+                Destroy(_currentArrowPreview);
+                _currentArrowPreview = null;
+            }
+
             // 注意: _previewContainer自体は破棄しない（シーンに配置された永続的なオブジェクト）
         }
 
@@ -229,6 +235,9 @@ namespace CavalryFight.Views
                         _currentPreviewCharacter.SetActive(false);
                     }
                 }
+
+                // 矢プレビューの表示/非表示を更新
+                UpdateArrowPreviewVisibility();
             }
             finally
             {
@@ -445,6 +454,115 @@ namespace CavalryFight.Views
             else
             {
                 Debug.LogWarning($"[CustomizationView] {(gender == Gender.Male ? "Male" : "Female")} Animator Controller not assigned in Inspector!");
+            }
+        }
+
+        #endregion
+
+        #region Arrow Preview
+
+        /// <summary>
+        /// 矢プレビューを更新します
+        /// </summary>
+        private void UpdateArrowPreview()
+        {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            // 既存の矢プレビューを破棄
+            if (_currentArrowPreview != null)
+            {
+                Destroy(_currentArrowPreview);
+                _currentArrowPreview = null;
+            }
+
+            // 矢プレビューコンテナが設定されていない場合はスキップ
+            if (_arrowPreviewContainer == null)
+            {
+                Debug.LogWarning("[CustomizationView] Arrow preview container not assigned in Inspector.");
+                return;
+            }
+
+            // 選択された矢タイプのインデックスを取得
+            int arrowIndex = (int)ViewModel.WorkingCharacter.ArrowType;
+
+            // プレハブ配列の範囲チェック
+            if (_arrowBulletPrefabs == null || arrowIndex < 0 || arrowIndex >= _arrowBulletPrefabs.Length)
+            {
+                Debug.LogWarning($"[CustomizationView] Arrow prefab index {arrowIndex} is out of range.");
+                return;
+            }
+
+            var arrowPrefab = _arrowBulletPrefabs[arrowIndex];
+            if (arrowPrefab == null)
+            {
+                Debug.LogWarning($"[CustomizationView] Arrow prefab for type {ViewModel.WorkingCharacter.ArrowType} is not assigned.");
+                return;
+            }
+
+            // 矢プレビューをインスタンス化
+            _currentArrowPreview = Instantiate(arrowPrefab, _arrowPreviewContainer, false);
+            _currentArrowPreview.transform.localPosition = Vector3.zero;
+            _currentArrowPreview.transform.localRotation = Quaternion.identity;
+            _currentArrowPreview.transform.localScale = Vector3.one;
+
+            // Arrowレイヤーに設定
+            SetLayerRecursively(_currentArrowPreview, LayerMask.NameToLayer("Arrow"));
+
+            // 物理演算を無効化
+            DisablePhysics(_currentArrowPreview);
+
+            // パーティクルシステムを再生
+            var particleSystems = _currentArrowPreview.GetComponentsInChildren<ParticleSystem>(true);
+            foreach (var ps in particleSystems)
+            {
+                if (ps != null)
+                {
+                    ps.Play();
+                }
+            }
+
+            Debug.Log($"[CustomizationView] Arrow preview updated: {ViewModel.WorkingCharacter.ArrowType}");
+        }
+
+        /// <summary>
+        /// 矢プレビューの表示/非表示を更新します
+        /// </summary>
+        private void UpdateArrowPreviewVisibility()
+        {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            // キャラクタータブが選択されている場合のみ矢プレビューを表示
+            bool showArrowPreview = ViewModel.IsCharacterCategory;
+
+            if (_arrowPreviewVisualElement != null)
+            {
+                _arrowPreviewVisualElement.style.display = showArrowPreview
+                    ? UnityEngine.UIElements.DisplayStyle.Flex
+                    : UnityEngine.UIElements.DisplayStyle.None;
+
+                // RenderTextureを背景画像として設定
+                if (showArrowPreview && _arrowPreviewRenderTexture != null)
+                {
+                    _arrowPreviewVisualElement.style.backgroundImage = new UnityEngine.UIElements.StyleBackground(
+                        UnityEngine.UIElements.Background.FromRenderTexture(_arrowPreviewRenderTexture));
+                }
+            }
+
+            if (_currentArrowPreview != null)
+            {
+                _currentArrowPreview.SetActive(showArrowPreview);
+            }
+
+            // キャラクタータブ選択時に矢プレビューを更新
+            if (showArrowPreview && _currentArrowPreview == null)
+            {
+                UpdateArrowPreview();
             }
         }
 

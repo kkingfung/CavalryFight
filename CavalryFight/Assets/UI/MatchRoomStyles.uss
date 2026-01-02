@@ -138,13 +138,22 @@
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
     color: rgb(50, 50, 50);
     margin-right: 30px;
-    width: 250px;
+    width: 420px;
     flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .player-item-name.empty {
     color: rgba(100, 100, 100, 0.6);
-    font-style: italic;
+    -unity-font-style: italic;
+}
+
+/* Local Player Row - Highlighted Background */
+.player-item.local-player {
+    background-color: rgba(255, 220, 100, 0.25);
+    border-color: rgba(255, 200, 50, 0.6);
 }
 
 .player-item-stats {
@@ -169,7 +178,7 @@
     border-radius: 3px;
     margin-right: 25px;
     border-width: 2px;
-    width: 140px;
+    width: 200px;
     flex-shrink: 0;
     -unity-text-align: middle-center;
 }
@@ -198,8 +207,11 @@
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
     padding: 6px 14px;
     border-radius: 3px;
-    margin-right: 10px;
+    margin-right: 25px;
     border-width: 2px;
+    width: 200px;
+    flex-shrink: 0;
+    -unity-text-align: middle-center;
 }
 
 .ready-true {
@@ -225,9 +237,16 @@
     margin-right: 25px;
     border-width: 2px;
     border-color: rgba(200, 160, 0, 0.8);
-    width: 110px;
+    width: 200px;
     flex-shrink: 0;
     -unity-text-align: middle-center;
+}
+
+/* Alignment Spacer - ensures FPS/Difficulty starts at same position */
+.stats-spacer {
+    width: 200px;
+    margin-right: 25px;
+    flex-shrink: 0;
 }
 
 /* Player Actions */
@@ -248,12 +267,18 @@
     border-color: rgba(120, 120, 120, 0.8);
     margin-right: 8px;
     color: rgb(40, 40, 40);
+    transition-duration: 0.15s;
 }
 
 .team-button:hover {
     background-color: rgba(200, 200, 200, 0.9);
     border-color: rgba(80, 80, 80, 1);
     color: rgb(0, 0, 0);
+}
+
+.team-button:active {
+    background-color: rgba(160, 160, 160, 0.9);
+    scale: 0.98;
 }
 
 .kick-button {
@@ -266,12 +291,18 @@
     border-width: 2px;
     border-color: rgba(150, 50, 50, 0.8);
     color: rgb(255, 255, 255);
+    transition-duration: 0.15s;
 }
 
 .kick-button:hover {
     background-color: rgba(220, 100, 100, 0.9);
     border-color: rgba(180, 60, 60, 1);
     color: rgb(255, 255, 255);
+}
+
+.kick-button:active {
+    background-color: rgba(180, 60, 60, 0.9);
+    scale: 0.98;
 }
 
 /* Add NPC Button */
@@ -286,12 +317,18 @@
     border-color: rgba(80, 150, 80, 0.8);
     color: rgb(255, 255, 255);
     margin-right: 8px;
+    transition-duration: 0.15s;
 }
 
 .add-npc-button:hover {
     background-color: rgba(120, 200, 120, 0.9);
     border-color: rgba(100, 180, 100, 1);
     color: rgb(255, 255, 255);
+}
+
+.add-npc-button:active {
+    background-color: rgba(80, 160, 80, 0.9);
+    scale: 0.98;
 }
 
 /* ===========================================
@@ -358,6 +395,7 @@
     padding-left: 10px;
     padding-right: 10px;
     margin-left: auto;
+    transition-duration: 0.15s;
 }
 
 /* Dropdown text right-alignment */
@@ -422,6 +460,7 @@
     padding-left: 10px;
     padding-right: 10px;
     margin-left: auto;
+    transition-duration: 0.15s;
 }
 
 .setting-textfield:hover {
@@ -432,6 +471,22 @@
 .setting-textfield:focus {
     border-color: rgb(80, 80, 80);
     background-color: rgba(230, 230, 230, 1);
+}
+
+/* Password TextField styling */
+#PasswordField .unity-text-field__input {
+    color: rgb(0, 0, 0);
+    font-size: 36px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    -unity-text-align: middle-left;
+    padding: 0 12px;
+    background-color: transparent;
+}
+
+#PasswordField .unity-text-element {
+    font-size: 36px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(0, 0, 0);
 }
 
 /* Setting Toggle - StarCraft Style */
@@ -488,10 +543,16 @@
     background-color: rgba(100, 100, 100, 0.5);
     border-radius: 8px;
     border-width: 0;
+    transition-duration: 0.15s;
 }
 
 .header-button:hover {
     background-color: rgba(150, 150, 150, 0.7);
+}
+
+.header-button:active {
+    background-color: rgba(80, 80, 80, 0.6);
+    scale: 0.98;
 }
 
 .action-button {
@@ -506,19 +567,31 @@
 .primary-button {
     background-color: rgba(100, 100, 100, 0.7);
     height: 100px;
+    transition-duration: 0.15s;
 }
 
 .primary-button:hover {
     background-color: rgba(150, 150, 150, 0.9);
 }
 
+.primary-button:active {
+    background-color: rgba(80, 80, 80, 0.8);
+    scale: 0.98;
+}
+
 .danger-button {
     background-color: rgba(255, 50, 50, 0.7);
     height: 80px;
+    transition-duration: 0.15s;
 }
 
 .danger-button:hover {
     background-color: rgba(255, 70, 70, 0.9);
+}
+
+.danger-button:active {
+    background-color: rgba(220, 40, 40, 0.9);
+    scale: 0.98;
 }
 
 .footer-button {
@@ -529,10 +602,16 @@
     background-color: rgba(100, 100, 100, 0.7);
     border-radius: 10px;
     border-width: 0;
+    transition-duration: 0.15s;
 }
 
 .footer-button:hover {
     background-color: rgba(120, 120, 120, 0.9);
+}
+
+.footer-button:active {
+    background-color: rgba(80, 80, 80, 0.8);
+    scale: 0.98;
 }
 
 .footer-button.primary-button {
@@ -541,6 +620,11 @@
 
 .footer-button.primary-button:hover {
     background-color: rgba(70, 170, 255, 0.9);
+}
+
+.footer-button.primary-button:active {
+    background-color: rgba(40, 130, 220, 0.9);
+    scale: 0.98;
 }
 
 /* ===========================================
@@ -580,6 +664,7 @@
     padding-left: 10px;
     padding-right: 10px;
     flex-shrink: 0;
+    transition-duration: 0.15s;
 }
 
 .npc-difficulty-dropdown .unity-base-popup-field__text {

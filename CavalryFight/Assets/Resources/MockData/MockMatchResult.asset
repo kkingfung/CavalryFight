@@ -1,0 +1,174 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ac092a7c8f728e41a13d0e7d2adf5ba, type: 3}
+  m_Name: MockMatchResult
+  m_EditorClassIdentifier: CavalryFight.Development::CavalryFight.Development.MockData.MockMatchResultConfig
+  _mapName: Training Grounds
+  _gameMode: Arena
+  _matchDuration: 300
+  _maxPlayers: 8
+  _timeLimit: 300
+  _arrowLimit: 30
+  _isTeamMatch: 0
+  _teamAName: Team A
+  _teamBName: Team B
+  _playerScore: 1500
+  _enemyScore: 1200
+  _hasReplayData: 1
+  _isMultiplayerMatch: 0
+  _isRoomStillOpen: 0
+  _currentPlayerCount: 8
+  _players:
+  - PlayerName: You
+    Team: Team A
+    IsNPC: 0
+    IsLocalPlayer: 1
+    IsHost: 1
+    IsAlive: 1
+    HasLeft: 0
+    Rank: 1
+    Score: 1500
+    ArrowsFired: 45
+    Hits: 32
+    Kills: 12
+    Deaths: 3
+    Assists: 2
+    Headshots: 6
+    LongestKillStreak: 5
+    DamageDealt: 1850
+    DamageTaken: 420
+  - PlayerName: Archer_Master
+    Team: Team A
+    IsNPC: 0
+    IsLocalPlayer: 0
+    IsHost: 0
+    IsAlive: 1
+    HasLeft: 0
+    Rank: 2
+    Score: 1200
+    ArrowsFired: 52
+    Hits: 28
+    Kills: 9
+    Deaths: 5
+    Assists: 3
+    Headshots: 4
+    LongestKillStreak: 3
+    DamageDealt: 1420
+    DamageTaken: 680
+  - PlayerName: CPU Knight
+    Team: Team B
+    IsNPC: 1
+    IsLocalPlayer: 0
+    IsHost: 0
+    IsAlive: 0
+    HasLeft: 0
+    Rank: 3
+    Score: 850
+    ArrowsFired: 38
+    Hits: 18
+    Kills: 6
+    Deaths: 7
+    Assists: 1
+    Headshots: 2
+    LongestKillStreak: 2
+    DamageDealt: 920
+    DamageTaken: 950
+  - PlayerName: CPU Archer
+    Team: Team B
+    IsNPC: 1
+    IsLocalPlayer: 0
+    IsHost: 0
+    IsAlive: 1
+    HasLeft: 0
+    Rank: 4
+    Score: 650
+    ArrowsFired: 42
+    Hits: 14
+    Kills: 4
+    Deaths: 9
+    Assists: 2
+    Headshots: 1
+    LongestKillStreak: 2
+    DamageDealt: 680
+    DamageTaken: 1150
+  - PlayerName: Swift_Rider
+    Team: Team A
+    IsNPC: 0
+    IsLocalPlayer: 0
+    IsHost: 0
+    IsAlive: 0
+    HasLeft: 1
+    Rank: 5
+    Score: 580
+    ArrowsFired: 35
+    Hits: 12
+    Kills: 5
+    Deaths: 8
+    Assists: 1
+    Headshots: 2
+    LongestKillStreak: 2
+    DamageDealt: 620
+    DamageTaken: 980
+  - PlayerName: Dark_Hunter
+    Team: None
+    IsNPC: 0
+    IsLocalPlayer: 0
+    IsHost: 0
+    IsAlive: 1
+    HasLeft: 0
+    Rank: 6
+    Score: 450
+    ArrowsFired: 48
+    Hits: 10
+    Kills: 3
+    Deaths: 11
+    Assists: 3
+    Headshots: 0
+    LongestKillStreak: 1
+    DamageDealt: 480
+    DamageTaken: 1280
+  - PlayerName: CPU Cavalry
+    Team: Team B
+    IsNPC: 1
+    IsLocalPlayer: 0
+    IsHost: 0
+    IsAlive: 0
+    HasLeft: 0
+    Rank: 7
+    Score: 320
+    ArrowsFired: 28
+    Hits: 8
+    Kills: 2
+    Deaths: 12
+    Assists: 1
+    Headshots: 0
+    LongestKillStreak: 1
+    DamageDealt: 350
+    DamageTaken: 1400
+  - PlayerName: Novice_Bow
+    Team: None
+    IsNPC: 0
+    IsLocalPlayer: 0
+    IsHost: 0
+    IsAlive: 0
+    HasLeft: 1
+    Rank: 8
+    Score: 180
+    ArrowsFired: 55
+    Hits: 5
+    Kills: 1
+    Deaths: 14
+    Assists: 0
+    Headshots: 0
+    LongestKillStreak: 1
+    DamageDealt: 210
+    DamageTaken: 1650

@@ -45,6 +45,16 @@ namespace CavalryFight.Views
         [SerializeField] private RuntimeAnimatorController? _maleCombatIdleAnimatorController;
         [SerializeField] private RuntimeAnimatorController? _femaleCombatIdleAnimatorController;
 
+        [Header("Arrow Preview")]
+        [Tooltip("矢プレビュー用カメラ")]
+        [SerializeField] private Camera? _arrowPreviewCamera;
+        [Tooltip("矢プレビュー用コンテナ（3D空間）")]
+        [SerializeField] private Transform? _arrowPreviewContainer;
+        [Tooltip("矢プレビュー用RenderTexture")]
+        [SerializeField] private RenderTexture? _arrowPreviewRenderTexture;
+        [Tooltip("矢プレハブ配列（ArrowType enumの順序に対応、14種類）")]
+        [SerializeField] private GameObject?[] _arrowBulletPrefabs = new GameObject?[14];
+
         #endregion
 
         #region Private Fields - UI Elements
@@ -122,6 +132,11 @@ namespace CavalryFight.Views
         private Label? _bowValue;
         private Button? _bowNextButton;
 
+        // ArrowType用矢印コントロール
+        private Button? _arrowTypePrevButton;
+        private Label? _arrowTypeValue;
+        private Button? _arrowTypeNextButton;
+
         // 馬パネル
         private VisualElement? _mountPanel;
 
@@ -160,6 +175,7 @@ namespace CavalryFight.Views
 
         // プレビュー
         private VisualElement? _previewContainer;
+        private VisualElement? _arrowPreviewVisualElement;
 
         // 下部ボタン
         private Button? _resetButton;
@@ -176,6 +192,7 @@ namespace CavalryFight.Views
         // 3Dプレビューオブジェクト
         private GameObject? _currentPreviewCharacter;
         private GameObject? _currentPreviewMount;
+        private GameObject? _currentArrowPreview;
 
         // 再入防止フラグ
         private bool _isUpdatingPreview = false;

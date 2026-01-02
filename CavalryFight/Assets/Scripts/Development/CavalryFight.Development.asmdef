@@ -1,0 +1,20 @@
+{
+    "name": "CavalryFight.Development",
+    "rootNamespace": "CavalryFight.Development",
+    "references": [
+        "CavalryFight.Core",
+        "CavalryFight.Services",
+        "Unity.Netcode.Runtime",
+        "Unity.Collections",
+        "AdvancedSceneManager"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

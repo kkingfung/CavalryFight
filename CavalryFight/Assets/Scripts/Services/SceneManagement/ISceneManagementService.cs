@@ -9,6 +9,23 @@ using CavalryFight.Core.Services;
 namespace CavalryFight.Services.SceneManagement
 {
     /// <summary>
+    /// 設定画面からの戻り先を表す列挙型
+    /// </summary>
+    public enum ReturnDestination
+    {
+        /// <summary>メインメニューへ戻る</summary>
+        MainMenu,
+        /// <summary>トレーニングシーンへ戻る</summary>
+        Training,
+        /// <summary>マッチシーンへ戻る</summary>
+        Match,
+        /// <summary>ロビーシーンへ戻る</summary>
+        Lobby,
+        /// <summary>ハンティングシーンへ戻る</summary>
+        Hunting
+    }
+
+    /// <summary>
     /// シーン管理サービスのインターフェース
     /// </summary>
     /// <remarks>
@@ -48,6 +65,11 @@ namespace CavalryFight.Services.SceneManagement
         /// </summary>
         float LoadProgress { get; }
 
+        /// <summary>
+        /// 設定画面からの戻り先を取得します。
+        /// </summary>
+        ReturnDestination CurrentReturnDestination { get; }
+
         #endregion
 
         #region Configuration
@@ -65,6 +87,8 @@ namespace CavalryFight.Services.SceneManagement
         /// <param name="training">Trainingシーンコレクション</param>
         /// <param name="results">Resultsシーンコレクション</param>
         /// <param name="replay">Replayシーンコレクション</param>
+        /// <param name="history">Historyシーンコレクション</param>
+        /// <param name="hunting">Huntingシーンコレクション</param>
         void RegisterSceneCollections(
             SceneCollection? startup,
             SceneCollection? mainMenu,
@@ -75,7 +99,9 @@ namespace CavalryFight.Services.SceneManagement
             SceneCollection? match,
             SceneCollection? training,
             SceneCollection? results,
-            SceneCollection? replay);
+            SceneCollection? replay,
+            SceneCollection? history,
+            SceneCollection? hunting);
 
         #endregion
 
@@ -102,6 +128,17 @@ namespace CavalryFight.Services.SceneManagement
         void LoadSettings();
 
         /// <summary>
+        /// 設定シーンをロードします（戻り先を指定）。
+        /// </summary>
+        /// <param name="returnDestination">設定画面を閉じた時の戻り先</param>
+        void LoadSettingsWithReturn(ReturnDestination returnDestination);
+
+        /// <summary>
+        /// 設定画面からの戻り先に遷移します。
+        /// </summary>
+        void ReturnFromSettings();
+
+        /// <summary>
         /// カスタマイゼーションシーンをロードします。
         /// </summary>
         void LoadCustomization();
@@ -125,6 +162,16 @@ namespace CavalryFight.Services.SceneManagement
         /// リプレイシーンをロードします。
         /// </summary>
         void LoadReplay();
+
+        /// <summary>
+        /// リプレイ履歴シーンをロードします。
+        /// </summary>
+        void LoadHistory();
+
+        /// <summary>
+        /// ハンティングシーンをロードします。
+        /// </summary>
+        void LoadHunting();
 
         #endregion
 

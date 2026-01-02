@@ -5,6 +5,7 @@
         "CavalryFight.Core",
         "CavalryFight.Services",
         "CavalryFight.ViewModels",
+        "CavalryFight.Development",
         "Unity.InputSystem"
     ],
     "includePlatforms": [],

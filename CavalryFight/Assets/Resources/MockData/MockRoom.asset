@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c57ceb237f5f76c4ab9bf5be2e1941e9, type: 3}
+  m_Name: MockRoom
+  m_EditorClassIdentifier: CavalryFight.Development::CavalryFight.Development.MockData.MockRoomConfig
+  _isHost: 0
+  _localPlayerName: PPPPPPPPPPPP
+  _isLocalPlayerReady: 0
+  _roomId: mock-room-001
+  _roomName: Test Room
+  _joinCode: ABC123
+  _gameMode: Arena
+  _mapName: Arena
+  _maxPlayers: 8
+  _timeLimit: 300
+  _arrowLimit: 0
+  _password: 
+  _isPublic: 1
+  _players:
+  - PlayerId: player-001
+    PlayerName: PPPPPPPPPPPP
+    IsHost: 0
+    IsReady: 1
+    IsNPC: 0
+    NPCDifficulty: Normal
+    Team: None
+    FPS: 60
+    Ping: 15
+  - PlayerId: player-002
+    PlayerName: GuestPlayer1
+    IsHost: 1
+    IsReady: 1
+    IsNPC: 0
+    NPCDifficulty: Normal
+    Team: None
+    FPS: 55
+    Ping: 45
+  - PlayerId: cpu-001
+    PlayerName: CPU 1
+    IsHost: 0
+    IsReady: 1
+    IsNPC: 1
+    NPCDifficulty: Normal
+    Team: None
+    FPS: 60
+    Ping: 0
+  - PlayerId: cpu-002
+    PlayerName: CPU 2
+    IsHost: 0
+    IsReady: 1
+    IsNPC: 1
+    NPCDifficulty: Hard
+    Team: None
+    FPS: 60
+    Ping: 0

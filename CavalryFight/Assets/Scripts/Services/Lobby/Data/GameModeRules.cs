@@ -13,7 +13,7 @@ namespace CavalryFight.Services.Lobby
     /// - ScoreMatch: 時間制限必須、矢の制限あり、プレイヤーは死なない、勝者は最高スコア
     /// - TeamFight: 時間制限必須（Arenaと同じだがチーム戦）、無制限の矢、プレイヤーは死なない、勝者はチーム最高スコア
     /// - Deathmatch: 時間制限なし（固定）、無制限の矢、プレイヤーは死ぬ、最後の一人/チームが勝者
-    /// - Hunting: 時間制限必須、無制限の矢、アーチャー（チームなし）vsオオカミ（チームあり）、NPCなし
+    /// - Hunting: チーム対抗、時間制限必須、無制限の矢、ハンター1人+ウルフ複数/チーム、ハンターはスタンのみ（死なない）
     /// </remarks>
     public static class GameModeRules
     {
@@ -30,7 +30,7 @@ namespace CavalryFight.Services.Lobby
                 GameMode.ScoreMatch => true,  // ラウンドごとの時間制限（必須）
                 GameMode.TeamFight => true,   // チーム戦での時間制限（必須）
                 GameMode.Deathmatch => false, // 最後の一人まで戦う（時間制限なし固定）
-                GameMode.Hunting => true,     // オオカミの生存時間（必須）
+                GameMode.Hunting => true,     // 時間制限必須
                 _ => false
             };
         }
@@ -80,7 +80,7 @@ namespace CavalryFight.Services.Lobby
                 GameMode.ScoreMatch => 180, // 3分（ラウンドごと）
                 GameMode.TeamFight => 600,  // 10分
                 GameMode.Deathmatch => 0,   // 制限なし（固定）
-                GameMode.Hunting => 300,    // 5分（オオカミ生存時間）
+                GameMode.Hunting => 600,    // 10分
                 _ => 0
             };
         }

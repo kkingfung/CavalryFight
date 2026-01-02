@@ -51,6 +51,12 @@ namespace CavalryFight.Core.Bootstrap
         [Tooltip("リプレイ再生シーン")]
         [SerializeField] private SceneCollection? _replay;
 
+        [Tooltip("リプレイ履歴シーン")]
+        [SerializeField] private SceneCollection? _history;
+
+        [Tooltip("ハンティングシーン")]
+        [SerializeField] private SceneCollection? _hunting;
+
         #endregion
 
         #region Properties
@@ -104,6 +110,16 @@ namespace CavalryFight.Core.Bootstrap
         /// リプレイ再生シーンを取得します
         /// </summary>
         public SceneCollection? Replay => _replay;
+
+        /// <summary>
+        /// リプレイ履歴シーンを取得します
+        /// </summary>
+        public SceneCollection? History => _history;
+
+        /// <summary>
+        /// ハンティングシーンを取得します
+        /// </summary>
+        public SceneCollection? Hunting => _hunting;
 
         #endregion
 

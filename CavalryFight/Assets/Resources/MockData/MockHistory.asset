@@ -1,0 +1,159 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6bf45421e68a454facffb5c1a76875a, type: 3}
+  m_Name: MockHistory
+  m_EditorClassIdentifier: CavalryFight.Development::CavalryFight.Development.MockData.MockHistoryConfig
+  _matchHistory:
+  - MatchId: match-001
+    GameMode: Arena
+    MapName: Arena
+    MatchDate: 2025-12-30 14:30
+    MatchDuration: 300
+    IsVictory: 1
+    PlayerScore: 1850
+    EnemyScore: 1200
+    Rank: 1
+    TotalPlayers: 4
+    Kills: 12
+    Deaths: 3
+    Assists: 2
+    Headshots: 5
+    Accuracy: 72.5
+    HasReplay: 1
+    ReplayId: replay-001
+    OtherPlayers: []
+  - MatchId: match-002
+    GameMode: TeamFight
+    MapName: Castle
+    MatchDate: 2025-12-29 20:15
+    MatchDuration: 420
+    IsVictory: 0
+    PlayerScore: 1100
+    EnemyScore: 1500
+    Rank: 2
+    TotalPlayers: 6
+    Kills: 8
+    Deaths: 6
+    Assists: 4
+    Headshots: 2
+    Accuracy: 58.3
+    HasReplay: 1
+    ReplayId: replay-002
+    OtherPlayers: []
+  - MatchId: match-003
+    GameMode: ScoreMatch
+    MapName: Arena
+    MatchDate: 2025-12-28 18:00
+    MatchDuration: 300
+    IsVictory: 0
+    PlayerScore: 1500
+    EnemyScore: 1500
+    Rank: 1
+    TotalPlayers: 2
+    Kills: 10
+    Deaths: 10
+    Assists: 0
+    Headshots: 4
+    Accuracy: 62
+    HasReplay: 1
+    ReplayId: replay-003
+    OtherPlayers: []
+  - MatchId: match-004
+    GameMode: Hunting
+    MapName: Forest
+    MatchDate: 2025-12-27 18:45
+    MatchDuration: 360
+    IsVictory: 1
+    PlayerScore: 2200
+    EnemyScore: 1800
+    Rank: 1
+    TotalPlayers: 8
+    Kills: 15
+    Deaths: 2
+    Assists: 3
+    Headshots: 8
+    Accuracy: 80
+    HasReplay: 1
+    ReplayId: replay-004
+    OtherPlayers: []
+  - MatchId: match-005
+    GameMode: Deathmatch
+    MapName: Desert
+    MatchDate: 2025-12-26 12:00
+    MatchDuration: 180
+    IsVictory: 0
+    PlayerScore: 450
+    EnemyScore: 1200
+    Rank: 4
+    TotalPlayers: 4
+    Kills: 3
+    Deaths: 12
+    Assists: 1
+    Headshots: 0
+    Accuracy: 35
+    HasReplay: 1
+    ReplayId: replay-005
+    OtherPlayers: []
+  - MatchId: match-006
+    GameMode: Arena
+    MapName: Castle
+    MatchDate: 2025-12-25 21:30
+    MatchDuration: 480
+    IsVictory: 1
+    PlayerScore: 2500
+    EnemyScore: 2100
+    Rank: 1
+    TotalPlayers: 8
+    Kills: 18
+    Deaths: 5
+    Assists: 6
+    Headshots: 9
+    Accuracy: 68.5
+    HasReplay: 1
+    ReplayId: replay-006
+    OtherPlayers: []
+  - MatchId: match-007
+    GameMode: ScoreMatch
+    MapName: Forest
+    MatchDate: 2025-12-24 16:30
+    MatchDuration: 300
+    IsVictory: 0
+    PlayerScore: 1480
+    EnemyScore: 1500
+    Rank: 2
+    TotalPlayers: 2
+    Kills: 9
+    Deaths: 10
+    Assists: 0
+    Headshots: 3
+    Accuracy: 55
+    HasReplay: 1
+    ReplayId: replay-007
+    OtherPlayers: []
+  - MatchId: match-008
+    GameMode: TeamFight
+    MapName: Desert
+    MatchDate: 2025-12-23 19:00
+    MatchDuration: 360
+    IsVictory: 0
+    PlayerScore: 1800
+    EnemyScore: 1800
+    Rank: 1
+    TotalPlayers: 6
+    Kills: 11
+    Deaths: 11
+    Assists: 5
+    Headshots: 4
+    Accuracy: 59
+    HasReplay: 0
+    ReplayId: 
+    OtherPlayers: []

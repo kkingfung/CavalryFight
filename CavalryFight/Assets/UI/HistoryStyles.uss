@@ -77,25 +77,24 @@
 
 /* Replay List Item */
 .replay-item {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.4);
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 10px;
     flex-direction: column;
     border-width: 2px;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.15);
     transition-duration: 0.2s;
 }
 
 .replay-item:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .replay-item-selected {
     background-color: rgba(100, 150, 255, 0.3);
     border-color: rgb(100, 150, 255);
-    border-width: 3px;
 }
 
 .replay-item-header {
@@ -177,7 +176,10 @@
     margin-top: 10px;
 }
 
-/* Buttons */
+/* ===========================================
+   Buttons
+   =========================================== */
+
 .header-button {
     width: 200px;
     height: 80px;
@@ -186,10 +188,16 @@
     background-color: rgba(100, 100, 100, 0.5);
     border-radius: 8px;
     border-width: 0;
+    transition-duration: 0.15s;
 }
 
 .header-button:hover {
     background-color: rgba(150, 150, 150, 0.7);
+}
+
+.header-button:active {
+    background-color: rgba(80, 80, 80, 0.6);
+    scale: 0.98;
 }
 
 .action-button {
@@ -199,6 +207,7 @@
     border-radius: 10px;
     border-width: 0;
     margin-bottom: 15px;
+    transition-duration: 0.15s;
 }
 
 .primary-button {
@@ -210,6 +219,11 @@
     background-color: rgba(70, 170, 255, 0.9);
 }
 
+.primary-button:active {
+    background-color: rgba(40, 130, 220, 0.9);
+    scale: 0.98;
+}
+
 .danger-button {
     background-color: rgba(255, 50, 50, 0.7);
     height: 80px;
@@ -217,6 +231,11 @@
 
 .danger-button:hover {
     background-color: rgba(255, 70, 70, 0.9);
+}
+
+.danger-button:active {
+    background-color: rgba(220, 40, 40, 0.9);
+    scale: 0.98;
 }
 
 .footer-button {
@@ -227,10 +246,16 @@
     background-color: rgba(100, 100, 100, 0.7);
     border-radius: 10px;
     border-width: 0;
+    transition-duration: 0.15s;
 }
 
 .footer-button:hover {
     background-color: rgba(120, 120, 120, 0.9);
+}
+
+.footer-button:active {
+    background-color: rgba(80, 80, 80, 0.8);
+    scale: 0.98;
 }
 
 /* Empty State */
@@ -252,4 +277,132 @@
     font-size: 96px;
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
     color: rgb(255, 255, 255);
+}
+
+/* Result Icon */
+#ResultIconContainer {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    border-width: 3px;
+}
+
+.result-icon {
+    font-size: 48px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Black');
+    -unity-text-align: middle-center;
+}
+
+.result-icon.victory {
+    color: rgb(100, 255, 100);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(0, 100, 0, 0.5);
+}
+
+.result-icon.defeat {
+    color: rgb(255, 100, 100);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(100, 0, 0, 0.5);
+}
+
+.result-icon.draw {
+    color: rgb(255, 200, 100);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(100, 80, 0, 0.5);
+}
+
+#ResultIconContainer.victory {
+    border-color: rgb(100, 255, 100);
+    background-color: rgba(0, 100, 0, 0.3);
+}
+
+#ResultIconContainer.defeat {
+    border-color: rgb(255, 100, 100);
+    background-color: rgba(100, 0, 0, 0.3);
+}
+
+#ResultIconContainer.draw {
+    border-color: rgb(255, 200, 100);
+    background-color: rgba(100, 80, 0, 0.3);
+}
+
+/* All Players Section */
+.all-players-container {
+    flex-direction: column;
+}
+
+/* Player Row - Table Header Style */
+.player-row-header {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 5px 5px 0 0;
+    margin-bottom: 2px;
+}
+
+.player-row-header Label {
+    font-size: 24px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(200, 200, 200);
+}
+
+/* Player Row */
+.player-row {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 2px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.player-row:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.player-row.current-player {
+    background-color: rgba(100, 150, 255, 0.2);
+    border-left-width: 4px;
+    border-left-color: rgb(100, 150, 255);
+}
+
+/* Player Row Columns */
+.player-rank {
+    font-size: 28px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 255, 255);
+    width: 60px;
+    -unity-text-align: middle-center;
+}
+
+.player-name {
+    font-size: 28px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(255, 255, 255);
+    flex-grow: 1;
+    min-width: 150px;
+}
+
+.player-kills {
+    font-size: 26px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(100, 255, 100);
+    width: 80px;
+    -unity-text-align: middle-center;
+}
+
+.player-deaths {
+    font-size: 26px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(255, 100, 100);
+    width: 80px;
+    -unity-text-align: middle-center;
+}
+
+.player-score {
+    font-size: 26px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 220, 100);
+    width: 100px;
+    -unity-text-align: middle-right;
 }
