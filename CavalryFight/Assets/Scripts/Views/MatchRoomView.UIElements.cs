@@ -27,7 +27,7 @@ namespace CavalryFight.Views
         private Label? _passwordLabel;
         private VisualElement? _passwordInputContainer;
         private TextField? _passwordField;
-        private Label? _passwordAsterisksLabel;
+        private Toggle? _showPasswordToggle;
         private Label? _publicLabel;
         private Toggle? _publicToggle;
         private Label? _maxPlayersLabel;
@@ -90,7 +90,7 @@ namespace CavalryFight.Views
             _passwordLabel = Q<Label>("PasswordLabel");
             _passwordInputContainer = Q<VisualElement>("PasswordInputContainer");
             _passwordField = Q<TextField>("PasswordField");
-            _passwordAsterisksLabel = Q<Label>("PasswordAsterisksLabel");
+            _showPasswordToggle = Q<Toggle>("ShowPasswordToggle");
             _publicLabel = Q<Label>("PublicLabel");
             _publicToggle = Q<Toggle>("PublicToggle");
             _maxPlayersLabel = Q<Label>("MaxPlayersLabel");

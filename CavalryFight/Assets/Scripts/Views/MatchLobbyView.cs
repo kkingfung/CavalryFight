@@ -65,6 +65,8 @@ namespace CavalryFight.Views
 
         // Join by Code
         private TextField? _joinCodeInput;
+        private TextField? _joinPasswordInput;
+        private Toggle? _showJoinPasswordToggle;
         private Button? _joinByCodeButton;
 
         // Password Input (in DetailsContent)
@@ -259,6 +261,8 @@ namespace CavalryFight.Views
 
             // Join by Code
             _joinCodeInput = Q<TextField>("JoinCodeInput");
+            _joinPasswordInput = Q<TextField>("JoinPasswordInput");
+            _showJoinPasswordToggle = Q<Toggle>("ShowJoinPasswordToggle");
             _joinByCodeButton = Q<Button>("JoinByCodeButton");
 
             // Password Input (conditional, in DetailsContent)
@@ -377,6 +381,14 @@ namespace CavalryFight.Views
                 _joinByCodeButton.clicked += OnJoinByCodeButtonClicked;
             }
 
+            // Show password toggle (Join by Code section)
+            if (_showJoinPasswordToggle != null)
+            {
+                _showJoinPasswordToggle.RegisterValueChangedCallback(OnShowJoinPasswordToggleChanged);
+                // Apply initial state (default is checked = show password)
+                UpdateJoinPasswordVisibility(_showJoinPasswordToggle.value);
+            }
+
             // Password input change
             if (_passwordInput != null)
             {
@@ -454,6 +466,12 @@ namespace CavalryFight.Views
             if (_joinByCodeButton != null)
             {
                 _joinByCodeButton.clicked -= OnJoinByCodeButtonClicked;
+            }
+
+            // Show password toggle (Join by Code section)
+            if (_showJoinPasswordToggle != null)
+            {
+                _showJoinPasswordToggle.UnregisterValueChangedCallback(OnShowJoinPasswordToggleChanged);
             }
 
             // Password input change
@@ -654,7 +672,7 @@ namespace CavalryFight.Views
 
             bool isEnabled = !ViewModel.IsProcessing;
 
-            // ホスト/参加/戻るボタンを無効化
+            // ホスト/参加/戻るボタンを無効化（処理中は非表示にしてCancelボタンを表示）
             if (_hostRoomButton != null)
             {
                 _hostRoomButton.SetEnabled(isEnabled);
@@ -890,9 +908,25 @@ namespace CavalryFight.Views
                     ViewModel.PlayerName = _playerNameInput.value.Trim();
                 }
 
+                // パスワードを取得（オプション）
+                if (_joinPasswordInput != null && !string.IsNullOrWhiteSpace(_joinPasswordInput.value))
+                {
+                    ViewModel.Password = _joinPasswordInput.value;
+                }
+                else
+                {
+                    ViewModel.Password = string.Empty;
+                }
+
                 // ViewModelのJoinCodeプロパティとJoinRoomメソッドを使用
                 ViewModel.JoinCode = joinCode;
                 ViewModel.JoinRoom();
+
+                // パスワード入力をクリア（セキュリティのため）
+                if (_joinPasswordInput != null)
+                {
+                    _joinPasswordInput.value = string.Empty;
+                }
             }
             else
             {
@@ -987,6 +1021,30 @@ namespace CavalryFight.Views
             Debug.Log("[MatchLobbyView] Cancel button clicked");
 
             ViewModel?.CancelOperation();
+        }
+
+        /// <summary>
+        /// パスワード表示トグルが変更された時の処理（Join by Code セクション）
+        /// </summary>
+        /// <param name="evt">変更イベント</param>
+        private void OnShowJoinPasswordToggleChanged(ChangeEvent<bool> evt)
+        {
+            UpdateJoinPasswordVisibility(evt.newValue);
+        }
+
+        /// <summary>
+        /// パスワードフィールドの表示/非表示を更新します（Join by Code セクション）
+        /// </summary>
+        /// <param name="showPassword">true: テキスト表示、false: アスタリスク表示</param>
+        private void UpdateJoinPasswordVisibility(bool showPassword)
+        {
+            if (_joinPasswordInput == null)
+            {
+                return;
+            }
+
+            // password属性を切り替え
+            _joinPasswordInput.isPasswordField = !showPassword;
         }
 
         /// <summary>

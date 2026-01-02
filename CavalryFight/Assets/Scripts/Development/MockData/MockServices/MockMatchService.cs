@@ -82,11 +82,6 @@ namespace CavalryFight.Development.MockData.MockServices
         /// </summary>
         public event Action<MatchState>? MatchStateChanged;
 
-        /// <summary>
-        /// カウントダウンが更新された時に発生します
-        /// </summary>
-        public event Action<int>? CountdownUpdated;
-
         #endregion
 
         #region Properties
@@ -335,15 +330,6 @@ namespace CavalryFight.Development.MockData.MockServices
         public void TriggerMatchStateChanged(MatchState state)
         {
             MatchStateChanged?.Invoke(state);
-        }
-
-        /// <summary>
-        /// CountdownUpdatedイベントを発火します（テスト用）
-        /// </summary>
-        /// <param name="seconds">残り秒数</param>
-        public void TriggerCountdownUpdated(int seconds)
-        {
-            CountdownUpdated?.Invoke(seconds);
         }
 
         #endregion

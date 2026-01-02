@@ -513,6 +513,33 @@
     height: 100%;
 }
 
+/* Join Password Input styling */
+#JoinPasswordInput {
+    height: 70px;
+    font-size: 40px;
+}
+
+#JoinPasswordInput > .unity-base-text-field__input {
+    color: rgb(0, 0, 0);
+    -unity-text-align: middle-center;
+    padding: 0 15px;
+    margin: 0;
+    background-color: transparent;
+    height: 100%;
+    font-size: 40px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
+#JoinPasswordInput .unity-text-element {
+    color: rgb(0, 0, 0);
+    -unity-text-align: middle-center;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    font-size: 40px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+}
+
 #PlayerNameSection .player-name-button {
     width: 200px;
     height: 70px;
@@ -667,7 +694,9 @@
 
 .footer-button.cancel-button {
     background-color: rgba(200, 80, 80, 0.8);
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    -unity-text-outline-width: 0;
 }
 
 .footer-button.cancel-button:hover {

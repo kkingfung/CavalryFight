@@ -1235,6 +1235,9 @@ namespace CavalryFight.ViewModels
             if (_lobbyService.UpdateRoomSettings(settings))
             {
                 Debug.Log($"[MatchRoomViewModel] Room settings updated: RoomName={RoomName}, Password={(string.IsNullOrEmpty(Password) ? "None" : "Set")}, IsPublic={IsPublic}, MaxPlayers={MaxPlayers}, GameMode={GameMode}, MapName={MapName}, TimeLimit={TimeLimit}, ArrowLimit={ArrowLimit}");
+
+                // チームベースのモードの場合、自動チーム割り当てを行う
+                EnsureTeamModeRequirements();
             }
             else
             {
@@ -1388,6 +1391,131 @@ namespace CavalryFight.ViewModels
                     StatusMessage = "Press Ready when you're prepared.";
                 }
             }
+        }
+
+        /// <summary>
+        /// チームベースのゲームモード（Hunting, TeamFight）の要件を満たすようにします
+        /// </summary>
+        /// <remarks>
+        /// ・全プレイヤーにチームを割り当てます
+        /// ・ホストのみの場合、NPCを自動追加して別チームに配置します
+        /// </remarks>
+        private void EnsureTeamModeRequirements()
+        {
+            // チームベースのモードかどうかチェック
+            if (GameMode != "Hunting" && GameMode != "TeamFight")
+            {
+                return;
+            }
+
+            Debug.Log($"[MatchRoomViewModel] EnsureTeamModeRequirements for {GameMode} mode");
+
+            // ホストのみの場合、NPCを追加
+            if (Players.Count == 1)
+            {
+                Debug.Log("[MatchRoomViewModel] Only host in room, adding NPC automatically");
+
+                // 空きスロットを探す（スロット1から）
+                int emptySlot = FindFirstEmptySlot();
+                if (emptySlot >= 0)
+                {
+                    // NPCを追加（AddNPCはイベント経由でPlayersに追加される）
+                    _lobbyService.AddCPUPlayer(AIDifficulty.Normal, emptySlot);
+                }
+            }
+
+            // 全プレイヤーにチームを割り当て（交互に）
+            AssignTeamsToAllPlayers();
+        }
+
+        /// <summary>
+        /// 最初の空きスロットインデックスを探します
+        /// </summary>
+        /// <returns>空きスロットのインデックス（見つからない場合は-1）</returns>
+        private int FindFirstEmptySlot()
+        {
+            var usedSlots = Players.Select(p => p.SlotIndex).ToHashSet();
+            for (int i = 0; i < MaxPlayers; i++)
+            {
+                if (!usedSlots.Contains(i))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// 全プレイヤーにチームを割り当てます
+        /// </summary>
+        /// <remarks>
+        /// ホストはTeamAに固定し、他のプレイヤーは交互にTeamA/TeamBに割り当てます。
+        /// NPCが1人追加された場合、そのNPCはTeamBに配置されます。
+        /// </remarks>
+        private void AssignTeamsToAllPlayers()
+        {
+            // ホストをTeamAに設定
+            var host = Players.FirstOrDefault(p => p.IsHost);
+            if (host != null && host.Team != PlayerTeam.TeamA)
+            {
+                SetPlayerTeamInternal(host.PlayerId, PlayerTeam.TeamA);
+            }
+
+            // ホスト以外を交互にチームに割り当て
+            var nonHostPlayers = Players.Where(p => !p.IsHost).ToList();
+            int teamACount = 1; // ホストがTeamA
+            int teamBCount = 0;
+
+            foreach (var player in nonHostPlayers)
+            {
+                // チームバランスを考慮して割り当て
+                PlayerTeam targetTeam;
+                if (teamBCount < teamACount)
+                {
+                    targetTeam = PlayerTeam.TeamB;
+                    teamBCount++;
+                }
+                else
+                {
+                    targetTeam = PlayerTeam.TeamA;
+                    teamACount++;
+                }
+
+                if (player.Team != targetTeam)
+                {
+                    SetPlayerTeamInternal(player.PlayerId, targetTeam);
+                }
+            }
+
+            Debug.Log($"[MatchRoomViewModel] Teams assigned: TeamA={teamACount}, TeamB={teamBCount}");
+        }
+
+        /// <summary>
+        /// プレイヤーのチームを内部的に設定します（UI更新なし）
+        /// </summary>
+        /// <param name="playerId">プレイヤーID</param>
+        /// <param name="team">新しいチーム</param>
+        private void SetPlayerTeamInternal(string playerId, PlayerTeam team)
+        {
+            // PlayerId文字列をulongに変換
+            if (!ulong.TryParse(playerId, out ulong playerIdUlong))
+            {
+                Debug.LogWarning($"[MatchRoomViewModel] Invalid player ID format: {playerId}");
+                return;
+            }
+
+            // PlayerTeam enumをteamIndexに変換
+            int teamIndex = team switch
+            {
+                PlayerTeam.TeamA => 0,
+                PlayerTeam.TeamB => 1,
+                PlayerTeam.None => -1,
+                _ => -1
+            };
+
+            // LobbyServiceを使用してチーム変更
+            _lobbyService.SetPlayerTeam(playerIdUlong, teamIndex);
+            Debug.Log($"[MatchRoomViewModel] Set player {playerId} to {team}");
         }
 
         #endregion

@@ -59,11 +59,6 @@ namespace CavalryFight.Services.Match
         /// </summary>
         public event Action<MatchState>? MatchStateChanged;
 
-        /// <summary>
-        /// カウントダウンが更新された時に発生します
-        /// </summary>
-        public event Action<int>? CountdownUpdated;
-
         #endregion
 
         #region Fields
@@ -301,6 +296,12 @@ namespace CavalryFight.Services.Match
         private void OnHitRegistered(HitResult hitResult)
         {
             HitRegistered?.Invoke(hitResult);
+
+            // 有効な命中の場合、詳細スコアイベントを発火
+            if (hitResult.IsValidHit && hitResult.ScoreAwarded > 0)
+            {
+                PlayerScored?.Invoke(hitResult.ShooterClientId, hitResult.ScoreAwarded, hitResult.HitLocation);
+            }
         }
 
         /// <summary>

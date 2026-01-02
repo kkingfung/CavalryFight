@@ -473,18 +473,20 @@
     background-color: rgba(230, 230, 230, 1);
 }
 
-/* Password TextField - text is transparent, asterisks label shows instead */
+/* Password TextField styling */
 #PasswordField .unity-text-field__input {
-    color: transparent;
-    --unity-cursor-color: rgb(0, 0, 0);
+    color: rgb(0, 0, 0);
+    font-size: 36px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    -unity-text-align: middle-left;
+    padding: 0 12px;
+    background-color: transparent;
 }
 
-/* Password Asterisks Label - shows black asterisks on top of transparent text */
-#PasswordAsterisksLabel {
+#PasswordField .unity-text-element {
     font-size: 36px;
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
     color: rgb(0, 0, 0);
-    -unity-text-align: middle-left;
 }
 
 /* Setting Toggle - StarCraft Style */

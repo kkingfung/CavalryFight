@@ -32,14 +32,14 @@
                     <ui:VisualElement class="detail-row">
                         <ui:Label text="Room Name:" class="detail-label"/>
                         <ui:Label text="--" name="RoomNameLabel" class="detail-value"/>
-                        <ui:TextField name="RoomNameField" class="setting-textfield" style="display: none;"/>
+                        <ui:TextField name="RoomNameField" class="setting-textfield" max-length="32" style="display: none;"/>
                     </ui:VisualElement>
                     <ui:VisualElement class="detail-row">
                         <ui:Label text="Password:" class="detail-label"/>
                         <ui:Label text="None" name="PasswordLabel" class="detail-value"/>
-                        <ui:VisualElement name="PasswordInputContainer" style="display: none; position: relative;">
-                            <ui:TextField name="PasswordField" class="setting-textfield" style="color: transparent; caret-color: white;"/>
-                            <ui:Label text="(empty)" name="PasswordAsterisksLabel" style="position: absolute; left: 8px; top: 0; bottom: 0; color: rgb(0, 0, 0); -unity-text-align: middle-left; pointer-events: none;"/>
+                        <ui:VisualElement name="PasswordInputContainer" style="display: none; flex-direction: row; align-items: center;">
+                            <ui:TextField name="PasswordField" password="true" class="setting-textfield" style="width: 300px; flex-shrink: 0; font-size: 36px;"/>
+                            <ui:Toggle name="ShowPasswordToggle" value="false" style="margin-left: 15px;"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement class="detail-row">

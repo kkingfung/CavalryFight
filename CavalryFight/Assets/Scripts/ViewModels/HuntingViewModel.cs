@@ -369,7 +369,6 @@ namespace CavalryFight.ViewModels
             }
 
             _matchService.MatchStateChanged += OnMatchStateChanged;
-            _matchService.CountdownUpdated += OnCountdownUpdated;
             _matchService.MatchStarted += OnMatchStarted;
             _matchService.MatchEndedWithResult += OnMatchEnded;
             _matchService.PlayerScored += OnPlayerScored;
@@ -383,7 +382,6 @@ namespace CavalryFight.ViewModels
             }
 
             _matchService.MatchStateChanged -= OnMatchStateChanged;
-            _matchService.CountdownUpdated -= OnCountdownUpdated;
             _matchService.MatchStarted -= OnMatchStarted;
             _matchService.MatchEndedWithResult -= OnMatchEnded;
             _matchService.PlayerScored -= OnPlayerScored;
@@ -465,11 +463,6 @@ namespace CavalryFight.ViewModels
         {
             MatchState = state;
             IsCountingDown = state == MatchState.Countdown;
-        }
-
-        private void OnCountdownUpdated(int seconds)
-        {
-            CountdownValue = seconds;
         }
 
         private void OnMatchStarted()

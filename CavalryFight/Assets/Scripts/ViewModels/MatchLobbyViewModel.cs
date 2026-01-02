@@ -103,6 +103,11 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private bool _isProcessing = false;
 
+        /// <summary>
+        /// 操作がキャンセルされたかどうか
+        /// </summary>
+        private bool _isCancelled = false;
+
         #endregion
 
         #region Properties
@@ -328,8 +333,18 @@ namespace CavalryFight.ViewModels
         {
             Debug.Log($"[MatchLobbyViewModel] Room created with join code: {joinCode}");
 
-            IsInRoom = true;
             IsProcessing = false;
+
+            // キャンセルされた場合はルームから退出して遷移しない
+            if (_isCancelled)
+            {
+                Debug.Log("[MatchLobbyViewModel] Operation was cancelled, leaving room.");
+                _lobbyService.LeaveRoom();
+                _isCancelled = false;
+                return;
+            }
+
+            IsInRoom = true;
             _isNavigatingToRoom = true;
             StatusMessage = $"Hosting room: {_roomName}";
             ShowHostDialog = false;
@@ -347,8 +362,18 @@ namespace CavalryFight.ViewModels
         {
             Debug.Log("[MatchLobbyViewModel] Successfully joined room.");
 
-            IsInRoom = true;
             IsProcessing = false;
+
+            // キャンセルされた場合はルームから退出して遷移しない
+            if (_isCancelled)
+            {
+                Debug.Log("[MatchLobbyViewModel] Operation was cancelled, leaving room.");
+                _lobbyService.LeaveRoom();
+                _isCancelled = false;
+                return;
+            }
+
+            IsInRoom = true;
             _isNavigatingToRoom = true;
             StatusMessage = "Successfully joined room";
             ShowJoinDialog = false;
@@ -504,6 +529,7 @@ namespace CavalryFight.ViewModels
                 MapName = new FixedString64Bytes(SelectedMap)
             };
 
+            _isCancelled = false;
             IsProcessing = true;
             bool success = _lobbyService.CreateRoom(roomSettings, PlayerName);
 
@@ -556,6 +582,7 @@ namespace CavalryFight.ViewModels
                 return;
             }
 
+            _isCancelled = false;
             IsProcessing = true;
             bool success = _lobbyService.JoinRoom(JoinCode, PlayerName, Password);
 
@@ -610,6 +637,7 @@ namespace CavalryFight.ViewModels
                 return;
             }
 
+            _isCancelled = true;
             IsProcessing = false;
             StatusMessage = "Operation cancelled";
             Debug.Log("[MatchLobbyViewModel] Operation cancelled.");

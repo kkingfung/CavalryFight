@@ -69,10 +69,10 @@ namespace CavalryFight.Views
                 _mapDropdown.RegisterValueChangedCallback(OnMapChanged);
             }
 
-            // Password field change event (for asterisks display)
-            if (_passwordField != null)
+            // Show password toggle (edit mode only)
+            if (_showPasswordToggle != null)
             {
-                _passwordField.RegisterValueChangedCallback(OnPasswordChanged);
+                _showPasswordToggle.RegisterValueChangedCallback(OnShowPasswordToggleChanged);
             }
 
             // Dropdown change events
@@ -136,10 +136,10 @@ namespace CavalryFight.Views
                 _mapDropdown.UnregisterValueChangedCallback(OnMapChanged);
             }
 
-            // Password field change event
-            if (_passwordField != null)
+            // Show password toggle
+            if (_showPasswordToggle != null)
             {
-                _passwordField.UnregisterValueChangedCallback(OnPasswordChanged);
+                _showPasswordToggle.UnregisterValueChangedCallback(OnShowPasswordToggleChanged);
             }
 
             // Dropdown change events
@@ -492,24 +492,26 @@ namespace CavalryFight.Views
         }
 
         /// <summary>
-        /// パスワードフィールド変更イベント（アスタリスク表示を更新）
+        /// パスワード表示トグル変更イベント（編集モード時のみ）
         /// </summary>
-        private void OnPasswordChanged(ChangeEvent<string> evt)
+        private void OnShowPasswordToggleChanged(ChangeEvent<bool> evt)
         {
-            if (_passwordAsterisksLabel == null)
+            UpdatePasswordFieldVisibility(evt.newValue);
+        }
+
+        /// <summary>
+        /// パスワードフィールドの表示/非表示を更新します
+        /// </summary>
+        /// <param name="showPassword">true: テキスト表示、false: アスタリスク表示</param>
+        private void UpdatePasswordFieldVisibility(bool showPassword)
+        {
+            if (_passwordField == null)
             {
                 return;
             }
 
-            // Update asterisks label to match password length
-            if (!string.IsNullOrEmpty(evt.newValue))
-            {
-                _passwordAsterisksLabel.text = new string('*', evt.newValue.Length);
-            }
-            else
-            {
-                _passwordAsterisksLabel.text = "(empty)";
-            }
+            // Toggle password field visibility using isPasswordField property
+            _passwordField.isPasswordField = !showPassword;
         }
 
         /// <summary>
@@ -554,6 +556,14 @@ namespace CavalryFight.Views
                 {
                     _changeSettingsButton.text = "Change Settings";
                 }
+
+                // パスワード表示トグルをリセット（非表示に戻す）
+                if (_showPasswordToggle != null)
+                {
+                    _showPasswordToggle.value = false;
+                    UpdatePasswordFieldVisibility(false);
+                }
+
                 Debug.Log("[MatchRoomView] Settings applied, returning to read-only mode");
             }
             else
@@ -564,6 +574,10 @@ namespace CavalryFight.Views
                 {
                     _changeSettingsButton.text = "Apply Settings";
                 }
+
+                // 編集モードに入る際にフィールドを現在の値で初期化
+                PopulateEditFields();
+
                 Debug.Log("[MatchRoomView] Entering edit mode");
             }
 

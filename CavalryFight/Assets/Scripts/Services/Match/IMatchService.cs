@@ -72,11 +72,6 @@ namespace CavalryFight.Services.Match
         /// </summary>
         event Action<MatchState>? MatchStateChanged;
 
-        /// <summary>
-        /// カウントダウンが更新された時に発生します
-        /// </summary>
-        event Action<int>? CountdownUpdated;
-
         #endregion
 
         #region Properties

@@ -72,20 +72,12 @@ namespace CavalryFight.Views
                 }
 
                 // Game Settings - Time Limit (Toggle between label and dropdown)
+                // Note: Don't update dropdown values here when in edit mode - user may be editing them
+                // Fields are populated when entering edit mode in PopulateEditFields
                 if (_timeLimitLabel != null && _timeLimitDropdown != null)
                 {
                     _timeLimitLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                     _timeLimitDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                    // Update dropdown value when in edit mode
-                    if (ViewModel.IsHost && _isEditMode)
-                    {
-                        string timeLimitValue = ViewModel.TimeLimit == 0 ? "No Limit" : $"{ViewModel.TimeLimit / 60}:00";
-                        if (_timeLimitDropdown.value != timeLimitValue)
-                        {
-                            _timeLimitDropdown.value = timeLimitValue;
-                        }
-                    }
                 }
 
                 // Game Settings - Arrow Limit (Toggle between label and dropdown)
@@ -93,16 +85,6 @@ namespace CavalryFight.Views
                 {
                     _arrowLimitLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                     _arrowLimitDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                    // Update dropdown value when in edit mode
-                    if (ViewModel.IsHost && _isEditMode)
-                    {
-                        string arrowLimitValue = ViewModel.ArrowLimit == 0 ? "No Limit" : ViewModel.ArrowLimit.ToString();
-                        if (_arrowLimitDropdown.value != arrowLimitValue)
-                        {
-                            _arrowLimitDropdown.value = arrowLimitValue;
-                        }
-                    }
                 }
 
                 // Change Settings Button Section (Host Only)
@@ -112,18 +94,16 @@ namespace CavalryFight.Views
                 }
 
                 // Room Info - Room Name (Edit Mode shows TextField, otherwise Label)
+                // Note: Don't update field values here when in edit mode - user may be editing them
+                // Fields are populated when entering edit mode in OnChangeSettingsButtonClicked
                 if (_roomNameLabel != null && _roomNameField != null)
                 {
                     _roomNameLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                     _roomNameField.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-                    if (ViewModel.IsHost && _isEditMode && _roomNameField.value != ViewModel.RoomName)
-                    {
-                        _roomNameField.value = ViewModel.RoomName;
-                    }
                 }
 
-                // Room Info - Password (Edit Mode shows input container with invisible TextField and asterisks, otherwise normal Label)
-                if (_passwordLabel != null && _passwordInputContainer != null && _passwordField != null && _passwordAsterisksLabel != null)
+                // Room Info - Password (Edit Mode shows password TextField, otherwise Label)
+                if (_passwordLabel != null && _passwordInputContainer != null && _passwordField != null)
                 {
                     bool isEditingPassword = ViewModel.IsHost && _isEditMode;
 
@@ -131,7 +111,7 @@ namespace CavalryFight.Views
                     _passwordInputContainer.style.display = isEditingPassword ? DisplayStyle.Flex : DisplayStyle.None;
 
                     // Update password label (visible when not editing)
-                    if (_passwordField.value != null && !string.IsNullOrEmpty(_passwordField.value))
+                    if (!string.IsNullOrEmpty(_passwordField.value))
                     {
                         _passwordLabel.text = "******"; // Fixed asterisks when not editing
                     }
@@ -139,35 +119,18 @@ namespace CavalryFight.Views
                     {
                         _passwordLabel.text = "None";
                     }
-
-                    // Update asterisks label (visible when editing) - now updated in real-time via OnPasswordChanged callback
-                    if (isEditingPassword)
-                    {
-                        if (!string.IsNullOrEmpty(_passwordField.value))
-                        {
-                            _passwordAsterisksLabel.text = new string('*', _passwordField.value.Length);
-                        }
-                        else
-                        {
-                            _passwordAsterisksLabel.text = "(empty)";
-                        }
-                    }
                 }
 
                 // Room Info - Public (Edit Mode shows Toggle, otherwise Label)
+                // Note: Don't update field values here when in edit mode - user may be editing them
+                // Fields are populated when entering edit mode in PopulateEditFields
                 if (_publicLabel != null && _publicToggle != null)
                 {
                     _publicLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                     _publicToggle.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
 
-                    // Update label text
+                    // Update label text (only visible when not editing)
                     _publicLabel.text = ViewModel.IsPublic ? "Yes" : "No";
-
-                    // Update toggle value when in edit mode
-                    if (ViewModel.IsHost && _isEditMode && _publicToggle.value != ViewModel.IsPublic)
-                    {
-                        _publicToggle.value = ViewModel.IsPublic;
-                    }
                 }
 
                 // Room Info - Max Players (Edit Mode shows Dropdown, otherwise Label)
@@ -176,14 +139,8 @@ namespace CavalryFight.Views
                     _maxPlayersLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                     _maxPlayersDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
 
-                    // Update label text
+                    // Update label text (only visible when not editing)
                     _maxPlayersLabel.text = ViewModel.MaxPlayers.ToString();
-
-                    // Update dropdown value when in edit mode
-                    if (ViewModel.IsHost && _isEditMode && _maxPlayersDropdown.value != ViewModel.MaxPlayers.ToString())
-                    {
-                        _maxPlayersDropdown.value = ViewModel.MaxPlayers.ToString();
-                    }
                 }
 
                 // Room Info Dropdowns (Edit Mode shows dropdowns, otherwise labels)
@@ -191,24 +148,12 @@ namespace CavalryFight.Views
                 {
                     _gameModeLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                     _gameModeDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                    // Update dropdown value when in edit mode
-                    if (ViewModel.IsHost && _isEditMode && _gameModeDropdown.value != ViewModel.GameMode)
-                    {
-                        _gameModeDropdown.value = ViewModel.GameMode;
-                    }
                 }
 
                 if (_mapLabel != null && _mapDropdown != null)
                 {
                     _mapLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
                     _mapDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                    // Update dropdown value when in edit mode
-                    if (ViewModel.IsHost && _isEditMode && _mapDropdown.value != ViewModel.MapName)
-                    {
-                        _mapDropdown.value = ViewModel.MapName;
-                    }
                 }
 
                 // Buttons visibility
@@ -346,43 +291,47 @@ namespace CavalryFight.Views
 
             try
             {
-                // タイムリミットの表示を更新
-                if (_timeLimitDropdown != null)
+                // 編集モード中はドロップダウンの値を上書きしない（ユーザーが編集中の可能性あり）
+                // ラベルのみ更新（ラベルは編集モード中は非表示なので影響なし）
+                if (!_isEditMode)
                 {
-                    string timeLimitValue = ViewModel.TimeLimit switch
+                    // タイムリミットの表示を更新
+                    if (_timeLimitDropdown != null)
                     {
-                        180 => "3:00",
-                        300 => "5:00",
-                        600 => "10:00",
-                        900 => "15:00",
-                        0 => "No Limit",
-                        _ => "No Limit"
-                    };
-                    _timeLimitDropdown.value = timeLimitValue;
+                        string timeLimitValue = ViewModel.TimeLimit switch
+                        {
+                            180 => "3:00",
+                            300 => "5:00",
+                            600 => "10:00",
+                            900 => "15:00",
+                            0 => "No Limit",
+                            _ => "No Limit"
+                        };
+                        _timeLimitDropdown.value = timeLimitValue;
+                    }
+
+                    // 矢の制限の表示を更新
+                    if (_arrowLimitDropdown != null)
+                    {
+                        string arrowLimitValue = ViewModel.ArrowLimit switch
+                        {
+                            5 => "5",
+                            10 => "10",
+                            15 => "15",
+                            20 => "20",
+                            0 => "No Limit",
+                            _ => "No Limit"
+                        };
+                        _arrowLimitDropdown.value = arrowLimitValue;
+                    }
                 }
 
-                // タイムリミットラベルの表示を更新
+                // ラベルは常に更新（編集モード中は非表示なので影響なし）
                 if (_timeLimitLabel != null)
                 {
                     _timeLimitLabel.text = ViewModel.TimeLimit == 0 ? "No Limit" : $"{ViewModel.TimeLimit / 60}:00";
                 }
 
-                // 矢の制限の表示を更新
-                if (_arrowLimitDropdown != null)
-                {
-                    string arrowLimitValue = ViewModel.ArrowLimit switch
-                    {
-                        5 => "5",
-                        10 => "10",
-                        15 => "15",
-                        20 => "20",
-                        0 => "No Limit",
-                        _ => "No Limit"
-                    };
-                    _arrowLimitDropdown.value = arrowLimitValue;
-                }
-
-                // 矢の制限ラベルの表示を更新
                 if (_arrowLimitLabel != null)
                 {
                     _arrowLimitLabel.text = ViewModel.ArrowLimit == 0 ? "No Limit" : ViewModel.ArrowLimit.ToString();
@@ -393,6 +342,85 @@ namespace CavalryFight.Views
                 // 元の状態に戻す
                 _isUpdatingUI = wasUpdatingUI;
             }
+        }
+
+        /// <summary>
+        /// 編集モードに入る際にフィールドを現在のViewModel値で初期化します
+        /// </summary>
+        private void PopulateEditFields()
+        {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            // ルーム名
+            if (_roomNameField != null)
+            {
+                _roomNameField.value = ViewModel.RoomName;
+            }
+
+            // パスワード
+            if (_passwordField != null)
+            {
+                _passwordField.value = ViewModel.Password ?? "";
+            }
+
+            // 公開設定
+            if (_publicToggle != null)
+            {
+                _publicToggle.value = ViewModel.IsPublic;
+            }
+
+            // 最大プレイヤー数
+            if (_maxPlayersDropdown != null)
+            {
+                _maxPlayersDropdown.value = ViewModel.MaxPlayers.ToString();
+            }
+
+            // ゲームモード
+            if (_gameModeDropdown != null)
+            {
+                _gameModeDropdown.value = ViewModel.GameMode;
+            }
+
+            // マップ
+            if (_mapDropdown != null)
+            {
+                _mapDropdown.value = ViewModel.MapName;
+            }
+
+            // タイムリミット
+            if (_timeLimitDropdown != null)
+            {
+                string timeLimitValue = ViewModel.TimeLimit switch
+                {
+                    180 => "3:00",
+                    300 => "5:00",
+                    600 => "10:00",
+                    900 => "15:00",
+                    0 => "No Limit",
+                    _ => "5:00"
+                };
+                _timeLimitDropdown.value = timeLimitValue;
+            }
+
+            // 矢の制限
+            if (_arrowLimitDropdown != null)
+            {
+                string arrowLimitValue = ViewModel.ArrowLimit switch
+                {
+                    5 => "5",
+                    10 => "10",
+                    15 => "15",
+                    20 => "20",
+                    0 => "No Limit",
+                    _ => "No Limit"
+                };
+                _arrowLimitDropdown.value = arrowLimitValue;
+            }
+
+            Debug.Log("[MatchRoomView] Edit fields populated with current values");
         }
 
         #endregion
