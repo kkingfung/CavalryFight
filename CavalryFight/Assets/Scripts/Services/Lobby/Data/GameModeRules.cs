@@ -156,5 +156,23 @@ namespace CavalryFight.Services.Lobby
                 _ => 0
             };
         }
+
+        /// <summary>
+        /// 指定されたゲームモードでNPCが無効化されているかを取得します
+        /// </summary>
+        /// <param name="mode">ゲームモード</param>
+        /// <returns>NPCが無効（スポーンしない）の場合はtrue</returns>
+        public static bool IsNPCDisabled(GameMode mode)
+        {
+            return mode switch
+            {
+                GameMode.Arena => false,      // NPCあり
+                GameMode.ScoreMatch => false, // NPCあり
+                GameMode.TeamFight => false,  // NPCあり
+                GameMode.Deathmatch => false, // NPCあり
+                GameMode.Hunting => true,     // NPCなし（プレイヤーのみ）
+                _ => false
+            };
+        }
     }
 }

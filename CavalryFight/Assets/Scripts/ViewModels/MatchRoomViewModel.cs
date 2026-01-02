@@ -1310,7 +1310,7 @@ namespace CavalryFight.ViewModels
             }
             else
             {
-                // Versus: 自由設定（変更なし）
+                // Hunting: 時間制限必須のため、ここには来ないはず
                 // 現在の値をそのまま保持
             }
 
@@ -1330,7 +1330,7 @@ namespace CavalryFight.ViewModels
             }
             else
             {
-                // Versus: 自由設定（変更なし）
+                // Hunting: 矢は無制限固定のため、ここには来ないはず
                 // 現在の値をそのまま保持
             }
 
