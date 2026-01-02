@@ -17,10 +17,6 @@ namespace CavalryFight.Views
         // Header
         private Label? _joinCodeLabel;
 
-        // Player Name
-        private TextField? _playerNameInput;
-        private Button? _updatePlayerNameButton;
-
         // Left Panel - Player List
         private VisualElement? _playerListContainer;
         private ScrollView? _playerListScrollView;
@@ -83,10 +79,6 @@ namespace CavalryFight.Views
 
             // Header
             _joinCodeLabel = Q<Label>("JoinCodeLabel");
-
-            // Player Name (in Left Panel)
-            _playerNameInput = Q<TextField>("PlayerNameInput");
-            _updatePlayerNameButton = Q<Button>("UpdatePlayerNameButton");
 
             // Left Panel - Player List
             _playerListContainer = Q<VisualElement>("PlayerListContainer");
@@ -166,7 +158,7 @@ namespace CavalryFight.Views
             {
                 _gameModeDropdown.choices = new List<string>
                 {
-                    "Arena", "ScoreMatch", "TeamFight", "Deathmatch", "Versus"
+                    "Arena", "ScoreMatch", "TeamFight", "Deathmatch", "Hunting"
                 };
                 _gameModeDropdown.value = "Arena";
             }
@@ -227,64 +219,76 @@ namespace CavalryFight.Views
                 return;
             }
 
-            // 現在の値を保存
-            string currentValue = _arrowLimitDropdown.value;
+            // プログラムからUI更新中であることをマーク（コールバック連鎖防止）
+            bool wasUpdatingUI = _isUpdatingUI;
+            _isUpdatingUI = true;
 
-            // ゲームモードに応じて選択肢を設定
-            if (gameMode == "ScoreMatch")
+            try
             {
-                // ScoreMatchの場合は"No Limit"を除外
-                _arrowLimitDropdown.choices = new List<string>
-                {
-                    "5", "10", "15", "20"
-                };
+                // 現在の値を保存
+                string currentValue = _arrowLimitDropdown.value;
 
-                // 現在の値が"No Limit"の場合、デフォルト値に変更
-                if (currentValue == "No Limit")
+                // ゲームモードに応じて選択肢を設定
+                if (gameMode == "ScoreMatch")
                 {
-                    _arrowLimitDropdown.value = "10";
-                    if (ViewModel != null)
+                    // ScoreMatchの場合は"No Limit"を除外
+                    _arrowLimitDropdown.choices = new List<string>
                     {
-                        ViewModel.ArrowLimit = 10;
+                        "5", "10", "15", "20"
+                    };
+
+                    // 現在の値が"No Limit"の場合、デフォルト値に変更
+                    if (currentValue == "No Limit")
+                    {
+                        _arrowLimitDropdown.value = "10";
+                        if (ViewModel != null)
+                        {
+                            ViewModel.ArrowLimit = 10;
+                        }
                     }
-                }
-                else if (_arrowLimitDropdown.choices.Contains(currentValue))
-                {
-                    _arrowLimitDropdown.value = currentValue;
+                    else if (_arrowLimitDropdown.choices.Contains(currentValue))
+                    {
+                        _arrowLimitDropdown.value = currentValue;
+                    }
+                    else
+                    {
+                        _arrowLimitDropdown.value = "10";
+                        if (ViewModel != null)
+                        {
+                            ViewModel.ArrowLimit = 10;
+                        }
+                    }
                 }
                 else
                 {
-                    _arrowLimitDropdown.value = "10";
-                    if (ViewModel != null)
+                    // その他のモードでは全選択肢を表示
+                    _arrowLimitDropdown.choices = new List<string>
                     {
-                        ViewModel.ArrowLimit = 10;
+                        "5", "10", "15", "20", "No Limit"
+                    };
+
+                    // 現在の値が選択肢に含まれていれば復元
+                    if (_arrowLimitDropdown.choices.Contains(currentValue))
+                    {
+                        _arrowLimitDropdown.value = currentValue;
+                    }
+                    else
+                    {
+                        _arrowLimitDropdown.value = "No Limit";
+                        if (ViewModel != null)
+                        {
+                            ViewModel.ArrowLimit = 0; // 0 = No Limit
+                        }
                     }
                 }
+
+                Debug.Log($"[MatchRoomView] Arrow limit choices updated for game mode: {gameMode}, current value: {_arrowLimitDropdown.value}");
             }
-            else
+            finally
             {
-                // その他のモードでは全選択肢を表示
-                _arrowLimitDropdown.choices = new List<string>
-                {
-                    "5", "10", "15", "20", "No Limit"
-                };
-
-                // 現在の値が選択肢に含まれていれば復元
-                if (_arrowLimitDropdown.choices.Contains(currentValue))
-                {
-                    _arrowLimitDropdown.value = currentValue;
-                }
-                else
-                {
-                    _arrowLimitDropdown.value = "No Limit";
-                    if (ViewModel != null)
-                    {
-                        ViewModel.ArrowLimit = 0; // 0 = No Limit
-                    }
-                }
+                // 元の状態に戻す
+                _isUpdatingUI = wasUpdatingUI;
             }
-
-            Debug.Log($"[MatchRoomView] Arrow limit choices updated for game mode: {gameMode}, current value: {_arrowLimitDropdown.value}");
         }
 
         #endregion

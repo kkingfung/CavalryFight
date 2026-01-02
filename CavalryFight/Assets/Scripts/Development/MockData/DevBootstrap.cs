@@ -68,9 +68,19 @@ namespace CavalryFight.Development.MockData
 
             // Startupシーンから開始された場合はスキップ（GameBootstrapに任せる）
             string currentSceneName = SceneManager.GetActiveScene().name;
-            if (currentSceneName == "Startup" || currentSceneName == "Bootstrap")
+
+            // スキップすべきシーン名のリスト
+            // - Startup: 通常の起動シーン
+            // - Bootstrap: 代替の起動シーン名
+            // - ASM - Fallback scene: Advanced Scene Managerのフォールバックシーン
+            // - 空文字列: シーンがまだロードされていない場合
+            if (string.IsNullOrEmpty(currentSceneName) ||
+                currentSceneName == "Startup" ||
+                currentSceneName == "Bootstrap" ||
+                currentSceneName.Contains("ASM") ||
+                currentSceneName.Contains("Fallback"))
             {
-                Debug.Log("[DevBootstrap] Startup scene detected. Skipping mock initialization.");
+                Debug.Log($"[DevBootstrap] Startup/Fallback scene detected ({currentSceneName}). Skipping mock initialization.");
                 return;
             }
 
@@ -119,6 +129,10 @@ namespace CavalryFight.Development.MockData
             {
                 Debug.LogWarning("[DevBootstrap] MockSceneConfig not found in Resources/MockData/. Using default mock data.");
             }
+            else
+            {
+                Debug.Log("[DevBootstrap] MockSceneConfig loaded from Resources/MockData/");
+            }
         }
 
         /// <summary>
@@ -147,6 +161,10 @@ namespace CavalryFight.Development.MockData
             // モックリプレイサービス
             serviceLocator.Register<CavalryFight.Services.Replay.IReplayService>(
                 new MockReplayService(_mockConfig));
+
+            // モックロビーサービス
+            serviceLocator.Register<CavalryFight.Services.Lobby.ILobbyService>(
+                new MockLobbyService(_mockConfig));
 
             Debug.Log("[DevBootstrap] All mock services registered.");
         }

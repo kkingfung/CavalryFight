@@ -1,7 +1,5 @@
 #nullable enable
 
-#if UNITY_EDITOR
-
 using System;
 using CavalryFight.Services.Audio;
 using UnityEngine;
@@ -171,7 +169,28 @@ namespace CavalryFight.Development.MockData.MockServices
         }
 
         #endregion
+
+        #region Mock Event Triggers
+
+        /// <summary>
+        /// BgmChangedイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="clipName">BGMクリップ名</param>
+        public void TriggerBgmChanged(string clipName)
+        {
+            BgmChanged?.Invoke(this, new AudioChangedEventArgs(clipName));
+        }
+
+        /// <summary>
+        /// VolumeChangedイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="volumeType">ボリュームタイプ</param>
+        /// <param name="newVolume">新しいボリューム値</param>
+        public void TriggerVolumeChanged(VolumeType volumeType, float newVolume)
+        {
+            VolumeChanged?.Invoke(this, new VolumeChangedEventArgs(volumeType, newVolume));
+        }
+
+        #endregion
     }
 }
-
-#endif

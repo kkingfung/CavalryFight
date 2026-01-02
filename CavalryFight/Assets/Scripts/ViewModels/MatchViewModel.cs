@@ -354,7 +354,7 @@ namespace CavalryFight.ViewModels
         public event EventHandler<ScoreGainedEventArgs>? ScoreGained;
 
         /// <summary>
-        /// プレイヤーが死亡した時に発生します
+        /// プレイヤーが倒された時に発生します
         /// </summary>
         public event EventHandler<PlayerKilledEventArgs>? PlayerKilled;
 
@@ -518,6 +518,7 @@ namespace CavalryFight.ViewModels
             _matchService.MatchStarted += OnMatchStarted;
             _matchService.MatchEndedWithResult += OnMatchEnded;
             _matchService.PlayerScored += OnPlayerScored;
+            _matchService.HitRegistered += OnHitRegistered;
         }
 
         private void UnsubscribeFromMatchService()
@@ -532,6 +533,7 @@ namespace CavalryFight.ViewModels
             _matchService.MatchStarted -= OnMatchStarted;
             _matchService.MatchEndedWithResult -= OnMatchEnded;
             _matchService.PlayerScored -= OnPlayerScored;
+            _matchService.HitRegistered -= OnHitRegistered;
         }
 
         private void OnMatchStateChanged(MatchState newState)
@@ -567,6 +569,42 @@ namespace CavalryFight.ViewModels
 
             // スコアボードを更新
             UpdateScoreboard();
+        }
+
+        private void OnHitRegistered(HitResult hitResult)
+        {
+            // 命中時にキルフィード用のイベントを発火
+            // プレイヤー名を取得してPlayerKilledイベントを発火
+            string killerName = GetPlayerName(hitResult.ShooterClientId);
+            string victimName = GetPlayerName(hitResult.TargetClientId);
+
+            PlayerKilled?.Invoke(this, new PlayerKilledEventArgs(
+                hitResult.TargetClientId,   // victimId
+                hitResult.ShooterClientId,  // killerId
+                victimName,
+                killerName
+            ));
+        }
+
+        /// <summary>
+        /// クライアントIDからプレイヤー名を取得します
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <returns>プレイヤー名（見つからない場合は"Player {clientId}"）</returns>
+        private string GetPlayerName(ulong clientId)
+        {
+            if (_matchService == null)
+            {
+                return $"Player {clientId}";
+            }
+
+            var playerScore = _matchService.GetPlayerScore(clientId);
+            if (playerScore.HasValue)
+            {
+                return playerScore.Value.PlayerName.ToString();
+            }
+
+            return $"Player {clientId}";
         }
 
         private void UpdateLocalPlayerScore()

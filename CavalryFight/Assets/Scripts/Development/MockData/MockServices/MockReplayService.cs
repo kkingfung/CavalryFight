@@ -1,7 +1,5 @@
 #nullable enable
 
-#if UNITY_EDITOR
-
 using System;
 using System.Collections.Generic;
 using CavalryFight.Services.Replay;
@@ -205,23 +203,127 @@ namespace CavalryFight.Development.MockData.MockServices
         {
             var list = new List<ReplayMetadata>();
 
-            // 複数のモックリプレイを作成
-            for (int i = 0; i < 10; i++)
+            // MockHistoryConfigからデータを読み込み
+            if (_config?.HistorySceneMockData != null)
             {
-                list.Add(new ReplayMetadata
+                var historyConfig = _config.HistorySceneMockData;
+                foreach (var entry in historyConfig.MatchHistory)
+                {
+                    if (entry.HasReplay)
+                    {
+                        var metadata = new ReplayMetadata
+                    {
+                        ReplayId = entry.ReplayId,
+                        RecordedAt = ParseMatchDate(entry.MatchDate),
+                        MapName = entry.MapName,
+                        GameMode = entry.GameMode,
+                        PlayerName = "You",
+                        MatchDuration = entry.MatchDuration,
+                        FinalPlayerScore = entry.PlayerScore,
+                        FinalEnemyScore = entry.EnemyScore,
+                        PlayerCount = entry.TotalPlayers,
+                        Kills = entry.Kills,
+                        Deaths = entry.Deaths,
+                        Accuracy = entry.Accuracy,
+                        Rank = entry.Rank
+                    };
+
+                    // 他プレイヤーの統計情報を追加
+                    if (entry.OtherPlayers != null && entry.OtherPlayers.Count > 0)
+                    {
+                        foreach (var otherPlayer in entry.OtherPlayers)
+                        {
+                            metadata.OtherPlayers.Add(new OtherPlayerStats
+                            {
+                                PlayerName = otherPlayer.PlayerName,
+                                Kills = otherPlayer.Kills,
+                                Deaths = otherPlayer.Deaths,
+                                Score = otherPlayer.Score,
+                                Rank = otherPlayer.Rank
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // デフォルトの他プレイヤーを生成
+                        metadata.OtherPlayers = GenerateMockOtherPlayers(entry.TotalPlayers - 1, entry.Rank);
+                    }
+
+                    list.Add(metadata);
+                    }
+                }
+
+                if (list.Count > 0)
+                {
+                    Debug.Log($"[MockReplayService] Loaded {list.Count} replays from HistoryConfig");
+                    return list;
+                }
+            }
+
+            // デフォルトのモックリプレイを作成（勝利、敗北、引き分けを含む）
+            var defaultEntries = new[]
+            {
+                // 勝利 - 2人対戦
+                (playerScore: 1500, enemyScore: 1200, playerCount: 2, rank: 1, kills: 10, deaths: 5, map: "Arena", mode: "ScoreMatch"),
+                // 敗北 - 2人対戦
+                (playerScore: 900, enemyScore: 1500, playerCount: 2, rank: 2, kills: 4, deaths: 10, map: "Forest", mode: "ScoreMatch"),
+                // 引き分け - 2人対戦
+                (playerScore: 1200, enemyScore: 1200, playerCount: 2, rank: 1, kills: 8, deaths: 8, map: "Castle", mode: "ScoreMatch"),
+                // 勝利 - 4人対戦
+                (playerScore: 2000, enemyScore: 1500, playerCount: 4, rank: 1, kills: 15, deaths: 5, map: "Desert", mode: "Arena"),
+                // 敗北 - 4人対戦
+                (playerScore: 800, enemyScore: 1800, playerCount: 4, rank: 3, kills: 6, deaths: 12, map: "Arena", mode: "Arena"),
+                // 勝利 - 8人対戦
+                (playerScore: 3000, enemyScore: 2500, playerCount: 8, rank: 1, kills: 20, deaths: 4, map: "Castle", mode: "Team Battle"),
+                // 敗北 - 8人対戦
+                (playerScore: 1200, enemyScore: 2800, playerCount: 8, rank: 5, kills: 8, deaths: 15, map: "Forest", mode: "Team Battle"),
+                // 引き分け - 8人対戦
+                (playerScore: 2000, enemyScore: 2000, playerCount: 8, rank: 1, kills: 14, deaths: 14, map: "Desert", mode: "Team Battle"),
+                // 勝利 - ハンティング 4人
+                (playerScore: 1800, enemyScore: 1400, playerCount: 4, rank: 1, kills: 12, deaths: 3, map: "Forest", mode: "Hunting"),
+                // 敗北 - ハンティング 8人
+                (playerScore: 900, enemyScore: 2200, playerCount: 8, rank: 6, kills: 5, deaths: 11, map: "Desert", mode: "Hunting"),
+            };
+
+            for (int i = 0; i < defaultEntries.Length; i++)
+            {
+                var entry = defaultEntries[i];
+                var metadata = new ReplayMetadata
                 {
                     ReplayId = $"mock-replay-{i:D3}",
                     RecordedAt = DateTime.Now.AddDays(-i).AddHours(-i * 2),
-                    MapName = GetMockMapName(i),
-                    GameMode = GetMockGameMode(i),
+                    MapName = entry.map,
+                    GameMode = entry.mode,
                     PlayerName = "You",
                     MatchDuration = 180f + (i * 30f),
-                    FinalPlayerScore = 1000 + (i % 3 == 0 ? 500 : -200),
-                    FinalEnemyScore = 1000 - (i % 3 == 0 ? 200 : 300)
-                });
+                    FinalPlayerScore = entry.playerScore,
+                    FinalEnemyScore = entry.enemyScore,
+                    PlayerCount = entry.playerCount,
+                    Kills = entry.kills,
+                    Deaths = entry.deaths,
+                    Accuracy = 55f + (i * 2f),
+                    Rank = entry.rank,
+                    OtherPlayers = GenerateMockOtherPlayers(entry.playerCount - 1, entry.rank)
+                };
+
+                list.Add(metadata);
             }
 
             return list;
+        }
+
+        /// <summary>
+        /// マッチ日時文字列をパースします
+        /// </summary>
+        /// <param name="dateText">日時文字列（例：2024-01-15 14:30）</param>
+        /// <returns>パースされたDateTime</returns>
+        private static DateTime ParseMatchDate(string dateText)
+        {
+            if (DateTime.TryParse(dateText, out var result))
+            {
+                return result;
+            }
+            return DateTime.Now;
         }
 
         /// <summary>
@@ -308,6 +410,41 @@ namespace CavalryFight.Development.MockData.MockServices
         }
 
         /// <summary>
+        /// モックの他プレイヤー統計情報を生成します
+        /// </summary>
+        /// <param name="count">生成するプレイヤー数</param>
+        /// <param name="playerRank">自分の順位（他プレイヤーの順位計算に使用）</param>
+        /// <returns>他プレイヤーの統計情報リスト</returns>
+        private List<OtherPlayerStats> GenerateMockOtherPlayers(int count, int playerRank)
+        {
+            var players = new List<OtherPlayerStats>();
+            string[] names = { "Knight_Alex", "Archer_Yuki", "Warrior_Max", "Hunter_Rin", "Rider_John", "Lancer_Sora", "Cavalry_Dan" };
+
+            int currentRank = 1;
+            for (int i = 0; i < count && i < names.Length; i++)
+            {
+                // 自分の順位をスキップ
+                if (currentRank == playerRank)
+                {
+                    currentRank++;
+                }
+
+                players.Add(new OtherPlayerStats
+                {
+                    PlayerName = names[i],
+                    Kills = 5 + (count - i) * 2,
+                    Deaths = 3 + i,
+                    Score = 1500 - (currentRank - 1) * 200,
+                    Rank = currentRank
+                });
+
+                currentRank++;
+            }
+
+            return players;
+        }
+
+        /// <summary>
         /// サービスを初期化します
         /// </summary>
         public void Initialize()
@@ -326,5 +463,3 @@ namespace CavalryFight.Development.MockData.MockServices
         #endregion
     }
 }
-
-#endif

@@ -25,12 +25,6 @@ namespace CavalryFight.Views
         /// </summary>
         private void RegisterEventHandlers()
         {
-            // Player Name Update Button
-            if (_updatePlayerNameButton != null)
-            {
-                _updatePlayerNameButton.clicked += OnUpdatePlayerNameButtonClicked;
-            }
-
             // Footer buttons
             if (_leaveRoomButton != null)
             {
@@ -98,12 +92,6 @@ namespace CavalryFight.Views
         /// </summary>
         private void UnregisterEventHandlers()
         {
-            // Player Name Update Button
-            if (_updatePlayerNameButton != null)
-            {
-                _updatePlayerNameButton.clicked -= OnUpdatePlayerNameButtonClicked;
-            }
-
             // Footer buttons
             if (_leaveRoomButton != null)
             {
@@ -182,14 +170,6 @@ namespace CavalryFight.Views
 
             switch (e.PropertyName)
             {
-                case nameof(MatchRoomViewModel.PlayerName):
-                    // プレイヤー名が変更された場合、TextFieldを更新
-                    if (_playerNameInput != null && _playerNameInput.value != ViewModel.PlayerName)
-                    {
-                        _playerNameInput.value = ViewModel.PlayerName;
-                    }
-                    break;
-
                 case nameof(MatchRoomViewModel.IsCountingDown):
                     UpdateCountdownDialog();
                     break;
@@ -402,6 +382,12 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnTimeLimitChanged(ChangeEvent<string> evt)
         {
+            // プログラムからのUI更新中はスキップ（コールバック連鎖防止）
+            if (_isUpdatingUI)
+            {
+                return;
+            }
+
             if (ViewModel == null)
             {
                 return;
@@ -429,6 +415,12 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnArrowLimitChanged(ChangeEvent<string> evt)
         {
+            // プログラムからのUI更新中はスキップ（コールバック連鎖防止）
+            if (_isUpdatingUI)
+            {
+                return;
+            }
+
             if (ViewModel == null)
             {
                 return;
@@ -452,47 +444,16 @@ namespace CavalryFight.Views
         }
 
         /// <summary>
-        /// プレイヤー名更新ボタンクリックイベント
-        /// </summary>
-        private void OnUpdatePlayerNameButtonClicked()
-        {
-            if (ViewModel == null || _playerNameInput == null)
-            {
-                return;
-            }
-
-            PlayButtonClickSfx();
-
-            var newName = _playerNameInput.value;
-
-            if (string.IsNullOrWhiteSpace(newName))
-            {
-                Debug.LogWarning("[MatchRoomView] Player name cannot be empty.");
-                return;
-            }
-
-            // ViewModelのPlayerNameプロパティを更新
-            ViewModel.PlayerName = newName;
-
-            // LobbyServiceを通じてネットワーク上のプレイヤー名を更新
-            // （LobbyService.SetPlayerName内でPlayerPrefsに保存されます）
-            var lobbyService = ServiceLocator.Instance.TryGet<ILobbyService>();
-            if (lobbyService != null && lobbyService.IsInRoom)
-            {
-                lobbyService.SetPlayerName(newName);
-                Debug.Log($"[MatchRoomView] Player name updated in network: {newName}");
-            }
-            else
-            {
-                Debug.Log($"[MatchRoomView] Player name updated locally (not in room): {newName}");
-            }
-        }
-
-        /// <summary>
         /// ゲームモード変更イベント
         /// </summary>
         private void OnGameModeChanged(ChangeEvent<string> evt)
         {
+            // プログラムからのUI更新中はスキップ（コールバック連鎖防止）
+            if (_isUpdatingUI)
+            {
+                return;
+            }
+
             if (ViewModel == null)
             {
                 return;
@@ -513,6 +474,12 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnMapChanged(ChangeEvent<string> evt)
         {
+            // プログラムからのUI更新中はスキップ（コールバック連鎖防止）
+            if (_isUpdatingUI)
+            {
+                return;
+            }
+
             if (ViewModel == null)
             {
                 return;

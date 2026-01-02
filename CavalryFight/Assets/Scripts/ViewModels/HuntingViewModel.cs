@@ -268,16 +268,6 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public event EventHandler<HuntingScoreEventArgs>? ScoreGained;
 
-        /// <summary>
-        /// ウルフがスタンさせられた時に発生します
-        /// </summary>
-        public event EventHandler<ulong>? WolfStunned;
-
-        /// <summary>
-        /// ハンターがスタンさせられた時に発生します
-        /// </summary>
-        public event EventHandler<ulong>? HunterStunned;
-
         #endregion
 
         #region Constructor

@@ -22,6 +22,7 @@ namespace CavalryFight.ViewModels.Data
         private int _fps = 0;
         private bool _isNPC = false;
         private string _difficulty = "Normal";
+        private bool _isLocalPlayer = false;
 
         /// <summary>
         /// スロットインデックス
@@ -137,6 +138,19 @@ namespace CavalryFight.ViewModels.Data
             {
                 _difficulty = value;
                 OnPropertyChanged(nameof(Difficulty));
+            }
+        }
+
+        /// <summary>
+        /// ローカルプレイヤーかどうか
+        /// </summary>
+        public bool IsLocalPlayer
+        {
+            get => _isLocalPlayer;
+            set
+            {
+                _isLocalPlayer = value;
+                OnPropertyChanged(nameof(IsLocalPlayer));
             }
         }
 

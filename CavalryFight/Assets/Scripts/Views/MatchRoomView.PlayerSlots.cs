@@ -5,6 +5,7 @@ using System.Linq;
 using CavalryFight.Services.Lobby;
 using CavalryFight.ViewModels;
 using CavalryFight.ViewModels.Data;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CavalryFight.Views
@@ -117,36 +118,51 @@ namespace CavalryFight.Views
             var infoSection = new VisualElement();
             infoSection.AddToClassList("player-item-info");
 
-            // プレイヤー名
-            var nameLabel = new Label(player.PlayerName);
+            // プレイヤー名（ローカルプレイヤーの場合は "(YOU)" を追加）
+            var displayName = player.IsLocalPlayer ? $"{player.PlayerName} (YOU)" : player.PlayerName;
+            var nameLabel = new Label(displayName);
             nameLabel.AddToClassList("player-item-name");
             infoSection.Add(nameLabel);
 
-            // ステータス行（HOST, Team, FPS/Difficulty, Ready）
+            // ローカルプレイヤーの場合はコンテナの背景色を変更
+            if (player.IsLocalPlayer)
+            {
+                container.AddToClassList("local-player");
+            }
+
+            // ステータス行（Team, HOST/Ready, FPS/Difficulty）
             var statsRow = new VisualElement();
             statsRow.AddToClassList("player-item-stats");
 
-            // 1. ホストバッジ（ホストの場合、名前の直後）またはスペーサー
-            if (player.IsHost)
-            {
-                var hostBadge = new Label("HOST");
-                hostBadge.AddToClassList("host-badge");
-                statsRow.Add(hostBadge);
-            }
-            else
-            {
-                // ホストでない場合、スペーサーを追加して位置を揃える
-                var spacer = new VisualElement();
-                spacer.AddToClassList("host-badge");
-                spacer.style.visibility = Visibility.Hidden;
-                statsRow.Add(spacer);
-            }
-
-            // 2. チームバッジ
+            // 1. チームバッジ（名前の直後）
             var teamBadge = new Label(GetTeamLabel(player.Team));
             teamBadge.AddToClassList("team-badge");
             teamBadge.AddToClassList(GetTeamClass(player.Team));
             statsRow.Add(teamBadge);
+
+            // 2. HOST/Ready バッジ
+            if (player.IsHost)
+            {
+                // ホストプレイヤー: HOSTバッジ
+                var hostBadge = new Label("HOST");
+                hostBadge.AddToClassList("host-badge");
+                statsRow.Add(hostBadge);
+            }
+            else if (!player.IsNPC)
+            {
+                // 非ホスト・非NPC: Readyバッジ
+                var readyBadge = new Label(player.IsReady ? "READY" : "NOT READY");
+                readyBadge.AddToClassList("ready-badge");
+                readyBadge.AddToClassList(player.IsReady ? "ready-true" : "ready-false");
+                statsRow.Add(readyBadge);
+            }
+            else
+            {
+                // NPC: スペーサー（HOST/Readyの幅分）
+                var spacer = new VisualElement();
+                spacer.AddToClassList("stats-spacer");
+                statsRow.Add(spacer);
+            }
 
             // 3. FPS（通常プレイヤー）or Difficulty（NPC）
             if (player.IsNPC)
@@ -174,15 +190,6 @@ namespace CavalryFight.Views
                 var fpsLabel = new Label($"{player.Fps} FPS");
                 fpsLabel.AddToClassList("player-item-fps");
                 statsRow.Add(fpsLabel);
-            }
-
-            // 準備状態バッジ（ゲストのみ、NPCは除外）
-            if (!player.IsHost && !player.IsNPC)
-            {
-                var readyBadge = new Label(player.IsReady ? "READY" : "NOT READY");
-                readyBadge.AddToClassList("ready-badge");
-                readyBadge.AddToClassList(player.IsReady ? "ready-true" : "ready-false");
-                statsRow.Add(readyBadge);
             }
 
             infoSection.Add(statsRow);
@@ -213,10 +220,14 @@ namespace CavalryFight.Views
                 else
                 {
                     // 通常プレイヤーの場合: チーム変更ボタン
-                    var teamButton = new Button(() => OnTeamButtonClicked(player.PlayerId));
-                    teamButton.text = "Team";
-                    teamButton.AddToClassList("team-button");
-                    actionsSection.Add(teamButton);
+                    // ホストは全員のチームを変更可能、非ホストは自分のチームのみ変更可能
+                    if (ViewModel.IsHost || player.IsLocalPlayer)
+                    {
+                        var teamButton = new Button(() => OnTeamButtonClicked(player.PlayerId));
+                        teamButton.text = "Team";
+                        teamButton.AddToClassList("team-button");
+                        actionsSection.Add(teamButton);
+                    }
 
                     // キックボタン（ホストのみ、自分以外）
                     if (ViewModel.IsHost && !player.IsHost)

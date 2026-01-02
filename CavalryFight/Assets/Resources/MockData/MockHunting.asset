@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 81fe9d358cc31ad43a2de2a4b6d65898, type: 3}
   m_Name: MockHunting
-  m_EditorClassIdentifier: CavalryFight.Development:CavalryFight.Development.MockData:MockHuntingConfig
+  m_EditorClassIdentifier: CavalryFight.Development::CavalryFight.Development.MockData.MockHuntingConfig
   _isLocalPlayerHunter: 1
   _localPlayerTeamIndex: 0
   _timeLimit: 300

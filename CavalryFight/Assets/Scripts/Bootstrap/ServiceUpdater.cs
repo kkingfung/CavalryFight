@@ -2,6 +2,7 @@
 
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Match;
+using CavalryFight.Services.Performance;
 using CavalryFight.Services.Replay;
 using UnityEngine;
 
@@ -34,6 +35,11 @@ namespace CavalryFight.Core.Bootstrap
         /// </summary>
         private IReplayPlayer? _replayPlayer;
 
+        /// <summary>
+        /// パフォーマンスモニターサービス
+        /// </summary>
+        private PerformanceMonitor? _performanceMonitor;
+
         #endregion
 
         #region Unity Lifecycle
@@ -47,6 +53,10 @@ namespace CavalryFight.Core.Bootstrap
             _matchService = ServiceLocator.Instance.Get<IMatchService>();
             _replayRecorder = ServiceLocator.Instance.Get<IReplayRecorder>();
             _replayPlayer = ServiceLocator.Instance.Get<IReplayPlayer>();
+
+            // PerformanceMonitorを取得（IPerformanceMonitorから具体的なクラスにキャスト）
+            var performanceMonitorInterface = ServiceLocator.Instance.Get<IPerformanceMonitor>();
+            _performanceMonitor = performanceMonitorInterface as PerformanceMonitor;
 
             // 警告出力
             if (_matchService == null)
@@ -64,8 +74,13 @@ namespace CavalryFight.Core.Bootstrap
                 Debug.LogWarning("[ServiceUpdater] ReplayPlayer not found in ServiceLocator.");
             }
 
+            if (_performanceMonitor == null)
+            {
+                Debug.LogWarning("[ServiceUpdater] PerformanceMonitor not found in ServiceLocator.");
+            }
+
             // すべてのサービスが見つからない場合はコンポーネントを無効化
-            if (_matchService == null && _replayRecorder == null && _replayPlayer == null)
+            if (_matchService == null && _replayRecorder == null && _replayPlayer == null && _performanceMonitor == null)
             {
                 Debug.LogError("[ServiceUpdater] No services found. Disabling ServiceUpdater.");
                 enabled = false;
@@ -86,7 +101,6 @@ namespace CavalryFight.Core.Bootstrap
                 _matchService.Update();
             }
 
-
             // ReplayRecorderの更新
             if (_replayRecorder != null && _replayRecorder is ReplayRecorder recorder)
             {
@@ -97,6 +111,12 @@ namespace CavalryFight.Core.Bootstrap
             if (_replayPlayer != null && _replayPlayer is ReplayPlayer player)
             {
                 player.UpdatePlayback(Time.deltaTime);
+            }
+
+            // PerformanceMonitorの更新
+            if (_performanceMonitor != null)
+            {
+                _performanceMonitor.Tick(Time.deltaTime);
             }
         }
 

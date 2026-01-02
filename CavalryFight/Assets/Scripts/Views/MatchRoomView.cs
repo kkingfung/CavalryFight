@@ -41,6 +41,7 @@ namespace CavalryFight.Views
         private readonly Dictionary<string, VisualElement> _playerItemElements = new Dictionary<string, VisualElement>();
         private bool _isCountdownActive = false;
         private bool _isEditMode = false; // ホストの設定編集モード
+        private bool _isUpdatingUI = false; // UIをプログラムから更新中かどうか（コールバックの連鎖を防ぐ）
 
         #endregion
 

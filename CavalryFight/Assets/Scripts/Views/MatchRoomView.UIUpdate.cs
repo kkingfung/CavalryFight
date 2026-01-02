@@ -24,196 +24,201 @@ namespace CavalryFight.Views
                 return;
             }
 
-            // Join Code
-            if (_joinCodeLabel != null)
+            // プログラムからUI更新中であることをマーク（コールバック連鎖防止）
+            _isUpdatingUI = true;
+
+            try
             {
-                _joinCodeLabel.text = $"Join Code: {ViewModel.JoinCode}";
-            }
-
-            // Player Name
-            if (_playerNameInput != null && _playerNameInput.value != ViewModel.PlayerName)
-            {
-                _playerNameInput.value = ViewModel.PlayerName;
-            }
-
-            // Room Info
-            if (_roomNameLabel != null)
-            {
-                _roomNameLabel.text = ViewModel.RoomName;
-            }
-
-            if (_gameModeLabel != null)
-            {
-                _gameModeLabel.text = ViewModel.GameMode;
-            }
-
-            // Arrow Limitの選択肢をゲームモードに応じて更新
-            UpdateArrowLimitChoices(ViewModel.GameMode);
-
-            if (_mapLabel != null)
-            {
-                _mapLabel.text = ViewModel.MapName;
-            }
-
-            if (_playersLabel != null)
-            {
-                _playersLabel.text = $"{ViewModel.CurrentPlayers} / {ViewModel.MaxPlayers}";
-            }
-
-            // Status
-            if (_statusLabel != null)
-            {
-                _statusLabel.text = ViewModel.StatusMessage;
-            }
-
-            // Game Settings Section (Always visible for host)
-            if (_gameSettingsSection != null)
-            {
-                _gameSettingsSection.style.display = ViewModel.IsHost ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-
-            // Game Settings - Time Limit (Toggle between label and dropdown)
-            if (_timeLimitLabel != null && _timeLimitDropdown != null)
-            {
-                _timeLimitLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
-                _timeLimitDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                // Update dropdown value when in edit mode
-                if (ViewModel.IsHost && _isEditMode)
+                // Join Code
+                if (_joinCodeLabel != null)
                 {
-                    string timeLimitValue = ViewModel.TimeLimit == 0 ? "No Limit" : $"{ViewModel.TimeLimit / 60}:00";
-                    if (_timeLimitDropdown.value != timeLimitValue)
+                    _joinCodeLabel.text = $"Join Code: {ViewModel.JoinCode}";
+                }
+
+                // Room Info
+                if (_roomNameLabel != null)
+                {
+                    _roomNameLabel.text = ViewModel.RoomName;
+                }
+
+                if (_gameModeLabel != null)
+                {
+                    _gameModeLabel.text = ViewModel.GameMode;
+                }
+
+                // Arrow Limitの選択肢をゲームモードに応じて更新
+                UpdateArrowLimitChoices(ViewModel.GameMode);
+
+                if (_mapLabel != null)
+                {
+                    _mapLabel.text = ViewModel.MapName;
+                }
+
+                if (_playersLabel != null)
+                {
+                    _playersLabel.text = $"{ViewModel.CurrentPlayers} / {ViewModel.MaxPlayers}";
+                }
+
+                // Status
+                if (_statusLabel != null)
+                {
+                    _statusLabel.text = ViewModel.StatusMessage;
+                }
+
+                // Game Settings Section (Always visible for host)
+                if (_gameSettingsSection != null)
+                {
+                    _gameSettingsSection.style.display = ViewModel.IsHost ? DisplayStyle.Flex : DisplayStyle.None;
+                }
+
+                // Game Settings - Time Limit (Toggle between label and dropdown)
+                if (_timeLimitLabel != null && _timeLimitDropdown != null)
+                {
+                    _timeLimitLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                    _timeLimitDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                    // Update dropdown value when in edit mode
+                    if (ViewModel.IsHost && _isEditMode)
                     {
-                        _timeLimitDropdown.value = timeLimitValue;
+                        string timeLimitValue = ViewModel.TimeLimit == 0 ? "No Limit" : $"{ViewModel.TimeLimit / 60}:00";
+                        if (_timeLimitDropdown.value != timeLimitValue)
+                        {
+                            _timeLimitDropdown.value = timeLimitValue;
+                        }
                     }
                 }
-            }
 
-            // Game Settings - Arrow Limit (Toggle between label and dropdown)
-            if (_arrowLimitLabel != null && _arrowLimitDropdown != null)
-            {
-                _arrowLimitLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
-                _arrowLimitDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                // Update dropdown value when in edit mode
-                if (ViewModel.IsHost && _isEditMode)
+                // Game Settings - Arrow Limit (Toggle between label and dropdown)
+                if (_arrowLimitLabel != null && _arrowLimitDropdown != null)
                 {
-                    string arrowLimitValue = ViewModel.ArrowLimit == 0 ? "No Limit" : ViewModel.ArrowLimit.ToString();
-                    if (_arrowLimitDropdown.value != arrowLimitValue)
+                    _arrowLimitLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                    _arrowLimitDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                    // Update dropdown value when in edit mode
+                    if (ViewModel.IsHost && _isEditMode)
                     {
-                        _arrowLimitDropdown.value = arrowLimitValue;
+                        string arrowLimitValue = ViewModel.ArrowLimit == 0 ? "No Limit" : ViewModel.ArrowLimit.ToString();
+                        if (_arrowLimitDropdown.value != arrowLimitValue)
+                        {
+                            _arrowLimitDropdown.value = arrowLimitValue;
+                        }
                     }
                 }
-            }
 
-            // Change Settings Button Section (Host Only)
-            if (_changeSettingsButtonSection != null)
-            {
-                _changeSettingsButtonSection.style.display = ViewModel.IsHost ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-
-            // Room Info - Room Name (Edit Mode shows TextField, otherwise Label)
-            if (_roomNameLabel != null && _roomNameField != null)
-            {
-                _roomNameLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
-                _roomNameField.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-                if (ViewModel.IsHost && _isEditMode && _roomNameField.value != ViewModel.RoomName)
+                // Change Settings Button Section (Host Only)
+                if (_changeSettingsButtonSection != null)
                 {
-                    _roomNameField.value = ViewModel.RoomName;
-                }
-            }
-
-            // Room Info - Password (Edit Mode shows input container with invisible TextField and asterisks, otherwise normal Label)
-            if (_passwordLabel != null && _passwordInputContainer != null && _passwordField != null && _passwordAsterisksLabel != null)
-            {
-                bool isEditingPassword = ViewModel.IsHost && _isEditMode;
-
-                _passwordLabel.style.display = isEditingPassword ? DisplayStyle.None : DisplayStyle.Flex;
-                _passwordInputContainer.style.display = isEditingPassword ? DisplayStyle.Flex : DisplayStyle.None;
-
-                // Update password label (visible when not editing)
-                if (_passwordField.value != null && !string.IsNullOrEmpty(_passwordField.value))
-                {
-                    _passwordLabel.text = "******"; // Fixed asterisks when not editing
-                }
-                else
-                {
-                    _passwordLabel.text = "None";
+                    _changeSettingsButtonSection.style.display = ViewModel.IsHost ? DisplayStyle.Flex : DisplayStyle.None;
                 }
 
-                // Update asterisks label (visible when editing) - now updated in real-time via OnPasswordChanged callback
-                if (isEditingPassword)
+                // Room Info - Room Name (Edit Mode shows TextField, otherwise Label)
+                if (_roomNameLabel != null && _roomNameField != null)
                 {
-                    if (!string.IsNullOrEmpty(_passwordField.value))
+                    _roomNameLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                    _roomNameField.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+                    if (ViewModel.IsHost && _isEditMode && _roomNameField.value != ViewModel.RoomName)
                     {
-                        _passwordAsterisksLabel.text = new string('*', _passwordField.value.Length);
+                        _roomNameField.value = ViewModel.RoomName;
+                    }
+                }
+
+                // Room Info - Password (Edit Mode shows input container with invisible TextField and asterisks, otherwise normal Label)
+                if (_passwordLabel != null && _passwordInputContainer != null && _passwordField != null && _passwordAsterisksLabel != null)
+                {
+                    bool isEditingPassword = ViewModel.IsHost && _isEditMode;
+
+                    _passwordLabel.style.display = isEditingPassword ? DisplayStyle.None : DisplayStyle.Flex;
+                    _passwordInputContainer.style.display = isEditingPassword ? DisplayStyle.Flex : DisplayStyle.None;
+
+                    // Update password label (visible when not editing)
+                    if (_passwordField.value != null && !string.IsNullOrEmpty(_passwordField.value))
+                    {
+                        _passwordLabel.text = "******"; // Fixed asterisks when not editing
                     }
                     else
                     {
-                        _passwordAsterisksLabel.text = "(empty)";
+                        _passwordLabel.text = "None";
+                    }
+
+                    // Update asterisks label (visible when editing) - now updated in real-time via OnPasswordChanged callback
+                    if (isEditingPassword)
+                    {
+                        if (!string.IsNullOrEmpty(_passwordField.value))
+                        {
+                            _passwordAsterisksLabel.text = new string('*', _passwordField.value.Length);
+                        }
+                        else
+                        {
+                            _passwordAsterisksLabel.text = "(empty)";
+                        }
                     }
                 }
-            }
 
-            // Room Info - Public (Edit Mode shows Toggle, otherwise Label)
-            if (_publicLabel != null && _publicToggle != null)
-            {
-                _publicLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
-                _publicToggle.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                // Update label text
-                _publicLabel.text = ViewModel.IsPublic ? "Yes" : "No";
-
-                // Update toggle value when in edit mode
-                if (ViewModel.IsHost && _isEditMode && _publicToggle.value != ViewModel.IsPublic)
+                // Room Info - Public (Edit Mode shows Toggle, otherwise Label)
+                if (_publicLabel != null && _publicToggle != null)
                 {
-                    _publicToggle.value = ViewModel.IsPublic;
+                    _publicLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                    _publicToggle.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                    // Update label text
+                    _publicLabel.text = ViewModel.IsPublic ? "Yes" : "No";
+
+                    // Update toggle value when in edit mode
+                    if (ViewModel.IsHost && _isEditMode && _publicToggle.value != ViewModel.IsPublic)
+                    {
+                        _publicToggle.value = ViewModel.IsPublic;
+                    }
                 }
-            }
 
-            // Room Info - Max Players (Edit Mode shows Dropdown, otherwise Label)
-            if (_maxPlayersLabel != null && _maxPlayersDropdown != null)
-            {
-                _maxPlayersLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
-                _maxPlayersDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                // Update label text
-                _maxPlayersLabel.text = ViewModel.MaxPlayers.ToString();
-
-                // Update dropdown value when in edit mode
-                if (ViewModel.IsHost && _isEditMode && _maxPlayersDropdown.value != ViewModel.MaxPlayers.ToString())
+                // Room Info - Max Players (Edit Mode shows Dropdown, otherwise Label)
+                if (_maxPlayersLabel != null && _maxPlayersDropdown != null)
                 {
-                    _maxPlayersDropdown.value = ViewModel.MaxPlayers.ToString();
+                    _maxPlayersLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                    _maxPlayersDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                    // Update label text
+                    _maxPlayersLabel.text = ViewModel.MaxPlayers.ToString();
+
+                    // Update dropdown value when in edit mode
+                    if (ViewModel.IsHost && _isEditMode && _maxPlayersDropdown.value != ViewModel.MaxPlayers.ToString())
+                    {
+                        _maxPlayersDropdown.value = ViewModel.MaxPlayers.ToString();
+                    }
                 }
-            }
 
-            // Room Info Dropdowns (Edit Mode shows dropdowns, otherwise labels)
-            if (_gameModeLabel != null && _gameModeDropdown != null)
-            {
-                _gameModeLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
-                _gameModeDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                // Update dropdown value when in edit mode
-                if (ViewModel.IsHost && _isEditMode && _gameModeDropdown.value != ViewModel.GameMode)
+                // Room Info Dropdowns (Edit Mode shows dropdowns, otherwise labels)
+                if (_gameModeLabel != null && _gameModeDropdown != null)
                 {
-                    _gameModeDropdown.value = ViewModel.GameMode;
+                    _gameModeLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                    _gameModeDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                    // Update dropdown value when in edit mode
+                    if (ViewModel.IsHost && _isEditMode && _gameModeDropdown.value != ViewModel.GameMode)
+                    {
+                        _gameModeDropdown.value = ViewModel.GameMode;
+                    }
                 }
-            }
 
-            if (_mapLabel != null && _mapDropdown != null)
-            {
-                _mapLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
-                _mapDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                // Update dropdown value when in edit mode
-                if (ViewModel.IsHost && _isEditMode && _mapDropdown.value != ViewModel.MapName)
+                if (_mapLabel != null && _mapDropdown != null)
                 {
-                    _mapDropdown.value = ViewModel.MapName;
-                }
-            }
+                    _mapLabel.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.None : DisplayStyle.Flex;
+                    _mapDropdown.style.display = (ViewModel.IsHost && _isEditMode) ? DisplayStyle.Flex : DisplayStyle.None;
 
-            // Buttons visibility
-            UpdateButtonVisibility();
+                    // Update dropdown value when in edit mode
+                    if (ViewModel.IsHost && _isEditMode && _mapDropdown.value != ViewModel.MapName)
+                    {
+                        _mapDropdown.value = ViewModel.MapName;
+                    }
+                }
+
+                // Buttons visibility
+                UpdateButtonVisibility();
+            }
+            finally
+            {
+                // UI更新完了フラグをリセット
+                _isUpdatingUI = false;
+            }
         }
 
         /// <summary>
@@ -335,46 +340,58 @@ namespace CavalryFight.Views
                 return;
             }
 
-            // タイムリミットの表示を更新
-            if (_timeLimitDropdown != null)
+            // プログラムからUI更新中であることをマーク（コールバック連鎖防止）
+            bool wasUpdatingUI = _isUpdatingUI;
+            _isUpdatingUI = true;
+
+            try
             {
-                string timeLimitValue = ViewModel.TimeLimit switch
+                // タイムリミットの表示を更新
+                if (_timeLimitDropdown != null)
                 {
-                    180 => "3:00",
-                    300 => "5:00",
-                    600 => "10:00",
-                    900 => "15:00",
-                    0 => "No Limit",
-                    _ => "No Limit"
-                };
-                _timeLimitDropdown.value = timeLimitValue;
-            }
+                    string timeLimitValue = ViewModel.TimeLimit switch
+                    {
+                        180 => "3:00",
+                        300 => "5:00",
+                        600 => "10:00",
+                        900 => "15:00",
+                        0 => "No Limit",
+                        _ => "No Limit"
+                    };
+                    _timeLimitDropdown.value = timeLimitValue;
+                }
 
-            // タイムリミットラベルの表示を更新
-            if (_timeLimitLabel != null)
-            {
-                _timeLimitLabel.text = ViewModel.TimeLimit == 0 ? "No Limit" : $"{ViewModel.TimeLimit / 60}:00";
-            }
-
-            // 矢の制限の表示を更新
-            if (_arrowLimitDropdown != null)
-            {
-                string arrowLimitValue = ViewModel.ArrowLimit switch
+                // タイムリミットラベルの表示を更新
+                if (_timeLimitLabel != null)
                 {
-                    5 => "5",
-                    10 => "10",
-                    15 => "15",
-                    20 => "20",
-                    0 => "No Limit",
-                    _ => "No Limit"
-                };
-                _arrowLimitDropdown.value = arrowLimitValue;
-            }
+                    _timeLimitLabel.text = ViewModel.TimeLimit == 0 ? "No Limit" : $"{ViewModel.TimeLimit / 60}:00";
+                }
 
-            // 矢の制限ラベルの表示を更新
-            if (_arrowLimitLabel != null)
+                // 矢の制限の表示を更新
+                if (_arrowLimitDropdown != null)
+                {
+                    string arrowLimitValue = ViewModel.ArrowLimit switch
+                    {
+                        5 => "5",
+                        10 => "10",
+                        15 => "15",
+                        20 => "20",
+                        0 => "No Limit",
+                        _ => "No Limit"
+                    };
+                    _arrowLimitDropdown.value = arrowLimitValue;
+                }
+
+                // 矢の制限ラベルの表示を更新
+                if (_arrowLimitLabel != null)
+                {
+                    _arrowLimitLabel.text = ViewModel.ArrowLimit == 0 ? "No Limit" : ViewModel.ArrowLimit.ToString();
+                }
+            }
+            finally
             {
-                _arrowLimitLabel.text = ViewModel.ArrowLimit == 0 ? "No Limit" : ViewModel.ArrowLimit.ToString();
+                // 元の状態に戻す
+                _isUpdatingUI = wasUpdatingUI;
             }
         }
 

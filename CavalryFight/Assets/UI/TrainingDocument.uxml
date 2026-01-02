@@ -1,24 +1,72 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/UI/TrainingStyles.uss?fileID=7433441132597879392&amp;guid=PLACEHOLDER&amp;type=3#TrainingStyles" />
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance"
+         engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements"
+         noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
+         editor-extension-mode="False">
 
-    <!-- Root Container -->
+    <Style src="TrainingStyles.uss" />
+
     <ui:VisualElement name="Root" class="root">
 
-        <!-- HUD Container -->
-        <ui:VisualElement name="HUD" class="hud">
-            <!-- Top Left - Statistics -->
-            <ui:VisualElement name="StatisticsPanel" class="statistics-panel">
-                <ui:Label name="ScoreLabel" text="Score: 0" class="stat-label score-label" />
-                <ui:Label name="ArrowsFiredLabel" text="Arrows: 0" class="stat-label" />
-                <ui:Label name="HitsLabel" text="Hits: 0" class="stat-label" />
-                <ui:Label name="AccuracyLabel" text="Accuracy: 0.0%" class="stat-label" />
+        <!-- HUD Panel (Top) -->
+        <ui:VisualElement name="HUDPanel" class="hud-panel">
+
+            <!-- Left: Player Stats -->
+            <ui:VisualElement name="PlayerStatsPanel" class="player-stats-panel">
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Score" class="stat-label" />
+                    <ui:Label name="ScoreLabel" text="0" class="stat-value stat-value--score" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Arrows" class="stat-label" />
+                    <ui:Label name="ArrowsLabel" text="∞" class="stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Hits" class="stat-label" />
+                    <ui:Label name="HitsLabel" text="0" class="stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="Accuracy" class="stat-label" />
+                    <ui:Label name="AccuracyLabel" text="0.0%" class="stat-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Center: Game Mode Badge -->
+            <ui:VisualElement name="CenterPanel" class="center-panel">
+                <ui:Label text="Training" class="game-mode-badge" />
+            </ui:VisualElement>
+
+            <!-- Right: Controls Help -->
+            <ui:VisualElement name="ControlsPanel" class="controls-panel">
+                <ui:Label text="Controls" class="controls-title" />
+                <ui:Label text="WASD - Move" class="control-label" />
+                <ui:Label text="Mouse - Look" class="control-label" />
+                <ui:Label text="LMB - Fire" class="control-label" />
+                <ui:Label text="ESC - Pause" class="control-label" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- Score Popup Container -->
+        <ui:VisualElement name="ScorePopupContainer" class="score-popup-container" />
+
+        <!-- Pause Panel (Simple menu) -->
+        <ui:VisualElement name="PausePanel" class="pause-panel" style="display: none;">
+            <ui:VisualElement class="pause-overlay" />
+            <ui:VisualElement class="pause-content">
+                <ui:Label text="PAUSED" class="pause-title" />
+                <ui:Button name="ResumeButton" text="Resume" class="pause-button pause-button--primary" />
+                <ui:Button name="SettingsButton" text="Settings" class="pause-button" />
+                <ui:Button name="BackToMenuButton" text="Back to Menu" class="pause-button pause-button--danger" />
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Settings/Pause Popup (Hidden by default) -->
-        <ui:VisualElement name="PauseSettingsPopup" class="full-settings-popup hidden">
+        <!-- Settings Popup (Hidden by default) -->
+        <ui:VisualElement name="SettingsPopup" class="full-settings-popup hidden">
             <!-- Dark Overlay -->
-            <ui:VisualElement class="overlay" />
+            <ui:VisualElement class="pause-overlay" />
 
             <!-- Settings Panel -->
             <ui:VisualElement class="full-settings-panel">
@@ -62,10 +110,9 @@
 
                 <!-- Footer Buttons -->
                 <ui:VisualElement class="settings-footer">
-                    <!-- Left side: Resume and Back to Menu -->
+                    <!-- Left side: Resume -->
                     <ui:VisualElement class="footer-left">
-                        <ui:Button name="ResumeButton" text="Resume" class="footer-button primary-button" />
-                        <ui:Button name="BackToMenuButton" text="Back to Menu" class="footer-button" />
+                        <ui:Button name="SettingsResumeButton" text="Resume" class="footer-button primary-button" />
                     </ui:VisualElement>
                     <!-- Right side: Apply and Reset -->
                     <ui:VisualElement class="footer-right">
@@ -74,6 +121,11 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Bottom Info Bar -->
+        <ui:VisualElement name="BottomBar" class="bottom-bar">
+            <ui:Label text="[Esc] Pause / Settings" class="hint-text" />
         </ui:VisualElement>
 
     </ui:VisualElement>

@@ -372,7 +372,6 @@ namespace CavalryFight.ViewModels
             if (_performanceMonitor != null)
             {
                 _performanceMonitor.FPSUpdated += OnFPSUpdated;
-                Debug.Log("[MatchRoomViewModel] Subscribed to PerformanceMonitor FPS updates.");
             }
 
             // 初期化
@@ -455,11 +454,12 @@ namespace CavalryFight.ViewModels
         private void OnFPSUpdated(int fps)
         {
             // ローカルプレイヤーのFPSを更新
-            var localPlayer = Players.FirstOrDefault(p => p.IsHost == IsHost &&
-                                                          p.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId.ToString());
+            var localPlayer = Players.FirstOrDefault(p => p.IsLocalPlayer);
             if (localPlayer != null)
             {
                 localPlayer.Fps = fps;
+                // UI更新を通知
+                OnPropertyChanged(nameof(Players));
             }
         }
 
@@ -494,12 +494,16 @@ namespace CavalryFight.ViewModels
             }
 
             // Playersコレクションに追加
+            bool isLocalPlayer = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId;
+            // ホストはhostPlayerIdに一致するプレイヤー、またはローカルプレイヤーがホストの場合はローカルプレイヤー
+            ulong hostPlayerId = GetHostPlayerId();
+            bool isHostPlayer = (slot.PlayerId == hostPlayerId) || (isLocalPlayer && _lobbyService.IsHost);
             var playerInfo = new PlayerInfo
             {
                 SlotIndex = slot.SlotIndex,
                 PlayerId = slot.PlayerId.ToString(),
                 PlayerName = slot.PlayerName.ToString(),
-                IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId && _lobbyService.IsHost,
+                IsHost = isHostPlayer,
                 IsReady = slot.IsReady,
                 Team = slot.TeamIndex switch
                 {
@@ -509,7 +513,8 @@ namespace CavalryFight.ViewModels
                 },
                 IsNPC = slot.IsAI,
                 Difficulty = slot.IsAI ? slot.AIDifficulty.ToString() : "Normal",
-                Fps = (slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId) ? (_performanceMonitor?.CurrentFPS ?? 0) : 0
+                Fps = isLocalPlayer ? (_performanceMonitor?.CurrentFPS ?? 0) : 0,
+                IsLocalPlayer = isLocalPlayer
             };
 
             Players.Add(playerInfo);
@@ -589,12 +594,16 @@ namespace CavalryFight.ViewModels
                     }
 
                     // 新しいプレイヤー（NPC含む）を追加
+                    bool isLocal = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId;
+                    // ホストはhostPlayerIdに一致するプレイヤー、またはローカルプレイヤーがホストの場合はローカルプレイヤー
+                    ulong hostPlayerId = GetHostPlayerId();
+                    bool isHostPlayer = (slot.PlayerId == hostPlayerId) || (isLocal && _lobbyService.IsHost);
                     var playerInfo = new PlayerInfo
                     {
                         SlotIndex = slotIndex,
                         PlayerId = slot.PlayerId.ToString(),
                         PlayerName = slot.PlayerName.ToString(),
-                        IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId && _lobbyService.IsHost,
+                        IsHost = isHostPlayer,
                         IsReady = slot.IsReady,
                         Team = slot.TeamIndex switch
                         {
@@ -604,7 +613,8 @@ namespace CavalryFight.ViewModels
                         },
                         IsNPC = slot.IsAI,
                         Difficulty = slot.IsAI ? slot.AIDifficulty.ToString() : "Normal",
-                        Fps = (slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId) ? (_performanceMonitor?.CurrentFPS ?? 0) : 0
+                        Fps = isLocal ? (_performanceMonitor?.CurrentFPS ?? 0) : 0,
+                        IsLocalPlayer = isLocal
                     };
 
                     Players.Add(playerInfo);
@@ -688,6 +698,7 @@ namespace CavalryFight.ViewModels
             PlayerName = _lobbyService.LoadPlayerName() ?? "Player";
 
             // ロビーサービスから現在のルームデータを取得
+            Debug.Log($"[MatchRoomViewModel] InitializeRoomData: IsInRoom={_lobbyService.IsInRoom}");
             if (_lobbyService.IsInRoom)
             {
                 var settings = _lobbyService.CurrentRoomSettings;
@@ -717,16 +728,23 @@ namespace CavalryFight.ViewModels
 
                 // Playersコレクションに実際のプレイヤー情報を追加
                 Players.Clear();
+
+                // ホストプレイヤーIDを取得（MockLobbyServiceの場合）
+                ulong hostPlayerId = GetHostPlayerId();
+
                 foreach (var slot in _lobbyService.PlayerSlots)
                 {
                     if (!slot.IsEmpty())
                     {
+                        bool isLocal = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId;
+                        // ホストはhostPlayerIdに一致するプレイヤー、またはローカルプレイヤーがホストの場合はローカルプレイヤー
+                        bool isHostPlayer = (slot.PlayerId == hostPlayerId) || (isLocal && _lobbyService.IsHost);
                         var playerInfo = new PlayerInfo
                         {
                             SlotIndex = slot.SlotIndex,
                             PlayerId = slot.PlayerId.ToString(),
                             PlayerName = slot.PlayerName.ToString(),
-                            IsHost = slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId && _lobbyService.IsHost,
+                            IsHost = isHostPlayer,
                             IsReady = slot.IsReady,
                             Team = slot.TeamIndex switch
                             {
@@ -736,7 +754,8 @@ namespace CavalryFight.ViewModels
                             },
                             IsNPC = slot.IsAI,
                             Difficulty = slot.IsAI ? slot.AIDifficulty.ToString() : "Normal",
-                            Fps = (slot.PlayerId == _lobbyService.LocalPlayerInfo?.PlayerId) ? (_performanceMonitor?.CurrentFPS ?? 0) : 0
+                            Fps = isLocal ? (_performanceMonitor?.CurrentFPS ?? 0) : 0,
+                            IsLocalPlayer = isLocal
                         };
 
                         Players.Add(playerInfo);
@@ -747,25 +766,54 @@ namespace CavalryFight.ViewModels
             else
             {
                 // ルームに参加していない場合は仮データで初期化（テスト用）
-                Debug.LogWarning("[MatchRoomViewModel] Not in room, using dummy data for testing.");
+                // ゲストとしてテスト（IsHost = false）
+                Debug.LogWarning("[MatchRoomViewModel] Not in room, using dummy data for testing (as guest).");
                 RoomName = "Test Room";
-                HostName = "Player1";
+                HostName = "HostPlayer";
                 GameMode = "Arena";
                 MapName = "Arena"; // フィールドプレハブ名と一致
-                CurrentPlayers = 1;
+                CurrentPlayers = 3;
                 MaxPlayers = 8;
                 JoinCode = "ABC123";
-                IsHost = true;
+                IsHost = false;
 
-                // テスト用プレイヤーを追加
+                // ホストプレイヤー
                 Players.Add(new PlayerInfo
                 {
+                    SlotIndex = 0,
                     PlayerId = "host",
-                    PlayerName = "Player1",
+                    PlayerName = "HostPlayer",
                     IsHost = true,
                     IsReady = false,
+                    Team = PlayerTeam.TeamA,
+                    Fps = 60,
+                    IsLocalPlayer = false
+                });
+
+                // ローカルプレイヤー（ゲスト）
+                Players.Add(new PlayerInfo
+                {
+                    SlotIndex = 1,
+                    PlayerId = "local",
+                    PlayerName = "You",
+                    IsHost = false,
+                    IsReady = false,
                     Team = PlayerTeam.None,
-                    Fps = 60
+                    Fps = 60,
+                    IsLocalPlayer = true
+                });
+
+                // 他のゲスト
+                Players.Add(new PlayerInfo
+                {
+                    SlotIndex = 2,
+                    PlayerId = "guest2",
+                    PlayerName = "OtherPlayer",
+                    IsHost = false,
+                    IsReady = true,
+                    Team = PlayerTeam.TeamB,
+                    Fps = 45,
+                    IsLocalPlayer = false
                 });
             }
 #endif
@@ -796,15 +844,36 @@ namespace CavalryFight.ViewModels
         }
 
         /// <summary>
-        /// プレイヤーのチームを変更します（ホストのみ）
+        /// プレイヤーのチームを変更します
         /// </summary>
+        /// <remarks>
+        /// ホストは全プレイヤーのチームを変更可能。
+        /// 非ホストは自分自身のチームのみ変更可能。
+        /// </remarks>
         /// <param name="playerId">プレイヤーID</param>
         /// <param name="newTeam">新しいチーム</param>
         public void ChangePlayerTeam(string playerId, PlayerTeam newTeam)
         {
-            if (!IsHost)
+            // プレイヤーを検索
+            var player = Players.FirstOrDefault(p => p.PlayerId == playerId);
+            if (player == null)
             {
-                Debug.LogWarning("[MatchRoomViewModel] Only host can change player teams.");
+                Debug.LogWarning($"[MatchRoomViewModel] Player not found: {playerId}");
+                return;
+            }
+
+            // 非ホストは自分自身のチームのみ変更可能
+            if (!IsHost && !player.IsLocalPlayer)
+            {
+                Debug.LogWarning("[MatchRoomViewModel] Non-host can only change their own team.");
+                return;
+            }
+
+            // ルームに参加していない場合（モックモード）はローカルで更新
+            if (!_lobbyService.IsInRoom)
+            {
+                player.Team = newTeam;
+                OnPropertyChanged(nameof(Players));
                 return;
             }
 
@@ -1177,6 +1246,42 @@ namespace CavalryFight.ViewModels
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// ホストプレイヤーIDを取得します
+        /// </summary>
+        /// <remarks>
+        /// MockLobbyServiceの場合はHostPlayerIdプロパティを使用し、
+        /// それ以外の場合はローカルプレイヤーがホストなら0を返します。
+        /// </remarks>
+        /// <returns>ホストプレイヤーID</returns>
+        private ulong GetHostPlayerId()
+        {
+#if UNITY_EDITOR
+            // MockLobbyServiceの場合はHostPlayerIdプロパティをリフレクションで取得
+            // （Development assemblyへの直接参照を避けるため）
+            var serviceType = _lobbyService.GetType();
+            if (serviceType.Name == "MockLobbyService")
+            {
+                var hostPlayerIdProperty = serviceType.GetProperty("HostPlayerId");
+                if (hostPlayerIdProperty != null)
+                {
+                    var value = hostPlayerIdProperty.GetValue(_lobbyService);
+                    if (value is ulong hostPlayerId)
+                    {
+                        return hostPlayerId;
+                    }
+                }
+            }
+#endif
+            // 実際のネットワーク環境では、ローカルプレイヤーがホストの場合のみ考慮
+            // （他のプレイヤーのホスト情報はPlayerSlotsから取得できないため、slot 0をホストとみなす）
+            if (_lobbyService.IsHost && _lobbyService.LocalPlayerInfo != null)
+            {
+                return _lobbyService.LocalPlayerInfo.PlayerId;
+            }
+            return 0; // デフォルトはslot 0
+        }
 
         /// <summary>
         /// ゲームモードに応じたルールを適用します

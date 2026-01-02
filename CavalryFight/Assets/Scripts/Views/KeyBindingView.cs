@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
 using CavalryFight.Services.Input;
 using CavalryFight.ViewModels;
 using UnityEngine;
@@ -120,6 +121,13 @@ namespace CavalryFight.Views
 
         /// <summary>リバインドボタンの高さ</summary>
         private const int RebindButtonHeight = 70;
+
+        #endregion
+
+        #region Serialized Fields
+
+        [Header("Audio")]
+        [SerializeField] private AudioClip? _buttonClickSfx;
 
         #endregion
 
@@ -636,6 +644,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnRebindButtonClicked(KeyBindingEntry entry)
         {
+            PlayButtonClickSfx();
             ViewModel?.StartRebindCommand.Execute(entry);
         }
 
@@ -644,6 +653,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnResetButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.ResetToDefaultCommand.Execute(null);
         }
 
@@ -652,7 +662,24 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnCloseButtonClicked()
         {
+            PlayButtonClickSfx();
             ViewModel?.CloseCommand.Execute(null);
+        }
+
+        #endregion
+
+        #region Private Methods - Audio
+
+        /// <summary>
+        /// ボタンクリック効果音を再生します
+        /// </summary>
+        private void PlayButtonClickSfx()
+        {
+            if (_buttonClickSfx != null)
+            {
+                var audioService = ServiceLocator.Instance.TryGet<IAudioService>();
+                audioService?.PlaySfx(_buttonClickSfx);
+            }
         }
 
         #endregion

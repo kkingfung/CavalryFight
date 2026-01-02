@@ -665,6 +665,19 @@ namespace CavalryFight.ViewModels
         }
 
         /// <summary>
+        /// ホストがルームを退出したことを処理します（ネットワーク経由で呼ばれる）
+        /// </summary>
+        /// <remarks>
+        /// ゲストプレイヤーがホストの切断を検知した時に呼ばれます。
+        /// ホストの退出通知を行い、ロビーへの遷移をトリガーします。
+        /// </remarks>
+        public void HandleHostLeft()
+        {
+            Debug.Log("[ResultsViewModel] Host disconnected notification received");
+            HostLeft?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
         /// ローカルプレイヤーがルームを退出する際の処理
         /// </summary>
         /// <remarks>

@@ -1,7 +1,5 @@
 #nullable enable
 
-#if UNITY_EDITOR
-
 using System;
 using CavalryFight.Services.Input;
 using UnityEngine;
@@ -314,5 +312,3 @@ namespace CavalryFight.Development.MockData.MockServices
         #endregion
     }
 }
-
-#endif

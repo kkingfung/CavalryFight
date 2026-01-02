@@ -1,7 +1,5 @@
 #nullable enable
 
-#if UNITY_EDITOR
-
 using System;
 using System.Threading.Tasks;
 using AdvancedSceneManager.Models;
@@ -293,7 +291,38 @@ namespace CavalryFight.Development.MockData.MockServices
         }
 
         #endregion
+
+        #region Mock Event Triggers
+
+        /// <summary>
+        /// SceneLoadStartedイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="sceneName">シーン名</param>
+        public void TriggerSceneLoadStarted(string sceneName)
+        {
+            SceneLoadStarted?.Invoke(this, new SceneLoadEventArgs(sceneName, 0f));
+        }
+
+        /// <summary>
+        /// SceneLoadCompletedイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="sceneName">シーン名</param>
+        /// <param name="duration">ロードにかかった時間（秒）</param>
+        public void TriggerSceneLoadCompleted(string sceneName, float duration = 0f)
+        {
+            SceneLoadCompleted?.Invoke(this, new SceneLoadEventArgs(sceneName, duration));
+        }
+
+        /// <summary>
+        /// SceneLoadFailedイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="sceneName">シーン名</param>
+        /// <param name="error">エラーメッセージ</param>
+        public void TriggerSceneLoadFailed(string sceneName, string error)
+        {
+            SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs(sceneName, error));
+        }
+
+        #endregion
     }
 }
-
-#endif

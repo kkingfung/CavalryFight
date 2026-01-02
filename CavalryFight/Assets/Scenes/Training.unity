@@ -221,6 +221,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b9638251c9365e489c81dfa18595899, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CavalryFight.Views::CavalryFight.Views.KeyBindingView
+  _buttonClickSfx: {fileID: 8300000, guid: aa43ca9e0da8ae1439e4ad22d8a20e14, type: 3}
 --- !u!114 &1390776507
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Audio;
+using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.Replay;
 using CavalryFight.Services.SceneManagement;
@@ -41,13 +42,9 @@ namespace CavalryFight.Views
 
         #region UI Elements
 
-        // Header
+        // Result Badge (now in left panel)
         private VisualElement? _resultBadge;
         private Label? _resultLabel;
-        private Label? _playerTeamLabel;
-        private Label? _playerScoreLabel;
-        private Label? _enemyTeamLabel;
-        private Label? _enemyScoreLabel;
 
         // Match Info
         private Label? _mapLabel;
@@ -92,6 +89,7 @@ namespace CavalryFight.Views
         private IAudioService? _audioService;
         private ISceneManagementService? _sceneManagementService;
         private IReplayService? _replayService;
+        private ILobbyService? _lobbyService;
 
         #endregion
 
@@ -105,6 +103,10 @@ namespace CavalryFight.Views
             _audioService = ServiceLocator.Instance.Get<IAudioService>();
             _sceneManagementService = ServiceLocator.Instance.Get<ISceneManagementService>();
             _replayService = ServiceLocator.Instance.Get<IReplayService>();
+            _lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+
+            // ロビーサービスのイベントを購読
+            SubscribeToLobbyEvents();
 
             // マッチ結果データを取得（仮実装：実際はIMatchServiceから取得）
             var matchResult = GetMatchResult();
@@ -117,6 +119,12 @@ namespace CavalryFight.Views
         {
             base.OnEnable();
             PlayResultBGM();
+        }
+
+        protected override void OnDestroy()
+        {
+            UnsubscribeFromLobbyEvents();
+            base.OnDestroy();
         }
 
         #endregion
@@ -134,13 +142,9 @@ namespace CavalryFight.Views
 
         private void GetUIElements()
         {
-            // Header
+            // Result Badge (now in left panel)
             _resultBadge = Q<VisualElement>("ResultBadge");
             _resultLabel = Q<Label>("ResultLabel");
-            _playerTeamLabel = Q<Label>("PlayerTeamLabel");
-            _playerScoreLabel = Q<Label>("PlayerScoreLabel");
-            _enemyTeamLabel = Q<Label>("EnemyTeamLabel");
-            _enemyScoreLabel = Q<Label>("EnemyScoreLabel");
 
             // Match Info
             _mapLabel = Q<Label>("MapLabel");
@@ -253,28 +257,6 @@ namespace CavalryFight.Views
                 {
                     _resultBadge.AddToClassList("result-defeat");
                 }
-            }
-
-            // チーム名ラベル（個人戦/チーム戦で切り替え）
-            if (_playerTeamLabel != null)
-            {
-                _playerTeamLabel.text = ViewModel.PlayerTeamName;
-            }
-
-            if (_enemyTeamLabel != null)
-            {
-                _enemyTeamLabel.text = ViewModel.EnemyTeamName;
-            }
-
-            // スコアラベル
-            if (_playerScoreLabel != null)
-            {
-                _playerScoreLabel.text = ViewModel.PlayerScore.ToString();
-            }
-
-            if (_enemyScoreLabel != null)
-            {
-                _enemyScoreLabel.text = ViewModel.EnemyScore.ToString();
             }
         }
 
@@ -399,11 +381,36 @@ namespace CavalryFight.Views
             nameLabel.AddToClassList("player-row-name");
             row.Add(nameLabel);
 
-            // スコア
+            // スコアバー（名前とスコアの間）
+            var scoreBar = CreateScoreBarElement(stats);
+            row.Add(scoreBar);
+
+            // スコア値
             var scoreLabel = new Label(stats.Score.ToString());
             scoreLabel.AddToClassList("player-row-value");
             scoreLabel.AddToClassList("player-row-score");
             row.Add(scoreLabel);
+
+            // チーム（スコアの右）
+            var teamText = string.IsNullOrEmpty(stats.Team) || stats.Team == "None" ? "-" : stats.Team;
+            var teamLabel = new Label(teamText);
+            teamLabel.AddToClassList("player-row-value");
+            teamLabel.AddToClassList("player-row-team");
+
+            // チームによる色分け
+            if (stats.Team == "Team A" || stats.Team == "A")
+            {
+                teamLabel.AddToClassList("team-a");
+            }
+            else if (stats.Team == "Team B" || stats.Team == "B")
+            {
+                teamLabel.AddToClassList("team-b");
+            }
+            else
+            {
+                teamLabel.AddToClassList("team-none");
+            }
+            row.Add(teamLabel);
 
             // キル数
             var killsLabel = new Label(stats.Kills.ToString());
@@ -469,7 +476,73 @@ namespace CavalryFight.Views
             statusLabel.AddToClassList(statusClass);
             row.Add(statusLabel);
 
+            // ルーム内かどうか（In Roomカラム）
+            bool isInRoom = !stats.HasLeft;
+            var inRoomText = isInRoom ? "Yes" : "No";
+            var inRoomLabel = new Label(inRoomText);
+            inRoomLabel.AddToClassList("player-row-value");
+            inRoomLabel.AddToClassList("player-row-inroom");
+            inRoomLabel.AddToClassList(isInRoom ? "inroom-yes" : "inroom-no");
+            row.Add(inRoomLabel);
+
             return row;
+        }
+
+        /// <summary>
+        /// スコアバー要素を作成します
+        /// </summary>
+        /// <remarks>
+        /// プレイヤー名とスコア値の間に表示するバーを作成します。
+        /// バーの幅は最高スコアに対する割合で決まります。
+        /// </remarks>
+        private VisualElement CreateScoreBarElement(PlayerStatistics stats)
+        {
+            var container = new VisualElement();
+            container.AddToClassList("score-bar-container");
+
+            // スコアバー背景
+            var barBg = new VisualElement();
+            barBg.AddToClassList("score-bar-bg");
+            container.Add(barBg);
+
+            // スコアバー（塗りつぶし）
+            var barFill = new VisualElement();
+            barFill.AddToClassList("score-bar-fill");
+            if (stats.IsLocalPlayer)
+            {
+                barFill.AddToClassList("score-bar-fill-local");
+            }
+
+            // 最高スコアに対する割合を計算
+            int maxScore = GetMaxScore();
+            float percentage = maxScore > 0 ? (float)stats.Score / maxScore * 100f : 0f;
+            barFill.style.width = new Length(percentage, LengthUnit.Percent);
+
+            barBg.Add(barFill);
+
+            return container;
+        }
+
+        /// <summary>
+        /// 全プレイヤーの最高スコアを取得します
+        /// </summary>
+        private int GetMaxScore()
+        {
+            if (ViewModel == null || ViewModel.SortedPlayerStats.Count == 0)
+            {
+                return 1;
+            }
+
+            int maxScore = 0;
+            foreach (var stats in ViewModel.SortedPlayerStats)
+            {
+                if (stats.Score > maxScore)
+                {
+                    maxScore = stats.Score;
+                }
+            }
+
+            return maxScore > 0 ? maxScore : 1;
         }
 
         private void UpdateReplayButtons()
@@ -792,6 +865,57 @@ namespace CavalryFight.Views
         {
             yield return new UnityEngine.WaitForSeconds(delay);
             _sceneManagementService?.LoadLobby();
+        }
+
+        #endregion
+
+        #region Lobby Service Events
+
+        /// <summary>
+        /// ロビーサービスのイベントを購読します
+        /// </summary>
+        private void SubscribeToLobbyEvents()
+        {
+            if (_lobbyService != null)
+            {
+                _lobbyService.PlayerLeft += OnLobbyPlayerLeft;
+                _lobbyService.HostDisconnected += OnLobbyHostDisconnected;
+            }
+        }
+
+        /// <summary>
+        /// ロビーサービスのイベント購読を解除します
+        /// </summary>
+        private void UnsubscribeFromLobbyEvents()
+        {
+            if (_lobbyService != null)
+            {
+                _lobbyService.PlayerLeft -= OnLobbyPlayerLeft;
+                _lobbyService.HostDisconnected -= OnLobbyHostDisconnected;
+            }
+        }
+
+        /// <summary>
+        /// ロビーサービスからプレイヤー退出通知を受けた時の処理
+        /// </summary>
+        /// <param name="clientId">退出したプレイヤーのクライアントID</param>
+        private void OnLobbyPlayerLeft(ulong clientId)
+        {
+            Debug.Log($"[ResultsView] Received PlayerLeft event from LobbyService: clientId={clientId}");
+
+            // ViewModelにプレイヤー退出を通知
+            ViewModel?.HandlePlayerLeft(clientId.ToString());
+        }
+
+        /// <summary>
+        /// ロビーサービスからホスト切断通知を受けた時の処理
+        /// </summary>
+        private void OnLobbyHostDisconnected()
+        {
+            Debug.Log("[ResultsView] Received HostDisconnected event from LobbyService");
+
+            // ViewModelにホスト退出を通知
+            ViewModel?.HandleHostLeft();
         }
 
         #endregion

@@ -1,7 +1,5 @@
 #nullable enable
 
-#if UNITY_EDITOR
-
 using System;
 using System.Collections.Generic;
 using CavalryFight.Services.Lobby;
@@ -263,7 +261,94 @@ namespace CavalryFight.Development.MockData.MockServices
 
         #endregion
 
-        #region Mock-specific Methods
+        #region Mock Event Triggers
+
+        /// <summary>
+        /// ArrowFiredイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="data">矢発射データ</param>
+        public void TriggerArrowFired(ArrowShotData data)
+        {
+            ArrowFired?.Invoke(data);
+        }
+
+        /// <summary>
+        /// HitRegisteredイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="result">命中結果</param>
+        public void TriggerHitRegistered(HitResult result)
+        {
+            HitRegistered?.Invoke(result);
+        }
+
+        /// <summary>
+        /// PlayerScoreChangedイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <param name="newScore">新しいスコア</param>
+        public void TriggerPlayerScoreChanged(ulong clientId, int newScore)
+        {
+            PlayerScoreChanged?.Invoke(clientId, newScore);
+        }
+
+        /// <summary>
+        /// PlayerScoredイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <param name="score">スコア</param>
+        /// <param name="hitLocation">命中箇所</param>
+        public void TriggerPlayerScored(ulong clientId, int score, HitLocation hitLocation)
+        {
+            PlayerScored?.Invoke(clientId, score, hitLocation);
+        }
+
+        /// <summary>
+        /// MatchStartedイベントを発火します（テスト用）
+        /// </summary>
+        public void TriggerMatchStarted()
+        {
+            MatchStarted?.Invoke();
+        }
+
+        /// <summary>
+        /// MatchEndedイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="winnerClientId">勝者のクライアントID</param>
+        public void TriggerMatchEnded(ulong winnerClientId)
+        {
+            MatchEnded?.Invoke(winnerClientId);
+        }
+
+        /// <summary>
+        /// MatchEndedWithResultイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="result">マッチ終了結果</param>
+        public void TriggerMatchEndedWithResult(MatchEndResult result)
+        {
+            MatchEndedWithResult?.Invoke(result);
+        }
+
+        /// <summary>
+        /// MatchStateChangedイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="state">新しいマッチ状態</param>
+        public void TriggerMatchStateChanged(MatchState state)
+        {
+            MatchStateChanged?.Invoke(state);
+        }
+
+        /// <summary>
+        /// CountdownUpdatedイベントを発火します（テスト用）
+        /// </summary>
+        /// <param name="seconds">残り秒数</param>
+        public void TriggerCountdownUpdated(int seconds)
+        {
+            CountdownUpdated?.Invoke(seconds);
+        }
+
+        #endregion
+
+        #region Mock Data Methods
 
         /// <summary>
         /// モックのマッチ結果を取得します
@@ -324,5 +409,3 @@ namespace CavalryFight.Development.MockData.MockServices
         #endregion
     }
 }
-
-#endif

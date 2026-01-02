@@ -44,13 +44,18 @@ namespace CavalryFight.Views
         // Right Panel - Details
         private VisualElement? _noSelectionState;
         private VisualElement? _detailsContent;
+        private VisualElement? _resultIconContainer;
+        private Label? _resultIconLabel;
         private Label? _dateLabel;
         private Label? _mapLabel;
         private Label? _gameModeLabel;
         private Label? _durationLabel;
+        private Label? _playerCountLabel;
+        private Label? _kdLabel;
+        private Label? _accuracyLabel;
+        private Label? _rankLabel;
         private Label? _playerScoreLabel;
-        private Label? _enemyScoreLabel;
-        private Label? _resultLabel;
+        private VisualElement? _allPlayersContainer;
         private Button? _watchReplayButton;
         private Button? _deleteButton;
 
@@ -197,13 +202,18 @@ namespace CavalryFight.Views
             // Right Panel
             _noSelectionState = Q<VisualElement>("NoSelectionState");
             _detailsContent = Q<VisualElement>("DetailsContent");
+            _resultIconContainer = Q<VisualElement>("ResultIconContainer");
+            _resultIconLabel = Q<Label>("ResultIconLabel");
             _dateLabel = Q<Label>("DateLabel");
             _mapLabel = Q<Label>("MapLabel");
             _gameModeLabel = Q<Label>("GameModeLabel");
             _durationLabel = Q<Label>("DurationLabel");
+            _playerCountLabel = Q<Label>("PlayerCountLabel");
+            _kdLabel = Q<Label>("KDLabel");
+            _accuracyLabel = Q<Label>("AccuracyLabel");
+            _rankLabel = Q<Label>("RankLabel");
             _playerScoreLabel = Q<Label>("PlayerScoreLabel");
-            _enemyScoreLabel = Q<Label>("EnemyScoreLabel");
-            _resultLabel = Q<Label>("ResultLabel");
+            _allPlayersContainer = Q<VisualElement>("AllPlayersContainer");
             _watchReplayButton = Q<Button>("WatchReplayButton");
             _deleteButton = Q<Button>("DeleteButton");
 
@@ -448,6 +458,9 @@ namespace CavalryFight.Views
 
             var replay = ViewModel.SelectedReplay;
 
+            // 結果アイコンを更新
+            UpdateResultIcon(replay);
+
             // 基本情報
             if (_dateLabel != null)
             {
@@ -469,38 +482,192 @@ namespace CavalryFight.Views
                 _durationLabel.text = replay.DurationText;
             }
 
-            // スコア
+            if (_playerCountLabel != null)
+            {
+                _playerCountLabel.text = replay.PlayerCount > 0 ? replay.PlayerCount.ToString() : "--";
+            }
+
+            // プレイヤー統計
+            if (_kdLabel != null)
+            {
+                _kdLabel.text = $"{replay.Kills} / {replay.Deaths}";
+            }
+
+            if (_accuracyLabel != null)
+            {
+                _accuracyLabel.text = replay.Accuracy > 0 ? $"{replay.Accuracy:F1}%" : "--";
+            }
+
+            if (_rankLabel != null)
+            {
+                if (replay.Rank > 0 && replay.PlayerCount > 0)
+                {
+                    _rankLabel.text = $"#{replay.Rank} / {replay.PlayerCount}";
+                }
+                else
+                {
+                    _rankLabel.text = "--";
+                }
+            }
+
+            // プレイヤースコア
             if (_playerScoreLabel != null)
             {
                 _playerScoreLabel.text = replay.FinalPlayerScore.ToString();
             }
 
-            if (_enemyScoreLabel != null)
+            // 全プレイヤー情報を更新
+            UpdateAllPlayersList(replay);
+        }
+
+        /// <summary>
+        /// 結果アイコンを更新します
+        /// </summary>
+        /// <param name="replay">リプレイメタデータ</param>
+        private void UpdateResultIcon(ReplayMetadata replay)
+        {
+            if (_resultIconContainer == null || _resultIconLabel == null)
             {
-                _enemyScoreLabel.text = replay.FinalEnemyScore.ToString();
+                return;
             }
 
-            // 結果
-            if (_resultLabel != null)
+            // クラスをクリア
+            _resultIconContainer.RemoveFromClassList("victory");
+            _resultIconContainer.RemoveFromClassList("defeat");
+            _resultIconContainer.RemoveFromClassList("draw");
+            _resultIconLabel.RemoveFromClassList("victory");
+            _resultIconLabel.RemoveFromClassList("defeat");
+            _resultIconLabel.RemoveFromClassList("draw");
+
+            // 結果に応じてスタイルを設定
+            if (replay.IsPlayerVictory)
             {
-                _resultLabel.text = replay.ResultText;
+                _resultIconLabel.text = "WIN";
+                _resultIconContainer.AddToClassList("victory");
+                _resultIconLabel.AddToClassList("victory");
+            }
+            else if (replay.IsDraw)
+            {
+                _resultIconLabel.text = "DRAW";
+                _resultIconContainer.AddToClassList("draw");
+                _resultIconLabel.AddToClassList("draw");
+            }
+            else
+            {
+                _resultIconLabel.text = "LOSE";
+                _resultIconContainer.AddToClassList("defeat");
+                _resultIconLabel.AddToClassList("defeat");
+            }
+        }
 
-                // スタイルをクリア
-                _resultLabel.style.color = Color.white;
+        /// <summary>
+        /// 全プレイヤーリストを更新します（自分含む）
+        /// </summary>
+        /// <param name="replay">リプレイメタデータ</param>
+        private void UpdateAllPlayersList(ReplayMetadata replay)
+        {
+            if (_allPlayersContainer == null)
+            {
+                return;
+            }
 
-                // 結果に応じた色を設定
-                if (replay.IsPlayerVictory)
+            // 既存のリストをクリア
+            _allPlayersContainer.Clear();
+
+            // ヘッダー行を作成
+            var headerRow = new VisualElement();
+            headerRow.AddToClassList("player-row-header");
+
+            var rankHeader = new Label("#");
+            rankHeader.AddToClassList("player-rank");
+            headerRow.Add(rankHeader);
+
+            var nameHeader = new Label("Player");
+            nameHeader.AddToClassList("player-name");
+            headerRow.Add(nameHeader);
+
+            var killsHeader = new Label("Kills");
+            killsHeader.AddToClassList("player-kills");
+            headerRow.Add(killsHeader);
+
+            var deathsHeader = new Label("Deaths");
+            deathsHeader.AddToClassList("player-deaths");
+            headerRow.Add(deathsHeader);
+
+            var scoreHeader = new Label("Score");
+            scoreHeader.AddToClassList("player-score");
+            headerRow.Add(scoreHeader);
+
+            _allPlayersContainer.Add(headerRow);
+
+            // 全プレイヤーリストを作成（自分 + 他プレイヤー）
+            var allPlayers = new List<(string name, int kills, int deaths, int score, int rank, bool isCurrentPlayer)>();
+
+            // 自分を追加
+            allPlayers.Add((
+                name: replay.PlayerName,
+                kills: replay.Kills,
+                deaths: replay.Deaths,
+                score: replay.FinalPlayerScore,
+                rank: replay.Rank,
+                isCurrentPlayer: true
+            ));
+
+            // 他プレイヤーを追加
+            if (replay.OtherPlayers != null)
+            {
+                foreach (var player in replay.OtherPlayers)
                 {
-                    _resultLabel.style.color = new Color(0.4f, 1f, 0.4f); // 緑
+                    allPlayers.Add((
+                        name: player.PlayerName,
+                        kills: player.Kills,
+                        deaths: player.Deaths,
+                        score: player.Score,
+                        rank: player.Rank,
+                        isCurrentPlayer: false
+                    ));
                 }
-                else if (replay.IsDraw)
+            }
+
+            // 順位でソート
+            allPlayers.Sort((a, b) => a.rank.CompareTo(b.rank));
+
+            // 各プレイヤーの行を作成
+            foreach (var player in allPlayers)
+            {
+                var row = new VisualElement();
+                row.AddToClassList("player-row");
+                if (player.isCurrentPlayer)
                 {
-                    _resultLabel.style.color = new Color(0.8f, 0.8f, 0.8f); // グレー
+                    row.AddToClassList("current-player");
                 }
-                else
-                {
-                    _resultLabel.style.color = new Color(1f, 0.4f, 0.4f); // 赤
-                }
+
+                // 順位
+                var rankLabel = new Label($"{player.rank}");
+                rankLabel.AddToClassList("player-rank");
+                row.Add(rankLabel);
+
+                // プレイヤー名
+                var nameLabel = new Label(player.isCurrentPlayer ? $"{player.name} (You)" : player.name);
+                nameLabel.AddToClassList("player-name");
+                row.Add(nameLabel);
+
+                // キル数
+                var killsLabel = new Label($"{player.kills}");
+                killsLabel.AddToClassList("player-kills");
+                row.Add(killsLabel);
+
+                // デス数
+                var deathsLabel = new Label($"{player.deaths}");
+                deathsLabel.AddToClassList("player-deaths");
+                row.Add(deathsLabel);
+
+                // スコア
+                var scoreLabel = new Label($"{player.score}");
+                scoreLabel.AddToClassList("player-score");
+                row.Add(scoreLabel);
+
+                _allPlayersContainer.Add(row);
             }
         }
 

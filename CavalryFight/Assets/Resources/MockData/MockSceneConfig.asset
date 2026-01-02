@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56e871c51bb7e4f4186b92722204956d, type: 3}
   m_Name: MockSceneConfig
   m_EditorClassIdentifier: CavalryFight.Development::CavalryFight.Development.MockData.MockSceneConfig
+  _lobbySceneMockData: {fileID: 11400000, guid: f968e9cdaedbc0143ba6368de8198c8c, type: 2}
+  _roomSceneMockData: {fileID: 11400000, guid: 63760493ee14c7c41bd8ff0aa26d9b7e, type: 2}
+  _historySceneMockData: {fileID: 11400000, guid: 2b56dccf63b2bf842a4bedec271915c8, type: 2}
   _resultsSceneMockData: {fileID: 11400000, guid: 61e75685378e7fc44960b919be48fd45, type: 2}
   _replaySceneMockData: {fileID: 11400000, guid: 8155f1dc97952454fb9a2ebcfd2db93f, type: 2}
   _matchSceneMockData: {fileID: 11400000, guid: d12872f81cd4d984c8d8bcaf1219a5db, type: 2}

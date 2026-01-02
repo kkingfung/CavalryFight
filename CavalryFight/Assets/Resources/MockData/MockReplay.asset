@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: de442f4ca83a4814c9fbf0df43969357, type: 3}
   m_Name: MockReplay
-  m_EditorClassIdentifier: CavalryFight.Development:CavalryFight.Development.MockData:MockReplayConfig
+  m_EditorClassIdentifier: CavalryFight.Development::CavalryFight.Development.MockData.MockReplayConfig
   _replayId: mock-replay-001
   _replayName: Test Replay
   _duration: 300

@@ -138,13 +138,22 @@
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
     color: rgb(50, 50, 50);
     margin-right: 30px;
-    width: 250px;
+    width: 420px;
     flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .player-item-name.empty {
     color: rgba(100, 100, 100, 0.6);
-    font-style: italic;
+    -unity-font-style: italic;
+}
+
+/* Local Player Row - Highlighted Background */
+.player-item.local-player {
+    background-color: rgba(255, 220, 100, 0.25);
+    border-color: rgba(255, 200, 50, 0.6);
 }
 
 .player-item-stats {
@@ -169,7 +178,7 @@
     border-radius: 3px;
     margin-right: 25px;
     border-width: 2px;
-    width: 140px;
+    width: 200px;
     flex-shrink: 0;
     -unity-text-align: middle-center;
 }
@@ -198,8 +207,11 @@
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
     padding: 6px 14px;
     border-radius: 3px;
-    margin-right: 10px;
+    margin-right: 25px;
     border-width: 2px;
+    width: 200px;
+    flex-shrink: 0;
+    -unity-text-align: middle-center;
 }
 
 .ready-true {
@@ -225,9 +237,16 @@
     margin-right: 25px;
     border-width: 2px;
     border-color: rgba(200, 160, 0, 0.8);
-    width: 110px;
+    width: 200px;
     flex-shrink: 0;
     -unity-text-align: middle-center;
+}
+
+/* Alignment Spacer - ensures FPS/Difficulty starts at same position */
+.stats-spacer {
+    width: 200px;
+    margin-right: 25px;
+    flex-shrink: 0;
 }
 
 /* Player Actions */
@@ -452,6 +471,20 @@
 .setting-textfield:focus {
     border-color: rgb(80, 80, 80);
     background-color: rgba(230, 230, 230, 1);
+}
+
+/* Password TextField - text is transparent, asterisks label shows instead */
+#PasswordField .unity-text-field__input {
+    color: transparent;
+    --unity-cursor-color: rgb(0, 0, 0);
+}
+
+/* Password Asterisks Label - shows black asterisks on top of transparent text */
+#PasswordAsterisksLabel {
+    font-size: 36px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    color: rgb(0, 0, 0);
+    -unity-text-align: middle-left;
 }
 
 /* Setting Toggle - StarCraft Style */

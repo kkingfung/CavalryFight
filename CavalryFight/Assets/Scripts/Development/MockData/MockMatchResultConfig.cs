@@ -1,7 +1,5 @@
 #nullable enable
 
-#if UNITY_EDITOR
-
 using System;
 using System.Collections.Generic;
 using CavalryFight.Services.Match;
@@ -36,7 +34,7 @@ namespace CavalryFight.Development.MockData
 
         [Header("Game Settings")]
         /// <summary>最大プレイヤー数</summary>
-        [SerializeField] private int _maxPlayers = 4;
+        [SerializeField] private int _maxPlayers = 8;
 
         /// <summary>制限時間（秒）</summary>
         [SerializeField] private int _timeLimit = 300;
@@ -84,7 +82,7 @@ namespace CavalryFight.Development.MockData
         [SerializeField] private bool _isRoomStillOpen = false;
 
         /// <summary>現在のプレイヤー数</summary>
-        [SerializeField] private int _currentPlayerCount = 4;
+        [SerializeField] private int _currentPlayerCount = 8;
 
         #endregion
 
@@ -92,7 +90,177 @@ namespace CavalryFight.Development.MockData
 
         [Header("Players")]
         /// <summary>プレイヤー設定のリスト</summary>
-        [SerializeField] private List<MockPlayerConfig> _players = new List<MockPlayerConfig>();
+        [SerializeField] private List<MockPlayerConfig> _players = new List<MockPlayerConfig>
+        {
+            new MockPlayerConfig
+            {
+                PlayerName = "You",
+                Team = "Team A",
+                IsNPC = false,
+                IsLocalPlayer = true,
+                IsHost = true,
+                IsAlive = true,
+                HasLeft = false,
+                Rank = 1,
+                Score = 1500,
+                ArrowsFired = 45,
+                Hits = 32,
+                Kills = 12,
+                Deaths = 3,
+                Assists = 2,
+                Headshots = 6,
+                LongestKillStreak = 5,
+                DamageDealt = 1850f,
+                DamageTaken = 420f
+            },
+            new MockPlayerConfig
+            {
+                PlayerName = "Archer_Master",
+                Team = "Team A",
+                IsNPC = false,
+                IsLocalPlayer = false,
+                IsHost = false,
+                IsAlive = true,
+                HasLeft = false,
+                Rank = 2,
+                Score = 1200,
+                ArrowsFired = 52,
+                Hits = 28,
+                Kills = 9,
+                Deaths = 5,
+                Assists = 3,
+                Headshots = 4,
+                LongestKillStreak = 3,
+                DamageDealt = 1420f,
+                DamageTaken = 680f
+            },
+            new MockPlayerConfig
+            {
+                PlayerName = "CPU Knight",
+                Team = "Team B",
+                IsNPC = true,
+                IsLocalPlayer = false,
+                IsHost = false,
+                IsAlive = false,
+                HasLeft = false,
+                Rank = 3,
+                Score = 850,
+                ArrowsFired = 38,
+                Hits = 18,
+                Kills = 6,
+                Deaths = 7,
+                Assists = 1,
+                Headshots = 2,
+                LongestKillStreak = 2,
+                DamageDealt = 920f,
+                DamageTaken = 950f
+            },
+            new MockPlayerConfig
+            {
+                PlayerName = "CPU Archer",
+                Team = "Team B",
+                IsNPC = true,
+                IsLocalPlayer = false,
+                IsHost = false,
+                IsAlive = true,
+                HasLeft = false,
+                Rank = 4,
+                Score = 650,
+                ArrowsFired = 42,
+                Hits = 14,
+                Kills = 4,
+                Deaths = 9,
+                Assists = 2,
+                Headshots = 1,
+                LongestKillStreak = 2,
+                DamageDealt = 680f,
+                DamageTaken = 1150f
+            },
+            new MockPlayerConfig
+            {
+                PlayerName = "Swift_Rider",
+                Team = "Team A",
+                IsNPC = false,
+                IsLocalPlayer = false,
+                IsHost = false,
+                IsAlive = false,
+                HasLeft = true,
+                Rank = 5,
+                Score = 580,
+                ArrowsFired = 35,
+                Hits = 12,
+                Kills = 5,
+                Deaths = 8,
+                Assists = 1,
+                Headshots = 2,
+                LongestKillStreak = 2,
+                DamageDealt = 620f,
+                DamageTaken = 980f
+            },
+            new MockPlayerConfig
+            {
+                PlayerName = "Dark_Hunter",
+                Team = "None",
+                IsNPC = false,
+                IsLocalPlayer = false,
+                IsHost = false,
+                IsAlive = true,
+                HasLeft = false,
+                Rank = 6,
+                Score = 450,
+                ArrowsFired = 48,
+                Hits = 10,
+                Kills = 3,
+                Deaths = 11,
+                Assists = 3,
+                Headshots = 0,
+                LongestKillStreak = 1,
+                DamageDealt = 480f,
+                DamageTaken = 1280f
+            },
+            new MockPlayerConfig
+            {
+                PlayerName = "CPU Cavalry",
+                Team = "Team B",
+                IsNPC = true,
+                IsLocalPlayer = false,
+                IsHost = false,
+                IsAlive = false,
+                HasLeft = false,
+                Rank = 7,
+                Score = 320,
+                ArrowsFired = 28,
+                Hits = 8,
+                Kills = 2,
+                Deaths = 12,
+                Assists = 1,
+                Headshots = 0,
+                LongestKillStreak = 1,
+                DamageDealt = 350f,
+                DamageTaken = 1400f
+            },
+            new MockPlayerConfig
+            {
+                PlayerName = "Novice_Bow",
+                Team = "None",
+                IsNPC = false,
+                IsLocalPlayer = false,
+                IsHost = false,
+                IsAlive = false,
+                HasLeft = true,
+                Rank = 8,
+                Score = 180,
+                ArrowsFired = 55,
+                Hits = 5,
+                Kills = 1,
+                Deaths = 14,
+                Assists = 0,
+                Headshots = 0,
+                LongestKillStreak = 1,
+                DamageDealt = 210f,
+                DamageTaken = 1650f
+            }
+        };
 
         #endregion
 
@@ -199,6 +367,12 @@ namespace CavalryFight.Development.MockData
         /// <summary>ホストかどうか</summary>
         public bool IsHost = false;
 
+        /// <summary>生存しているかどうか</summary>
+        public bool IsAlive = true;
+
+        /// <summary>退出したかどうか</summary>
+        public bool HasLeft = false;
+
         /// <summary>順位</summary>
         public int Rank = 1;
 
@@ -261,8 +435,8 @@ namespace CavalryFight.Development.MockData
                 IsLocalPlayer = IsLocalPlayer,
                 IsHost = IsHost,
                 Rank = Rank,
-                IsAlive = true,
-                HasLeft = false,
+                IsAlive = IsAlive,
+                HasLeft = HasLeft,
                 HasVotedRematch = false,
                 Score = Score,
                 ArrowsFired = ArrowsFired,
@@ -280,5 +454,3 @@ namespace CavalryFight.Development.MockData
         #endregion
     }
 }
-
-#endif

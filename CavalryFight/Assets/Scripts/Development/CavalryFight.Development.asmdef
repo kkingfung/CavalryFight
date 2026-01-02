@@ -5,6 +5,7 @@
         "CavalryFight.Core",
         "CavalryFight.Services",
         "Unity.Netcode.Runtime",
+        "Unity.Collections",
         "AdvancedSceneManager"
     ],
     "includePlatforms": [],

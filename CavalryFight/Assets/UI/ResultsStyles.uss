@@ -111,10 +111,12 @@
 
 /* Section Headers */
 .section-header {
-    font-size: 48px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
+    font-size: 44px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
     color: rgb(220, 220, 220);
     margin-bottom: 15px;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.4);
 }
 
 /* ===========================================
@@ -162,26 +164,34 @@
 }
 
 /* ===========================================
-   Detail Rows
+   Detail Rows (Match Information)
    =========================================== */
 
 .detail-row {
     flex-direction: row;
-    margin-bottom: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px 15px;
+    background-color: rgba(40, 55, 80, 0.5);
+    border-radius: 6px;
 }
 
 .detail-label {
-    font-size: 36px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
-    color: rgb(180, 180, 180);
-    width: 200px;
+    font-size: 30px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 255, 255);
+    width: 180px;
+    flex-shrink: 0;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.4);
 }
 
 .detail-value {
-    font-size: 36px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
-    color: rgb(255, 255, 255);
+    font-size: 30px;
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(150, 220, 255);
     flex-grow: 1;
+    -unity-text-align: middle-left;
 }
 
 /* ===========================================
@@ -268,28 +278,67 @@
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
     color: rgb(200, 200, 200);
     -unity-text-align: middle-center;
+    padding: 0 8px;
 }
 
 .leaderboard-col-rank {
-    width: 50px;
+    width: 60px;
 }
 
 .leaderboard-col-name {
     flex-grow: 1;
     -unity-text-align: middle-left;
-    padding-left: 10px;
+    padding-left: 15px;
+}
+
+.leaderboard-col-bar {
+    width: 700px;
+}
+
+.leaderboard-col-team {
+    width: 120px;
 }
 
 .leaderboard-col-score {
-    width: 80px;
+    width: 140px;
 }
 
 .leaderboard-col-stat {
-    width: 70px;
+    width: 100px;
 }
 
 .leaderboard-col-status {
+    width: 120px;
+}
+
+.leaderboard-col-inroom {
     width: 100px;
+}
+
+/* Score Bar - between player name and score value */
+.score-bar-container {
+    width: 700px;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.score-bar-bg {
+    width: 100%;
+    height: 16px;
+    background-color: rgba(50, 50, 50, 0.8);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.score-bar-fill {
+    height: 100%;
+    background-color: rgb(100, 200, 100);
+    border-radius: 8px;
+}
+
+.score-bar-fill-local {
+    background-color: rgb(100, 150, 255);
 }
 
 /* Player Row */
@@ -334,10 +383,11 @@
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
     color: rgb(255, 255, 255);
     -unity-text-align: middle-center;
+    padding: 0 8px;
 }
 
 .player-row-rank {
-    width: 50px;
+    width: 60px;
     font-size: 32px;
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
 }
@@ -348,19 +398,49 @@
     padding-left: 10px;
 }
 
+.player-row-team {
+    width: 120px;
+}
+
+/* Team colors */
+.team-a {
+    color: rgb(100, 150, 255);
+}
+
+.team-b {
+    color: rgb(255, 150, 100);
+}
+
+.team-none {
+    color: rgb(180, 180, 180);
+}
+
 .player-row-score {
-    width: 80px;
+    width: 140px;
     font-size: 32px;
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
     color: rgb(255, 220, 100);
 }
 
 .player-row-stat {
-    width: 70px;
+    width: 100px;
 }
 
 .player-row-status {
+    width: 120px;
+}
+
+.player-row-inroom {
     width: 100px;
+}
+
+/* In Room indicator */
+.inroom-yes {
+    color: rgb(100, 255, 100);
+}
+
+.inroom-no {
+    color: rgb(255, 100, 100);
 }
 
 /* Status badges */
@@ -398,15 +478,19 @@
 
 .rematch-status-label {
     font-size: 32px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
-    color: rgb(255, 200, 100);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-right;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.5);
     margin-bottom: 5px;
 }
 
 .rematch-count-label {
     font-size: 28px;
-    -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
-    color: rgb(180, 180, 180);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    color: rgb(200, 220, 255);
+    -unity-text-align: middle-right;
 }
 
 .rematch-ready {
@@ -425,12 +509,12 @@
     border-width: 0;
     height: 80px;
     padding: 0 30px;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
 }
 
 .primary-button {
     background-color: rgba(50, 150, 255, 0.7);
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     transition-duration: 0.15s;
 }
 
@@ -450,7 +534,7 @@
 
 .secondary-button {
     background-color: rgba(100, 100, 100, 0.7);
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     transition-duration: 0.15s;
 }
 
@@ -488,14 +572,14 @@
 }
 
 .footer-button {
-    width: 400px;
+    width: 320px;
     height: 100px;
-    font-size: 56px;
+    font-size: 42px;
     -unity-font-definition: resource('FlatSkin/Font/Roboto-Medium');
     background-color: rgba(100, 100, 100, 0.7);
     border-radius: 10px;
     border-width: 0;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     margin-right: 15px;
     transition-duration: 0.15s;
 }
@@ -511,7 +595,7 @@
 
 .footer-button:disabled {
     background-color: rgba(100, 100, 100, 0.3);
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .footer-button.primary-button {
@@ -529,6 +613,7 @@
 
 .footer-button.primary-button:disabled {
     background-color: rgba(50, 150, 255, 0.3);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 /* ===========================================

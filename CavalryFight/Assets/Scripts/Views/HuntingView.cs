@@ -10,6 +10,7 @@ using CavalryFight.Services.Match;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.ViewModels;
 using CavalryFight.ViewModels.Data;
+using CavalryFight.Views.Components;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -67,6 +68,10 @@ namespace CavalryFight.Views
         // Score Popup Container
         private VisualElement? _scorePopupContainer;
 
+        // Settings Popup
+        private VisualElement? _settingsPopup;
+        private SettingsPopupController? _settingsPopupController;
+
         #endregion
 
         #region Services
@@ -81,15 +86,14 @@ namespace CavalryFight.Views
         #region Serialized Fields
 
         [Header("Audio")]
-        [SerializeField] private AudioClip? _matchStartSound;
-        [SerializeField] private AudioClip? _countdownSound;
-        [SerializeField] private AudioClip? _matchEndSound;
-        [SerializeField] private AudioClip? _scoreSound;
-        [SerializeField] private AudioClip? _stunSound;
         [SerializeField] private AudioClip? _buttonClickSound;
 
         [Header("Score Popup")]
+        [SerializeField] private GameObject? _scorePopupPrefab;
         [SerializeField] private float _scorePopupDuration = 1.5f;
+
+        [Header("Key Bindings")]
+        [SerializeField] private KeyBindingView? _keyBindingView;
 
         #endregion
 
@@ -203,6 +207,9 @@ namespace CavalryFight.Views
 
             // Score Popup
             _scorePopupContainer = Q<VisualElement>("ScorePopupContainer");
+
+            // Settings Popup
+            _settingsPopup = Q<VisualElement>("SettingsPopup");
         }
 
         private void RegisterEventHandlers()
@@ -211,6 +218,16 @@ namespace CavalryFight.Views
             _settingsButton?.RegisterCallback<ClickEvent>(OnSettingsClicked);
             _leaveMatchButton?.RegisterCallback<ClickEvent>(OnLeaveMatchClicked);
             _continueButton?.RegisterCallback<ClickEvent>(OnContinueClicked);
+
+            // Settings Popup Controller
+            if (_settingsPopup != null)
+            {
+                _settingsPopupController = new SettingsPopupController(
+                    _settingsPopup,
+                    _keyBindingView,
+                    _buttonClickSound);
+                _settingsPopupController.ResumeRequested += OnSettingsResumeRequested;
+            }
         }
 
         private void UpdateUIFromViewModel()
@@ -441,8 +458,6 @@ namespace CavalryFight.Views
             }
 
             _finalScoreLabel.text = $"Team Score: {ViewModel?.LocalPlayerScore ?? 0}";
-
-            PlaySound(_matchEndSound);
         }
 
         #endregion
@@ -481,8 +496,6 @@ namespace CavalryFight.Views
             {
                 popup.RemoveFromHierarchy();
             }).StartingIn((long)(_scorePopupDuration * 1000));
-
-            PlaySound(_scoreSound);
         }
 
         #endregion
@@ -498,7 +511,20 @@ namespace CavalryFight.Views
         private void OnSettingsClicked(ClickEvent evt)
         {
             PlayButtonSound();
-            _sceneService?.LoadSettingsWithReturn(ReturnDestination.Hunting);
+
+            // ポーズメニューを非表示にして設定ポップアップを表示
+            if (_pausePanel != null)
+            {
+                _pausePanel.style.display = DisplayStyle.None;
+            }
+
+            _settingsPopupController?.Show();
+        }
+
+        private void OnSettingsResumeRequested(object? sender, EventArgs e)
+        {
+            // 設定ポップアップから戻る時、ゲームを再開
+            ViewModel?.Resume();
         }
 
         private void OnLeaveMatchClicked(ClickEvent evt)
@@ -526,7 +552,6 @@ namespace CavalryFight.Views
             viewModel.MatchStarted += OnMatchStarted;
             viewModel.MatchEnded += OnMatchEnded;
             viewModel.ScoreGained += OnScoreGained;
-            viewModel.HunterStunned += OnHunterStunned;
         }
 
         protected override void UnbindViewModel()
@@ -538,8 +563,15 @@ namespace CavalryFight.Views
                 ViewModel.MatchStarted -= OnMatchStarted;
                 ViewModel.MatchEnded -= OnMatchEnded;
                 ViewModel.ScoreGained -= OnScoreGained;
-                ViewModel.HunterStunned -= OnHunterStunned;
             }
+
+            if (_settingsPopupController != null)
+            {
+                _settingsPopupController.ResumeRequested -= OnSettingsResumeRequested;
+                _settingsPopupController.Dispose();
+                _settingsPopupController = null;
+            }
+
             base.UnbindViewModel();
         }
 
@@ -559,10 +591,6 @@ namespace CavalryFight.Views
                 case nameof(HuntingViewModel.CountdownValue):
                 case nameof(HuntingViewModel.IsCountingDown):
                     UpdateCountdownPanel();
-                    if (ViewModel?.IsCountingDown == true && ViewModel.CountdownValue > 0)
-                    {
-                        PlaySound(_countdownSound);
-                    }
                     break;
 
                 case nameof(HuntingViewModel.IsScoreboardVisible):
@@ -575,10 +603,7 @@ namespace CavalryFight.Views
                     break;
 
                 case nameof(HuntingViewModel.IsLocalPlayerStunned):
-                    if (ViewModel?.IsLocalPlayerStunned == true)
-                    {
-                        PlaySound(_stunSound);
-                    }
+                    UpdateStunIndicator();
                     break;
             }
         }
@@ -591,8 +616,6 @@ namespace CavalryFight.Views
 
         private void OnMatchStarted(object? sender, EventArgs e)
         {
-            PlaySound(_matchStartSound);
-
             if (_countdownPanel != null)
             {
                 _countdownPanel.style.display = DisplayStyle.None;
@@ -607,11 +630,6 @@ namespace CavalryFight.Views
         private void OnScoreGained(object? sender, HuntingScoreEventArgs e)
         {
             ShowScorePopup(e.Score, e.Location);
-        }
-
-        private void OnHunterStunned(object? sender, ulong clientId)
-        {
-            Debug.Log($"[HuntingView] Hunter {clientId} was stunned");
         }
 
         #endregion

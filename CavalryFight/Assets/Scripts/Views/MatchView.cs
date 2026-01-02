@@ -85,10 +85,6 @@ namespace CavalryFight.Views
         #region Serialized Fields
 
         [Header("Audio")]
-        [SerializeField] private AudioClip? _matchStartSound;
-        [SerializeField] private AudioClip? _countdownSound;
-        [SerializeField] private AudioClip? _matchEndSound;
-        [SerializeField] private AudioClip? _scoreSound;
         [SerializeField] private AudioClip? _buttonClickSound;
 
         [Header("Score Popup")]
@@ -448,9 +444,6 @@ namespace CavalryFight.Views
             }
 
             _finalScoreLabel.text = $"Score: {ViewModel?.LocalPlayerScore ?? 0}";
-
-            // 効果音
-            PlaySound(_matchEndSound);
         }
 
         #endregion
@@ -482,9 +475,6 @@ namespace CavalryFight.Views
                 Color popupColor = GetScoreColor(score);
                 popup.SetScore(score, popupColor);
             }
-
-            // 効果音
-            PlaySound(_scoreSound);
         }
 
         /// <summary>
@@ -604,10 +594,6 @@ namespace CavalryFight.Views
                 case nameof(MatchViewModel.CountdownValue):
                 case nameof(MatchViewModel.IsCountingDown):
                     UpdateCountdownPanel();
-                    if (ViewModel?.IsCountingDown == true && ViewModel.CountdownValue > 0)
-                    {
-                        PlaySound(_countdownSound);
-                    }
                     break;
 
                 case nameof(MatchViewModel.IsScoreboardVisible):
@@ -629,8 +615,6 @@ namespace CavalryFight.Views
 
         private void OnMatchStarted(object? sender, EventArgs e)
         {
-            PlaySound(_matchStartSound);
-
             // カウントダウンパネルを非表示
             if (_countdownPanel != null)
             {
