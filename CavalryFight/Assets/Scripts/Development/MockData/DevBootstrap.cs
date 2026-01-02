@@ -103,8 +103,8 @@ namespace CavalryFight.Development.MockData
         /// <returns>サービスが登録されている場合はtrue</returns>
         private static bool HasAnyService()
         {
-            // 主要なサービスが登録されているかチェック
-            return ServiceLocator.Instance.Get<CavalryFight.Services.SceneManagement.ISceneManagementService>() != null;
+            // 主要なサービスが登録されているかチェック（例外をスローしないTryGetを使用）
+            return ServiceLocator.Instance.IsRegistered<CavalryFight.Services.SceneManagement.ISceneManagementService>();
         }
 
         /// <summary>

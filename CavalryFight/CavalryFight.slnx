@@ -2,6 +2,7 @@
   <Project Path="CavalryFight.Core.csproj" />
   <Project Path="MalbersAnimations.csproj" />
   <Project Path="CavalryFight.Services.csproj" />
+  <Project Path="CavalryFight.Tests.EditMode.csproj" />
   <Project Path="CavalryFight.Views.csproj" />
   <Project Path="MalbersAnimations.Editor.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
