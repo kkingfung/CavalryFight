@@ -52,18 +52,7 @@
         <!-- Score Popup Container -->
         <ui:VisualElement name="ScorePopupContainer" class="score-popup-container" />
 
-        <!-- Pause Panel (Simple menu) -->
-        <ui:VisualElement name="PausePanel" class="pause-panel" style="display: none;">
-            <ui:VisualElement class="pause-overlay" />
-            <ui:VisualElement class="pause-content">
-                <ui:Label text="PAUSED" class="pause-title" />
-                <ui:Button name="ResumeButton" text="Resume" class="pause-button pause-button--primary" />
-                <ui:Button name="SettingsButton" text="Settings" class="pause-button" />
-                <ui:Button name="BackToMenuButton" text="Back to Menu" class="pause-button pause-button--danger" />
-            </ui:VisualElement>
-        </ui:VisualElement>
-
-        <!-- Settings Popup (Hidden by default) -->
+        <!-- Settings Popup (shown when paused) -->
         <ui:VisualElement name="SettingsPopup" class="full-settings-popup hidden">
             <!-- Dark Overlay -->
             <ui:VisualElement class="pause-overlay" />
@@ -110,9 +99,10 @@
 
                 <!-- Footer Buttons -->
                 <ui:VisualElement class="settings-footer">
-                    <!-- Left side: Resume -->
+                    <!-- Left side: Resume and Back to Menu -->
                     <ui:VisualElement class="footer-left">
-                        <ui:Button name="SettingsResumeButton" text="Resume" class="footer-button primary-button" />
+                        <ui:Button name="ResumeButton" text="Resume" class="footer-button primary-button" />
+                        <ui:Button name="BackToMenuButton" text="Back to Menu" class="footer-button danger-button" />
                     </ui:VisualElement>
                     <!-- Right side: Apply and Reset -->
                     <ui:VisualElement class="footer-right">

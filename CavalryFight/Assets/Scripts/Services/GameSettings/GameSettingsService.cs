@@ -338,6 +338,8 @@ namespace CavalryFight.Services.GameSettings
         {
             try
             {
+                Debug.Log($"[GameSettingsService] Applying audio: Master={settings.MasterVolume:F2}, BGM={settings.BgmVolume:F2}, SFX={settings.SfxVolume:F2}");
+
                 var audioService = ServiceLocator.Instance.Get<IAudioService>();
                 if (audioService != null)
                 {

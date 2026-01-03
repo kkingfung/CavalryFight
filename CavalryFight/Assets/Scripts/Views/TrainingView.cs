@@ -173,8 +173,7 @@ namespace CavalryFight.Views
             RegisterEventHandlers();
             UpdateUIFromViewModel();
 
-            // 初期状態では設定ポップアップを非表示
-            _pauseSettingsPopup?.AddToClassList("hidden");
+            // 初期状態ではポーズパネルを非表示（UXMLで既にdisplay:noneが設定されている）
         }
 
         protected override void BindViewModel(TrainingViewModel viewModel)
@@ -220,33 +219,49 @@ namespace CavalryFight.Views
             _hitsLabel = Q<Label>("HitsLabel");
             _accuracyLabel = Q<Label>("AccuracyLabel");
 
-            // Settings/Pause Popup
-            _pauseSettingsPopup = Q<VisualElement>("PauseSettingsPopup");
-            _resumeButton = Q<Button>("ResumeButton");
-            _backToMenuButton = Q<Button>("BackToMenuButton");
+            // Settings Popup (shown when paused)
+            _pauseSettingsPopup = Q<VisualElement>("SettingsPopup");
+            Debug.Log($"[TrainingView] SettingsPopup found: {_pauseSettingsPopup != null}");
 
-            // Audio Settings
-            _masterVolumeSlider = Q<Slider>("MasterVolumeSlider");
-            _bgmVolumeSlider = Q<Slider>("BgmVolumeSlider");
-            _sfxVolumeSlider = Q<Slider>("SfxVolumeSlider");
+            // SettingsPopup内から全てのUIを取得
+            if (_pauseSettingsPopup != null)
+            {
+                // Footer Buttons（Resume, Back to Menu）
+                _resumeButton = _pauseSettingsPopup.Q<Button>("ResumeButton");
+                _backToMenuButton = _pauseSettingsPopup.Q<Button>("BackToMenuButton");
 
-            // Video Settings
-            _displayModeDropdown = Q<DropdownField>("DisplayModeDropdown");
-            _resolutionDropdown = Q<DropdownField>("ResolutionDropdown");
-            _qualityDropdown = Q<DropdownField>("QualityDropdown");
-            _vSyncToggle = Q<Toggle>("VSyncToggle");
-            _targetFpsDropdown = Q<DropdownField>("TargetFpsDropdown");
-            _antiAliasingDropdown = Q<DropdownField>("AntiAliasingDropdown");
+                // Audio Settings
+                _masterVolumeSlider = _pauseSettingsPopup.Q<Slider>("MasterVolumeSlider");
+                _bgmVolumeSlider = _pauseSettingsPopup.Q<Slider>("BgmVolumeSlider");
+                _sfxVolumeSlider = _pauseSettingsPopup.Q<Slider>("SfxVolumeSlider");
 
-            // Gameplay Settings
-            _movementSensitivitySlider = Q<Slider>("MovementSensitivitySlider");
-            _cameraSensitivitySlider = Q<Slider>("CameraSensitivitySlider");
-            _invertYAxisToggle = Q<Toggle>("InvertYAxisToggle");
+                // Video Settings
+                _displayModeDropdown = _pauseSettingsPopup.Q<DropdownField>("DisplayModeDropdown");
+                _resolutionDropdown = _pauseSettingsPopup.Q<DropdownField>("ResolutionDropdown");
+                _qualityDropdown = _pauseSettingsPopup.Q<DropdownField>("QualityDropdown");
+                _vSyncToggle = _pauseSettingsPopup.Q<Toggle>("VSyncToggle");
+                _targetFpsDropdown = _pauseSettingsPopup.Q<DropdownField>("TargetFpsDropdown");
+                _antiAliasingDropdown = _pauseSettingsPopup.Q<DropdownField>("AntiAliasingDropdown");
 
-            // Settings Buttons
-            _keyBindingsButton = Q<Button>("KeyBindingsButton");
-            _applySettingsButton = Q<Button>("ApplySettingsButton");
-            _resetSettingsButton = Q<Button>("ResetSettingsButton");
+                // Gameplay Settings
+                _movementSensitivitySlider = _pauseSettingsPopup.Q<Slider>("MovementSensitivitySlider");
+                _cameraSensitivitySlider = _pauseSettingsPopup.Q<Slider>("CameraSensitivitySlider");
+                _invertYAxisToggle = _pauseSettingsPopup.Q<Toggle>("InvertYAxisToggle");
+
+                // Settings Buttons
+                _keyBindingsButton = _pauseSettingsPopup.Q<Button>("KeyBindingsButton");
+                _applySettingsButton = _pauseSettingsPopup.Q<Button>("ApplySettingsButton");
+                _resetSettingsButton = _pauseSettingsPopup.Q<Button>("ResetSettingsButton");
+
+                Debug.Log($"[TrainingView] ResumeButton found: {_resumeButton != null}");
+                Debug.Log($"[TrainingView] BackToMenuButton found: {_backToMenuButton != null}");
+                Debug.Log($"[TrainingView] MasterVolumeSlider found: {_masterVolumeSlider != null}");
+                Debug.Log($"[TrainingView] ApplySettingsButton found: {_applySettingsButton != null}");
+            }
+            else
+            {
+                Debug.LogError("[TrainingView] SettingsPopup not found! Buttons and settings will not work.");
+            }
         }
 
         /// <summary>
@@ -254,15 +269,27 @@ namespace CavalryFight.Views
         /// </summary>
         private void RegisterEventHandlers()
         {
+            Debug.Log("[TrainingView] Registering event handlers...");
+
             // Settings/Pause Popup Buttons
             if (_resumeButton != null)
             {
                 _resumeButton.clicked += OnResumeClicked;
+                Debug.Log("[TrainingView] ResumeButton event handler registered.");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] ResumeButton is null, cannot register handler!");
             }
 
             if (_backToMenuButton != null)
             {
                 _backToMenuButton.clicked += OnBackToMenuClicked;
+                Debug.Log("[TrainingView] BackToMenuButton event handler registered.");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] BackToMenuButton is null, cannot register handler!");
             }
 
             // Settings Buttons
@@ -274,6 +301,11 @@ namespace CavalryFight.Views
             if (_applySettingsButton != null)
             {
                 _applySettingsButton.clicked += OnApplySettingsClicked;
+                Debug.Log("[TrainingView] ApplySettingsButton event handler registered.");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] ApplySettingsButton is null, cannot register handler!");
             }
 
             if (_resetSettingsButton != null)
@@ -504,6 +536,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnResumeClicked()
         {
+            Debug.Log("[TrainingView] Resume button clicked!");
             PlayButtonClickSfx();
             ViewModel?.Resume();
         }
@@ -513,6 +546,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnBackToMenuClicked()
         {
+            Debug.Log("[TrainingView] Back to Menu button clicked!");
             PlayButtonClickSfx();
 
             // シーン遷移前にTime.timeScaleをリセット
@@ -563,7 +597,7 @@ namespace CavalryFight.Views
         }
 
         /// <summary>
-        /// ポーズ設定ポップアップを表示します
+        /// 設定ポップアップを表示します
         /// </summary>
         private void ShowPauseSettingsPopup()
         {
@@ -573,8 +607,11 @@ namespace CavalryFight.Views
             // 現在の設定を読み込んでUIに反映
             LoadCurrentSettings();
 
-            // ポップアップを表示
-            _pauseSettingsPopup?.RemoveFromClassList("hidden");
+            // 設定ポップアップを表示
+            if (_pauseSettingsPopup != null)
+            {
+                _pauseSettingsPopup.style.display = DisplayStyle.Flex;
+            }
 
             // ゲーム時間を停止
             Time.timeScale = 0f;
@@ -585,15 +622,18 @@ namespace CavalryFight.Views
                 _inputService.InputEnabled = false;
             }
 
-            Debug.Log("[TrainingView] Pause settings popup shown.");
+            Debug.Log("[TrainingView] Settings popup shown.");
         }
 
         /// <summary>
-        /// ポーズ設定ポップアップを非表示にします
+        /// 設定ポップアップを非表示にします
         /// </summary>
         private void HidePauseSettingsPopup()
         {
-            _pauseSettingsPopup?.AddToClassList("hidden");
+            if (_pauseSettingsPopup != null)
+            {
+                _pauseSettingsPopup.style.display = DisplayStyle.None;
+            }
 
             // ゲーム時間を再開
             Time.timeScale = 1f;
@@ -604,7 +644,7 @@ namespace CavalryFight.Views
                 _inputService.InputEnabled = true;
             }
 
-            Debug.Log("[TrainingView] Pause settings popup hidden.");
+            Debug.Log("[TrainingView] Settings popup hidden.");
         }
 
         #endregion
@@ -767,8 +807,40 @@ namespace CavalryFight.Views
         private void OnApplySettingsClicked()
         {
             PlayButtonClickSfx();
-            _settingsViewModel?.ApplySettingsCommand.Execute(null);
-            Debug.Log("[TrainingView] Settings applied.");
+
+            if (_settingsViewModel == null)
+            {
+                Debug.LogWarning("[TrainingView] SettingsViewModel is null!");
+                return;
+            }
+
+            // デバッグログ
+            bool canApply = _settingsViewModel.ApplySettingsCommand.CanExecute(null);
+            Debug.Log($"[TrainingView] CanApplySettings: {canApply}, HasPendingChanges: {_settingsViewModel.HasPendingChanges}");
+
+            // CanExecute がfalseでも強制的に適用を試みる
+            if (canApply)
+            {
+                _settingsViewModel.ApplySettingsCommand.Execute(null);
+            }
+            else
+            {
+                // CanExecuteがfalseの場合でも、設定を直接適用してみる
+                Debug.LogWarning("[TrainingView] CanApplySettings returned false, attempting force apply...");
+                var gameSettingsService = ServiceLocator.Instance.Get<IGameSettingsService>();
+                if (gameSettingsService != null)
+                {
+                    gameSettingsService.ApplySettings();
+                    gameSettingsService.SaveSettings();
+                    Debug.Log("[TrainingView] Force applied settings via GameSettingsService.");
+                }
+                else
+                {
+                    Debug.LogError("[TrainingView] GameSettingsService not found!");
+                }
+            }
+
+            Debug.Log("[TrainingView] Settings apply completed.");
         }
 
         /// <summary>
@@ -797,6 +869,7 @@ namespace CavalryFight.Views
             if (_settingsViewModel != null)
             {
                 _settingsViewModel.MasterVolume = evt.newValue;
+                Debug.Log($"[TrainingView] Master volume changed to: {evt.newValue}");
             }
         }
 

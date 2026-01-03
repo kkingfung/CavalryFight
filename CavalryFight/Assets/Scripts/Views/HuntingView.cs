@@ -53,10 +53,8 @@ namespace CavalryFight.Views
         private VisualElement? _scoreboardPanel;
         private VisualElement? _scoreboardContainer;
 
-        // Pause Menu
-        private VisualElement? _pausePanel;
+        // Settings Popup (shown when paused)
         private Button? _resumeButton;
-        private Button? _settingsButton;
         private Button? _leaveMatchButton;
 
         // Match End
@@ -193,11 +191,15 @@ namespace CavalryFight.Views
             _scoreboardPanel = Q<VisualElement>("ScoreboardPanel");
             _scoreboardContainer = Q<VisualElement>("ScoreboardContainer");
 
-            // Pause Menu
-            _pausePanel = Q<VisualElement>("PausePanel");
-            _resumeButton = Q<Button>("ResumeButton");
-            _settingsButton = Q<Button>("SettingsButton");
-            _leaveMatchButton = Q<Button>("LeaveMatchButton");
+            // Settings Popup
+            _settingsPopup = Q<VisualElement>("SettingsPopup");
+
+            // SettingsPopup内からボタンを取得
+            if (_settingsPopup != null)
+            {
+                _resumeButton = _settingsPopup.Q<Button>("ResumeButton");
+                _leaveMatchButton = _settingsPopup.Q<Button>("LeaveMatchButton");
+            }
 
             // Match End
             _matchEndPanel = Q<VisualElement>("MatchEndPanel");
@@ -207,15 +209,11 @@ namespace CavalryFight.Views
 
             // Score Popup
             _scorePopupContainer = Q<VisualElement>("ScorePopupContainer");
-
-            // Settings Popup
-            _settingsPopup = Q<VisualElement>("SettingsPopup");
         }
 
         private void RegisterEventHandlers()
         {
             _resumeButton?.RegisterCallback<ClickEvent>(OnResumeClicked);
-            _settingsButton?.RegisterCallback<ClickEvent>(OnSettingsClicked);
             _leaveMatchButton?.RegisterCallback<ClickEvent>(OnLeaveMatchClicked);
             _continueButton?.RegisterCallback<ClickEvent>(OnContinueClicked);
 
@@ -227,6 +225,7 @@ namespace CavalryFight.Views
                     _keyBindingView,
                     _buttonClickSound);
                 _settingsPopupController.ResumeRequested += OnSettingsResumeRequested;
+                _settingsPopupController.BackToMenuRequested += OnLeaveMatchRequested;
             }
         }
 
@@ -316,12 +315,19 @@ namespace CavalryFight.Views
 
         private void UpdatePausePanel()
         {
-            if (_pausePanel == null || ViewModel == null)
+            if (_settingsPopup == null || ViewModel == null)
             {
                 return;
             }
 
-            _pausePanel.style.display = ViewModel.IsPaused ? DisplayStyle.Flex : DisplayStyle.None;
+            if (ViewModel.IsPaused)
+            {
+                _settingsPopupController?.Show();
+            }
+            else
+            {
+                _settingsPopupController?.Hide();
+            }
 
             if (_hudPanel != null)
             {
@@ -508,23 +514,16 @@ namespace CavalryFight.Views
             ViewModel?.Resume();
         }
 
-        private void OnSettingsClicked(ClickEvent evt)
-        {
-            PlayButtonSound();
-
-            // ポーズメニューを非表示にして設定ポップアップを表示
-            if (_pausePanel != null)
-            {
-                _pausePanel.style.display = DisplayStyle.None;
-            }
-
-            _settingsPopupController?.Show();
-        }
-
         private void OnSettingsResumeRequested(object? sender, EventArgs e)
         {
             // 設定ポップアップから戻る時、ゲームを再開
             ViewModel?.Resume();
+        }
+
+        private void OnLeaveMatchRequested(object? sender, EventArgs e)
+        {
+            // 設定ポップアップからメニューに戻る
+            ViewModel?.LeaveMatch();
         }
 
         private void OnLeaveMatchClicked(ClickEvent evt)
@@ -568,6 +567,7 @@ namespace CavalryFight.Views
             if (_settingsPopupController != null)
             {
                 _settingsPopupController.ResumeRequested -= OnSettingsResumeRequested;
+                _settingsPopupController.BackToMenuRequested -= OnLeaveMatchRequested;
                 _settingsPopupController.Dispose();
                 _settingsPopupController = null;
             }
