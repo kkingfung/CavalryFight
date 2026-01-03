@@ -3141,6 +3141,7 @@ GameObject:
   - component: {fileID: 2878748419088464387}
   - component: {fileID: 7409313477159019151}
   - component: {fileID: 1431566581135840931}
+  - component: {fileID: 1186577167658677697}
   m_Layer: 20
   m_Name: TrainingTarget_Wolf
   m_TagString: Animal
@@ -9723,6 +9724,18 @@ MonoBehaviour:
   _hitSound: {fileID: 8300000, guid: 2349bb1d06fcb1943ba5e284fa9b7a28, type: 3}
   _deactivateOnHit: 0
   _respawnTime: 3
+--- !u!114 &1186577167658677697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4756185875387525040}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84f86b926a1913c499dd8f4bf7514010, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Gameplay.Training.WolfAIInvestigator
 --- !u!1 &4932076469496888319
 GameObject:
   m_ObjectHideFlags: 0
