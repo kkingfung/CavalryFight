@@ -36,8 +36,6 @@ namespace CavalryFight.Services.AI
 
         [Header("Audio")]
         [SerializeField] private AudioClip? _shootSfx;
-        [SerializeField] private AudioClip? _hitSfx;
-        [SerializeField] private AudioClip? _deathSfx;
 
         #endregion
 
@@ -319,12 +317,6 @@ namespace CavalryFight.Services.AI
             // ヒットアニメーション
             _animator?.SetTrigger(HitParam);
 
-            // ヒット音
-            if (_hitSfx != null && _audioSource != null)
-            {
-                _audioSource.PlayOneShot(_hitSfx);
-            }
-
             // BlazeAIにヒットを通知（リフレクション使用）
             NotifyBlazeAIHit(attacker);
 
@@ -377,12 +369,6 @@ namespace CavalryFight.Services.AI
 
             // 死亡アニメーション
             _animator?.SetTrigger(DeathParam);
-
-            // 死亡音
-            if (_deathSfx != null && _audioSource != null)
-            {
-                _audioSource.PlayOneShot(_deathSfx);
-            }
 
             // BlazeAIの死亡処理（リフレクション使用）
             NotifyBlazeAIDeath(killer);
