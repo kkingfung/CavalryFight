@@ -1,6 +1,7 @@
 #nullable enable
 
 using CavalryFight.Core.Services;
+using CavalryFight.Services.AI;
 using CavalryFight.Services.Audio;
 using CavalryFight.Services.Customization;
 using CavalryFight.Services.GameSettings;
@@ -190,6 +191,9 @@ namespace CavalryFight.Core.Bootstrap
             ServiceLocator.Instance.Register<ILobbyService>(new LobbyService());
             ServiceLocator.Instance.Register<IMatchService>(new MatchService());
 
+            // AI services
+            ServiceLocator.Instance.Register<IAICombatService>(new AICombatService());
+
             Debug.Log("[GameBootstrap] All services registered.");
 
             // デバッグ: 登録されているサービスの一覧を出力
@@ -227,6 +231,9 @@ namespace CavalryFight.Core.Bootstrap
             // Network services
             InitializeService<ILobbyService>();
             InitializeService<IMatchService>();
+
+            // AI services
+            InitializeService<IAICombatService>();
 
             // 初期化結果を確認
             if (_failedServices.Count > 0)
@@ -374,6 +381,9 @@ namespace CavalryFight.Core.Bootstrap
             Debug.Log("[GameBootstrap] Disposing services...");
 
             // 初期化の逆順で破棄
+            // 5. AI Services
+            DisposeService<IAICombatService>("AICombatService");
+
             // 4. Network Services
             DisposeService<IMatchService>("MatchService");
             DisposeService<ILobbyService>("LobbyService");
