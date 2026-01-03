@@ -8,16 +8,19 @@ namespace CavalryFight.Services.Customization
     /// 矢タイプの設定を保持するScriptableObject
     /// </summary>
     /// <remarks>
-    /// ArrowType enumに対応するプレハブ（Bullet/Muzzle/Hit）を設定します。
-    /// GameBootstrapでICustomizationServiceに登録して使用します。
+    /// ArrowType enumに対応するビジュアルプレハブ（Arrow Visual/Muzzle/Hit）を設定します。
+    /// ArrowTypeApplierと連携して、発射された矢のビジュアルを差し替えます。
+    ///
+    /// 重要: 矢ビジュアルプレハブはMProjectileコンポーネントを持たないビジュアル専用プレハブです。
+    /// Malbersのプロジェクタイルシステムは変更せず、ビジュアル部分のみを差し替えます。
     /// </remarks>
     [CreateAssetMenu(fileName = "ArrowTypeConfig", menuName = "CavalryFight/Arrow Type Config")]
     public class ArrowTypeConfig : ScriptableObject
     {
         #region Serialized Fields
 
-        [Header("Arrow Prefabs (24 types - matches ArrowType enum order)")]
-        [Tooltip("矢プレハブ配列（ArrowType enumの順序に対応）")]
+        [Header("Arrow Visual Prefabs (24 types - matches ArrowType enum order)")]
+        [Tooltip("矢ビジュアルプレハブ配列（ArrowType enumの順序に対応）\nMProjectileコンポーネント不要 - ビジュアルメッシュのみ")]
         [SerializeField] private GameObject?[] _arrowBulletPrefabs = new GameObject?[24];
 
         [Header("Muzzle Effect Prefabs")]

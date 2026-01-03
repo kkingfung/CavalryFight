@@ -108,6 +108,7 @@ namespace CavalryFight.Views.Components
         {
             LoadCurrentSettings();
             _popupRoot.RemoveFromClassList("hidden");
+            _popupRoot.style.display = DisplayStyle.Flex;
 
             // ゲーム時間を停止
             Time.timeScale = 0f;
@@ -127,6 +128,7 @@ namespace CavalryFight.Views.Components
         public void Hide()
         {
             _popupRoot.AddToClassList("hidden");
+            _popupRoot.style.display = DisplayStyle.None;
 
             // ゲーム時間を再開
             Time.timeScale = 1f;
@@ -143,7 +145,7 @@ namespace CavalryFight.Views.Components
         /// <summary>
         /// ポップアップが表示されているかどうか
         /// </summary>
-        public bool IsVisible => !_popupRoot.ClassListContains("hidden");
+        public bool IsVisible => _popupRoot.style.display == DisplayStyle.Flex;
 
         #endregion
 
@@ -169,12 +171,15 @@ namespace CavalryFight.Views.Components
             _cameraSensitivitySlider = _popupRoot.Q<Slider>("CameraSensitivitySlider");
             _invertYAxisToggle = _popupRoot.Q<Toggle>("InvertYAxisToggle");
 
-            // Buttons
-            _resumeButton = _popupRoot.Q<Button>("ResumeButton");
+            // Buttons（SettingsResumeButtonとResumeButtonの両方をサポート）
+            _resumeButton = _popupRoot.Q<Button>("SettingsResumeButton") ?? _popupRoot.Q<Button>("ResumeButton");
             _backToMenuButton = _popupRoot.Q<Button>("BackToMenuButton");
             _keyBindingsButton = _popupRoot.Q<Button>("KeyBindingsButton");
             _applySettingsButton = _popupRoot.Q<Button>("ApplySettingsButton");
             _resetSettingsButton = _popupRoot.Q<Button>("ResetSettingsButton");
+
+            Debug.Log($"[SettingsPopupController] ResumeButton found: {_resumeButton != null}");
+            Debug.Log($"[SettingsPopupController] ApplySettingsButton found: {_applySettingsButton != null}");
         }
 
         private void SetupDropdowns()
@@ -399,8 +404,29 @@ namespace CavalryFight.Views.Components
         private void OnApplySettingsClicked()
         {
             PlayButtonClickSfx();
-            _settingsViewModel.ApplySettingsCommand.Execute(null);
-            Debug.Log("[SettingsPopupController] Settings applied.");
+
+            // デバッグログ
+            bool canApply = _settingsViewModel.ApplySettingsCommand.CanExecute(null);
+            Debug.Log($"[SettingsPopupController] CanApplySettings: {canApply}, HasPendingChanges: {_settingsViewModel.HasPendingChanges}");
+
+            if (canApply)
+            {
+                _settingsViewModel.ApplySettingsCommand.Execute(null);
+            }
+            else
+            {
+                // CanExecuteがfalseの場合でも、設定を直接適用してみる
+                Debug.LogWarning("[SettingsPopupController] CanApplySettings returned false, attempting force apply...");
+                var gameSettingsService = ServiceLocator.Instance.Get<CavalryFight.Services.GameSettings.IGameSettingsService>();
+                if (gameSettingsService != null)
+                {
+                    gameSettingsService.ApplySettings();
+                    gameSettingsService.SaveSettings();
+                    Debug.Log("[SettingsPopupController] Force applied settings via GameSettingsService.");
+                }
+            }
+
+            Debug.Log("[SettingsPopupController] Settings apply completed.");
         }
 
         private void OnResetSettingsClicked()

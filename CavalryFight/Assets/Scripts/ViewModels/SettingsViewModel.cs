@@ -356,6 +356,8 @@ namespace CavalryFight.ViewModels
             _gameSettingsService = ServiceLocator.Instance.Get<IGameSettingsService>();
             _sceneManagementService = ServiceLocator.Instance.Get<ISceneManagementService>();
 
+            Debug.Log($"[SettingsViewModel] GameSettingsService: {(_gameSettingsService != null ? "found" : "NULL")}");
+
             // コマンドを初期化
             ApplySettingsCommand = new RelayCommand(OnApplySettings, CanApplySettings);
             ResetSettingsCommand = new RelayCommand(OnResetSettings);
@@ -482,6 +484,7 @@ namespace CavalryFight.ViewModels
         {
             if (_gameSettingsService == null)
             {
+                Debug.LogWarning("[SettingsViewModel] GameSettingsService is null!");
                 return;
             }
 
@@ -489,6 +492,8 @@ namespace CavalryFight.ViewModels
             pendingProfile.Audio.MasterVolume = _masterVolume;
             pendingProfile.Audio.BgmVolume = _bgmVolume;
             pendingProfile.Audio.SfxVolume = _sfxVolume;
+
+            Debug.Log($"[SettingsViewModel] Setting pending audio: Master={_masterVolume:F2}, BGM={_bgmVolume:F2}, SFX={_sfxVolume:F2}");
 
             _gameSettingsService.SetPendingSettings(pendingProfile);
             OnPropertyChanged(nameof(HasPendingChanges));

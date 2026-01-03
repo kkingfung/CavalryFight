@@ -4909,7 +4909,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7600888982406466425}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 48eb1597eeb4c9847816a2ddc1ccafff, type: 3}
   m_Name: 
@@ -4983,7 +4983,6 @@ MonoBehaviour:
     ModeAction: 1
     reaction:
       reactions:
-      - rid: 5016934661773852761
       - rid: 5016934661773852767
     RepositionTracker: 1
     Lerp: 5
@@ -5126,29 +5125,6 @@ MonoBehaviour:
                 m_IntArgument: 0
                 m_FloatArgument: 0
                 m_StringArgument: Locomotion
-                m_BoolArgument: 0
-              m_CallState: 2
-    - rid: 5016934661773852761
-      type: {class: UnityEventReaction, ns: MalbersAnimations.Reactions, asm: MalbersAnimations}
-      data:
-        desc: 
-        Active: 1
-        useLocal: 0
-        localTarget: {fileID: 0}
-        delay: 0
-        Invoke:
-          m_PersistentCalls:
-            m_Calls:
-            - m_Target: {fileID: 0}
-              m_TargetAssemblyTypeName: UnityEngine.UI.Text, UnityEngine.UI
-              m_MethodName: set_text
-              m_Mode: 5
-              m_Arguments:
-                m_ObjectArgument: {fileID: 0}
-                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                m_IntArgument: 0
-                m_FloatArgument: 0
-                m_StringArgument: Idle
                 m_BoolArgument: 0
               m_CallState: 2
     - rid: 5016934661773852762

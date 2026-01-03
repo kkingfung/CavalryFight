@@ -476,10 +476,25 @@ namespace CavalryFight.Gameplay.Player
         /// <returns>P09_HumanのTransform</returns>
         private Transform? FindP09Human(Transform parent)
         {
+            // P09を含むオブジェクトを検索（Track等のMalbersエフェクトを除外）
+            return FindP09ChildRecursive(parent);
+        }
+
+        /// <summary>
+        /// P09キャラクターを再帰的に検索します
+        /// </summary>
+        /// <param name="parent">親Transform</param>
+        /// <returns>見つかったTransform</returns>
+        private Transform? FindP09ChildRecursive(Transform parent)
+        {
             // 直接の子を検索
             foreach (Transform child in parent)
             {
-                if (child.name.Contains("P09") || child.name.Contains("Human"))
+                // P09を含み、Track/Effect/Particleを含まないオブジェクトを探す
+                if (child.name.Contains("P09") &&
+                    !child.name.Contains("Track") &&
+                    !child.name.Contains("Effect") &&
+                    !child.name.Contains("Particle"))
                 {
                     return child;
                 }
@@ -488,7 +503,15 @@ namespace CavalryFight.Gameplay.Player
             // 再帰的に検索
             foreach (Transform child in parent)
             {
-                Transform? found = FindP09Human(child);
+                // Track/Effect/Particleを含む子はスキップ
+                if (child.name.Contains("Track") ||
+                    child.name.Contains("Effect") ||
+                    child.name.Contains("Particle"))
+                {
+                    continue;
+                }
+
+                Transform? found = FindP09ChildRecursive(child);
                 if (found != null)
                 {
                     return found;
