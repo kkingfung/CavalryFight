@@ -90,6 +90,10 @@ namespace CavalryFight.Services.Input
         /// <summary>
         /// 入力が有効かどうかを取得または設定します。
         /// </summary>
+        /// <remarks>
+        /// ゲームプレイ入力の有効/無効を制御します。
+        /// UI入力（メニューボタン等）は常に有効です。
+        /// </remarks>
         public bool InputEnabled
         {
             get => _inputEnabled;
@@ -100,14 +104,18 @@ namespace CavalryFight.Services.Input
                 {
                     if (_inputEnabled)
                     {
-                        _inputActions.Enable();
+                        // ゲームプレイ入力を有効化
+                        _inputActions.Gameplay.Enable();
                     }
                     else
                     {
                         // 入力無効化時に攻撃チャージ状態をリセット
                         _isAttackCharging = false;
-                        _inputActions.Disable();
+                        // ゲームプレイ入力のみ無効化（UI入力は有効のまま）
+                        _inputActions.Gameplay.Disable();
                     }
+                    // UI入力は常に有効
+                    _inputActions.UI.Enable();
                 }
             }
         }
@@ -494,7 +502,8 @@ namespace CavalryFight.Services.Input
         /// <returns>押された瞬間の場合true</returns>
         public bool GetMenuButtonDown()
         {
-            if (!_inputEnabled || _inputActions == null)
+            // メニューボタンは常に有効（ポーズ中でも操作可能にするため）
+            if (_inputActions == null)
             {
                 return false;
             }

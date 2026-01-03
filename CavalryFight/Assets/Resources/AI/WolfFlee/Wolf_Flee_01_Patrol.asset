@@ -1,0 +1,156 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e33e187dc72d4a48aaede99913c6393, type: 3}
+  m_Name: Wolf_Flee_01_Patrol
+  m_EditorClassIdentifier:
+  ID:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  tasks:
+  - {fileID: 6004260036718337227}
+  - {fileID: 6719432712759754914}
+  transitions:
+  - decision: {fileID: 6644325200194905671}
+    trueState: {fileID: 11400000, guid: b2c3d4e5f6789012345678abcdef0102, type: 2}
+    falseState: {fileID: 0}
+  GizmoStateColor: {r: 0.2, g: 0.8, b: 0.2, a: 1}
+  CreateTaskAsset: 1
+  CreateDecisionAsset: 1
+  TasksIndex: -1
+  DecisionIndex: 0
+--- !u!114 &6004260036718337227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f52ecadff7d8914eae97320934863d1, type: 3}
+  m_Name: T_Patrol
+  m_EditorClassIdentifier:
+  active: 1
+  Description: 狼がエリア内を巡回する
+  MessageID:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  UpdateInterval:
+    UseConstant: 1
+    ConstantValue: 0.2
+    Variable: {fileID: 0}
+  WaitForPreviousTask: 0
+  LookAtOnArrival: 0
+  IgnoreWaitTime: 0
+  patrolType: 0
+  RuntimeSet: {fileID: 0}
+  rtype: 1
+  RTIndex:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  RTName:
+    UseConstant: 1
+    ConstantValue:
+    Variable: {fileID: 0}
+--- !u!114 &6719432712759754914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d55f5af15654a1848a5d62c35156dfe9, type: 3}
+  m_Name: T_Walk
+  m_EditorClassIdentifier:
+  active: 1
+  Description: 歩く速度に設定
+  MessageID:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  UpdateInterval:
+    UseConstant: 1
+    ConstantValue: 0.2
+    Variable: {fileID: 0}
+  WaitForPreviousTask: 0
+  affect: 0
+  SpeedSet: Ground
+  SpeedIndex:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  Sprint: 0
+  ResetSprintOnExit: 0
+--- !u!114 &6644325200194905671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b00a63bfc37e3794ea3b0af5a3c6381e, type: 3}
+  m_Name: D_Look for Player
+  m_EditorClassIdentifier:
+  active: 1
+  Description: プレイヤーを探して逃げる準備をする
+  DecisionID:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  send: 0
+  interval:
+    UseConstant: 1
+    ConstantValue: 0.2
+    Variable: {fileID: 0}
+  WaitForAllTasks: 0
+  waitForTask: -1
+  LookMultiplier: 0.9
+  LookRange:
+    UseConstant: 1
+    ConstantValue: 15
+    Variable: {fileID: 0}
+  LookAngle: 360
+  lookFor: 0
+  ObstacleLayer:
+    UseConstant: 1
+    ConstantValue:
+      serializedVersion: 2
+      m_Bits: 1
+    Variable: {fileID: 0}
+  AssignTarget: 1
+  MoveToTarget: 0
+  ChooseRandomly: 0
+  UnityTag:
+  GameObjectName:
+  transform: {fileID: 0}
+  gameObject: {fileID: 0}
+  gameObjectSet: {fileID: 0}
+  zoneType: 0
+  AllZones: 1
+  ZoneID: 0
+  ZoneModeAbility: -1
+  tags: []
+  ReactionOnSelf:
+    reactions: []
+  ReactionOnTarget:
+    reactions: []
+  debugColor: {r: 1, g: 0.5, b: 0, a: 0.3}
+  references:
+    version: 2
+    RefIds: []
