@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 131184deea2a62b41ab6a0032137313c, type: 3}
+  m_Name: AIGameModeBehavior
+  m_EditorClassIdentifier: CavalryFight.Services::CavalryFight.Services.AI.AIGameModeBehavior
+  _arenaBehavior:
+    _targetPriority: 0
+    _aggressionLevel: 0.8
+    _coordinateWithTeam: 0
+    _scoringPriority: 0.9
+  _scoreMatchBehavior:
+    _targetPriority: 0
+    _aggressionLevel: 0.5
+    _coordinateWithTeam: 0
+    _scoringPriority: 1
+    _arrowConservation: 0.7
+    _minChargeBeforeFire: 0.6
+  _teamFightBehavior:
+    _targetPriority: 2
+    _aggressionLevel: 0.6
+    _coordinateWithTeam: 1
+    _scoringPriority: 0.7
+    _idealTeamDistance: 15
+    _groupBehavior: 0.7
+    _focusWeakEnemy: 0.8
+  _deathmatchBehavior:
+    _targetPriority: 2
+    _aggressionLevel: 0.4
+    _coordinateWithTeam: 0
+    _scoringPriority: 0.3
+    _survivalPriority: 0.9
+    _retreatHealthThreshold: 0.3
+    _fleeFromMultipleEnemies: 0.7

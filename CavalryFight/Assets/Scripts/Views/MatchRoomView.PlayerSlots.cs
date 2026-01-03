@@ -93,7 +93,7 @@ namespace CavalryFight.Views
                 actionsSection.AddToClassList("player-item-actions");
 
                 var addNpcButton = new Button(() => OnAddNPCToSlot(slotIndex));
-                addNpcButton.text = "Add NPC";
+                addNpcButton.text = "Add CPU";
                 addNpcButton.AddToClassList("add-npc-button");
                 actionsSection.Add(addNpcButton);
 
@@ -179,7 +179,7 @@ namespace CavalryFight.Views
                 }
                 else
                 {
-                    var difficultyLabel = new Label($"NPC ({player.Difficulty})");
+                    var difficultyLabel = new Label($"CPU ({player.Difficulty})");
                     difficultyLabel.AddToClassList("player-item-fps");
                     statsRow.Add(difficultyLabel);
                 }

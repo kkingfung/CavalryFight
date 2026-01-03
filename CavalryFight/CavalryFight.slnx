@@ -5,6 +5,7 @@
   <Project Path="CavalryFight.Tests.EditMode.csproj" />
   <Project Path="CavalryFight.Views.csproj" />
   <Project Path="MalbersAnimations.Editor.csproj" />
+  <Project Path="BlazeAI.csproj" />
   <Project Path="CavalryFight.Development.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="P09.ModularHumanoid.csproj" />
