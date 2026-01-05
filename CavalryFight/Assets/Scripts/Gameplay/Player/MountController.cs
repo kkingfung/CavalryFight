@@ -105,6 +105,28 @@ namespace CavalryFight.Gameplay.Player
             _rigidbody = GetComponent<Rigidbody>();
 
             ValidateReferences();
+            ConfigurePhysics();
+        }
+
+        /// <summary>
+        /// 物理設定を調整します
+        /// </summary>
+        private void ConfigurePhysics()
+        {
+            // Rigidbodyの設定を調整して、予期しない動きを防ぐ
+            if (_rigidbody != null)
+            {
+                // キネマティックでない場合、制約を設定
+                if (!_rigidbody.isKinematic)
+                {
+                    // 回転の制限（X,Zは固定、Yのみ回転可能）
+                    _rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+                    // ドラッグを増やして滑りを防ぐ
+                    _rigidbody.linearDamping = 5f;
+                    _rigidbody.angularDamping = 5f;
+                }
+            }
         }
 
         private void Update()
@@ -271,33 +293,36 @@ namespace CavalryFight.Gameplay.Player
         /// Animatorを更新します
         /// </summary>
         /// <param name="speed">現在の速度</param>
+        /// <remarks>
+        /// TODO: Malbers馬のAnimatorパラメータを調査して正しいパラメータ名を設定
+        /// 現在はAnimatorパラメータが不明なため、スキップ
+        /// </remarks>
         private void UpdateAnimator(float speed)
         {
-            if (_animator == null)
-            {
-                return;
-            }
-
-            // Malbersの馬Animatorパラメータに合わせて調整が必要
-            // 基本的なSpeedパラメータを設定
-            _animator.SetFloat(SpeedParam, speed);
-
-            // 状態設定（0=Idle, 1=Walk, 2=Trot, 3=Run, 4=Sprint）
-            int state = 0;
-            if (speed > _runSpeed * 0.9f)
-            {
-                state = 4; // Sprint
-            }
-            else if (speed > _walkSpeed * 1.5f)
-            {
-                state = 3; // Run
-            }
-            else if (speed > _walkSpeed * 0.5f)
-            {
-                state = 1; // Walk
-            }
-
-            _animator.SetInteger(StateParam, state);
+            // TODO: Malbers馬のAnimatorパラメータを調査して実装
+            // 現在はパラメータが存在しないためスキップ
+            // if (_animator == null)
+            // {
+            //     return;
+            // }
+            //
+            // _animator.SetFloat(SpeedParam, speed);
+            //
+            // int state = 0;
+            // if (speed > _runSpeed * 0.9f)
+            // {
+            //     state = 4; // Sprint
+            // }
+            // else if (speed > _walkSpeed * 1.5f)
+            // {
+            //     state = 3; // Run
+            // }
+            // else if (speed > _walkSpeed * 0.5f)
+            // {
+            //     state = 1; // Walk
+            // }
+            //
+            // _animator.SetInteger(StateParam, state);
         }
 
         #endregion

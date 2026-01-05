@@ -99,56 +99,60 @@ namespace CavalryFight.Gameplay.Player
         /// アニメーション状態を設定します
         /// </summary>
         /// <param name="state">設定するアニメーション状態</param>
+        /// <remarks>
+        /// 注意: 現在のP09 AnimatorにはIsMounted/IsAiming/Shootパラメータが存在しないため、
+        /// カスタムAnimator Controllerを作成するまではログ出力のみ行います。
+        /// </remarks>
         public void SetAnimationState(RiderAnimationState state)
         {
-            if (_animator == null)
-            {
-                return;
-            }
-
-            switch (state)
-            {
-                case RiderAnimationState.Idle:
-                    // 通常のアイドル
-                    _animator.SetBool("IsMounted", false);
-                    _animator.SetBool("IsAiming", false);
-                    break;
-
-                case RiderAnimationState.MountedIdle:
-                    // 騎乗アイドル
-                    _animator.SetBool("IsMounted", true);
-                    _animator.SetBool("IsAiming", false);
-                    break;
-
-                case RiderAnimationState.Aiming:
-                    // エイム中
-                    _animator.SetBool("IsAiming", true);
-                    break;
-
-                case RiderAnimationState.Shooting:
-                    // 射撃トリガー
-                    _animator.SetTrigger("Shoot");
-                    break;
-            }
+            // TODO: P09用のカスタムAnimator Controllerを作成したら、以下のコメントを解除
+            // 現在はAnimatorパラメータが存在しないため、状態のログ出力のみ
 
             if (_debugLog)
             {
                 Debug.Log($"[RiderController] Animation state: {state}");
             }
+
+            // Animatorパラメータが存在する場合のみ設定
+            // if (_animator == null)
+            // {
+            //     return;
+            // }
+            //
+            // switch (state)
+            // {
+            //     case RiderAnimationState.Idle:
+            //         _animator.SetBool("IsMounted", false);
+            //         _animator.SetBool("IsAiming", false);
+            //         break;
+            //     case RiderAnimationState.MountedIdle:
+            //         _animator.SetBool("IsMounted", true);
+            //         _animator.SetBool("IsAiming", false);
+            //         break;
+            //     case RiderAnimationState.Aiming:
+            //         _animator.SetBool("IsAiming", true);
+            //         break;
+            //     case RiderAnimationState.Shooting:
+            //         _animator.SetTrigger("Shoot");
+            //         break;
+            // }
         }
 
         /// <summary>
         /// チャージ量を設定します（弓を引く強さ）
         /// </summary>
         /// <param name="chargeAmount">0.0〜1.0のチャージ量</param>
+        /// <remarks>
+        /// TODO: カスタムAnimator Controllerを作成したら実装
+        /// </remarks>
         public void SetChargeAmount(float chargeAmount)
         {
-            if (_animator == null)
-            {
-                return;
-            }
-
-            _animator.SetFloat("ChargeAmount", Mathf.Clamp01(chargeAmount));
+            // TODO: P09用のカスタムAnimator Controllerを作成したら実装
+            // if (_animator == null)
+            // {
+            //     return;
+            // }
+            // _animator.SetFloat("ChargeAmount", Mathf.Clamp01(chargeAmount));
         }
 
         #endregion
@@ -170,6 +174,9 @@ namespace CavalryFight.Gameplay.Player
             _mountPoint = mountPoint;
             _isMounted = true;
 
+            // 物理演算を無効化（馬との衝突を防ぐ）
+            DisablePhysics();
+
             // 騎乗ポイントの子として配置
             transform.SetParent(mountPoint);
             transform.localPosition = Vector3.zero;
@@ -181,6 +188,62 @@ namespace CavalryFight.Gameplay.Player
             if (_debugLog)
             {
                 Debug.Log($"[RiderController] Mounted to: {mountPoint.name}");
+            }
+        }
+
+        /// <summary>
+        /// 物理演算を無効化します（騎乗時）
+        /// </summary>
+        private void DisablePhysics()
+        {
+            // Rigidbodyを無効化
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.detectCollisions = false;
+            }
+
+            // CharacterControllerを無効化
+            var cc = GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                cc.enabled = false;
+            }
+
+            // Colliderを無効化
+            var colliders = GetComponentsInChildren<Collider>();
+            foreach (var col in colliders)
+            {
+                col.enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// 物理演算を有効化します（下馬時）
+        /// </summary>
+        private void EnablePhysics()
+        {
+            // Rigidbodyを有効化
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+                rb.detectCollisions = true;
+            }
+
+            // CharacterControllerを有効化
+            var cc = GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                cc.enabled = true;
+            }
+
+            // Colliderを有効化
+            var colliders = GetComponentsInChildren<Collider>();
+            foreach (var col in colliders)
+            {
+                col.enabled = true;
             }
         }
 
@@ -201,6 +264,9 @@ namespace CavalryFight.Gameplay.Player
             // 親から切り離す
             transform.SetParent(null);
             transform.position = dismountPosition;
+
+            // 物理演算を有効化
+            EnablePhysics();
 
             // アイドルアニメーションに切り替え
             SetAnimationState(RiderAnimationState.Idle);

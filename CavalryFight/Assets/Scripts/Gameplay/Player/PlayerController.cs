@@ -257,12 +257,14 @@ namespace CavalryFight.Gameplay.Player
             if (_inputService.GetJumpButtonDown() && _isGrounded)
             {
                 _velocity.y = Mathf.Sqrt(_jumpHeight * -2f * _gravity);
+                // ジャンプアニメーションはRiderControllerに追加が必要な場合に実装
             }
 
             // 重力適用
             _velocity.y += _gravity * Time.deltaTime;
             _characterController.Move(_velocity * Time.deltaTime);
 
+            // 地上移動時のアニメーション更新（将来的にRiderControllerに移行）
         }
 
         /// <summary>
@@ -395,9 +397,12 @@ namespace CavalryFight.Gameplay.Player
             float arrowSpeed = Mathf.Lerp(_minArrowSpeed, _maxArrowSpeed, chargeAmount);
             Vector3 velocity = _bowFirePoint.forward * arrowSpeed;
 
+            // 矢のスポーン位置を前方にオフセット（馬との衝突を防ぐ）
+            Vector3 spawnPosition = _bowFirePoint.position + _bowFirePoint.forward * 0.5f;
+
             // 矢の親オブジェクトを作成（スケール1,1,1を維持、物理演算用）
             GameObject arrowParent = new GameObject("Arrow");
-            arrowParent.transform.position = _bowFirePoint.position;
+            arrowParent.transform.position = spawnPosition;
             arrowParent.transform.rotation = _bowFirePoint.rotation;
 
             // VFX矢プレハブを親の子としてインスタンス化
@@ -417,16 +422,23 @@ namespace CavalryFight.Gameplay.Player
 
             // ArrowProjectileコンポーネントを親に追加（RequireComponentでRigidbodyも自動追加される）
             var arrowProjectile = arrowParent.AddComponent<ArrowProjectile>();
-                arrowProjectile.SetVelocity(velocity);
 
-                // チャージ量も設定（スコア計算に使用）
-                arrowProjectile.SetChargeAmount(chargeAmount);
+            // 発射者と馬を無視対象に設定（衝突判定の前に設定する）
+            arrowProjectile.AddIgnoredObject(gameObject);
+            // 親（馬）も無視対象に追加
+            if (transform.parent != null)
+            {
+                arrowProjectile.AddIgnoredObject(transform.parent.gameObject);
+            }
+            // ルートオブジェクトも追加（階層が深い場合）
+            arrowProjectile.AddIgnoredObject(transform.root.gameObject);
+
+            // 速度とチャージ量を設定
+            arrowProjectile.SetVelocity(velocity);
+            arrowProjectile.SetChargeAmount(chargeAmount);
 
             // ヒットエフェクトを設定（ArrowTypeConfigから）
-                    arrowProjectile.SetHitEffectPrefab(_currentHitEffectPrefab);
-
-            // 発射者を設定（自分自身との衝突を無視するため）
-            arrowProjectile.SetOwner(gameObject);
+            arrowProjectile.SetHitEffectPrefab(_currentHitEffectPrefab);
 
             // Rigidbodyを取得して設定（ArrowProjectileのRequireComponentで自動追加済み）
             Rigidbody arrowRb = arrowParent.GetComponent<Rigidbody>();
@@ -437,6 +449,9 @@ namespace CavalryFight.Gameplay.Player
             var collider = arrowParent.AddComponent<SphereCollider>();
             collider.radius = 0.1f;
             collider.isTrigger = true;
+
+            // 発射者と馬のコライダーとの衝突を物理的に無視（Physics.IgnoreCollision）
+            IgnoreCollisionWithOwner(collider);
 
             // 射撃アニメーション再生
             _riderController?.SetAnimationState(RiderAnimationState.Shooting);
@@ -687,6 +702,44 @@ namespace CavalryFight.Gameplay.Player
         /// 現在の矢タイプを取得します
         /// </summary>
         public ArrowType CurrentArrowType => _currentArrowType;
+
+        #endregion
+
+        #region Collision Helpers
+
+        /// <summary>
+        /// 発射者と馬のコライダーとの衝突を無視します
+        /// </summary>
+        /// <param name="arrowCollider">矢のコライダー</param>
+        private void IgnoreCollisionWithOwner(Collider arrowCollider)
+        {
+            // 自身のすべてのコライダーを取得して無視
+            Collider[] myColliders = GetComponentsInChildren<Collider>();
+            foreach (var col in myColliders)
+            {
+                Physics.IgnoreCollision(arrowCollider, col, true);
+            }
+
+            // 親（馬）のすべてのコライダーを取得して無視
+            if (transform.parent != null)
+            {
+                Collider[] parentColliders = transform.parent.GetComponentsInChildren<Collider>();
+                foreach (var col in parentColliders)
+                {
+                    Physics.IgnoreCollision(arrowCollider, col, true);
+                }
+            }
+
+            // ルートオブジェクトのすべてのコライダーも無視（階層が深い場合）
+            if (transform.root != transform && transform.root != transform.parent)
+            {
+                Collider[] rootColliders = transform.root.GetComponentsInChildren<Collider>();
+                foreach (var col in rootColliders)
+                {
+                    Physics.IgnoreCollision(arrowCollider, col, true);
+                }
+            }
+        }
 
         #endregion
     }
