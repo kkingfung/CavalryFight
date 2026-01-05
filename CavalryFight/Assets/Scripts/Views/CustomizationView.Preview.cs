@@ -341,6 +341,13 @@ namespace CavalryFight.Views
             // 物理演算を無効化（プレビューが落下しないように）
             DisablePhysics(previewObject);
 
+            // GameObjectが非アクティブの場合はアニメーション再生をスキップ
+            // （非アクティブなオブジェクトでAnimator.Play()を呼ぶとエラーになる）
+            if (!previewObject.activeInHierarchy)
+            {
+                return;
+            }
+
             var animator = previewObject.GetComponent<Animator>();
             if (animator == null)
             {
@@ -356,38 +363,25 @@ namespace CavalryFight.Views
             // Animatorを有効化
             animator.enabled = true;
 
-            Debug.Log($"[CustomizationView] Found Animator on {animator.gameObject.name}, controller: {animator.runtimeAnimatorController?.name ?? "NULL"}");
+            // AnimatorControllerが設定されていない場合はスキップ
+            if (animator.runtimeAnimatorController == null)
+            {
+                Debug.LogWarning($"[CustomizationView] No AnimatorController assigned to {previewObject.name}.");
+                return;
+            }
 
-            // キャラクターの場合、性別に応じたアイドルアニメーションを再生
+            Debug.Log($"[CustomizationView] Found Animator on {animator.gameObject.name}, controller: {animator.runtimeAnimatorController.name}");
+
+            // Animatorのデフォルトステートを使用
+            // 注意: animator.Play()で直接ステート名を指定すると、ステート名とクリップ名が
+            // 異なる場合にエラーが発生するため、デフォルトステートに任せる
             if (gender.HasValue)
             {
-                // P09のアニメーションステートを試す（複数の命名規則に対応）
-                string[] possibleStates = gender.Value == Gender.Male
-                    ? new[] { "Idle", "idle", "P09_Male_idle", "P09 Male idle", "Male_Idle" }
-                    : new[] { "Idle", "idle", "P09_Fem_idle", "P09 Fem idle", "Female_Idle" };
-
-                bool foundAnimation = false;
-                foreach (var stateName in possibleStates)
-                {
-                    if (HasAnimationState(animator, stateName))
-                    {
-                        animator.Play(stateName);
-                        Debug.Log($"[CustomizationView] Playing '{stateName}' animation for character.");
-                        foundAnimation = true;
-                        break;
-                    }
-                }
-
-                if (!foundAnimation)
-                {
-                    Debug.LogWarning($"[CustomizationView] No idle animation found. Tried: {string.Join(", ", possibleStates)}. Using default state.");
-                }
+                Debug.Log($"[CustomizationView] Character animator enabled. Using Animator's default state.");
             }
             else
             {
                 // 馬の場合、Malbersのアニメーションシステムを使用
-                // Malbersは通常Animalコンポーネントで制御されるため、
-                // Animatorを直接操作せずにデフォルトのステートを使用
                 Debug.Log($"[CustomizationView] Mount animator enabled. Using Malbers default animation system.");
             }
         }
@@ -554,15 +548,15 @@ namespace CavalryFight.Views
                 }
             }
 
-            if (_currentArrowPreview != null)
-            {
-                _currentArrowPreview.SetActive(showArrowPreview);
-            }
-
             // キャラクタータブ選択時に矢プレビューを更新
-            if (showArrowPreview && _currentArrowPreview == null)
+            // 毎回UpdateArrowPreviewを呼び出して、ArrowTypeの変更（リセット含む）を反映
+            if (showArrowPreview)
             {
                 UpdateArrowPreview();
+            }
+            else if (_currentArrowPreview != null)
+            {
+                _currentArrowPreview.SetActive(false);
             }
         }
 

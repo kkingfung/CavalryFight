@@ -52,8 +52,8 @@ namespace CavalryFight.Views
         [SerializeField] private Transform? _arrowPreviewContainer;
         [Tooltip("矢プレビュー用RenderTexture")]
         [SerializeField] private RenderTexture? _arrowPreviewRenderTexture;
-        [Tooltip("矢プレハブ配列（ArrowType enumの順序に対応、14種類）")]
-        [SerializeField] private GameObject?[] _arrowBulletPrefabs = new GameObject?[14];
+        [Tooltip("矢プレハブ配列（ArrowType enumの順序に対応、24種類）")]
+        [SerializeField] private GameObject?[] _arrowBulletPrefabs = new GameObject?[24];
 
         #endregion
 

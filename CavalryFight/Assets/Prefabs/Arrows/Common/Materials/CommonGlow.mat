@@ -141,11 +141,12 @@ Material:
     - _Cull: 2
     - _Cutoff: 0.5
     - _DEPTHFADE: 1
+    - _DepthFadeDistance: 100
     - _DepthFadeMax: 0.071
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 1
-    - _DstBlendAlpha: 0
+    - _DstBlendAlpha: 1
     - _EDGEFADE: 0
     - _EdgeFadeMax: 0.502
     - _EdgeFadeMin: 1
