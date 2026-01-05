@@ -4,7 +4,7 @@
 
 CavalryFightは、馬や動物に騎乗して戦う新しいタイプの戦闘ゲームです。弓矢による精密な遠距離戦闘と戦術的なゲームプレイを特徴としています。
 
-<img src="/Result1.PNG" width="400"><img src="/Result2.PNG" width="400"><img src="/Result3.PNG" width="800">
+<img src="/Result1.PNG" width="600"><img src="/Result2.PNG" width="400"><img src="/Result3.PNG" width="400">
 
 [![Unity Version](https://img.shields.io/badge/Unity-6000.2.6f2-blue)](https://unity.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
