@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Customization;
+using MalbersAnimations.Controller;
 
 namespace CavalryFight.Gameplay.Player
 {
@@ -37,6 +38,10 @@ namespace CavalryFight.Gameplay.Player
         [Tooltip("FieldLoaderのロード完了を待つか")]
         [SerializeField] private bool _waitForFieldLoader = true;
 
+        [Header("Tracker")]
+        [Tooltip("AnimalTrackerのプレハブ")]
+        [SerializeField] private GameObject? _animalTrackerPrefab;
+
         [Header("Debug")]
         [Tooltip("デバッグログを出力するか")]
         [SerializeField] private bool _debugLog = true;
@@ -48,6 +53,7 @@ namespace CavalryFight.Gameplay.Player
         private ICustomizationService? _customizationService;
         private GameObject? _spawnedMount;
         private GameObject? _spawnedRider;
+        private GameObject? _spawnedTracker;
 
         #endregion
 
@@ -262,6 +268,9 @@ namespace CavalryFight.Gameplay.Player
                 CameraManager.Instance.SetTargetFromSpawner(this);
             }
 
+            // AnimalTrackerにライダーのMAnimalを設定
+            AssignAnimalTracker();
+
             return true;
         }
 
@@ -321,9 +330,13 @@ namespace CavalryFight.Gameplay.Player
             GameObject mount = Instantiate(_mountPrefab, position, rotation);
             mount.name = "PlayerMount";
 
+            // スポーンしたオブジェクトをPlayerSpawnerと同じシーンに移動
+            // （LoadingScreen等の一時シーンでスポーンされた場合の対策）
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(mount, gameObject.scene);
+
             if (_debugLog)
             {
-                Debug.Log($"[PlayerSpawner] 馬をスポーン: {position}");
+                Debug.Log($"[PlayerSpawner] 馬をスポーン: {position} (Scene: {gameObject.scene.name})");
             }
 
             return mount;
@@ -342,8 +355,10 @@ namespace CavalryFight.Gameplay.Player
                 return null;
             }
 
-            // 馬のMountPointを探す
-            Transform? mountPoint = FindMountPoint(mount);
+            // MountControllerからMountPointを取得
+            var mountController = mount.GetComponent<MountController>();
+            Transform? mountPoint = mountController?.MountPoint ?? FindMountPoint(mount);
+
             Vector3 position;
             Quaternion rotation;
 
@@ -362,12 +377,32 @@ namespace CavalryFight.Gameplay.Player
             GameObject rider = Instantiate(_riderPrefab, position, rotation);
             rider.name = "PlayerRider";
 
-            // Malbers MRiderがある場合は自動的に騎乗処理が行われる
-            // ここでは位置調整のみ
+            // スポーンしたオブジェクトをPlayerSpawnerと同じシーンに移動
+            // （LoadingScreen等の一時シーンでスポーンされた場合の対策）
+            // 注意: RiderはMountの子になるので、Mountが正しいシーンにあれば自動的に移動される
+            // ただし、MountTo()前に明示的に移動しておく
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(rider, gameObject.scene);
+
+            // RiderControllerを使用して騎乗
+            var riderController = rider.GetComponent<RiderController>();
+            if (riderController != null && mountPoint != null)
+            {
+                riderController.MountTo(mountPoint);
+            }
+            else
+            {
+                // RiderControllerがない場合は手動で親子関係を設定
+                rider.transform.SetParent(mount.transform);
+                rider.transform.localPosition = mountPoint != null ? Vector3.zero : Vector3.up * 1.5f;
+                rider.transform.localRotation = Quaternion.identity;
+            }
+
+            // MountControllerに騎手が乗ったことを通知
+            mountController?.OnRiderMounted();
 
             if (_debugLog)
             {
-                Debug.Log($"[PlayerSpawner] 騎手をスポーン: {position}");
+                Debug.Log($"[PlayerSpawner] 騎手をスポーン＆騎乗: {position}");
             }
 
             return rider;
@@ -447,24 +482,32 @@ namespace CavalryFight.Gameplay.Player
             // 馬にカスタマイズを適用
             if (_spawnedMount != null)
             {
-                bool mountSuccess = _customizationService.ApplyMountCustomization(_spawnedMount);
+                // MountControllerからカスタマイズ対象を取得
+                var mountController = _spawnedMount.GetComponent<MountController>();
+                GameObject mountTarget = mountController != null
+                    ? mountController.GetCustomizationTarget()
+                    : _spawnedMount;
+
+                bool mountSuccess = _customizationService.ApplyMountCustomization(mountTarget);
                 if (_debugLog)
                 {
-                    Debug.Log($"[PlayerSpawner] 馬のカスタマイズ適用: {(mountSuccess ? "成功" : "失敗")}");
+                    Debug.Log($"[PlayerSpawner] 馬のカスタマイズ適用: {(mountSuccess ? "成功" : "失敗")} (対象: {mountTarget.name})");
                 }
             }
 
             // 騎手にカスタマイズを適用
             if (_spawnedRider != null)
             {
-                // P09_Humanを探す（PlayerRiderの子オブジェクト）
-                Transform? p09Human = FindP09Human(_spawnedRider.transform);
-                GameObject targetObject = p09Human != null ? p09Human.gameObject : _spawnedRider;
+                // RiderControllerからカスタマイズ対象を取得
+                var riderController = _spawnedRider.GetComponent<RiderController>();
+                GameObject riderTarget = riderController != null
+                    ? riderController.GetCustomizationTarget()
+                    : FindP09Human(_spawnedRider.transform)?.gameObject ?? _spawnedRider;
 
-                bool riderSuccess = _customizationService.ApplyCharacterCustomization(targetObject);
+                bool riderSuccess = _customizationService.ApplyCharacterCustomization(riderTarget);
                 if (_debugLog)
                 {
-                    Debug.Log($"[PlayerSpawner] 騎手のカスタマイズ適用: {(riderSuccess ? "成功" : "失敗")} (対象: {targetObject.name})");
+                    Debug.Log($"[PlayerSpawner] 騎手のカスタマイズ適用: {(riderSuccess ? "成功" : "失敗")} (対象: {riderTarget.name})");
                 }
             }
         }
@@ -522,6 +565,117 @@ namespace CavalryFight.Gameplay.Player
         }
 
         /// <summary>
+        /// AnimalTrackerをスポーンしてライダーのMAnimalを設定します
+        /// </summary>
+        private void AssignAnimalTracker()
+        {
+            if (_animalTrackerPrefab == null)
+            {
+                if (_debugLog)
+                {
+                    Debug.Log("[PlayerSpawner] AnimalTrackerプレハブ が設定されていません。スキップします。");
+                }
+                return;
+            }
+
+            if (_spawnedRider == null)
+            {
+                Debug.LogWarning("[PlayerSpawner] ライダーがスポーンされていないため、AnimalTracker を設定できません。");
+                return;
+            }
+
+            // ライダーからMAnimalコンポーネントを取得
+            var mAnimal = _spawnedRider.GetComponent<MAnimal>();
+            if (mAnimal == null)
+            {
+                // 子オブジェクトから検索
+                mAnimal = _spawnedRider.GetComponentInChildren<MAnimal>();
+            }
+
+            if (mAnimal == null)
+            {
+                Debug.LogWarning("[PlayerSpawner] ライダーに MAnimal コンポーネントが見つかりません。");
+                return;
+            }
+
+            // 既存のトラッカーを削除
+            if (_spawnedTracker != null)
+            {
+                Destroy(_spawnedTracker);
+            }
+
+            // プレハブを非アクティブ状態でインスタンス化（OnEnableが先に走るのを防ぐ）
+            _animalTrackerPrefab.SetActive(false);
+            _spawnedTracker = Instantiate(_animalTrackerPrefab);
+            _animalTrackerPrefab.SetActive(true); // プレハブを元に戻す
+
+            _spawnedTracker.name = "AnimalTracker";
+
+            // 同じシーンに移動（ルートオブジェクトとして配置し、トラッキングで追従させる）
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(_spawnedTracker, gameObject.scene);
+
+            // ライダーの位置に初期配置
+            _spawnedTracker.transform.position = _spawnedRider.transform.position;
+            _spawnedTracker.transform.rotation = _spawnedRider.transform.rotation;
+
+            // AnimalTrackerコンポーネントを取得してMAnimalを設定
+            var animalTracker = _spawnedTracker.GetComponent<AnimalTracker>();
+            if (animalTracker != null)
+            {
+                animalTracker.animal = mAnimal;
+
+                // Trackerフィールドがnullの場合、子オブジェクトから探すか新規作成
+                if (animalTracker.Tracker == null)
+                {
+                    // 既存の子Transformを探す（Tracker, TrackerPoint等の名前）
+                    Transform? trackerTransform = _spawnedTracker.transform.Find("Tracker");
+                    if (trackerTransform == null)
+                    {
+                        trackerTransform = _spawnedTracker.transform.Find("TrackerPoint");
+                    }
+
+                    // 見つからない場合は新規作成
+                    if (trackerTransform == null)
+                    {
+                        var trackerObj = new GameObject("Tracker");
+                        trackerObj.transform.SetParent(_spawnedTracker.transform);
+                        trackerObj.transform.localPosition = Vector3.zero;
+                        trackerObj.transform.localRotation = Quaternion.identity;
+                        trackerTransform = trackerObj.transform;
+
+                        if (_debugLog)
+                        {
+                            Debug.Log("[PlayerSpawner] AnimalTracker 用の Tracker Transform を新規作成しました。");
+                        }
+                    }
+
+                    animalTracker.Tracker = trackerTransform;
+                }
+
+                // Trackersリスト内のRelativeToがnullの場合、ライダーのTransformを設定
+                foreach (var tracker in animalTracker.Trackers)
+                {
+                    if (tracker.RelativeTo == null)
+                    {
+                        tracker.RelativeTo = _spawnedRider.transform;
+                    }
+                }
+
+                if (_debugLog)
+                {
+                    Debug.Log($"[PlayerSpawner] AnimalTracker をスポーンし、MAnimal を設定しました: {mAnimal.name}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[PlayerSpawner] スポーンしたプレハブに AnimalTracker コンポーネントがありません。");
+            }
+
+            // MAnimal設定後にアクティブ化
+            _spawnedTracker.SetActive(true);
+        }
+
+        /// <summary>
         /// スポーンしたオブジェクトを削除します
         /// </summary>
         private void CleanupSpawnedObjects()
@@ -536,6 +690,12 @@ namespace CavalryFight.Gameplay.Player
             {
                 Destroy(_spawnedRider);
                 _spawnedRider = null;
+            }
+
+            if (_spawnedTracker != null)
+            {
+                Destroy(_spawnedTracker);
+                _spawnedTracker = null;
             }
         }
 

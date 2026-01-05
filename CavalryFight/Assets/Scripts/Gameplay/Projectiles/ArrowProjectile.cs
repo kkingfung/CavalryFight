@@ -1,5 +1,6 @@
 #nullable enable
 
+using System.Collections.Generic;
 using UnityEngine;
 using CavalryFight.Gameplay.Training;
 using CavalryFight.Services.Training;
@@ -25,26 +26,20 @@ namespace CavalryFight.Gameplay.Projectiles
         [SerializeField] private int _baseScore = 10;
         [SerializeField] private bool _stickOnImpact = true;
 
-        [Header("Visual Effects (MasterStylizedProjectiles)")]
-        [Tooltip("命中時に生成するエフェクト（ArrowHit.prefab）")]
-        [SerializeField] private GameObject? _hitEffectPrefab;
-
-        [Tooltip("矢に付随するトレイルパーティクル（子オブジェクトとして設定）")]
-        [SerializeField] private ParticleSystem? _trailParticles;
-
-        [Header("Audio")]
-        [Tooltip("命中時のサウンド")]
-        [SerializeField] private AudioClip? _hitSound;
-
         #endregion
 
         #region Private Fields
 
         private Rigidbody? _rigidbody;
-        private AudioSource? _audioSource;
         private bool _hasHit = false;
         private float _spawnTime;
         private float _chargeAmount = 1.0f; // デフォルトはフルチャージ
+
+        // VFX設定（外部から設定）
+        private GameObject? _hitEffectPrefab;
+
+        // 発射者（自分自身への当たり判定を無視するため）
+        private readonly List<GameObject> _ignoredObjects = new();
 
         #endregion
 
@@ -53,27 +48,17 @@ namespace CavalryFight.Gameplay.Projectiles
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
-            _audioSource = GetComponent<AudioSource>();
             _spawnTime = Time.time;
+        }
 
-            // AudioSourceがなければ追加（ヒット音用）
-            if (_audioSource == null && _hitSound != null)
-            {
-                _audioSource = gameObject.AddComponent<AudioSource>();
-                _audioSource.playOnAwake = false;
-                _audioSource.spatialBlend = 1f; // 3Dサウンド
-            }
+        private void Start()
+        {
+            // 寿命後に自動破壊をスケジュール（バックアップ）
+            Destroy(gameObject, _lifetime);
         }
 
         private void Update()
         {
-            // 寿命チェック
-            if (Time.time - _spawnTime >= _lifetime)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
             // 飛行中は進行方向を向く
             if (!_hasHit && _rigidbody != null && _rigidbody.linearVelocity.magnitude > 0.1f)
             {
@@ -88,6 +73,12 @@ namespace CavalryFight.Gameplay.Projectiles
                 return;
             }
 
+            // 発射者自身との衝突を無視
+            if (IsOwnerOrChild(collision.gameObject))
+            {
+                return;
+            }
+
             HandleHit(collision.gameObject, collision.GetContact(0).point);
         }
 
@@ -98,7 +89,49 @@ namespace CavalryFight.Gameplay.Projectiles
                 return;
             }
 
+            // 発射者自身との衝突を無視
+            if (IsOwnerOrChild(other.gameObject))
+            {
+                return;
+            }
+
             HandleHit(other.gameObject, other.ClosestPoint(transform.position));
+        }
+
+        /// <summary>
+        /// オブジェクトが無視対象または無視対象の子かどうかを判定します
+        /// </summary>
+        private bool IsOwnerOrChild(GameObject obj)
+        {
+            if (_ignoredObjects.Count == 0)
+            {
+                return false;
+            }
+
+            // 直接一致
+            foreach (var ignored in _ignoredObjects)
+            {
+                if (obj == ignored)
+                {
+                    return true;
+                }
+            }
+
+            // 親階層をチェック
+            Transform? current = obj.transform.parent;
+            while (current != null)
+            {
+                foreach (var ignored in _ignoredObjects)
+                {
+                    if (current.gameObject == ignored)
+                    {
+                        return true;
+                    }
+                }
+                current = current.parent;
+            }
+
+            return false;
         }
 
         #endregion
@@ -117,14 +150,12 @@ namespace CavalryFight.Gameplay.Projectiles
             // トレイルパーティクルを停止
             StopTrailParticles();
 
-            // ヒットエフェクト再生
+            // ヒットエフェクト再生（5秒後に自動破壊）
             if (_hitEffectPrefab != null)
             {
-                Instantiate(_hitEffectPrefab, hitPoint, Quaternion.identity);
+                var hitEffect = Instantiate(_hitEffectPrefab, hitPoint, Quaternion.identity);
+                Destroy(hitEffect, 5f);
             }
-
-            // ヒット音再生
-            PlayHitSound();
 
             // TrainingTarget に当たった場合
             TrainingTarget? trainingTarget = hitObject.GetComponent<TrainingTarget>();
@@ -161,9 +192,10 @@ namespace CavalryFight.Gameplay.Projectiles
             // Rigidbodyを無効化して物理を停止
             if (_rigidbody != null)
             {
-                _rigidbody.isKinematic = true;
+                // 先に速度を0にしてからkinematicにする（順序が重要）
                 _rigidbody.linearVelocity = Vector3.zero;
                 _rigidbody.angularVelocity = Vector3.zero;
+                _rigidbody.isKinematic = true;
             }
 
             // ターゲットの子オブジェクトにする
@@ -212,41 +244,47 @@ namespace CavalryFight.Gameplay.Projectiles
         /// ヒットエフェクトプレハブを設定します
         /// </summary>
         /// <param name="hitEffectPrefab">ヒットエフェクトプレハブ</param>
-        public void SetHitEffectPrefab(GameObject hitEffectPrefab)
+        public void SetHitEffectPrefab(GameObject? hitEffectPrefab)
         {
             _hitEffectPrefab = hitEffectPrefab;
         }
 
-        #endregion
-
-        #region VFX & Audio
-
         /// <summary>
-        /// トレイルパーティクルを停止します
+        /// 無視対象を追加します（発射者や馬との衝突を無視するため）
         /// </summary>
-        private void StopTrailParticles()
+        /// <param name="obj">無視対象のGameObject</param>
+        public void AddIgnoredObject(GameObject? obj)
         {
-            if (_trailParticles != null)
+            if (obj != null && !_ignoredObjects.Contains(obj))
             {
-                _trailParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-            }
-
-            // 子オブジェクトのすべてのパーティクルも停止
-            var allParticles = GetComponentsInChildren<ParticleSystem>();
-            foreach (var ps in allParticles)
-            {
-                ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                _ignoredObjects.Add(obj);
             }
         }
 
         /// <summary>
-        /// ヒット音を再生します
+        /// 発射者を設定します（発射者との衝突を無視するため）
         /// </summary>
-        private void PlayHitSound()
+        /// <param name="owner">発射者のGameObject（プレイヤーや馬のルートオブジェクト）</param>
+        [System.Obsolete("Use AddIgnoredObject instead")]
+        public void SetOwner(GameObject? owner)
         {
-            if (_hitSound != null && _audioSource != null)
+            AddIgnoredObject(owner);
+        }
+
+        #endregion
+
+        #region VFX
+
+        /// <summary>
+        /// パーティクルを停止します
+        /// </summary>
+        private void StopTrailParticles()
+        {
+            // 子オブジェクトのすべてのパーティクルを停止
+            var allParticles = GetComponentsInChildren<ParticleSystem>();
+            foreach (var ps in allParticles)
             {
-                _audioSource.PlayOneShot(_hitSound);
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             }
         }
 

@@ -537,6 +537,50 @@
 }
 
 /* ==========================================
+   Crosshair
+   ========================================== */
+
+.crosshair-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.crosshair {
+    width: 80px;
+    height: 80px;
+    align-items: center;
+    justify-content: center;
+}
+
+.crosshair-line {
+    position: absolute;
+    background-color: rgb(255, 50, 50);
+}
+
+.crosshair-horizontal {
+    width: 40px;
+    height: 3px;
+}
+
+.crosshair-vertical {
+    width: 3px;
+    height: 40px;
+}
+
+.crosshair-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: rgb(255, 50, 50);
+    border-radius: 4px;
+}
+
+/* ==========================================
    Utility Classes
    ========================================== */
 

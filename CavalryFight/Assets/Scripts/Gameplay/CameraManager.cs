@@ -2,8 +2,8 @@
 
 using System;
 using UnityEngine;
-using MalbersAnimations;
-using MalbersAnimations.Scriptables;
+using CavalryFight.Gameplay.Camera;
+using CavalryFight.Gameplay.Player;
 
 namespace CavalryFight.Gameplay
 {
@@ -11,19 +11,16 @@ namespace CavalryFight.Gameplay
     /// カメラマネージャー
     /// </summary>
     /// <remarks>
-    /// Malbers ThirdPersonFollowTargetと連携してカメラターゲットを管理します。
+    /// PlayerCameraControllerと連携してカメラターゲットを管理します。
     /// PlayerSpawnerからスポーン完了時にターゲットを設定します。
     /// </remarks>
     public class CameraManager : MonoBehaviour
     {
         #region Serialized Fields
 
-        [Header("Camera References")]
-        [Tooltip("Malbers ThirdPersonFollowTarget コンポーネントへの参照")]
-        [SerializeField] private ThirdPersonFollowTarget? _thirdPersonCamera;
-
-        [Tooltip("TransformVar（Malbersのカメラターゲット変数）")]
-        [SerializeField] private TransformVar? _cameraTargetVar;
+        [Header("Camera Controller")]
+        [Tooltip("PlayerCameraController への参照")]
+        [SerializeField] private PlayerCameraController? _cameraController;
 
         [Header("Target Settings")]
         [Tooltip("デフォルトでマウント（馬）をターゲットにするか")]
@@ -31,6 +28,9 @@ namespace CavalryFight.Gameplay
 
         [Tooltip("ターゲットのオフセット（ローカル座標）")]
         [SerializeField] private Vector3 _targetOffset = new Vector3(0, 1.5f, 0);
+
+        [Tooltip("LookAtターゲットのオフセット（ローカル座標）")]
+        [SerializeField] private Vector3 _lookAtOffset = new Vector3(0, 1.8f, 0);
 
         [Header("Debug")]
         [Tooltip("デバッグログを出力するか")]
@@ -41,7 +41,8 @@ namespace CavalryFight.Gameplay
         #region Private Fields
 
         private Transform? _currentTarget;
-        private GameObject? _targetOffsetObject;
+        private GameObject? _followOffsetObject;
+        private GameObject? _lookAtOffsetObject;
 
         #endregion
 
@@ -56,6 +57,11 @@ namespace CavalryFight.Gameplay
         /// 現在のカメラターゲット
         /// </summary>
         public Transform? CurrentTarget => _currentTarget;
+
+        /// <summary>
+        /// PlayerCameraControllerを取得します
+        /// </summary>
+        public PlayerCameraController? CameraController => _cameraController;
 
         #endregion
 
@@ -72,19 +78,24 @@ namespace CavalryFight.Gameplay
 
             Instance = this;
 
-            // ThirdPersonFollowTargetを自動検索
-            if (_thirdPersonCamera == null)
+            // PlayerCameraControllerを自動検索
+            if (_cameraController == null)
             {
-                _thirdPersonCamera = FindFirstObjectByType<ThirdPersonFollowTarget>();
+                _cameraController = FindFirstObjectByType<PlayerCameraController>();
+
+                if (_cameraController == null && _debugLog)
+                {
+                    Debug.LogWarning("[CameraManager] PlayerCameraController が見つかりません。");
+                }
             }
         }
 
         private void Start()
         {
             // PlayerSpawnerのイベントを購読
-            if (Player.PlayerSpawner.Instance != null)
+            if (PlayerSpawner.Instance != null)
             {
-                SubscribeToPlayerSpawner(Player.PlayerSpawner.Instance);
+                SubscribeToPlayerSpawner(PlayerSpawner.Instance);
             }
         }
 
@@ -96,9 +107,14 @@ namespace CavalryFight.Gameplay
             }
 
             // オフセットオブジェクトをクリーンアップ
-            if (_targetOffsetObject != null)
+            if (_followOffsetObject != null)
             {
-                Destroy(_targetOffsetObject);
+                Destroy(_followOffsetObject);
+            }
+
+            if (_lookAtOffsetObject != null)
+            {
+                Destroy(_lookAtOffsetObject);
             }
         }
 
@@ -110,7 +126,7 @@ namespace CavalryFight.Gameplay
         /// PlayerSpawnerのイベントを購読します
         /// </summary>
         /// <param name="spawner">PlayerSpawner</param>
-        public void SubscribeToPlayerSpawner(Player.PlayerSpawner spawner)
+        public void SubscribeToPlayerSpawner(PlayerSpawner spawner)
         {
             if (spawner == null)
             {
@@ -128,20 +144,40 @@ namespace CavalryFight.Gameplay
         /// PlayerSpawnerからターゲットを設定します
         /// </summary>
         /// <param name="spawner">PlayerSpawner</param>
-        public void SetTargetFromSpawner(Player.PlayerSpawner spawner)
+        public void SetTargetFromSpawner(PlayerSpawner spawner)
         {
             if (spawner == null)
             {
                 return;
             }
 
-            if (_targetMountByDefault && spawner.SpawnedMount != null)
+            // 常にライダーをターゲットにする（カメラはライダーに追従）
+            Transform? targetTransform = spawner.SpawnedRider?.transform;
+
+            // ライダーがいない場合はマウントをフォールバック
+            if (targetTransform == null && spawner.SpawnedMount != null)
             {
-                SetTarget(spawner.SpawnedMount.transform);
+                targetTransform = spawner.SpawnedMount.transform;
             }
-            else if (spawner.SpawnedRider != null)
+
+            if (targetTransform != null)
             {
-                SetTarget(spawner.SpawnedRider.transform);
+                SetTarget(targetTransform);
+
+                // PlayerControllerを設定
+                if (spawner.SpawnedRider != null)
+                {
+                    var playerController = spawner.SpawnedRider.GetComponent<PlayerController>();
+                    if (playerController != null && _cameraController != null)
+                    {
+                        _cameraController.SetPlayerController(playerController);
+
+                        if (_debugLog)
+                        {
+                            Debug.Log("[CameraManager] PlayerController をカメラに設定しました。");
+                        }
+                    }
+                }
             }
         }
 
@@ -163,28 +199,22 @@ namespace CavalryFight.Gameplay
             _currentTarget = target;
 
             // オフセット付きのターゲットを作成
-            Transform actualTarget = CreateOrUpdateOffsetTarget(target);
+            Transform followTarget = CreateOrUpdateOffsetTarget(target, ref _followOffsetObject, "CameraFollow_Offset", _targetOffset);
+            Transform lookAtTarget = CreateOrUpdateOffsetTarget(target, ref _lookAtOffsetObject, "CameraLookAt_Offset", _lookAtOffset);
 
-            // ThirdPersonFollowTargetに設定
-            if (_thirdPersonCamera != null)
+            // PlayerCameraControllerに設定
+            if (_cameraController != null)
             {
-                _thirdPersonCamera.SetTarget(actualTarget);
+                _cameraController.SetTargets(followTarget, lookAtTarget);
 
                 if (_debugLog)
                 {
                     Debug.Log($"[CameraManager] カメラターゲットを設定: {target.name}");
                 }
             }
-
-            // TransformVarに設定（他のMalbersコンポーネント用）
-            if (_cameraTargetVar != null)
+            else
             {
-                _cameraTargetVar.Value = actualTarget;
-
-                if (_debugLog)
-                {
-                    Debug.Log($"[CameraManager] TransformVar を更新: {actualTarget.name}");
-                }
+                Debug.LogWarning("[CameraManager] PlayerCameraController が設定されていません。");
             }
         }
 
@@ -206,22 +236,6 @@ namespace CavalryFight.Gameplay
             SetTarget(rider);
         }
 
-        /// <summary>
-        /// カメラをテレポートします（ターゲットの後ろに即座に移動）
-        /// </summary>
-        public void TeleportCamera()
-        {
-            if (_thirdPersonCamera != null)
-            {
-                _thirdPersonCamera.TargetTeleport(true);
-
-                if (_debugLog)
-                {
-                    Debug.Log("[CameraManager] カメラをテレポートしました。");
-                }
-            }
-        }
-
         #endregion
 
         #region Private Methods
@@ -230,27 +244,30 @@ namespace CavalryFight.Gameplay
         /// オフセット付きのターゲットオブジェクトを作成または更新します
         /// </summary>
         /// <param name="parent">親Transform</param>
+        /// <param name="offsetObject">オフセットオブジェクトの参照</param>
+        /// <param name="name">オブジェクト名</param>
+        /// <param name="offset">オフセット値</param>
         /// <returns>オフセット付きターゲットのTransform</returns>
-        private Transform CreateOrUpdateOffsetTarget(Transform parent)
+        private Transform CreateOrUpdateOffsetTarget(Transform parent, ref GameObject? offsetObject, string name, Vector3 offset)
         {
             // オフセットがゼロなら親をそのまま返す
-            if (_targetOffset == Vector3.zero)
+            if (offset == Vector3.zero)
             {
                 return parent;
             }
 
             // オフセットオブジェクトがなければ作成
-            if (_targetOffsetObject == null)
+            if (offsetObject == null)
             {
-                _targetOffsetObject = new GameObject("CameraTarget_Offset");
+                offsetObject = new GameObject(name);
             }
 
             // 親に設定してオフセットを適用
-            _targetOffsetObject.transform.SetParent(parent);
-            _targetOffsetObject.transform.localPosition = _targetOffset;
-            _targetOffsetObject.transform.localRotation = Quaternion.identity;
+            offsetObject.transform.SetParent(parent);
+            offsetObject.transform.localPosition = offset;
+            offsetObject.transform.localRotation = Quaternion.identity;
 
-            return _targetOffsetObject.transform;
+            return offsetObject.transform;
         }
 
         #endregion

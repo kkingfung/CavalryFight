@@ -49,6 +49,9 @@ namespace CavalryFight.Views
         private Label? _hitsLabel;
         private Label? _accuracyLabel;
 
+        // Crosshair
+        private VisualElement? _crosshair;
+
         // Settings/Pause Popup
         private VisualElement? _pauseSettingsPopup;
         private Button? _resumeButton;
@@ -115,11 +118,41 @@ namespace CavalryFight.Views
             }
 
             // TrainingManagerイベント購読
+            SubscribeToTrainingManager();
+        }
+
+        private void Start()
+        {
+            // OnEnableでTrainingManagerがまだ初期化されていない場合に備えて再購読
+            SubscribeToTrainingManager();
+        }
+
+        /// <summary>
+        /// TrainingManagerのイベントを購読します
+        /// </summary>
+        private void SubscribeToTrainingManager()
+        {
             if (TrainingManager.Instance != null)
             {
+                // 重複購読を防ぐために先に解除
+                TrainingManager.Instance.ArrowFired -= OnArrowFired;
+                TrainingManager.Instance.TargetHit -= OnTargetHit;
+                TrainingManager.Instance.ScoreEarned -= OnScoreEarned;
+                TrainingManager.Instance.ChargingStarted -= OnChargingStarted;
+                TrainingManager.Instance.ChargingEnded -= OnChargingEnded;
+
+                // 購読
                 TrainingManager.Instance.ArrowFired += OnArrowFired;
                 TrainingManager.Instance.TargetHit += OnTargetHit;
                 TrainingManager.Instance.ScoreEarned += OnScoreEarned;
+                TrainingManager.Instance.ChargingStarted += OnChargingStarted;
+                TrainingManager.Instance.ChargingEnded += OnChargingEnded;
+
+                Debug.Log("[TrainingView] Subscribed to TrainingManager events");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] TrainingManager.Instance is null, cannot subscribe to events");
             }
         }
 
@@ -131,6 +164,8 @@ namespace CavalryFight.Views
                 TrainingManager.Instance.ArrowFired -= OnArrowFired;
                 TrainingManager.Instance.TargetHit -= OnTargetHit;
                 TrainingManager.Instance.ScoreEarned -= OnScoreEarned;
+                TrainingManager.Instance.ChargingStarted -= OnChargingStarted;
+                TrainingManager.Instance.ChargingEnded -= OnChargingEnded;
             }
 
             // シーン離脱時にTime.timeScaleを必ずリセット（ポーズ中でも）
@@ -154,9 +189,13 @@ namespace CavalryFight.Views
                 return;
             }
 
-            // ポーズボタンチェック
-            if (_inputService.GetMenuButtonDown())
+            // ポーズボタンチェック（ESCキーを直接チェックもフォールバックとして追加）
+            bool menuButtonPressed = _inputService.GetMenuButtonDown();
+            bool escapePressed = UnityEngine.Input.GetKeyDown(KeyCode.Escape);
+
+            if (menuButtonPressed || escapePressed)
             {
+                Debug.Log($"[TrainingView] Menu button pressed! (MenuButton: {menuButtonPressed}, Escape: {escapePressed})");
                 ViewModel.TogglePause();
             }
         }
@@ -218,6 +257,20 @@ namespace CavalryFight.Views
             _arrowsFiredLabel = Q<Label>("ArrowsFiredLabel");
             _hitsLabel = Q<Label>("HitsLabel");
             _accuracyLabel = Q<Label>("AccuracyLabel");
+
+            // Crosshair
+            _crosshair = Q<VisualElement>("Crosshair");
+            if (_crosshair != null)
+            {
+                Debug.Log("[TrainingView] Crosshair element found.");
+            }
+
+            // CrosshairContainerはマウスイベントを無視（UIの下のゲームをクリック可能に）
+            var crosshairContainer = Q<VisualElement>("CrosshairContainer");
+            if (crosshairContainer != null)
+            {
+                crosshairContainer.pickingMode = PickingMode.Ignore;
+            }
 
             // Settings Popup (shown when paused)
             _pauseSettingsPopup = Q<VisualElement>("SettingsPopup");
@@ -611,16 +664,27 @@ namespace CavalryFight.Views
             if (_pauseSettingsPopup != null)
             {
                 _pauseSettingsPopup.style.display = DisplayStyle.Flex;
+
+                // ポップアップがフォーカスを取得できるようにする
+                _pauseSettingsPopup.focusable = true;
+                _pauseSettingsPopup.pickingMode = PickingMode.Position;
             }
+
+            // ポーズ中はクロスヘアを非表示
+            HideCrosshair();
 
             // ゲーム時間を停止
             Time.timeScale = 0f;
 
-            // 入力を無効化
+            // 入力を無効化（ゲーム入力のみ、UIは操作可能）
             if (_inputService != null)
             {
                 _inputService.InputEnabled = false;
             }
+
+            // カーソルを表示してロック解除
+            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            UnityEngine.Cursor.visible = true;
 
             Debug.Log("[TrainingView] Settings popup shown.");
         }
@@ -643,6 +707,10 @@ namespace CavalryFight.Views
             {
                 _inputService.InputEnabled = true;
             }
+
+            // カーソルをロックして非表示に戻す
+            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+            UnityEngine.Cursor.visible = false;
 
             Debug.Log("[TrainingView] Settings popup hidden.");
         }
@@ -993,6 +1061,55 @@ namespace CavalryFight.Views
             if (_settingsViewModel != null)
             {
                 _settingsViewModel.InvertYAxis = evt.newValue;
+            }
+        }
+
+        #endregion
+
+        #region Crosshair
+
+        /// <summary>
+        /// チャージ開始時の処理
+        /// </summary>
+        private void OnChargingStarted(object? sender, System.EventArgs e)
+        {
+            Debug.Log("[TrainingView] OnChargingStarted - showing crosshair");
+            ShowCrosshair();
+        }
+
+        /// <summary>
+        /// チャージ終了時の処理
+        /// </summary>
+        private void OnChargingEnded(object? sender, System.EventArgs e)
+        {
+            Debug.Log("[TrainingView] OnChargingEnded - hiding crosshair");
+            HideCrosshair();
+        }
+
+        /// <summary>
+        /// クロスヘアを表示します
+        /// </summary>
+        private void ShowCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.RemoveFromClassList("hidden");
+                Debug.Log("[TrainingView] Crosshair shown");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] Crosshair element is null!");
+            }
+        }
+
+        /// <summary>
+        /// クロスヘアを非表示にします
+        /// </summary>
+        private void HideCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.AddToClassList("hidden");
             }
         }
 

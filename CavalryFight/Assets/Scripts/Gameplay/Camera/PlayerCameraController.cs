@@ -12,7 +12,7 @@ namespace CavalryFight.Gameplay.Camera
     /// </summary>
     /// <remarks>
     /// Cinemachine Virtual Cameraを使用して、Third PersonとFirst Personの視点を切り替えます。
-    /// カメラ切り替えはToggleCameraボタン（デフォルト: C）で実行されます。
+    /// カメラ回転はフォローターゲットを回転させることで実現します。
     /// </remarks>
     public class PlayerCameraController : MonoBehaviour
     {
@@ -23,10 +23,10 @@ namespace CavalryFight.Gameplay.Camera
         [SerializeField] private CinemachineCamera? _firstPersonCamera;
 
         [Header("Camera Settings")]
-        [SerializeField] private float _mouseSensitivity = 2f;
-        [SerializeField] private float _gamepadSensitivity = 100f;
-        [SerializeField] private float _minVerticalAngle = -80f;
-        [SerializeField] private float _maxVerticalAngle = 80f;
+        [SerializeField] private float _mouseSensitivity = 5f;
+        [SerializeField] private float _gamepadSensitivity = 150f;
+        [SerializeField] private float _minVerticalAngle = -40f;
+        [SerializeField] private float _maxVerticalAngle = 60f;
 
         [Header("Target")]
         [SerializeField] private Transform? _followTarget;
@@ -45,6 +45,12 @@ namespace CavalryFight.Gameplay.Camera
         private bool _isAttacking = false;
         private float _verticalRotation;
         private float _horizontalRotation;
+
+        // カメラ回転用のピボット（フォローターゲットとして使用）
+        private Transform? _rotationPivot;
+
+        // FirstPerson用のターゲット（弓の発射位置）
+        private Transform? _firstPersonTarget;
 
         #endregion
 
@@ -81,21 +87,15 @@ namespace CavalryFight.Gameplay.Camera
             // カーソルをロック
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
 
-            // カメラターゲットを設定
-            if (_followTarget != null && _lookAtTarget != null)
+        private void OnDestroy()
+        {
+            // 回転ピボットをクリーンアップ
+            if (_rotationPivot != null)
             {
-                if (_thirdPersonCamera != null)
-                {
-                    _thirdPersonCamera.Follow = _followTarget;
-                    _thirdPersonCamera.LookAt = _lookAtTarget;
-                }
-
-                if (_firstPersonCamera != null)
-                {
-                    _firstPersonCamera.Follow = _followTarget;
-                    _firstPersonCamera.LookAt = _lookAtTarget;
-                }
+                Destroy(_rotationPivot.gameObject);
+                _rotationPivot = null;
             }
         }
 
@@ -104,6 +104,12 @@ namespace CavalryFight.Gameplay.Camera
             if (_inputService == null || !_inputService.InputEnabled)
             {
                 return;
+            }
+
+            // デバッグ: PlayerControllerの状態を確認
+            if (_playerController == null)
+            {
+                // PlayerControllerがまだ設定されていない場合は何もしない（警告は出さない）
             }
 
             HandleAutoAimCamera();
@@ -142,6 +148,11 @@ namespace CavalryFight.Gameplay.Camera
             {
                 _isAttacking = false;
                 SetCameraMode(_defaultMode);
+
+                // 垂直回転をリセット（前方を向くように）
+                _verticalRotation = 0f;
+                ApplyCameraRotation();
+
                 Debug.Log($"[PlayerCameraController] Charge ended - switched to {_defaultMode}");
             }
         }
@@ -151,7 +162,7 @@ namespace CavalryFight.Gameplay.Camera
         /// </summary>
         private void HandleCameraRotation()
         {
-            if (_inputService == null)
+            if (_inputService == null || _rotationPivot == null)
             {
                 return;
             }
@@ -189,13 +200,14 @@ namespace CavalryFight.Gameplay.Camera
         /// </summary>
         private void ApplyCameraRotation()
         {
-            if (transform == null)
+            if (_rotationPivot == null)
             {
                 return;
             }
 
-            // カメラのTransformに回転を適用
-            transform.rotation = Quaternion.Euler(_verticalRotation, _horizontalRotation, 0f);
+            // 回転ピボットを回転させる
+            // Cinemachineカメラはこのピボットをフォローするため、カメラも回転する
+            _rotationPivot.rotation = Quaternion.Euler(_verticalRotation, _horizontalRotation, 0f);
         }
 
         #endregion
@@ -256,19 +268,73 @@ namespace CavalryFight.Gameplay.Camera
             _followTarget = followTarget;
             _lookAtTarget = lookAtTarget;
 
+            Debug.Log($"[PlayerCameraController] SetTargets called: followTarget={followTarget.name}, lookAt={lookAtTarget.name}");
+
+            // ターゲットを直接使用（CameraManagerからはPlayerRiderが渡される）
+            // 階層: Mount -> MountPoint -> PlayerRider (followTarget)
+            // または: Mount -> CameraFollow_Offset (旧形式)
+            Transform target = followTarget;
+
+            Debug.Log($"[PlayerCameraController] Target: {target.name}");
+
+            // 回転ピボットをターゲットの子として作成
+            CreateRotationPivot(target);
+
+            // 初期回転をターゲットの向きに合わせる
+            _horizontalRotation = target.eulerAngles.y;
+
+            Debug.Log($"[PlayerCameraController] Initial horizontal rotation: {_horizontalRotation}");
+        }
+
+        /// <summary>
+        /// 回転ピボットを作成します（ターゲットの子として）
+        /// </summary>
+        /// <param name="target">ターゲット（PlayerRider）のTransform</param>
+        private void CreateRotationPivot(Transform target)
+        {
+            // 既存のピボットを削除
+            if (_rotationPivot != null)
+            {
+                Destroy(_rotationPivot.gameObject);
+            }
+
+            // 回転ピボットを作成（PlayerRiderの子として配置）
+            GameObject pivotObj = new GameObject("CameraRotationPivot");
+            pivotObj.transform.SetParent(target);
+            pivotObj.transform.localPosition = Vector3.zero;
+            pivotObj.transform.localRotation = Quaternion.identity;
+
+            _rotationPivot = pivotObj.transform;
+
+            // フォロー用のオフセットオブジェクトをピボットの子として作成
+            // ライダーの頭の高さあたりにカメラを配置
+            GameObject followOffset = new GameObject("CameraFollow");
+            followOffset.transform.SetParent(_rotationPivot);
+            followOffset.transform.localPosition = new Vector3(0f, 0.5f, 0f); // ライダーからの相対的な高さ
+            followOffset.transform.localRotation = Quaternion.identity;
+
+            // ルックアット用のオフセットオブジェクト（前方に配置してカメラが前を向くようにする）
+            GameObject lookAtOffset = new GameObject("CameraLookAt");
+            lookAtOffset.transform.SetParent(_rotationPivot);
+            lookAtOffset.transform.localPosition = new Vector3(0f, 0.5f, 10f); // 前方10mに配置
+            lookAtOffset.transform.localRotation = Quaternion.identity;
+
+            // Cinemachineカメラにターゲットを設定
             if (_thirdPersonCamera != null)
             {
-                _thirdPersonCamera.Follow = _followTarget;
-                _thirdPersonCamera.LookAt = _lookAtTarget;
+                _thirdPersonCamera.Follow = followOffset.transform;
+                _thirdPersonCamera.LookAt = lookAtOffset.transform;
+                Debug.Log($"[PlayerCameraController] ThirdPersonCamera Follow={followOffset.name}, LookAt={lookAtOffset.name}");
             }
 
             if (_firstPersonCamera != null)
             {
-                _firstPersonCamera.Follow = _followTarget;
-                _firstPersonCamera.LookAt = _lookAtTarget;
+                _firstPersonCamera.Follow = followOffset.transform;
+                _firstPersonCamera.LookAt = lookAtOffset.transform;
+                Debug.Log($"[PlayerCameraController] FirstPersonCamera targets set");
             }
 
-            Debug.Log($"[PlayerCameraController] Targets set: Follow={followTarget.name}, LookAt={lookAtTarget.name}");
+            Debug.Log($"[PlayerCameraController] Rotation pivot created as child of: {target.name}");
         }
 
         /// <summary>
@@ -278,6 +344,27 @@ namespace CavalryFight.Gameplay.Camera
         public void SetPlayerController(Player.PlayerController playerController)
         {
             _playerController = playerController;
+
+            // 弓の発射位置を取得してFirstPersonカメラのターゲットに設定
+            _firstPersonTarget = playerController.BowFirePoint;
+
+            if (_firstPersonTarget != null && _firstPersonCamera != null)
+            {
+                // FirstPersonカメラは弓の発射位置をフォロー
+                _firstPersonCamera.Follow = _firstPersonTarget;
+
+                // LookAtは発射方向（前方）
+                // 発射位置の前方を向くために、発射位置自体をLookAtにするか、
+                // 別のオブジェクトを作成する
+                // ここではFollowと同じ位置にして、カメラの向きは発射位置の回転に従う
+                _firstPersonCamera.LookAt = null; // LookAtを無効にしてFollowの回転に従う
+
+                Debug.Log($"[PlayerCameraController] FirstPersonCamera set to BowFirePoint: {_firstPersonTarget.name}");
+            }
+            else if (_firstPersonTarget == null)
+            {
+                Debug.LogWarning("[PlayerCameraController] BowFirePoint not found on PlayerController!");
+            }
         }
 
         #endregion
