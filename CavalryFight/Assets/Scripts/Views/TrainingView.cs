@@ -71,7 +71,6 @@ namespace CavalryFight.Views
         private DropdownField? _antiAliasingDropdown;
 
         // Gameplay
-        private Slider? _movementSensitivitySlider;
         private Slider? _cameraSensitivitySlider;
         private Toggle? _invertYAxisToggle;
 
@@ -195,7 +194,13 @@ namespace CavalryFight.Views
 
             if (menuButtonPressed || escapePressed)
             {
-                Debug.Log($"[TrainingView] Menu button pressed! (MenuButton: {menuButtonPressed}, Escape: {escapePressed})");
+                // KeyBindingViewが表示されている場合は、KeyBindingViewを閉じる
+                if (_keyBindingView != null && _keyBindingView.IsVisible)
+                {
+                    _keyBindingView.Hide();
+                    return;
+                }
+
                 ViewModel.TogglePause();
             }
         }
@@ -297,7 +302,6 @@ namespace CavalryFight.Views
                 _antiAliasingDropdown = _pauseSettingsPopup.Q<DropdownField>("AntiAliasingDropdown");
 
                 // Gameplay Settings
-                _movementSensitivitySlider = _pauseSettingsPopup.Q<Slider>("MovementSensitivitySlider");
                 _cameraSensitivitySlider = _pauseSettingsPopup.Q<Slider>("CameraSensitivitySlider");
                 _invertYAxisToggle = _pauseSettingsPopup.Q<Toggle>("InvertYAxisToggle");
 
@@ -414,11 +418,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay Settings
-            if (_movementSensitivitySlider != null)
-            {
-                _movementSensitivitySlider.RegisterValueChangedCallback(OnMovementSensitivityChanged);
-            }
-
             if (_cameraSensitivitySlider != null)
             {
                 _cameraSensitivitySlider.RegisterValueChangedCallback(OnCameraSensitivityChanged);
@@ -510,11 +509,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay Settings
-            if (_movementSensitivitySlider != null)
-            {
-                _movementSensitivitySlider.UnregisterValueChangedCallback(OnMovementSensitivityChanged);
-            }
-
             if (_cameraSensitivitySlider != null)
             {
                 _cameraSensitivitySlider.UnregisterValueChangedCallback(OnCameraSensitivityChanged);
@@ -835,11 +829,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay
-            if (_movementSensitivitySlider != null)
-            {
-                _movementSensitivitySlider.SetValueWithoutNotify(_settingsViewModel.MovementSensitivity);
-            }
-
             if (_cameraSensitivitySlider != null)
             {
                 _cameraSensitivitySlider.SetValueWithoutNotify(_settingsViewModel.CameraSensitivity);
@@ -1031,17 +1020,6 @@ namespace CavalryFight.Views
         }
 
         // Gameplay Change Handlers
-        /// <summary>
-        /// 移動感度変更時の処理
-        /// </summary>
-        private void OnMovementSensitivityChanged(ChangeEvent<float> evt)
-        {
-            if (_settingsViewModel != null)
-            {
-                _settingsViewModel.MovementSensitivity = evt.newValue;
-            }
-        }
-
         /// <summary>
         /// カメラ感度変更時の処理
         /// </summary>

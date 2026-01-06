@@ -23,9 +23,6 @@ namespace CavalryFight.Gameplay
         [SerializeField] private PlayerCameraController? _cameraController;
 
         [Header("Target Settings")]
-        [Tooltip("デフォルトでマウント（馬）をターゲットにするか")]
-        [SerializeField] private bool _targetMountByDefault = true;
-
         [Tooltip("ターゲットのオフセット（ローカル座標）")]
         [SerializeField] private Vector3 _targetOffset = new Vector3(0, 1.5f, 0);
 

@@ -12,12 +12,6 @@ namespace CavalryFight.Services.GameSettings
     public class GameplaySettings
     {
         /// <summary>
-        /// 移動感度（0.0～1.0）
-        /// </summary>
-        [Range(0f, 1f)]
-        public float MovementSensitivity = 1.0f;
-
-        /// <summary>
         /// カメラ感度（0.0～1.0）
         /// </summary>
         [Range(0f, 1f)]
@@ -36,7 +30,6 @@ namespace CavalryFight.Services.GameSettings
         {
             return new GameplaySettings
             {
-                MovementSensitivity = 1.0f,
                 CameraSensitivity = 0.5f,
                 InvertYAxis = false
             };
@@ -50,7 +43,6 @@ namespace CavalryFight.Services.GameSettings
         {
             return new GameplaySettings
             {
-                MovementSensitivity = this.MovementSensitivity,
                 CameraSensitivity = this.CameraSensitivity,
                 InvertYAxis = this.InvertYAxis
             };

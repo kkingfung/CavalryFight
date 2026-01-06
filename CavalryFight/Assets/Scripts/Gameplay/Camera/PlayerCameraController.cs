@@ -28,6 +28,12 @@ namespace CavalryFight.Gameplay.Camera
         [SerializeField] private float _minVerticalAngle = -40f;
         [SerializeField] private float _maxVerticalAngle = 60f;
 
+        [Header("Smoothing")]
+        [Tooltip("カメラ位置の追従スムージング（高いほど滑らか、0で即座に追従）")]
+        [SerializeField] private float _positionLerpSpeed = 10f;
+        [Tooltip("カメラ回転のスムージング（高いほど滑らか、0で即座に回転）")]
+        [SerializeField] private float _rotationLerpSpeed = 15f;
+
         [Header("Target")]
         [SerializeField] private Transform? _followTarget;
         [SerializeField] private Transform? _lookAtTarget;
@@ -46,8 +52,11 @@ namespace CavalryFight.Gameplay.Camera
         private float _verticalRotation;
         private float _horizontalRotation;
 
-        // カメラ回転用のピボット（フォローターゲットとして使用）
+        // カメラ回転用のピボット（フォローターゲットとして使用）- ワールド空間に配置
         private Transform? _rotationPivot;
+
+        // 追従対象（馬またはライダー）
+        private Transform? _actualTarget;
 
         // FirstPerson用のターゲット（弓の発射位置）
         private Transform? _firstPersonTarget;
@@ -99,8 +108,12 @@ namespace CavalryFight.Gameplay.Camera
             }
         }
 
-        private void Update()
+        private void LateUpdate()
         {
+            // ピボット位置の更新（入力無効時でも行う）
+            // LateUpdateで実行することで、アニメーション・物理演算後の位置を使用
+            UpdatePivotPosition();
+
             if (_inputService == null || !_inputService.InputEnabled)
             {
                 return;
@@ -114,6 +127,43 @@ namespace CavalryFight.Gameplay.Camera
 
             HandleAutoAimCamera();
             HandleCameraRotation();
+        }
+
+        /// <summary>
+        /// ピボット位置をターゲットにスムーズに追従させます
+        /// </summary>
+        private void UpdatePivotPosition()
+        {
+            // Unity特有: DestroyされたオブジェクトはC#参照としてはnullではないが、
+            // Unityの==演算子でnullと判定される。両方チェックする
+            if (_rotationPivot == null)
+            {
+                // 最初の数フレームはまだ設定されていない可能性がある
+                // 連続で出力しないように1回だけ警告
+                return;
+            }
+
+            if (_actualTarget == null)
+            {
+                return;
+            }
+
+            // ターゲット位置を取得
+            Vector3 targetPosition = _actualTarget.position;
+
+            // スムーズに追従（lerpSpeedが0の場合は即座に追従）
+            if (_positionLerpSpeed > 0)
+            {
+                _rotationPivot.position = Vector3.Lerp(
+                    _rotationPivot.position,
+                    targetPosition,
+                    _positionLerpSpeed * Time.deltaTime
+                );
+            }
+            else
+            {
+                _rotationPivot.position = targetPosition;
+            }
         }
 
         #endregion
@@ -205,9 +255,22 @@ namespace CavalryFight.Gameplay.Camera
                 return;
             }
 
-            // 回転ピボットを回転させる
-            // Cinemachineカメラはこのピボットをフォローするため、カメラも回転する
-            _rotationPivot.rotation = Quaternion.Euler(_verticalRotation, _horizontalRotation, 0f);
+            // ターゲット回転を計算
+            Quaternion targetRotation = Quaternion.Euler(_verticalRotation, _horizontalRotation, 0f);
+
+            // スムーズに回転（lerpSpeedが0の場合は即座に回転）
+            if (_rotationLerpSpeed > 0)
+            {
+                _rotationPivot.rotation = Quaternion.Lerp(
+                    _rotationPivot.rotation,
+                    targetRotation,
+                    _rotationLerpSpeed * Time.deltaTime
+                );
+            }
+            else
+            {
+                _rotationPivot.rotation = targetRotation;
+            }
         }
 
         #endregion
@@ -268,41 +331,50 @@ namespace CavalryFight.Gameplay.Camera
             _followTarget = followTarget;
             _lookAtTarget = lookAtTarget;
 
-            Debug.Log($"[PlayerCameraController] SetTargets called: followTarget={followTarget.name}, lookAt={lookAtTarget.name}");
-
-            // ターゲットを直接使用（CameraManagerからはPlayerRiderが渡される）
-            // 階層: Mount -> MountPoint -> PlayerRider (followTarget)
-            // または: Mount -> CameraFollow_Offset (旧形式)
+            // CameraManagerからはCameraFollow_Offset（ライダーの子）が渡される
+            // ワールド空間のピボットが追従すべきは、このオフセットオブジェクトの親（ライダー本体）
+            // または、オフセットオブジェクトの位置を直接追従する
             Transform target = followTarget;
 
-            Debug.Log($"[PlayerCameraController] Target: {target.name}");
+            // オフセットオブジェクトの親がある場合、それを実際のターゲットとして使用
+            // これにより、ライダーの位置を追従できる
+            if (followTarget.parent != null)
+            {
+                target = followTarget.parent;
+            }
 
-            // 回転ピボットをターゲットの子として作成
+            // 回転ピボットを作成（ワールド空間に配置）
             CreateRotationPivot(target);
 
             // 初期回転をターゲットの向きに合わせる
             _horizontalRotation = target.eulerAngles.y;
-
-            Debug.Log($"[PlayerCameraController] Initial horizontal rotation: {_horizontalRotation}");
         }
 
         /// <summary>
-        /// 回転ピボットを作成します（ターゲットの子として）
+        /// 回転ピボットを作成します（ワールド空間に配置し、位置はターゲットにスムーズに追従）
         /// </summary>
         /// <param name="target">ターゲット（PlayerRider）のTransform</param>
         private void CreateRotationPivot(Transform target)
         {
-            // 既存のピボットを削除
+            // 既存のピボットを削除（即座に削除してnullクリア）
             if (_rotationPivot != null)
             {
-                Destroy(_rotationPivot.gameObject);
+                DestroyImmediate(_rotationPivot.gameObject);
+                _rotationPivot = null;
             }
 
-            // 回転ピボットを作成（PlayerRiderの子として配置）
+            // 追従対象を保存
+            _actualTarget = target;
+
+            // 回転ピボットをワールド空間に作成（親なし - これが重要！）
+            // 親に設定しないことで、馬のバウンスを継承しない
             GameObject pivotObj = new GameObject("CameraRotationPivot");
-            pivotObj.transform.SetParent(target);
-            pivotObj.transform.localPosition = Vector3.zero;
-            pivotObj.transform.localRotation = Quaternion.identity;
+            pivotObj.transform.SetParent(null); // ワールド空間に配置
+            pivotObj.transform.position = target.position;
+            pivotObj.transform.rotation = Quaternion.identity;
+
+            // DontDestroyOnLoadを設定（シーン切り替え時に破棄されないように）
+            DontDestroyOnLoad(pivotObj);
 
             _rotationPivot = pivotObj.transform;
 
@@ -310,13 +382,13 @@ namespace CavalryFight.Gameplay.Camera
             // ライダーの頭の高さあたりにカメラを配置
             GameObject followOffset = new GameObject("CameraFollow");
             followOffset.transform.SetParent(_rotationPivot);
-            followOffset.transform.localPosition = new Vector3(0f, 0.5f, 0f); // ライダーからの相対的な高さ
+            followOffset.transform.localPosition = new Vector3(0f, 1.5f, 0f); // ライダーからの相対的な高さ
             followOffset.transform.localRotation = Quaternion.identity;
 
             // ルックアット用のオフセットオブジェクト（前方に配置してカメラが前を向くようにする）
             GameObject lookAtOffset = new GameObject("CameraLookAt");
             lookAtOffset.transform.SetParent(_rotationPivot);
-            lookAtOffset.transform.localPosition = new Vector3(0f, 0.5f, 10f); // 前方10mに配置
+            lookAtOffset.transform.localPosition = new Vector3(0f, 1.5f, 10f); // 前方10mに配置
             lookAtOffset.transform.localRotation = Quaternion.identity;
 
             // Cinemachineカメラにターゲットを設定
@@ -324,17 +396,13 @@ namespace CavalryFight.Gameplay.Camera
             {
                 _thirdPersonCamera.Follow = followOffset.transform;
                 _thirdPersonCamera.LookAt = lookAtOffset.transform;
-                Debug.Log($"[PlayerCameraController] ThirdPersonCamera Follow={followOffset.name}, LookAt={lookAtOffset.name}");
             }
 
             if (_firstPersonCamera != null)
             {
                 _firstPersonCamera.Follow = followOffset.transform;
                 _firstPersonCamera.LookAt = lookAtOffset.transform;
-                Debug.Log($"[PlayerCameraController] FirstPersonCamera targets set");
             }
-
-            Debug.Log($"[PlayerCameraController] Rotation pivot created as child of: {target.name}");
         }
 
         /// <summary>
@@ -358,12 +426,6 @@ namespace CavalryFight.Gameplay.Camera
                 // 別のオブジェクトを作成する
                 // ここではFollowと同じ位置にして、カメラの向きは発射位置の回転に従う
                 _firstPersonCamera.LookAt = null; // LookAtを無効にしてFollowの回転に従う
-
-                Debug.Log($"[PlayerCameraController] FirstPersonCamera set to BowFirePoint: {_firstPersonTarget.name}");
-            }
-            else if (_firstPersonTarget == null)
-            {
-                Debug.LogWarning("[PlayerCameraController] BowFirePoint not found on PlayerController!");
             }
         }
 

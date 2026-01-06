@@ -62,11 +62,6 @@ namespace CavalryFight.Development.MockData.MockServices
         public bool InputEnabled { get; set; } = true;
 
         /// <summary>
-        /// 移動入力の感度を取得または設定します（0.0～1.0）
-        /// </summary>
-        public float MovementSensitivity { get; set; } = 1f;
-
-        /// <summary>
         /// カメラ入力の感度を取得または設定します（0.0～1.0）
         /// </summary>
         public float CameraSensitivity { get; set; } = 1f;
@@ -188,6 +183,15 @@ namespace CavalryFight.Development.MockData.MockServices
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// ジャンプボタンが押されているかを取得します
+        /// </summary>
+        /// <returns>押されている場合true</returns>
+        public bool GetJumpButton()
+        {
+            return InputEnabled && Input.GetButton("Jump");
         }
 
         /// <summary>

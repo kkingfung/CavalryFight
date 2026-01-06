@@ -99,7 +99,6 @@
                     <!-- Gameplay Section -->
                     <ui:VisualElement class="settings-section">
                         <ui:Label text="Gameplay Settings" class="section-header" />
-                        <ui:Slider label="Movement Sensitivity" value="1" high-value="1" name="MovementSensitivitySlider" class="setting-control" />
                         <ui:Slider label="Camera Sensitivity" value="0.5" high-value="1" name="CameraSensitivitySlider" class="setting-control" />
                         <ui:Toggle label="Invert Y-Axis" name="InvertYAxisToggle" value="false" class="setting-control" />
                     </ui:VisualElement>

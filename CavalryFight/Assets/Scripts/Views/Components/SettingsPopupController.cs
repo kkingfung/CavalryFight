@@ -43,7 +43,6 @@ namespace CavalryFight.Views.Components
         private DropdownField? _antiAliasingDropdown;
 
         // Gameplay Controls
-        private Slider? _movementSensitivitySlider;
         private Slider? _cameraSensitivitySlider;
         private Toggle? _invertYAxisToggle;
 
@@ -167,7 +166,6 @@ namespace CavalryFight.Views.Components
             _antiAliasingDropdown = _popupRoot.Q<DropdownField>("AntiAliasingDropdown");
 
             // Gameplay
-            _movementSensitivitySlider = _popupRoot.Q<Slider>("MovementSensitivitySlider");
             _cameraSensitivitySlider = _popupRoot.Q<Slider>("CameraSensitivitySlider");
             _invertYAxisToggle = _popupRoot.Q<Toggle>("InvertYAxisToggle");
 
@@ -259,7 +257,6 @@ namespace CavalryFight.Views.Components
             _antiAliasingDropdown?.RegisterValueChangedCallback(OnAntiAliasingChanged);
 
             // Gameplay
-            _movementSensitivitySlider?.RegisterValueChangedCallback(OnMovementSensitivityChanged);
             _cameraSensitivitySlider?.RegisterValueChangedCallback(OnCameraSensitivityChanged);
             _invertYAxisToggle?.RegisterValueChangedCallback(OnInvertYAxisChanged);
         }
@@ -306,7 +303,6 @@ namespace CavalryFight.Views.Components
             _antiAliasingDropdown?.UnregisterValueChangedCallback(OnAntiAliasingChanged);
 
             // Gameplay
-            _movementSensitivitySlider?.UnregisterValueChangedCallback(OnMovementSensitivityChanged);
             _cameraSensitivitySlider?.UnregisterValueChangedCallback(OnCameraSensitivityChanged);
             _invertYAxisToggle?.UnregisterValueChangedCallback(OnInvertYAxisChanged);
         }
@@ -347,7 +343,6 @@ namespace CavalryFight.Views.Components
             }
 
             // Gameplay
-            _movementSensitivitySlider?.SetValueWithoutNotify(_settingsViewModel.MovementSensitivity);
             _cameraSensitivitySlider?.SetValueWithoutNotify(_settingsViewModel.CameraSensitivity);
             _invertYAxisToggle?.SetValueWithoutNotify(_settingsViewModel.InvertYAxis);
         }
@@ -500,11 +495,6 @@ namespace CavalryFight.Views.Components
         }
 
         // Gameplay Change Handlers
-        private void OnMovementSensitivityChanged(ChangeEvent<float> evt)
-        {
-            _settingsViewModel.MovementSensitivity = evt.newValue;
-        }
-
         private void OnCameraSensitivityChanged(ChangeEvent<float> evt)
         {
             _settingsViewModel.CameraSensitivity = evt.newValue;

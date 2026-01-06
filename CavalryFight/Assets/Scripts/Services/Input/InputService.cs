@@ -73,7 +73,6 @@ namespace CavalryFight.Services.Input
         #region Fields
 
         private bool _inputEnabled = true;
-        private float _movementSensitivity = 1.0f;
         private float _cameraSensitivity = 1.0f;
         private bool _invertYAxis = false;
         private GameInputActions? _inputActions;
@@ -118,15 +117,6 @@ namespace CavalryFight.Services.Input
                     _inputActions.UI.Enable();
                 }
             }
-        }
-
-        /// <summary>
-        /// 移動入力の感度を取得または設定します（0.0～1.0）
-        /// </summary>
-        public float MovementSensitivity
-        {
-            get => _movementSensitivity;
-            set => _movementSensitivity = Mathf.Clamp01(value);
         }
 
         /// <summary>
@@ -290,8 +280,6 @@ namespace CavalryFight.Services.Input
                 Debug.Log($"[InputService] Move input detected: {input}");
             }
 
-            input *= _movementSensitivity;
-
             // 正規化（斜め移動が速くならないように）
             if (input.magnitude > 1.0f)
             {
@@ -453,6 +441,20 @@ namespace CavalryFight.Services.Input
             }
 
             return _inputActions.Gameplay.Mount.WasPressedThisFrame();
+        }
+
+        /// <summary>
+        /// ジャンプボタンが押されているかを取得します。
+        /// </summary>
+        /// <returns>押されている場合true</returns>
+        public bool GetJumpButton()
+        {
+            if (!_inputEnabled || _inputActions == null)
+            {
+                return false;
+            }
+
+            return _inputActions.Gameplay.Jump.IsPressed();
         }
 
         /// <summary>

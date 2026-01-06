@@ -402,7 +402,6 @@ namespace CavalryFight.Services.GameSettings
                 var inputService = ServiceLocator.Instance.Get<IInputService>();
                 if (inputService != null)
                 {
-                    inputService.MovementSensitivity = settings.MovementSensitivity;
                     inputService.CameraSensitivity = settings.CameraSensitivity;
                     inputService.InvertYAxis = settings.InvertYAxis;
 

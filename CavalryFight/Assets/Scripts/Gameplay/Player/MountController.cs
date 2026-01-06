@@ -3,6 +3,7 @@
 using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Input;
+using MalbersAnimations.Controller;
 
 namespace CavalryFight.Gameplay.Player
 {
@@ -10,9 +11,9 @@ namespace CavalryFight.Gameplay.Player
     /// 馬（マウント）を制御するコンポーネント
     /// </summary>
     /// <remarks>
-    /// Malbers Horse AnimSet Proのラッパーとして機能し、
-    /// 移動制御とカスタマイズ適用のインターフェースを提供します。
-    /// IInputServiceから直接入力を受け取り、馬の移動を制御します。
+    /// Malbers MAnimalコンポーネントをラップし、IInputServiceからの入力を
+    /// MAnimalのAPIに変換して馬の移動とアニメーションを制御します。
+    /// MAnimalが物理とアニメーションを処理するため、直接的なTransform操作は行いません。
     /// </remarks>
     public class MountController : MonoBehaviour
     {
@@ -29,23 +30,6 @@ namespace CavalryFight.Gameplay.Player
         [Tooltip("騎手が座る位置")]
         [SerializeField] private Transform? _mountPoint;
 
-        [Header("Movement Settings")]
-        [Tooltip("歩行速度")]
-        [SerializeField] private float _walkSpeed = 4f;
-
-        [Tooltip("走行速度")]
-        [SerializeField] private float _runSpeed = 8f;
-
-        [Tooltip("ダッシュ速度")]
-        [SerializeField] private float _sprintSpeed = 12f;
-
-        [Tooltip("回転速度")]
-        [SerializeField] private float _rotationSpeed = 120f;
-
-        [Header("Physics")]
-        [Tooltip("Rigidbodyを使用するか（falseの場合はTransform移動）")]
-        [SerializeField] private bool _useRigidbody = false;
-
         [Header("Debug")]
         [SerializeField] private bool _debugLog = false;
 
@@ -54,14 +38,9 @@ namespace CavalryFight.Gameplay.Player
         #region Private Fields
 
         private IInputService? _inputService;
-        private Rigidbody? _rigidbody;
+        private MAnimal? _animal;
         private bool _hasRider = false;
-        private float _currentSpeed = 0f;
-
-        // Animatorパラメータ
-        private static readonly int SpeedParam = Animator.StringToHash("Speed");
-        private static readonly int StateParam = Animator.StringToHash("State");
-        private static readonly int SpeedMultiplierParam = Animator.StringToHash("SpeedMultiplier");
+        private bool _isSprinting = false;
 
         #endregion
 
@@ -86,9 +65,9 @@ namespace CavalryFight.Gameplay.Player
         public bool HasRider => _hasRider;
 
         /// <summary>
-        /// 現在の速度を取得します
+        /// MAnimalコンポーネントを取得します
         /// </summary>
-        public float CurrentSpeed => _currentSpeed;
+        public MAnimal? Animal => _animal;
 
         /// <summary>
         /// Animatorを取得します
@@ -102,48 +81,23 @@ namespace CavalryFight.Gameplay.Player
         private void Awake()
         {
             _inputService = ServiceLocator.Instance.Get<IInputService>();
-            _rigidbody = GetComponent<Rigidbody>();
+
+            // MAnimalコンポーネントを取得
+            _animal = GetComponent<MAnimal>();
+            if (_animal == null)
+            {
+                _animal = GetComponentInChildren<MAnimal>();
+            }
 
             ValidateReferences();
-            ConfigurePhysics();
-        }
-
-        /// <summary>
-        /// 物理設定を調整します
-        /// </summary>
-        private void ConfigurePhysics()
-        {
-            // Rigidbodyの設定を調整して、予期しない動きを防ぐ
-            if (_rigidbody != null)
-            {
-                // キネマティックでない場合、制約を設定
-                if (!_rigidbody.isKinematic)
-                {
-                    // 回転の制限（X,Zは固定、Yのみ回転可能）
-                    _rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-
-                    // ドラッグを増やして滑りを防ぐ
-                    _rigidbody.linearDamping = 5f;
-                    _rigidbody.angularDamping = 5f;
-                }
-            }
         }
 
         private void Update()
         {
             // 騎手がいる場合のみ入力を処理
-            if (_hasRider && _inputService != null && _inputService.InputEnabled)
+            if (_hasRider && _inputService != null && _inputService.InputEnabled && _animal != null)
             {
                 HandleMovementInput();
-            }
-        }
-
-        private void FixedUpdate()
-        {
-            // Rigidbody移動の場合はFixedUpdateで処理
-            if (_useRigidbody && _hasRider)
-            {
-                // Rigidbody移動はここで実装
             }
         }
 
@@ -170,10 +124,14 @@ namespace CavalryFight.Gameplay.Player
         public void OnRiderDismounted()
         {
             _hasRider = false;
-            _currentSpeed = 0f;
+            _isSprinting = false;
 
-            // 停止アニメーション
-            UpdateAnimator(0f);
+            // MAnimalの移動を停止
+            if (_animal != null)
+            {
+                _animal.StopMoving();
+                _animal.Sprint_Set(false);
+            }
 
             if (_debugLog)
             {
@@ -192,36 +150,25 @@ namespace CavalryFight.Gameplay.Player
         /// <param name="isSprinting">ダッシュ中か</param>
         public void SetMovementInput(Vector2 moveInput, bool isSprinting)
         {
-            if (!_hasRider)
+            if (!_hasRider || _animal == null)
             {
                 return;
             }
 
-            // 速度計算
-            float targetSpeed = 0f;
-            if (moveInput.magnitude > 0.1f)
+            // MAnimalに入力を渡す（MAnimalが物理とアニメーションを処理）
+            _animal.SetInputAxis(moveInput);
+
+            // スプリント状態の更新
+            if (_isSprinting != isSprinting)
             {
-                if (isSprinting)
+                _isSprinting = isSprinting;
+                _animal.Sprint_Set(isSprinting);
+
+                if (_debugLog)
                 {
-                    targetSpeed = _sprintSpeed;
-                }
-                else if (moveInput.y > 0.5f)
-                {
-                    targetSpeed = _runSpeed;
-                }
-                else
-                {
-                    targetSpeed = _walkSpeed;
+                    Debug.Log($"[MountController] Sprint: {isSprinting}");
                 }
             }
-
-            _currentSpeed = Mathf.Lerp(_currentSpeed, targetSpeed, Time.deltaTime * 5f);
-
-            // 移動適用
-            ApplyMovement(moveInput);
-
-            // アニメーション更新
-            UpdateAnimator(_currentSpeed);
         }
 
         #endregion
@@ -255,74 +202,35 @@ namespace CavalryFight.Gameplay.Player
             bool isSprinting = _inputService.GetSprintButton();
 
             SetMovementInput(moveInput, isSprinting);
+
+            // ジャンプ入力を処理
+            HandleJumpInput();
         }
 
         /// <summary>
-        /// 移動を適用します
+        /// ジャンプ入力を処理します
         /// </summary>
-        /// <param name="moveInput">移動入力</param>
-        private void ApplyMovement(Vector2 moveInput)
+        private void HandleJumpInput()
         {
-            if (moveInput.magnitude < 0.1f)
+            if (_inputService == null || _animal == null)
             {
                 return;
             }
 
-            // 回転（左右入力）
-            float rotationAmount = moveInput.x * _rotationSpeed * Time.deltaTime;
-            transform.Rotate(0f, rotationAmount, 0f);
+            // ジャンプボタンの状態を取得
+            bool jumpPressed = _inputService.GetJumpButton();
 
-            // 前進/後退
-            if (Mathf.Abs(moveInput.y) > 0.1f)
+            // Jump StateのInputValueを設定（MAnimalの標準的な入力処理方式）
+            var jumpState = _animal.State_Get(2); // Jump StateID = 2
+            if (jumpState != null)
             {
-                Vector3 moveDirection = transform.forward * moveInput.y;
-                float speed = moveInput.y > 0 ? _currentSpeed : _walkSpeed * 0.5f; // 後退は遅い
-
-                if (_useRigidbody && _rigidbody != null)
-                {
-                    _rigidbody.MovePosition(transform.position + moveDirection * speed * Time.deltaTime);
-                }
-                else
-                {
-                    transform.position += moveDirection * speed * Time.deltaTime;
-                }
+                jumpState.SetInput(jumpPressed);
             }
-        }
 
-        /// <summary>
-        /// Animatorを更新します
-        /// </summary>
-        /// <param name="speed">現在の速度</param>
-        /// <remarks>
-        /// TODO: Malbers馬のAnimatorパラメータを調査して正しいパラメータ名を設定
-        /// 現在はAnimatorパラメータが不明なため、スキップ
-        /// </remarks>
-        private void UpdateAnimator(float speed)
-        {
-            // TODO: Malbers馬のAnimatorパラメータを調査して実装
-            // 現在はパラメータが存在しないためスキップ
-            // if (_animator == null)
-            // {
-            //     return;
-            // }
-            //
-            // _animator.SetFloat(SpeedParam, speed);
-            //
-            // int state = 0;
-            // if (speed > _runSpeed * 0.9f)
-            // {
-            //     state = 4; // Sprint
-            // }
-            // else if (speed > _walkSpeed * 1.5f)
-            // {
-            //     state = 3; // Run
-            // }
-            // else if (speed > _walkSpeed * 0.5f)
-            // {
-            //     state = 1; // Walk
-            // }
-            //
-            // _animator.SetInteger(StateParam, state);
+            if (_debugLog && jumpPressed)
+            {
+                Debug.Log("[MountController] Jump input sent to MAnimal");
+            }
         }
 
         #endregion
@@ -334,6 +242,11 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void ValidateReferences()
         {
+            if (_animal == null)
+            {
+                Debug.LogError("[MountController] MAnimal コンポーネントが見つかりません。Malbers Animal Controllerが設定されていることを確認してください。");
+            }
+
             if (_horseModel == null)
             {
                 // 子オブジェクトから馬モデルを自動検出
