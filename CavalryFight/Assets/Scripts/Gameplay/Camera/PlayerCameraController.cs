@@ -143,7 +143,15 @@ namespace CavalryFight.Gameplay.Camera
                 return;
             }
 
+            // ターゲットが破棄されている場合はスキップ
+            // Unity の == 演算子は破棄されたオブジェクトを null と判定する
             if (_actualTarget == null)
+            {
+                return;
+            }
+
+            // 追加チェック: GameObjectがアクティブかどうか確認
+            if (!_actualTarget.gameObject.activeInHierarchy)
             {
                 return;
             }
@@ -366,6 +374,8 @@ namespace CavalryFight.Gameplay.Camera
             // 追従対象を保存
             _actualTarget = target;
 
+            Debug.Log($"[PlayerCameraController] CreateRotationPivot - Target: {target.name}, Position: {target.position}, Parent: {target.parent?.name ?? "null"}");
+
             // 回転ピボットをワールド空間に作成（親なし - これが重要！）
             // 親に設定しないことで、馬のバウンスを継承しない
             GameObject pivotObj = new GameObject("CameraRotationPivot");
@@ -413,20 +423,12 @@ namespace CavalryFight.Gameplay.Camera
         {
             _playerController = playerController;
 
-            // 弓の発射位置を取得してFirstPersonカメラのターゲットに設定
+            // 弓の発射位置を取得
             _firstPersonTarget = playerController.BowFirePoint;
 
-            if (_firstPersonTarget != null && _firstPersonCamera != null)
-            {
-                // FirstPersonカメラは弓の発射位置をフォロー
-                _firstPersonCamera.Follow = _firstPersonTarget;
-
-                // LookAtは発射方向（前方）
-                // 発射位置の前方を向くために、発射位置自体をLookAtにするか、
-                // 別のオブジェクトを作成する
-                // ここではFollowと同じ位置にして、カメラの向きは発射位置の回転に従う
-                _firstPersonCamera.LookAt = null; // LookAtを無効にしてFollowの回転に従う
-            }
+            // FirstPersonカメラはThirdPersonと同じピボットを使用
+            // これにより、回転入力がFirst Personモードでも有効になる
+            // SetTargetsで設定されたピボットのCameraFollow/CameraLookAtを使用
         }
 
         #endregion

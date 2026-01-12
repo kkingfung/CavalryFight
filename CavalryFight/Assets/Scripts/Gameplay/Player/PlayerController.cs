@@ -57,6 +57,8 @@ namespace CavalryFight.Gameplay.Player
         [Header("References")]
         [Tooltip("騎手コントローラー（P09モデルのラッパー）")]
         [SerializeField] private RiderController? _riderController;
+        [Tooltip("エイムコントローラー（上半身回転）")]
+        [SerializeField] private RiderAimController? _riderAimController;
         [SerializeField] private Transform? _cameraTransform;
 
         #endregion
@@ -328,6 +330,12 @@ namespace CavalryFight.Gameplay.Player
                     _currentCharge = 0f;
                     _riderController?.SetChargeAmount(0f);
 
+                    // 射撃後、騎乗アイドルに戻る
+                    _riderController?.SetAnimationState(RiderAnimationState.MountedIdle);
+
+                    // 上半身のエイム回転を終了
+                    _riderAimController?.SetAiming(false);
+
                     // TrainingManagerにチャージ終了を通知
                     TrainingManager.Instance?.NotifyChargingEnded();
                 }
@@ -345,6 +353,9 @@ namespace CavalryFight.Gameplay.Player
 
             // エイムアニメーションを開始
             _riderController?.SetAnimationState(RiderAnimationState.Aiming);
+
+            // 上半身のエイム回転を開始
+            _riderAimController?.SetAiming(true);
 
             // TrainingManagerにチャージ開始を通知
             if (TrainingManager.Instance != null)
@@ -368,6 +379,9 @@ namespace CavalryFight.Gameplay.Player
             _currentCharge = 0f;
             _riderController?.SetChargeAmount(0f);
             _riderController?.SetAnimationState(RiderAnimationState.MountedIdle);
+
+            // 上半身のエイム回転を終了
+            _riderAimController?.SetAiming(false);
 
             // TrainingManagerにチャージ終了を通知
             TrainingManager.Instance?.NotifyChargingEnded();

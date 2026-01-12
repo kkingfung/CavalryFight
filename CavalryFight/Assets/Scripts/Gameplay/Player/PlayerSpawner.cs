@@ -374,8 +374,32 @@ namespace CavalryFight.Gameplay.Player
                 rotation = mount.transform.rotation;
             }
 
+            // プレハブを非アクティブ状態でインスタンス化（MRider.Awake()が走る前にRigidbodyを追加するため）
+            bool prefabWasActive = _riderPrefab.activeSelf;
+            _riderPrefab.SetActive(false);
+
             GameObject rider = Instantiate(_riderPrefab, position, rotation);
             rider.name = "PlayerRider";
+
+            // プレハブを元に戻す
+            _riderPrefab.SetActive(prefabWasActive);
+
+            // MRiderに必要なRigidbodyを追加（Awake()前に）
+            var rb = rider.GetComponent<Rigidbody>();
+            if (rb == null)
+            {
+                rb = rider.AddComponent<Rigidbody>();
+                rb.useGravity = false;
+                rb.isKinematic = true;
+
+                if (_debugLog)
+                {
+                    Debug.Log("[PlayerSpawner] Rigidbody を追加しました。");
+                }
+            }
+
+            // ライダーをアクティブ化（ここでMRider.Awake()が呼ばれる）
+            rider.SetActive(true);
 
             // スポーンしたオブジェクトをPlayerSpawnerと同じシーンに移動
             // （LoadingScreen等の一時シーンでスポーンされた場合の対策）

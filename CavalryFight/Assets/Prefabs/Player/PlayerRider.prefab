@@ -13,6 +13,11 @@ GameObject:
   - component: {fileID: 187543835110835369}
   - component: {fileID: 7550284400033992474}
   - component: {fileID: 8118714726126693239}
+  - component: {fileID: 4973421776515922089}
+  - component: {fileID: 2254594788809253718}
+  - component: {fileID: 4175641851181069932}
+  - component: {fileID: 3993670823199493896}
+  - component: {fileID: 4242427120526353033}
   m_Layer: 0
   m_Name: PlayerRider
   m_TagString: Player
@@ -89,6 +94,7 @@ MonoBehaviour:
   _shootSfx: {fileID: 8300000, guid: 2bc518febeebe50429f452204a9faf5d, type: 3}
   _mountDistance: 2
   _riderController: {fileID: 7550284400033992474}
+  _riderAimController: {fileID: 4242427120526353033}
   _cameraTransform: {fileID: 0}
 --- !u!114 &7550284400033992474
 MonoBehaviour:
@@ -124,8 +130,8 @@ MonoBehaviour:
   SelectedState: 4
   SelectedStance: 4
   ShowStateInInspector: 1
-  Editor_Tabs1: 4
-  Editor_Tabs2: 1
+  Editor_Tabs1: 0
+  Editor_Tabs2: 4
   SelectedMode: 1
   Mode_Tabs1: 0
   Ability_Tabs: 0
@@ -9489,7 +9495,7 @@ MonoBehaviour:
     UseConstant: 1
     ConstantValue: 5
     Variable: {fileID: 0}
-  Aimer: {fileID: 0}
+  Aimer: {fileID: 4973421776515922089}
   pivots:
   - name: Chest
     position: {x: 0, y: 1.5, z: 0}
@@ -10969,7 +10975,7 @@ MonoBehaviour:
       Variable: {fileID: 0}
     position:
       UseConstant: 1
-      ConstantValue: 4.908939
+      ConstantValue: 0
       Variable: {fileID: 0}
     lerpPosition:
       UseConstant: 1
@@ -10993,7 +10999,7 @@ MonoBehaviour:
       Variable: {fileID: 0}
     lerpAnimator:
       UseConstant: 1
-      ConstantValue: 5
+      ConstantValue: 4
       Variable: {fileID: 0}
     strafeSpeed:
       UseConstant: 1
@@ -11011,7 +11017,7 @@ MonoBehaviour:
       Variable: {fileID: 0}
     position:
       UseConstant: 1
-      ConstantValue: 4.908939
+      ConstantValue: 0
       Variable: {fileID: 0}
     lerpPosition:
       UseConstant: 1
@@ -11035,7 +11041,7 @@ MonoBehaviour:
       Variable: {fileID: 0}
     lerpAnimator:
       UseConstant: 1
-      ConstantValue: 5
+      ConstantValue: 4
       Variable: {fileID: 0}
     strafeSpeed:
       UseConstant: 1
@@ -11478,6 +11484,548 @@ MonoBehaviour:
           UseConstant: 1
           ConstantValue: 20
           Variable: {fileID: 0}
+--- !u!114 &4973421776515922089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6323270240798960294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cf9548d1f32af143802e526c7043914, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MalbersAnimations::MalbersAnimations.Utilities.Aim
+  m_active:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  m_aimOrigin: {fileID: 8440599268766688328}
+  m_Smoothness: 10
+  horizontalLerp: 10
+  m_aimLayer:
+    UseConstant: 1
+    ConstantValue:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    Variable: {fileID: 0}
+  m_Triggers: 1
+  m_AimTarget:
+    UseConstant: 1
+    ConstantValue: {fileID: 0}
+    Variable: {fileID: 0}
+  m_AimPosition:
+    UseConstant: 1
+    ConstantValue: {fileID: 0}
+    Variable: {fileID: 0}
+  m_Ignore:
+    UseConstant: 1
+    ConstantValue: {fileID: 0}
+    Variable: {fileID: 0}
+  m_camera:
+    UseConstant: 1
+    ConstantValue: {fileID: 0}
+    Variable: {fileID: 0}
+  m_forwardCam:
+    UseConstant: 1
+    ConstantValue: 0.2
+    Variable: {fileID: 0}
+  m_cycles: 1
+  m_screenCenter:
+    UseConstant: 1
+    ConstantValue: {x: 0.5, y: 0.5}
+    Variable: {fileID: 0}
+  m_UseCamera:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  m_AimSide: 0
+  updateMode: 1
+  MaxDistance: 100
+  m_UseRaycasting:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  rayRadius:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  RayHits: 5
+  OnAimRayTarget:
+    m_PersistentCalls:
+      m_Calls: []
+  OnScreenCenter:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAimSide:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11400000, guid: 1eadc0ff250263642ad75526ef2b828e, type: 2}
+        m_TargetAssemblyTypeName: MalbersAnimations.Events.MEvent, MalbersAnimations
+        m_MethodName: Invoke
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnAiming:
+    m_PersistentCalls:
+      m_Calls: []
+  OnUsingTarget:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHit:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSetTarget:
+    m_PersistentCalls:
+      m_Calls: []
+  OnClearTarget:
+    m_PersistentCalls:
+      m_Calls: []
+  debug: 0
+  m_Animator: {fileID: 0}
+  m_AimHorizontal: AimHorizontal
+  m_AimVertical: AimVertical
+  AngleLerp:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  EditorTab1: 0
+--- !u!114 &2254594788809253718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6323270240798960294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80ced0ef3d825bf46baedd6a5bf7447a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MalbersAnimations::MalbersAnimations.HAP.MRider
+  Parent:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  m_MountStored:
+    UseConstant: 1
+    ConstantValue: {fileID: 0}
+    Variable: {fileID: 0}
+  MountConditions:
+    conditions: []
+    active: 0
+  DismountConditions:
+    conditions: []
+    active: 0
+  StartMounted:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  ReSync: 1
+  Gravity:
+    UseConstant: 1
+    ConstantValue: {x: 0, y: -1, z: 0}
+    Variable: {fileID: 0}
+  m_CanMount:
+    UseConstant: 0
+    ConstantValue: 0
+    Variable: {fileID: 11400000, guid: 9c5a83571f2ebf346b6e6fe49efddaa6, type: 2}
+  m_CanDismount:
+    UseConstant: 0
+    ConstantValue: 0
+    Variable: {fileID: 11400000, guid: e44ea26080b5a4348908b0711d43b082, type: 2}
+  m_CanCallAnimal:
+    UseConstant: 0
+    ConstantValue: 0
+    Variable: {fileID: 11400000, guid: 3aef9340e54e43a4fa761e527cb230ac, type: 2}
+  kinematicRider:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  useIKFeet: 1
+  DismountType: 0
+  LayerPath: Layers/Mount v2
+  MountLayer: Mounted
+  RightHand: {fileID: 9101434269615528383}
+  LeftHand: {fileID: 3484116733158491476}
+  LeftReinOffset:
+    UseConstant: 1
+    ConstantValue: {x: 0, y: 0, z: 0}
+    Variable: {fileID: 0}
+  RightReinOffset:
+    UseConstant: 1
+    ConstantValue: {x: 0, y: 0, z: 0}
+    Variable: {fileID: 0}
+  LinkUpdate: 3
+  AlingMountTrigger:
+    UseConstant: 1
+    ConstantValue: 0.2
+    Variable: {fileID: 0}
+  debug: 0
+  Ground:
+    UseConstant: 1
+    ConstantValue:
+      serializedVersion: 2
+      m_Bits: 1
+    Variable: {fileID: 0}
+  CallRadius:
+    UseConstant: 1
+    ConstantValue: 30
+    Variable: {fileID: 0}
+  TeleportDistance:
+    UseConstant: 1
+    ConstantValue: 7
+    Variable: {fileID: 0}
+  TeleportHeight:
+    UseConstant: 1
+    ConstantValue: 3
+    Variable: {fileID: 0}
+  CallAnimalA: {fileID: 8300000, guid: 3fb6719edfcc17844adc57d626ac64a6, type: 3}
+  StopAnimalA: {fileID: 8300000, guid: b7656b7a8996c42429c82e659e36433e, type: 3}
+  RiderAudio: {fileID: 0}
+  MainCollider: {fileID: 4175641851181069932}
+  MountCollider:
+    name: 
+    enabled: 0
+    isTrigger: 0
+    center: {x: 0, y: 0, z: 0}
+    height: 0
+    direction: 0
+    radius: 0
+    material: {fileID: 0}
+    modify: 0
+  colliders: []
+  OnFindMount:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCanMount:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11400000, guid: eca55a3f01c7eba4d9306cec134e7918, type: 2}
+        m_TargetAssemblyTypeName: MalbersAnimations.Events.MEvent, MalbersAnimations
+        m_MethodName: Invoke
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnCanDismount:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11400000, guid: a152bd8dcf0ba4f46b2c000bd857a592, type: 2}
+        m_TargetAssemblyTypeName: MalbersAnimations.Events.MEvent, MalbersAnimations
+        m_MethodName: Invoke
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  CanCallMount:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11400000, guid: 0e16f11981e702145af9c46dedfcd955, type: 2}
+        m_TargetAssemblyTypeName: MalbersAnimations.Events.MEvent, MalbersAnimations
+        m_MethodName: Invoke
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnStartMounting:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11400000, guid: 6ed281c2bd473cb498c896cd0466278c, type: 2}
+        m_TargetAssemblyTypeName: MalbersAnimations.Events.MEvent, MalbersAnimations
+        m_MethodName: Invoke
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnEndMounting:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11400000, guid: 0611e7ab2a064c74d94f68af51e22016, type: 2}
+        m_TargetAssemblyTypeName: MalbersAnimations.Events.MEvent, MalbersAnimations
+        m_MethodName: Invoke
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+  OnStartDismounting:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11400000, guid: 0611e7ab2a064c74d94f68af51e22016, type: 2}
+        m_TargetAssemblyTypeName: MalbersAnimations.Events.MEvent, MalbersAnimations
+        m_MethodName: Invoke
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: 774c7acaf3bb1304fb314cd4bd618fcb, type: 2}
+        m_TargetAssemblyTypeName: MalbersAnimations.Events.MEvent, MalbersAnimations
+        m_MethodName: Invoke
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 7606234747619572220}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Transform, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnEndDismounting:
+    m_PersistentCalls:
+      m_Calls: []
+  DisableComponents:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  DisableList: []
+  ResyncThreshold: 0.1
+  SyncModes: 0
+  animator: {fileID: 1237107622787857314}
+  m_rigidBody: {fileID: 0}
+  m_root: {fileID: 7606234747619572220}
+  Editor_Tabs1: 0
+  EditOffsetReinLeft: 0
+  EditOffsetReinRight: 0
+  references:
+    version: 2
+    RefIds: []
+--- !u!136 &4175641851181069932
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6323270240798960294}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.2
+  m_Height: 1.5
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.8, z: 0}
+--- !u!114 &3993670823199493896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6323270240798960294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 580e703fe3c4ea64a855a7104b1d92f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MalbersAnimations::MalbersAnimations.MWeaponManager
+  ExitByState: 0
+  ExitByMode: 0
+  UseWeaponsOnlyWhileRiding: 1
+  animal: {fileID: 8118714726126693239}
+  DropPoint: {fileID: 0}
+  DrawWeaponModeID: {fileID: 11400000, guid: 25a9ab75d9646144eaa77342296c549c, type: 2}
+  StoreWeaponModeID: {fileID: 11400000, guid: 908d4f1fe671c064cbb3045eeb113742, type: 2}
+  UnarmedModeID: {fileID: 11400000, guid: 1286867ad3c4cdd4baacac3373aff92c, type: 2}
+  comboManager: {fileID: 0}
+  mainAttackBranch:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  secondAttackBranch:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  IgnoreHandOffset:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_IgnoreDraw:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_IgnoreStore:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  DisableModes: []
+  ExitOnModes: []
+  DisableStates: []
+  ExitOnState: []
+  DropWeapon: []
+  ExitFast: 0
+  StoreSelfHolster: 0
+  UseExternal: 1
+  InstantiateOnEquip: 1
+  DestroyOnUnequip: 0
+  IgnoreParentWeapon: 0
+  OverrideWeaponLayer:
+    UseConstant: 1
+    ConstantValue:
+      serializedVersion: 2
+      m_Bits: 0
+    Variable: {fileID: 0}
+  UseHolsters: 0
+  holsters:
+  - ID: {fileID: 11400000, guid: 8be06e7fc27c57c4e82d4a5cafd76296, type: 2}
+    Index: 0
+    Slots:
+    - {fileID: 7606234747619572220}
+    Weapon: {fileID: 0}
+    Input:
+      UseConstant: 1
+      ConstantValue: 
+      Variable: {fileID: 0}
+    AutoEquip:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    OnWeaponInHolster:
+      m_PersistentCalls:
+        m_Calls: []
+  LeftHandEquipPoint: {fileID: 7911254400169013770}
+  RightHandEquipPoint: {fileID: 8519630951424209224}
+  m_CombatLayerPath: Layers/Combat2
+  m_CombatLayerName: Upper Body (AC Weapons)
+  debug: 0
+  PreAttackConditions:
+    conditions: []
+    active: 0
+  anim: {fileID: 1237107622787857314}
+  StoreAfter:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_WeaponType: WeaponType
+  m_IKAim: IKAim
+  m_IKFreeHand: IKFreeHand
+  m_LeftHand: LeftHand
+  m_WeaponPower: ModePower
+  m_ModeOn: ModeOn
+  m_Mode: Mode
+  Hash_IKFreeHand: 0
+  Hash_IKAim: 0
+  OnCombatMode:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCanAim:
+    m_PersistentCalls:
+      m_Calls: []
+  OnEquipWeapon:
+    m_PersistentCalls:
+      m_Calls: []
+  OnUnequipWeapon:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAttackStart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAttackReleased:
+    m_PersistentCalls:
+      m_Calls: []
+  OnWeaponAction:
+    m_PersistentCalls:
+      m_Calls: []
+  m_AimInput:
+    UseConstant: 1
+    ConstantValue: Aim
+    Variable: {fileID: 0}
+  m_ReloadInput:
+    UseConstant: 1
+    ConstantValue: Reload
+    Variable: {fileID: 0}
+  m_MainAttack:
+    UseConstant: 1
+    ConstantValue: MainAttack
+    Variable: {fileID: 0}
+  m_SecondAttack:
+    UseConstant: 1
+    ConstantValue: SecondAttack
+    Variable: {fileID: 0}
+  m_SpecialAttack:
+    UseConstant: 1
+    ConstantValue: SpecialAttack
+    Variable: {fileID: 0}
+  DestroyOnDrop: 0
+  startWeapon:
+    UseConstant: 1
+    ConstantValue: {fileID: 3973784128776273684}
+    Variable: {fileID: 0}
+  aim:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  canAim:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  Editor_Tabs1: 0
+  Editor_Tabs2: 5
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &4242427120526353033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6323270240798960294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf89b4b7e01ecae45a31bfed562d09d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Gameplay.Player.RiderAimController
+  _animator: {fileID: 1237107622787857314}
+  _mountTransform: {fileID: 0}
+  _minVerticalAngle: -30
+  _maxVerticalAngle: 60
+  _maxHorizontalAngle: 90
+  _aimInSpeed: 10
+  _aimOutSpeed: 5
+  _hairTransforms:
+  - {fileID: 6685347242471257616}
+  _debugLog: 0
 --- !u!1001 &2355707534129116950
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11556,19 +12104,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 110416352359641379, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.1449844e-10
+      value: 0.0000000013189843
       objectReference: {fileID: 0}
     - target: {fileID: 110416352359641379, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0.016538143
       objectReference: {fileID: 0}
     - target: {fileID: 110416352359641379, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.49999982
+      objectReference: {fileID: 0}
+    - target: {fileID: 110416352359641379, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.49999934
+      value: 0.49999946
       objectReference: {fileID: 0}
     - target: {fileID: 110416352359641379, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.50000066
+      value: 0.5000006
+      objectReference: {fileID: 0}
+    - target: {fileID: 110416352359641379, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.50000024
       objectReference: {fileID: 0}
     - target: {fileID: 114137992985244149, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -11744,11 +12300,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 480220994821856746, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.x
-      value: 51.758934
+      value: 51.75905
       objectReference: {fileID: 0}
     - target: {fileID: 480220994821856746, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.x
-      value: -51.75902
+      value: -51.759132
       objectReference: {fileID: 0}
     - target: {fileID: 480220994821856746, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.y
@@ -11756,7 +12312,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 480220994821856746, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.z
-      value: 1.9182392
+      value: 1.918239
       objectReference: {fileID: 0}
     - target: {fileID: 487968431902746413, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -11828,19 +12384,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 573474322993303195, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.2812523
+      value: 0.2812516
       objectReference: {fileID: 0}
     - target: {fileID: 573474322993303195, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.0104374215
+      value: 0.010436251
       objectReference: {fileID: 0}
     - target: {fileID: 573474322993303195, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.3325893
+      value: 0.33258933
       objectReference: {fileID: 0}
     - target: {fileID: 573474322993303195, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.90009594
+      value: -0.90009606
       objectReference: {fileID: 0}
     - target: {fileID: 579256352044872317, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -12420,19 +12976,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1858652091955886453, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.43663993
+      value: 0.43664077
       objectReference: {fileID: 0}
     - target: {fileID: 1858652091955886453, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.8995397
+      value: 0.8995394
       objectReference: {fileID: 0}
     - target: {fileID: 1858652091955886453, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.0057557514
+      value: -0.0057557262
       objectReference: {fileID: 0}
     - target: {fileID: 1858652091955886453, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.011861276
+      value: -0.011861255
       objectReference: {fileID: 0}
     - target: {fileID: 1866615715259188118, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -13141,7 +13697,7 @@ PrefabInstance:
     - target: {fileID: 3574223480302374068, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: e183bd776e6209945b3eb395fa7fc724, type: 2}
+      objectReference: {fileID: 9100000, guid: 0fa04deced78ecd4eaf3ad89969d49de, type: 2}
     - target: {fileID: 3574223480302374068, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_CullingMode
       value: 0
@@ -13176,15 +13732,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3665146902756475510, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.70710576
+      value: 0.7071057
       objectReference: {fileID: 0}
     - target: {fileID: 3665146902756475510, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.0000013240826
+      value: 0.0000014564911
       objectReference: {fileID: 0}
     - target: {fileID: 3665146902756475510, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.00000026481456
+      value: 0.0000003972225
+      objectReference: {fileID: 0}
+    - target: {fileID: 3665146902756475510, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.70710784
       objectReference: {fileID: 0}
     - target: {fileID: 3715902062332794751, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -13276,15 +13836,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3871379806341542941, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.x
-      value: -0.0013947479
+      value: -0.001394748
       objectReference: {fileID: 0}
     - target: {fileID: 3871379806341542941, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.y
       value: -0.0013732902
       objectReference: {fileID: 0}
     - target: {fileID: 3871379806341542941, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_RotationAtRest.z
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 3871379806341542941, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.z
-      value: 90.000015
+      value: 90.00001
       objectReference: {fileID: 0}
     - target: {fileID: 3873621470447402049, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -13356,19 +13920,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4071469140840124482, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.y
-      value: 0.00012874597
+      value: 0.00015020362
       objectReference: {fileID: 0}
     - target: {fileID: 4071469140840124482, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.z
-      value: 90.00017
+      value: 90.000175
       objectReference: {fileID: 0}
     - target: {fileID: 4071469140840124482, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.x
-      value: -0.000093075374
+      value: -0.00009307539
       objectReference: {fileID: 0}
     - target: {fileID: 4071469140840124482, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.z
-      value: -89.99984
+      value: -89.999825
       objectReference: {fileID: 0}
     - target: {fileID: 4072405864870223980, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -13404,11 +13968,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4120719847110405511, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.00000039722607
+      value: -0.00000052963367
       objectReference: {fileID: 0}
     - target: {fileID: 4120719847110405511, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.0000009268569
+      value: -0.0000005296321
       objectReference: {fileID: 0}
     - target: {fileID: 4120719847110405511, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.z
@@ -14196,27 +14760,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5782551979228322853, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.x
-      value: 37.19975
+      value: 37.199703
       objectReference: {fileID: 0}
     - target: {fileID: 5782551979228322853, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.y
-      value: 12.197548
+      value: 12.197667
       objectReference: {fileID: 0}
     - target: {fileID: 5782551979228322853, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.z
-      value: -141.17648
+      value: -141.17651
       objectReference: {fileID: 0}
     - target: {fileID: 5782551979228322853, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.x
-      value: -37.199764
+      value: -37.199726
       objectReference: {fileID: 0}
     - target: {fileID: 5782551979228322853, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.y
-      value: -12.197387
+      value: -12.197507
       objectReference: {fileID: 0}
     - target: {fileID: 5782551979228322853, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.z
-      value: 38.82353
+      value: 38.823475
       objectReference: {fileID: 0}
     - target: {fileID: 5792591402723263397, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -14372,7 +14936,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6102656023619617658, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.x
-      value: -0.000107288295
+      value: -0.00008583063
       objectReference: {fileID: 0}
     - target: {fileID: 6102656023619617658, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.y
@@ -14736,15 +15300,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6830216429574147026, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.y
-      value: 0.0013840192
+      value: 0.001394748
       objectReference: {fileID: 0}
     - target: {fileID: 6830216429574147026, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.z
-      value: -90
+      value: -89.999985
       objectReference: {fileID: 0}
     - target: {fileID: 6830216429574147026, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.z
-      value: -90.000015
+      value: -90
       objectReference: {fileID: 0}
     - target: {fileID: 6831892965491057384, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -15088,15 +15652,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7621695138709257757, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.332589
+      value: 0.33258864
+      objectReference: {fileID: 0}
+    - target: {fileID: 7621695138709257757, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.900096
       objectReference: {fileID: 0}
     - target: {fileID: 7621695138709257757, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.2812529
+      value: 0.2812527
       objectReference: {fileID: 0}
     - target: {fileID: 7621695138709257757, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.010439119
+      value: -0.01043795
       objectReference: {fileID: 0}
     - target: {fileID: 7628861274718669632, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -15171,20 +15739,24 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7793523224437230163, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_RotationAtRest.x
+      value: 51.75911
+      objectReference: {fileID: 0}
+    - target: {fileID: 7793523224437230163, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.y
-      value: -2.4411097
+      value: -2.4411094
       objectReference: {fileID: 0}
     - target: {fileID: 7793523224437230163, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.x
-      value: -51.75896
+      value: -51.759125
       objectReference: {fileID: 0}
     - target: {fileID: 7793523224437230163, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.y
-      value: 2.4412704
+      value: 2.44127
       objectReference: {fileID: 0}
     - target: {fileID: 7793523224437230163, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.z
-      value: -1.9177189
+      value: -1.917719
       objectReference: {fileID: 0}
     - target: {fileID: 7796651180853646490, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -15208,15 +15780,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7852068331262600866, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 0.70710695
       objectReference: {fileID: 0}
     - target: {fileID: 7852068331262600866, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.000017146866
+      value: -0.00001721307
       objectReference: {fileID: 0}
     - target: {fileID: 7852068331262600866, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.000000066203036
+      value: 3.637979e-12
+      objectReference: {fileID: 0}
+    - target: {fileID: 7852068331262600866, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.70710665
       objectReference: {fileID: 0}
     - target: {fileID: 7878793351125395734, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -15297,6 +15873,22 @@ PrefabInstance:
     - target: {fileID: 8006050712290836401, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8009503449318106308, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.5687339
+      objectReference: {fileID: 0}
+    - target: {fileID: 8009503449318106308, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.56873405
+      objectReference: {fileID: 0}
+    - target: {fileID: 8009503449318106308, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.42016834
+      objectReference: {fileID: 0}
+    - target: {fileID: 8009503449318106308, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.4201691
       objectReference: {fileID: 0}
     - target: {fileID: 8018210717508739095, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -15388,7 +15980,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8196755048442345775, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.x
-      value: -0.00010928297
+      value: -0.00008879242
       objectReference: {fileID: 0}
     - target: {fileID: 8196755048442345775, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.z
@@ -15568,15 +16160,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8595387157209492887, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.005756613
+      value: 0.005756576
       objectReference: {fileID: 0}
     - target: {fileID: 8595387157209492887, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.011859637
+      value: -0.011859602
       objectReference: {fileID: 0}
     - target: {fileID: 8595387157209492887, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.4366399
+      value: -0.4366412
+      objectReference: {fileID: 0}
+    - target: {fileID: 8595387157209492887, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.8995392
       objectReference: {fileID: 0}
     - target: {fileID: 8632104612826440533, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -15600,15 +16196,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8694491577153651783, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.70710677
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 8694491577153651783, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.00001708066
+      value: -0.000017080662
       objectReference: {fileID: 0}
     - target: {fileID: 8694491577153651783, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.00000013240879
+      value: 0.00000013240789
       objectReference: {fileID: 0}
     - target: {fileID: 8694893469428519522, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_Layer
@@ -15708,15 +16304,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8870129758616829760, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationAtRest.x
-      value: 37.199764
+      value: 37.199688
+      objectReference: {fileID: 0}
+    - target: {fileID: 8870129758616829760, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_RotationAtRest.y
+      value: 167.80255
       objectReference: {fileID: 0}
     - target: {fileID: 8870129758616829760, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.x
-      value: -37.19992
+      value: -37.19984
       objectReference: {fileID: 0}
     - target: {fileID: 8870129758616829760, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.y
-      value: 12.197158
+      value: 12.197273
       objectReference: {fileID: 0}
     - target: {fileID: 8870129758616829760, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_RotationOffset.z
@@ -15897,7 +16497,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1699141397005813762, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1152538882772149726}
+    - targetCorrespondingSourceObject: {fileID: 1699141397005813762, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1082677890426839881}
   m_SourcePrefab: {fileID: 100100000, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
 --- !u!1 &916022944293563507 stripped
 GameObject:
@@ -15914,6 +16520,589 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4578013503386199894, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
   m_PrefabInstance: {fileID: 2355707534129116950}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &3484116733158491476 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1219127707771744834, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &3973784128776273684 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1699141397005813762, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1152538882772149726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3973784128776273684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28363f8306084124a9094d9338e00e72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MalbersAnimations::MalbersAnimations.Weapons.MShootable
+  index: 135622
+  m_Active:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  m_hitLayer:
+    UseConstant: 0
+    ConstantValue:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    Variable: {fileID: 11400000, guid: f489db1856e43dc47b175dd125135bdc, type: 2}
+  Tags: []
+  AttackDirection: 0
+  triggerInteraction: 1
+  owner: {fileID: 3973784128776273684}
+  m_HitEffect:
+    UseConstant: 1
+    ConstantValue: {fileID: 0}
+    Variable: {fileID: 0}
+  hitEffects: {fileID: 0}
+  hitSound:
+    UseConstant: 1
+    ConstantValue: {fileID: 0}
+    Variable: {fileID: 0}
+  DestroyHitEffect: 0
+  dontHitOwner:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  CustomReaction:
+    reactions: []
+  element: {fileID: 0}
+  interactorID:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  interact:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  pureDamage:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  statModifier:
+    ID: {fileID: 11400000, guid: d6b3e636d59a6c547a2cad40b69f4432, type: 2}
+    modify: 3
+    MinValue:
+      UseConstant: 1
+      ConstantValue: 10
+      Variable: {fileID: 0}
+    MaxValue:
+      UseConstant: 1
+      ConstantValue: 10
+      Variable: {fileID: 0}
+    enable:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    Base: {fileID: 0}
+    useBase: 0
+  m_MissChance:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_cChance:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  cMultiplier:
+    UseConstant: 1
+    ConstantValue: 2
+    Variable: {fileID: 0}
+  m_Force:
+    UseConstant: 1
+    ConstantValue: 50
+    Variable: {fileID: 0}
+  minForce:
+    UseConstant: 1
+    ConstantValue: 20
+    Variable: {fileID: 0}
+  forceMode: 2
+  preventDuplicateDamage: 0
+  OnHit:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHitPosition:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHitInteractable:
+    m_PersistentCalls:
+      m_Calls: []
+  OnProfileChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAttackMissed:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCritical:
+    m_PersistentCalls:
+      m_Calls: []
+  animator: {fileID: 0}
+  AnimatorSpeed:
+    UseConstant: 1
+    ConstantValue: 0.05
+    Variable: {fileID: 0}
+  AnimatorStopTime:
+    UseConstant: 1
+    ConstantValue: 0.1
+    Variable: {fileID: 0}
+  Profiles: []
+  DefaultProfile:
+    Name: 
+    modify: 0
+    interact:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    interactorID:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    react:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    pureDamage:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    statModifier:
+      ID: {fileID: 0}
+      modify: 0
+      MinValue:
+        UseConstant: 1
+        ConstantValue: 0
+        Variable: {fileID: 0}
+      MaxValue:
+        UseConstant: 1
+        ConstantValue: 0
+        Variable: {fileID: 0}
+      enable:
+        UseConstant: 1
+        ConstantValue: 0
+        Variable: {fileID: 0}
+      Base: {fileID: 0}
+      useBase: 0
+    m_cChance:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    m_MissChance:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    cMultiplier:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    maxForce:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    minForce:
+      UseConstant: 1
+      ConstantValue: 0
+      Variable: {fileID: 0}
+    forceMode: 0
+    m_HitEffect:
+      UseConstant: 1
+      ConstantValue: {fileID: 0}
+      Variable: {fileID: 0}
+    CustomReaction:
+      reactions: []
+    element: {fileID: 0}
+  debug: 0
+  m_audio: {fileID: 1082677890426839881}
+  m_UI: {fileID: 0}
+  description:
+    UseConstant: 1
+    ConstantValue: 
+    Variable: {fileID: 0}
+  chargeTime:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_MaxCharge:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  chargeCharMultiplier: 1
+  ChargeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  GroundArmPose: 1
+  groundHandID: {fileID: 11400000, guid: 011ef3104a8cb334ca00baaf88478ebd, type: 2}
+  RidingArmPose: 1
+  GroundCombo: {fileID: 0}
+  RidingCombo: {fileID: 0}
+  PreAttackConditions:
+    conditions: []
+    active: 0
+  PreAimConditions:
+    conditions: []
+    active: 0
+  m_AimOrigin: {fileID: 0}
+  m_AimSide: 0
+  weaponType: {fileID: 11400000, guid: 011ef3104a8cb334ca00baaf88478ebd, type: 2}
+  holster: {fileID: 11400000, guid: 31941dcdef3462d4c959c444d5b4ad1b, type: 2}
+  holsterAnim: {fileID: 0}
+  m_holsterIndex: 0
+  rightHand:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  m_rate:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_Automatic:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_IgnoreDraw:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_IgnoreStore:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  stance: {fileID: 0}
+  strafeOnAim:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  strafeOnEquip:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  strafeOnUnequip:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  AimIKRight: {fileID: 0}
+  AimIKLeft: {fileID: 0}
+  TwoHandIK:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  IKHandLeft:
+    UseConstant: 1
+    ConstantValue: {fileID: 0}
+    Variable: {fileID: 0}
+  IKHandRight:
+    UseConstant: 1
+    ConstantValue: {fileID: 0}
+    Variable: {fileID: 0}
+  HolsterOffset:
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0}
+    Scale: {x: 1, y: 1, z: 1}
+  LeftHandOffset:
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0}
+    Scale: {x: 1, y: 1, z: 1}
+  RightHandOffset:
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0}
+    Scale: {x: 1, y: 1, z: 1}
+  Sounds: []
+  OnEquiped:
+    m_PersistentCalls:
+      m_Calls: []
+  OnUnequiped:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCharged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnMaxCharged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnChargedFinished:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAiming:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAttackStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnUseFreeHand:
+    m_PersistentCalls:
+      m_Calls: []
+  OnReleaseFreeHand:
+    m_PersistentCalls:
+      m_Calls: []
+  EquippedReaction:
+    reactions: []
+  UnequipedReaction:
+    reactions: []
+  OnAttackStartedReaction:
+    reactions: []
+  OnAimingStartReaction:
+    reactions: []
+  OnAimingEndReaction:
+    reactions: []
+  Editor_Tabs1: 4
+  Editor_Tabs2: 0
+  releaseProjectile: 1
+  equipProjectile: 3
+  aimAction: 0
+  releaseDelay:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  releaseByAnimation:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_Projectile:
+    UseConstant: 1
+    ConstantValue: {fileID: 7305638920265391115}
+    Variable: {fileID: 0}
+  spreadAngle:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  spreadMult:
+    UseConstant: 1
+    ConstantValue: {x: 1, y: 1, z: 1}
+    Variable: {fileID: 0}
+  spreadMiss:
+    UseConstant: 1
+    ConstantValue: 5
+    Variable: {fileID: 0}
+  m_ProjectileInitialPoolSize:
+    UseConstant: 1
+    ConstantValue: 10
+    Variable: {fileID: 0}
+  m_ProjectileMaxPoolSize:
+    UseConstant: 1
+    ConstantValue: 1000
+    Variable: {fileID: 0}
+  m_ProjectileParent: {fileID: 0}
+  gravity:
+    UseConstant: 1
+    ConstantValue: {x: 0, y: -9.81, z: 0}
+    Variable: {fileID: 0}
+  UseAimAngle:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  HasFireAnim:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  m_AimAngle:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  AimLimit:
+    minValue: -180
+    maxValue: 180
+  noReload:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_Ammo:
+    UseConstant: 1
+    ConstantValue: 30
+    Variable: {fileID: 0}
+  m_AmmoInChamber:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  m_ChamberSize:
+    UseConstant: 1
+    ConstantValue: 1
+    Variable: {fileID: 0}
+  m_ReloadTime:
+    UseConstant: 1
+    ConstantValue: 1.5
+    Variable: {fileID: 0}
+  m_AutoReload:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_AutoReloadTime:
+    UseConstant: 1
+    ConstantValue: 0.25
+    Variable: {fileID: 0}
+  HasReloadAnim:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  OnBeforeFireProjectile:
+    m_PersistentCalls:
+      m_Calls: []
+  OnLoadProjectile:
+    m_PersistentCalls:
+      m_Calls: []
+  OnFireProjectile:
+    m_PersistentCalls:
+      m_Calls: []
+  OnReloadStart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnReload:
+    m_PersistentCalls:
+      m_Calls: []
+  BeforeFireProjectileReaction:
+    reactions: []
+  LoadProjectileReaction:
+    reactions: []
+  FireProjectileReaction:
+    reactions: []
+  ReloadStartReaction:
+    reactions: []
+  ReloadReaction:
+    reactions: []
+  m_UnequipOnAim:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  m_AfterDistance:
+    UseConstant: 1
+    ConstantValue: 0
+    Variable: {fileID: 0}
+  references:
+    version: 2
+    RefIds: []
+--- !u!82 &1082677890426839881
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3973784128776273684}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!4 &6685347242471257616 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8968417696913342726, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &7305638920265391115 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5031629510082423581, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7741585962992390909 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5466953162998277611, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
@@ -15922,6 +17111,21 @@ Transform:
 --- !u!4 &7859296689335465768 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5593738157800833086, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7911254400169013770 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5583140221868557596, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8440599268766688328 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6166043435929736030, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8519630951424209224 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6236052491480991326, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
   m_PrefabInstance: {fileID: 2355707534129116950}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &9101434269615528383 stripped

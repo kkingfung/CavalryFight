@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 72534892}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1986,7 +1986,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Gameplay.CameraManager
   _cameraController: {fileID: 1300032802}
-  _targetMountByDefault: 1
   _targetOffset: {x: 0, y: 1.5, z: 0}
   _lookAtOffset: {x: 0, y: 1.8, z: 0}
   _debugLog: 1
@@ -2026,6 +2025,8 @@ MonoBehaviour:
   _gamepadSensitivity: 100
   _minVerticalAngle: -80
   _maxVerticalAngle: 80
+  _positionLerpSpeed: 10
+  _rotationLerpSpeed: 15
   _followTarget: {fileID: 0}
   _lookAtTarget: {fileID: 0}
   _playerController: {fileID: 0}
@@ -11589,7 +11590,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 642439614560500351, guid: 5e84f8694e89c3844ba0d51b1b34db6e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.71
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 642439614560500351, guid: 5e84f8694e89c3844ba0d51b1b34db6e, type: 3}
       propertyPath: m_LocalPosition.z

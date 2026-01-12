@@ -188,11 +188,12 @@ namespace CavalryFight.Views
                 return;
             }
 
-            // ポーズボタンチェック（ESCキーを直接チェックもフォールバックとして追加）
+            // ポーズボタンチェック
+            // Note: Input Systemの WasPressedThisFrame() は Time.timeScale = 0 でも動作する
+            // 重複検出を避けるため、レガシー入力は使用しない（Input SystemでもESCがバインドされているため）
             bool menuButtonPressed = _inputService.GetMenuButtonDown();
-            bool escapePressed = UnityEngine.Input.GetKeyDown(KeyCode.Escape);
 
-            if (menuButtonPressed || escapePressed)
+            if (menuButtonPressed)
             {
                 // KeyBindingViewが表示されている場合は、KeyBindingViewを閉じる
                 if (_keyBindingView != null && _keyBindingView.IsVisible)
