@@ -50,7 +50,9 @@ namespace CavalryFight.Services.Audio
             get => _masterVolume;
             set
             {
+                float oldValue = _masterVolume;
                 _masterVolume = Mathf.Clamp01(value);
+                Debug.Log($"[AudioService] MasterVolume changed: {oldValue:F2} -> {_masterVolume:F2}");
                 UpdateBgmVolume();
                 VolumeChanged?.Invoke(this, new VolumeChangedEventArgs(VolumeType.Master, _masterVolume));
             }

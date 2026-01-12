@@ -143,6 +143,16 @@ namespace CavalryFight.Views
 
         private readonly Dictionary<KeyBindingEntry, BindingRow> _bindingRows = new();
         private UnityEngine.Coroutine? _blinkCoroutine;
+        private bool _isVisible;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// ポップアップが表示されているかどうか
+        /// </summary>
+        public bool IsVisible => _isVisible;
 
         #endregion
 
@@ -428,6 +438,8 @@ namespace CavalryFight.Views
         /// </summary>
         public void Show()
         {
+            _isVisible = true;
+
             // UIDocumentのソートオーダーを高くして、他のUIの上に表示
             var uiDocument = GetComponent<UIDocument>();
             if (uiDocument != null)
@@ -455,6 +467,8 @@ namespace CavalryFight.Views
         /// </summary>
         public void Hide()
         {
+            _isVisible = false;
+
             if (_root != null)
             {
                 _root.style.display = DisplayStyle.None;

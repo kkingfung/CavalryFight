@@ -49,6 +49,9 @@ namespace CavalryFight.Views
         private Label? _hitsLabel;
         private Label? _accuracyLabel;
 
+        // Crosshair
+        private VisualElement? _crosshair;
+
         // Settings/Pause Popup
         private VisualElement? _pauseSettingsPopup;
         private Button? _resumeButton;
@@ -68,7 +71,6 @@ namespace CavalryFight.Views
         private DropdownField? _antiAliasingDropdown;
 
         // Gameplay
-        private Slider? _movementSensitivitySlider;
         private Slider? _cameraSensitivitySlider;
         private Toggle? _invertYAxisToggle;
 
@@ -115,11 +117,41 @@ namespace CavalryFight.Views
             }
 
             // TrainingManagerイベント購読
+            SubscribeToTrainingManager();
+        }
+
+        private void Start()
+        {
+            // OnEnableでTrainingManagerがまだ初期化されていない場合に備えて再購読
+            SubscribeToTrainingManager();
+        }
+
+        /// <summary>
+        /// TrainingManagerのイベントを購読します
+        /// </summary>
+        private void SubscribeToTrainingManager()
+        {
             if (TrainingManager.Instance != null)
             {
+                // 重複購読を防ぐために先に解除
+                TrainingManager.Instance.ArrowFired -= OnArrowFired;
+                TrainingManager.Instance.TargetHit -= OnTargetHit;
+                TrainingManager.Instance.ScoreEarned -= OnScoreEarned;
+                TrainingManager.Instance.ChargingStarted -= OnChargingStarted;
+                TrainingManager.Instance.ChargingEnded -= OnChargingEnded;
+
+                // 購読
                 TrainingManager.Instance.ArrowFired += OnArrowFired;
                 TrainingManager.Instance.TargetHit += OnTargetHit;
                 TrainingManager.Instance.ScoreEarned += OnScoreEarned;
+                TrainingManager.Instance.ChargingStarted += OnChargingStarted;
+                TrainingManager.Instance.ChargingEnded += OnChargingEnded;
+
+                Debug.Log("[TrainingView] Subscribed to TrainingManager events");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] TrainingManager.Instance is null, cannot subscribe to events");
             }
         }
 
@@ -131,6 +163,8 @@ namespace CavalryFight.Views
                 TrainingManager.Instance.ArrowFired -= OnArrowFired;
                 TrainingManager.Instance.TargetHit -= OnTargetHit;
                 TrainingManager.Instance.ScoreEarned -= OnScoreEarned;
+                TrainingManager.Instance.ChargingStarted -= OnChargingStarted;
+                TrainingManager.Instance.ChargingEnded -= OnChargingEnded;
             }
 
             // シーン離脱時にTime.timeScaleを必ずリセット（ポーズ中でも）
@@ -154,9 +188,19 @@ namespace CavalryFight.Views
                 return;
             }
 
-            // ポーズボタンチェック
-            if (_inputService.GetMenuButtonDown())
+            // ポーズボタンチェック（ESCキーを直接チェックもフォールバックとして追加）
+            bool menuButtonPressed = _inputService.GetMenuButtonDown();
+            bool escapePressed = UnityEngine.Input.GetKeyDown(KeyCode.Escape);
+
+            if (menuButtonPressed || escapePressed)
             {
+                // KeyBindingViewが表示されている場合は、KeyBindingViewを閉じる
+                if (_keyBindingView != null && _keyBindingView.IsVisible)
+                {
+                    _keyBindingView.Hide();
+                    return;
+                }
+
                 ViewModel.TogglePause();
             }
         }
@@ -173,8 +217,7 @@ namespace CavalryFight.Views
             RegisterEventHandlers();
             UpdateUIFromViewModel();
 
-            // 初期状態では設定ポップアップを非表示
-            _pauseSettingsPopup?.AddToClassList("hidden");
+            // 初期状態ではポーズパネルを非表示（UXMLで既にdisplay:noneが設定されている）
         }
 
         protected override void BindViewModel(TrainingViewModel viewModel)
@@ -220,33 +263,62 @@ namespace CavalryFight.Views
             _hitsLabel = Q<Label>("HitsLabel");
             _accuracyLabel = Q<Label>("AccuracyLabel");
 
-            // Settings/Pause Popup
-            _pauseSettingsPopup = Q<VisualElement>("PauseSettingsPopup");
-            _resumeButton = Q<Button>("ResumeButton");
-            _backToMenuButton = Q<Button>("BackToMenuButton");
+            // Crosshair
+            _crosshair = Q<VisualElement>("Crosshair");
+            if (_crosshair != null)
+            {
+                Debug.Log("[TrainingView] Crosshair element found.");
+            }
 
-            // Audio Settings
-            _masterVolumeSlider = Q<Slider>("MasterVolumeSlider");
-            _bgmVolumeSlider = Q<Slider>("BgmVolumeSlider");
-            _sfxVolumeSlider = Q<Slider>("SfxVolumeSlider");
+            // CrosshairContainerはマウスイベントを無視（UIの下のゲームをクリック可能に）
+            var crosshairContainer = Q<VisualElement>("CrosshairContainer");
+            if (crosshairContainer != null)
+            {
+                crosshairContainer.pickingMode = PickingMode.Ignore;
+            }
 
-            // Video Settings
-            _displayModeDropdown = Q<DropdownField>("DisplayModeDropdown");
-            _resolutionDropdown = Q<DropdownField>("ResolutionDropdown");
-            _qualityDropdown = Q<DropdownField>("QualityDropdown");
-            _vSyncToggle = Q<Toggle>("VSyncToggle");
-            _targetFpsDropdown = Q<DropdownField>("TargetFpsDropdown");
-            _antiAliasingDropdown = Q<DropdownField>("AntiAliasingDropdown");
+            // Settings Popup (shown when paused)
+            _pauseSettingsPopup = Q<VisualElement>("SettingsPopup");
+            Debug.Log($"[TrainingView] SettingsPopup found: {_pauseSettingsPopup != null}");
 
-            // Gameplay Settings
-            _movementSensitivitySlider = Q<Slider>("MovementSensitivitySlider");
-            _cameraSensitivitySlider = Q<Slider>("CameraSensitivitySlider");
-            _invertYAxisToggle = Q<Toggle>("InvertYAxisToggle");
+            // SettingsPopup内から全てのUIを取得
+            if (_pauseSettingsPopup != null)
+            {
+                // Footer Buttons（Resume, Back to Menu）
+                _resumeButton = _pauseSettingsPopup.Q<Button>("ResumeButton");
+                _backToMenuButton = _pauseSettingsPopup.Q<Button>("BackToMenuButton");
 
-            // Settings Buttons
-            _keyBindingsButton = Q<Button>("KeyBindingsButton");
-            _applySettingsButton = Q<Button>("ApplySettingsButton");
-            _resetSettingsButton = Q<Button>("ResetSettingsButton");
+                // Audio Settings
+                _masterVolumeSlider = _pauseSettingsPopup.Q<Slider>("MasterVolumeSlider");
+                _bgmVolumeSlider = _pauseSettingsPopup.Q<Slider>("BgmVolumeSlider");
+                _sfxVolumeSlider = _pauseSettingsPopup.Q<Slider>("SfxVolumeSlider");
+
+                // Video Settings
+                _displayModeDropdown = _pauseSettingsPopup.Q<DropdownField>("DisplayModeDropdown");
+                _resolutionDropdown = _pauseSettingsPopup.Q<DropdownField>("ResolutionDropdown");
+                _qualityDropdown = _pauseSettingsPopup.Q<DropdownField>("QualityDropdown");
+                _vSyncToggle = _pauseSettingsPopup.Q<Toggle>("VSyncToggle");
+                _targetFpsDropdown = _pauseSettingsPopup.Q<DropdownField>("TargetFpsDropdown");
+                _antiAliasingDropdown = _pauseSettingsPopup.Q<DropdownField>("AntiAliasingDropdown");
+
+                // Gameplay Settings
+                _cameraSensitivitySlider = _pauseSettingsPopup.Q<Slider>("CameraSensitivitySlider");
+                _invertYAxisToggle = _pauseSettingsPopup.Q<Toggle>("InvertYAxisToggle");
+
+                // Settings Buttons
+                _keyBindingsButton = _pauseSettingsPopup.Q<Button>("KeyBindingsButton");
+                _applySettingsButton = _pauseSettingsPopup.Q<Button>("ApplySettingsButton");
+                _resetSettingsButton = _pauseSettingsPopup.Q<Button>("ResetSettingsButton");
+
+                Debug.Log($"[TrainingView] ResumeButton found: {_resumeButton != null}");
+                Debug.Log($"[TrainingView] BackToMenuButton found: {_backToMenuButton != null}");
+                Debug.Log($"[TrainingView] MasterVolumeSlider found: {_masterVolumeSlider != null}");
+                Debug.Log($"[TrainingView] ApplySettingsButton found: {_applySettingsButton != null}");
+            }
+            else
+            {
+                Debug.LogError("[TrainingView] SettingsPopup not found! Buttons and settings will not work.");
+            }
         }
 
         /// <summary>
@@ -254,15 +326,27 @@ namespace CavalryFight.Views
         /// </summary>
         private void RegisterEventHandlers()
         {
+            Debug.Log("[TrainingView] Registering event handlers...");
+
             // Settings/Pause Popup Buttons
             if (_resumeButton != null)
             {
                 _resumeButton.clicked += OnResumeClicked;
+                Debug.Log("[TrainingView] ResumeButton event handler registered.");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] ResumeButton is null, cannot register handler!");
             }
 
             if (_backToMenuButton != null)
             {
                 _backToMenuButton.clicked += OnBackToMenuClicked;
+                Debug.Log("[TrainingView] BackToMenuButton event handler registered.");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] BackToMenuButton is null, cannot register handler!");
             }
 
             // Settings Buttons
@@ -274,6 +358,11 @@ namespace CavalryFight.Views
             if (_applySettingsButton != null)
             {
                 _applySettingsButton.clicked += OnApplySettingsClicked;
+                Debug.Log("[TrainingView] ApplySettingsButton event handler registered.");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] ApplySettingsButton is null, cannot register handler!");
             }
 
             if (_resetSettingsButton != null)
@@ -329,11 +418,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay Settings
-            if (_movementSensitivitySlider != null)
-            {
-                _movementSensitivitySlider.RegisterValueChangedCallback(OnMovementSensitivityChanged);
-            }
-
             if (_cameraSensitivitySlider != null)
             {
                 _cameraSensitivitySlider.RegisterValueChangedCallback(OnCameraSensitivityChanged);
@@ -425,11 +509,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay Settings
-            if (_movementSensitivitySlider != null)
-            {
-                _movementSensitivitySlider.UnregisterValueChangedCallback(OnMovementSensitivityChanged);
-            }
-
             if (_cameraSensitivitySlider != null)
             {
                 _cameraSensitivitySlider.UnregisterValueChangedCallback(OnCameraSensitivityChanged);
@@ -504,6 +583,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnResumeClicked()
         {
+            Debug.Log("[TrainingView] Resume button clicked!");
             PlayButtonClickSfx();
             ViewModel?.Resume();
         }
@@ -513,6 +593,7 @@ namespace CavalryFight.Views
         /// </summary>
         private void OnBackToMenuClicked()
         {
+            Debug.Log("[TrainingView] Back to Menu button clicked!");
             PlayButtonClickSfx();
 
             // シーン遷移前にTime.timeScaleをリセット
@@ -563,7 +644,7 @@ namespace CavalryFight.Views
         }
 
         /// <summary>
-        /// ポーズ設定ポップアップを表示します
+        /// 設定ポップアップを表示します
         /// </summary>
         private void ShowPauseSettingsPopup()
         {
@@ -573,27 +654,44 @@ namespace CavalryFight.Views
             // 現在の設定を読み込んでUIに反映
             LoadCurrentSettings();
 
-            // ポップアップを表示
-            _pauseSettingsPopup?.RemoveFromClassList("hidden");
+            // 設定ポップアップを表示
+            if (_pauseSettingsPopup != null)
+            {
+                _pauseSettingsPopup.style.display = DisplayStyle.Flex;
+
+                // ポップアップがフォーカスを取得できるようにする
+                _pauseSettingsPopup.focusable = true;
+                _pauseSettingsPopup.pickingMode = PickingMode.Position;
+            }
+
+            // ポーズ中はクロスヘアを非表示
+            HideCrosshair();
 
             // ゲーム時間を停止
             Time.timeScale = 0f;
 
-            // 入力を無効化
+            // 入力を無効化（ゲーム入力のみ、UIは操作可能）
             if (_inputService != null)
             {
                 _inputService.InputEnabled = false;
             }
 
-            Debug.Log("[TrainingView] Pause settings popup shown.");
+            // カーソルを表示してロック解除
+            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            UnityEngine.Cursor.visible = true;
+
+            Debug.Log("[TrainingView] Settings popup shown.");
         }
 
         /// <summary>
-        /// ポーズ設定ポップアップを非表示にします
+        /// 設定ポップアップを非表示にします
         /// </summary>
         private void HidePauseSettingsPopup()
         {
-            _pauseSettingsPopup?.AddToClassList("hidden");
+            if (_pauseSettingsPopup != null)
+            {
+                _pauseSettingsPopup.style.display = DisplayStyle.None;
+            }
 
             // ゲーム時間を再開
             Time.timeScale = 1f;
@@ -604,7 +702,11 @@ namespace CavalryFight.Views
                 _inputService.InputEnabled = true;
             }
 
-            Debug.Log("[TrainingView] Pause settings popup hidden.");
+            // カーソルをロックして非表示に戻す
+            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+            UnityEngine.Cursor.visible = false;
+
+            Debug.Log("[TrainingView] Settings popup hidden.");
         }
 
         #endregion
@@ -727,11 +829,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay
-            if (_movementSensitivitySlider != null)
-            {
-                _movementSensitivitySlider.SetValueWithoutNotify(_settingsViewModel.MovementSensitivity);
-            }
-
             if (_cameraSensitivitySlider != null)
             {
                 _cameraSensitivitySlider.SetValueWithoutNotify(_settingsViewModel.CameraSensitivity);
@@ -767,8 +864,40 @@ namespace CavalryFight.Views
         private void OnApplySettingsClicked()
         {
             PlayButtonClickSfx();
-            _settingsViewModel?.ApplySettingsCommand.Execute(null);
-            Debug.Log("[TrainingView] Settings applied.");
+
+            if (_settingsViewModel == null)
+            {
+                Debug.LogWarning("[TrainingView] SettingsViewModel is null!");
+                return;
+            }
+
+            // デバッグログ
+            bool canApply = _settingsViewModel.ApplySettingsCommand.CanExecute(null);
+            Debug.Log($"[TrainingView] CanApplySettings: {canApply}, HasPendingChanges: {_settingsViewModel.HasPendingChanges}");
+
+            // CanExecute がfalseでも強制的に適用を試みる
+            if (canApply)
+            {
+                _settingsViewModel.ApplySettingsCommand.Execute(null);
+            }
+            else
+            {
+                // CanExecuteがfalseの場合でも、設定を直接適用してみる
+                Debug.LogWarning("[TrainingView] CanApplySettings returned false, attempting force apply...");
+                var gameSettingsService = ServiceLocator.Instance.Get<IGameSettingsService>();
+                if (gameSettingsService != null)
+                {
+                    gameSettingsService.ApplySettings();
+                    gameSettingsService.SaveSettings();
+                    Debug.Log("[TrainingView] Force applied settings via GameSettingsService.");
+                }
+                else
+                {
+                    Debug.LogError("[TrainingView] GameSettingsService not found!");
+                }
+            }
+
+            Debug.Log("[TrainingView] Settings apply completed.");
         }
 
         /// <summary>
@@ -797,6 +926,7 @@ namespace CavalryFight.Views
             if (_settingsViewModel != null)
             {
                 _settingsViewModel.MasterVolume = evt.newValue;
+                Debug.Log($"[TrainingView] Master volume changed to: {evt.newValue}");
             }
         }
 
@@ -891,17 +1021,6 @@ namespace CavalryFight.Views
 
         // Gameplay Change Handlers
         /// <summary>
-        /// 移動感度変更時の処理
-        /// </summary>
-        private void OnMovementSensitivityChanged(ChangeEvent<float> evt)
-        {
-            if (_settingsViewModel != null)
-            {
-                _settingsViewModel.MovementSensitivity = evt.newValue;
-            }
-        }
-
-        /// <summary>
         /// カメラ感度変更時の処理
         /// </summary>
         private void OnCameraSensitivityChanged(ChangeEvent<float> evt)
@@ -920,6 +1039,55 @@ namespace CavalryFight.Views
             if (_settingsViewModel != null)
             {
                 _settingsViewModel.InvertYAxis = evt.newValue;
+            }
+        }
+
+        #endregion
+
+        #region Crosshair
+
+        /// <summary>
+        /// チャージ開始時の処理
+        /// </summary>
+        private void OnChargingStarted(object? sender, System.EventArgs e)
+        {
+            Debug.Log("[TrainingView] OnChargingStarted - showing crosshair");
+            ShowCrosshair();
+        }
+
+        /// <summary>
+        /// チャージ終了時の処理
+        /// </summary>
+        private void OnChargingEnded(object? sender, System.EventArgs e)
+        {
+            Debug.Log("[TrainingView] OnChargingEnded - hiding crosshair");
+            HideCrosshair();
+        }
+
+        /// <summary>
+        /// クロスヘアを表示します
+        /// </summary>
+        private void ShowCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.RemoveFromClassList("hidden");
+                Debug.Log("[TrainingView] Crosshair shown");
+            }
+            else
+            {
+                Debug.LogWarning("[TrainingView] Crosshair element is null!");
+            }
+        }
+
+        /// <summary>
+        /// クロスヘアを非表示にします
+        /// </summary>
+        private void HideCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.AddToClassList("hidden");
             }
         }
 

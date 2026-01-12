@@ -41,6 +41,16 @@ namespace CavalryFight.Services.Training
         /// </summary>
         public event EventHandler<ScoreEarnedEventArgs>? ScoreEarned;
 
+        /// <summary>
+        /// チャージ（エイミング）が開始された時に発生します
+        /// </summary>
+        public event EventHandler? ChargingStarted;
+
+        /// <summary>
+        /// チャージ（エイミング）が終了した時に発生します
+        /// </summary>
+        public event EventHandler? ChargingEnded;
+
         #endregion
 
         #region Private Fields
@@ -137,6 +147,24 @@ namespace CavalryFight.Services.Training
             _arrowsFired = 0;
             _hits = 0;
             Debug.Log("[TrainingManager] Training reset.");
+        }
+
+        /// <summary>
+        /// チャージ開始を通知します
+        /// </summary>
+        public void NotifyChargingStarted()
+        {
+            Debug.Log("[TrainingManager] NotifyChargingStarted called");
+            ChargingStarted?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// チャージ終了を通知します
+        /// </summary>
+        public void NotifyChargingEnded()
+        {
+            Debug.Log("[TrainingManager] NotifyChargingEnded called");
+            ChargingEnded?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion

@@ -37,6 +37,8 @@ namespace CavalryFight.Gameplay.Player
         [SerializeField] private float _minArrowSpeed = 15f;
         [SerializeField] private float _maxArrowSpeed = 50f;
         [SerializeField] private float _maxChargeTime = 2f;
+        [Tooltip("矢のスケール（デフォルト: 0.1）")]
+        [SerializeField] private float _arrowScale = 0.1f;
 
         [Header("Arrow Types (MasterStylizedProjectiles)")]
         [Tooltip("矢タイプ設定（ScriptableObject）- Assets/Settings/ArrowTypeConfig.asset")]
@@ -50,11 +52,11 @@ namespace CavalryFight.Gameplay.Player
         [SerializeField] private AudioClip? _shootSfx;
 
         [Header("Mount Settings")]
-        [SerializeField] private Transform? _mountPoint;
         [SerializeField] private float _mountDistance = 2f;
 
         [Header("References")]
-        [SerializeField] private Animator? _animator;
+        [Tooltip("騎手コントローラー（P09モデルのラッパー）")]
+        [SerializeField] private RiderController? _riderController;
         [SerializeField] private Transform? _cameraTransform;
 
         #endregion
@@ -79,18 +81,7 @@ namespace CavalryFight.Gameplay.Player
         private GameObject? _currentMuzzleEffectPrefab;
         private GameObject? _currentHitEffectPrefab;
 
-        /// <summary>Animatorパラメータ: Speed</summary>
-        private static readonly int SpeedParam = Animator.StringToHash("Speed");
-        /// <summary>Animatorパラメータ: IsGrounded</summary>
-        private static readonly int IsGroundedParam = Animator.StringToHash("IsGrounded");
-        /// <summary>Animatorパラメータ: Jump</summary>
-        private static readonly int JumpParam = Animator.StringToHash("Jump");
-        /// <summary>Animatorパラメータ: IsMounted</summary>
-        private static readonly int IsMountedParam = Animator.StringToHash("IsMounted");
-        /// <summary>Animatorパラメータ: Shoot</summary>
-        private static readonly int ShootParam = Animator.StringToHash("Shoot");
-        /// <summary>Animatorパラメータ: Charge</summary>
-        private static readonly int ChargeParam = Animator.StringToHash("Charge");
+        // アニメーション制御はRiderControllerに委譲
 
         #endregion
 
@@ -105,6 +96,11 @@ namespace CavalryFight.Gameplay.Player
         /// 現在のチャージ量を取得します（0.0～1.0）
         /// </summary>
         public float ChargeAmount => _currentCharge;
+
+        /// <summary>
+        /// 弓の発射位置（FirstPersonカメラ用）
+        /// </summary>
+        public Transform? BowFirePoint => _bowFirePoint;
 
         #endregion
 
@@ -137,8 +133,9 @@ namespace CavalryFight.Gameplay.Player
 
         private void Start()
         {
-            // トレーニング/マッチ開始時に自動的に馬に騎乗
-            AutoMountAtStart();
+            // 注意: 騎乗はPlayerSpawnerが処理します
+            // PlayerSpawner.SpawnRider() → RiderController.MountTo() で騎乗
+            // AutoMountAtStart() は不要になりました
         }
 
         /// <summary>
@@ -161,7 +158,7 @@ namespace CavalryFight.Gameplay.Player
 
             // 騎乗状態に設定（距離チェックなし）
             _isMounted = true;
-            _animator?.SetBool(IsMountedParam, true);
+            _riderController?.SetAnimationState(RiderAnimationState.MountedIdle);
 
             // プレイヤーを馬のMountPointに移動
             Transform? horseMountPoint = nearestHorse.transform.Find("MountPoint");
@@ -189,8 +186,13 @@ namespace CavalryFight.Gameplay.Player
                 return;
             }
 
-            // トレーニングモードでは常に馬に乗っている状態
-            // マッチ開始時に自動騎乗し、終了まで降りない
+            // RiderControllerから騎乗状態を同期
+            if (_riderController != null)
+            {
+                _isMounted = _riderController.IsMounted;
+            }
+
+            // 騎乗中は移動をMountControllerに任せ、戦闘のみ処理
             if (_isMounted)
             {
                 HandleMountedState();
@@ -255,19 +257,14 @@ namespace CavalryFight.Gameplay.Player
             if (_inputService.GetJumpButtonDown() && _isGrounded)
             {
                 _velocity.y = Mathf.Sqrt(_jumpHeight * -2f * _gravity);
-                _animator?.SetTrigger(JumpParam);
+                // ジャンプアニメーションはRiderControllerに追加が必要な場合に実装
             }
 
             // 重力適用
             _velocity.y += _gravity * Time.deltaTime;
             _characterController.Move(_velocity * Time.deltaTime);
 
-            // Animator更新
-            if (_animator != null)
-            {
-                _animator.SetFloat(SpeedParam, moveDirection.magnitude * speed);
-                _animator.SetBool(IsGroundedParam, _isGrounded);
-            }
+            // 地上移動時のアニメーション更新（将来的にRiderControllerに移行）
         }
 
         /// <summary>
@@ -320,8 +317,8 @@ namespace CavalryFight.Gameplay.Player
                 float chargeTime = Time.time - _chargeStartTime;
                 _currentCharge = Mathf.Clamp01(chargeTime / _maxChargeTime);
 
-                // Animator更新
-                _animator?.SetFloat(ChargeParam, _currentCharge);
+                // RiderControllerでチャージ量を更新
+                _riderController?.SetChargeAmount(_currentCharge);
 
                 // 矢を発射（ボタン離した時）
                 if (_inputService.GetAttackButtonUp())
@@ -329,7 +326,10 @@ namespace CavalryFight.Gameplay.Player
                     FireArrow(_currentCharge);
                     _isCharging = false;
                     _currentCharge = 0f;
-                    _animator?.SetFloat(ChargeParam, 0f);
+                    _riderController?.SetChargeAmount(0f);
+
+                    // TrainingManagerにチャージ終了を通知
+                    TrainingManager.Instance?.NotifyChargingEnded();
                 }
             }
         }
@@ -343,6 +343,19 @@ namespace CavalryFight.Gameplay.Player
             _chargeStartTime = Time.time;
             _currentCharge = 0f;
 
+            // エイムアニメーションを開始
+            _riderController?.SetAnimationState(RiderAnimationState.Aiming);
+
+            // TrainingManagerにチャージ開始を通知
+            if (TrainingManager.Instance != null)
+            {
+                TrainingManager.Instance.NotifyChargingStarted();
+            }
+            else
+            {
+                Debug.LogWarning("[PlayerController] TrainingManager.Instance is null! Add TrainingManager to the scene.");
+            }
+
             Debug.Log("[PlayerController] Charge started");
         }
 
@@ -353,7 +366,11 @@ namespace CavalryFight.Gameplay.Player
         {
             _isCharging = false;
             _currentCharge = 0f;
-            _animator?.SetFloat(ChargeParam, 0f);
+            _riderController?.SetChargeAmount(0f);
+            _riderController?.SetAnimationState(RiderAnimationState.MountedIdle);
+
+            // TrainingManagerにチャージ終了を通知
+            TrainingManager.Instance?.NotifyChargingEnded();
 
             Debug.Log("[PlayerController] Charge canceled");
         }
@@ -378,38 +395,66 @@ namespace CavalryFight.Gameplay.Player
 
             // チャージ量に応じた矢の速度を計算
             float arrowSpeed = Mathf.Lerp(_minArrowSpeed, _maxArrowSpeed, chargeAmount);
+            Vector3 velocity = _bowFirePoint.forward * arrowSpeed;
 
-            // 矢をインスタンス化
-            GameObject arrowObj = Instantiate(arrowPrefabToUse, _bowFirePoint.position, _bowFirePoint.rotation);
+            // 矢のスポーン位置を前方にオフセット（馬との衝突を防ぐ）
+            Vector3 spawnPosition = _bowFirePoint.position + _bowFirePoint.forward * 0.5f;
 
-            // ArrowProjectileコンポーネントを取得して速度を設定
-            var arrowProjectile = arrowObj.GetComponent<ArrowProjectile>();
-            if (arrowProjectile != null)
+            // 矢の親オブジェクトを作成（スケール1,1,1を維持、物理演算用）
+            GameObject arrowParent = new GameObject("Arrow");
+            arrowParent.transform.position = spawnPosition;
+            arrowParent.transform.rotation = _bowFirePoint.rotation;
+
+            // VFX矢プレハブを親の子としてインスタンス化
+            GameObject arrowVisual = Instantiate(arrowPrefabToUse, arrowParent.transform);
+            arrowVisual.transform.localPosition = Vector3.zero;
+            arrowVisual.transform.localRotation = Quaternion.identity;
+
+            // ビジュアルにスケールを適用
+            arrowVisual.transform.localScale = Vector3.one * _arrowScale;
+
+            // VFXプレハブにRigidbodyがある場合は無効化（親で物理制御するため）
+            Rigidbody? visualRb = arrowVisual.GetComponent<Rigidbody>();
+            if (visualRb != null)
             {
-                Vector3 velocity = _bowFirePoint.forward * arrowSpeed;
-                arrowProjectile.SetVelocity(velocity);
-
-                // チャージ量も設定（スコア計算に使用）
-                arrowProjectile.SetChargeAmount(chargeAmount);
-
-                // ヒットエフェクトを設定（カスタマイズから）
-                if (_currentHitEffectPrefab != null)
-                {
-                    arrowProjectile.SetHitEffectPrefab(_currentHitEffectPrefab);
-                }
+                visualRb.isKinematic = true;
             }
-            else
+
+            // ArrowProjectileコンポーネントを親に追加（RequireComponentでRigidbodyも自動追加される）
+            var arrowProjectile = arrowParent.AddComponent<ArrowProjectile>();
+
+            // 発射者と馬を無視対象に設定（衝突判定の前に設定する）
+            arrowProjectile.AddIgnoredObject(gameObject);
+            // 親（馬）も無視対象に追加
+            if (transform.parent != null)
             {
-                // ArrowProjectileがない場合はRigidbodyに直接設定
-                Rigidbody? arrowRb = arrowObj.GetComponent<Rigidbody>();
-                if (arrowRb != null)
-                {
-                    arrowRb.linearVelocity = _bowFirePoint.forward * arrowSpeed;
-                }
+                arrowProjectile.AddIgnoredObject(transform.parent.gameObject);
             }
+            // ルートオブジェクトも追加（階層が深い場合）
+            arrowProjectile.AddIgnoredObject(transform.root.gameObject);
+
+            // 速度とチャージ量を設定
+            arrowProjectile.SetVelocity(velocity);
+            arrowProjectile.SetChargeAmount(chargeAmount);
+
+            // ヒットエフェクトを設定（ArrowTypeConfigから）
+            arrowProjectile.SetHitEffectPrefab(_currentHitEffectPrefab);
+
+            // Rigidbodyを取得して設定（ArrowProjectileのRequireComponentで自動追加済み）
+            Rigidbody arrowRb = arrowParent.GetComponent<Rigidbody>();
+            arrowRb.useGravity = true;
+            arrowRb.linearVelocity = velocity;
+
+            // コライダーを親に追加（矢の当たり判定）
+            var collider = arrowParent.AddComponent<SphereCollider>();
+            collider.radius = 0.1f;
+            collider.isTrigger = true;
+
+            // 発射者と馬のコライダーとの衝突を物理的に無視（Physics.IgnoreCollision）
+            IgnoreCollisionWithOwner(collider);
 
             // 射撃アニメーション再生
-            _animator?.SetTrigger(ShootParam);
+            _riderController?.SetAnimationState(RiderAnimationState.Shooting);
 
             // 射撃音を再生
             PlayShootSound();
@@ -510,13 +555,21 @@ namespace CavalryFight.Gameplay.Player
 
             // 騎乗成功
             _isMounted = true;
-            _animator?.SetBool(IsMountedParam, true);
+            _riderController?.SetAnimationState(RiderAnimationState.MountedIdle);
 
-            // プレイヤーを馬の位置に移動（Malbers Mountポイントを使用する場合は後で調整）
-            if (_mountPoint != null && nearestHorse.transform.Find("MountPoint") != null)
+            // プレイヤーを馬のMountPointに移動
+            Transform? horseMountPoint = nearestHorse.transform.Find("MountPoint");
+            if (horseMountPoint != null)
             {
-                Transform horseMountPoint = nearestHorse.transform.Find("MountPoint");
                 transform.position = horseMountPoint.position;
+                transform.rotation = horseMountPoint.rotation;
+                transform.SetParent(nearestHorse.transform);
+            }
+            else
+            {
+                // MountPointがない場合は馬の位置に配置
+                transform.position = nearestHorse.transform.position + Vector3.up * 1.5f;
+                transform.rotation = nearestHorse.transform.rotation;
                 transform.SetParent(nearestHorse.transform);
             }
 
@@ -567,7 +620,7 @@ namespace CavalryFight.Gameplay.Player
         private void Dismount()
         {
             _isMounted = false;
-            _animator?.SetBool(IsMountedParam, false);
+            _riderController?.SetAnimationState(RiderAnimationState.Idle);
 
             // 馬から降りる（親子関係を解除）
             if (transform.parent != null)
@@ -649,6 +702,44 @@ namespace CavalryFight.Gameplay.Player
         /// 現在の矢タイプを取得します
         /// </summary>
         public ArrowType CurrentArrowType => _currentArrowType;
+
+        #endregion
+
+        #region Collision Helpers
+
+        /// <summary>
+        /// 発射者と馬のコライダーとの衝突を無視します
+        /// </summary>
+        /// <param name="arrowCollider">矢のコライダー</param>
+        private void IgnoreCollisionWithOwner(Collider arrowCollider)
+        {
+            // 自身のすべてのコライダーを取得して無視
+            Collider[] myColliders = GetComponentsInChildren<Collider>();
+            foreach (var col in myColliders)
+            {
+                Physics.IgnoreCollision(arrowCollider, col, true);
+            }
+
+            // 親（馬）のすべてのコライダーを取得して無視
+            if (transform.parent != null)
+            {
+                Collider[] parentColliders = transform.parent.GetComponentsInChildren<Collider>();
+                foreach (var col in parentColliders)
+                {
+                    Physics.IgnoreCollision(arrowCollider, col, true);
+                }
+            }
+
+            // ルートオブジェクトのすべてのコライダーも無視（階層が深い場合）
+            if (transform.root != transform && transform.root != transform.parent)
+            {
+                Collider[] rootColliders = transform.root.GetComponentsInChildren<Collider>();
+                foreach (var col in rootColliders)
+                {
+                    Physics.IgnoreCollision(arrowCollider, col, true);
+                }
+            }
+        }
 
         #endregion
     }

@@ -61,7 +61,6 @@ namespace CavalryFight.ViewModels
         private AntiAliasingLevel _antiAliasingLevel;
 
         // Gameplay
-        private float _movementSensitivity;
         private float _cameraSensitivity;
         private bool _invertYAxis;
 
@@ -257,21 +256,6 @@ namespace CavalryFight.ViewModels
         #region Properties - Gameplay
 
         /// <summary>
-        /// 移動感度を取得または設定します（0.0～1.0）
-        /// </summary>
-        public float MovementSensitivity
-        {
-            get => _movementSensitivity;
-            set
-            {
-                if (SetProperty(ref _movementSensitivity, Mathf.Clamp01(value)))
-                {
-                    UpdatePendingGameplaySettings();
-                }
-            }
-        }
-
-        /// <summary>
         /// カメラ感度を取得または設定します（0.0～1.0）
         /// </summary>
         public float CameraSensitivity
@@ -355,6 +339,8 @@ namespace CavalryFight.ViewModels
             // サービスを取得
             _gameSettingsService = ServiceLocator.Instance.Get<IGameSettingsService>();
             _sceneManagementService = ServiceLocator.Instance.Get<ISceneManagementService>();
+
+            Debug.Log($"[SettingsViewModel] GameSettingsService: {(_gameSettingsService != null ? "found" : "NULL")}");
 
             // コマンドを初期化
             ApplySettingsCommand = new RelayCommand(OnApplySettings, CanApplySettings);
@@ -450,7 +436,6 @@ namespace CavalryFight.ViewModels
             _antiAliasingLevel = ConvertAntiAliasingToEnum(videoSettings.AntiAliasing);
 
             // ゲームプレイ設定
-            _movementSensitivity = gameplaySettings.MovementSensitivity;
             _cameraSensitivity = gameplaySettings.CameraSensitivity;
             _invertYAxis = gameplaySettings.InvertYAxis;
 
@@ -465,7 +450,6 @@ namespace CavalryFight.ViewModels
                 nameof(VSync),
                 nameof(TargetFrameRateIndex),
                 nameof(AntiAliasingIndex),
-                nameof(MovementSensitivity),
                 nameof(CameraSensitivity),
                 nameof(InvertYAxis)
             );
@@ -482,6 +466,7 @@ namespace CavalryFight.ViewModels
         {
             if (_gameSettingsService == null)
             {
+                Debug.LogWarning("[SettingsViewModel] GameSettingsService is null!");
                 return;
             }
 
@@ -489,6 +474,8 @@ namespace CavalryFight.ViewModels
             pendingProfile.Audio.MasterVolume = _masterVolume;
             pendingProfile.Audio.BgmVolume = _bgmVolume;
             pendingProfile.Audio.SfxVolume = _sfxVolume;
+
+            Debug.Log($"[SettingsViewModel] Setting pending audio: Master={_masterVolume:F2}, BGM={_bgmVolume:F2}, SFX={_sfxVolume:F2}");
 
             _gameSettingsService.SetPendingSettings(pendingProfile);
             OnPropertyChanged(nameof(HasPendingChanges));
@@ -544,7 +531,6 @@ namespace CavalryFight.ViewModels
             }
 
             var pendingProfile = _gameSettingsService.PendingProfile.Clone();
-            pendingProfile.Gameplay.MovementSensitivity = _movementSensitivity;
             pendingProfile.Gameplay.CameraSensitivity = _cameraSensitivity;
             pendingProfile.Gameplay.InvertYAxis = _invertYAxis;
 

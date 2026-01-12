@@ -77,11 +77,6 @@ namespace CavalryFight.Services.Input
         bool InputEnabled { get; set; }
 
         /// <summary>
-        /// 移動入力の感度を取得または設定します（0.0～1.0）
-        /// </summary>
-        float MovementSensitivity { get; set; }
-
-        /// <summary>
         /// カメラ入力の感度を取得または設定します（0.0～1.0）
         /// </summary>
         float CameraSensitivity { get; set; }
@@ -165,6 +160,12 @@ namespace CavalryFight.Services.Input
         /// </summary>
         /// <returns>押された瞬間の場合true</returns>
         bool GetMountButtonDown();
+
+        /// <summary>
+        /// ジャンプボタンが押されているかを取得します。
+        /// </summary>
+        /// <returns>押されている場合true</returns>
+        bool GetJumpButton();
 
         /// <summary>
         /// ジャンプボタンが押された瞬間かを取得します。

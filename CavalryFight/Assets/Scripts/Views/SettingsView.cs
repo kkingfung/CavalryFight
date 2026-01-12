@@ -45,7 +45,6 @@ namespace CavalryFight.Views
         private DropdownField? _antiAliasingDropdown;
 
         // Gameplay
-        private Slider? _movementSensitivitySlider;
         private Slider? _cameraSensitivitySlider;
         private Toggle? _invertYAxisToggle;
 
@@ -196,7 +195,6 @@ namespace CavalryFight.Views
             _antiAliasingDropdown = Q<DropdownField>("AntiAliasingDropdown");
 
             // Gameplay
-            _movementSensitivitySlider = Q<Slider>("MovementSensitivitySlider");
             _cameraSensitivitySlider = Q<Slider>("CameraSensitivitySlider");
             _invertYAxisToggle = Q<Toggle>("InvertYAxisToggle");
 
@@ -258,10 +256,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay
-            if (_movementSensitivitySlider == null)
-            {
-                Debug.LogWarning("[SettingsView] MovementSensitivitySlider not found in UXML.", this);
-            }
             if (_cameraSensitivitySlider == null)
             {
                 Debug.LogWarning("[SettingsView] CameraSensitivitySlider not found in UXML.", this);
@@ -384,10 +378,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay
-            if (_movementSensitivitySlider != null)
-            {
-                _movementSensitivitySlider.value = ViewModel.MovementSensitivity;
-            }
             if (_cameraSensitivitySlider != null)
             {
                 _cameraSensitivitySlider.value = ViewModel.CameraSensitivity;
@@ -448,10 +438,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay
-            if (_movementSensitivitySlider != null)
-            {
-                _movementSensitivitySlider.RegisterValueChangedCallback(OnMovementSensitivityChanged);
-            }
             if (_cameraSensitivitySlider != null)
             {
                 _cameraSensitivitySlider.RegisterValueChangedCallback(OnCameraSensitivityChanged);
@@ -526,10 +512,6 @@ namespace CavalryFight.Views
             }
 
             // Gameplay
-            if (_movementSensitivitySlider != null)
-            {
-                _movementSensitivitySlider.UnregisterValueChangedCallback(OnMovementSensitivityChanged);
-            }
             if (_cameraSensitivitySlider != null)
             {
                 _cameraSensitivitySlider.UnregisterValueChangedCallback(OnCameraSensitivityChanged);
@@ -633,12 +615,6 @@ namespace CavalryFight.Views
                     break;
 
                 // Gameplay
-                case nameof(SettingsViewModel.MovementSensitivity):
-                    if (_movementSensitivitySlider != null)
-                    {
-                        _movementSensitivitySlider.value = ViewModel.MovementSensitivity;
-                    }
-                    break;
                 case nameof(SettingsViewModel.CameraSensitivity):
                     if (_cameraSensitivitySlider != null)
                     {
@@ -729,14 +705,6 @@ namespace CavalryFight.Views
         }
 
         // Gameplay Change Handlers
-        private void OnMovementSensitivityChanged(ChangeEvent<float> evt)
-        {
-            if (ViewModel != null)
-            {
-                ViewModel.MovementSensitivity = evt.newValue;
-            }
-        }
-
         private void OnCameraSensitivityChanged(ChangeEvent<float> evt)
         {
             if (ViewModel != null)

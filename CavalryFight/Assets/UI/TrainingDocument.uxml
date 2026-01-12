@@ -49,21 +49,19 @@
 
         </ui:VisualElement>
 
-        <!-- Score Popup Container -->
-        <ui:VisualElement name="ScorePopupContainer" class="score-popup-container" />
-
-        <!-- Pause Panel (Simple menu) -->
-        <ui:VisualElement name="PausePanel" class="pause-panel" style="display: none;">
-            <ui:VisualElement class="pause-overlay" />
-            <ui:VisualElement class="pause-content">
-                <ui:Label text="PAUSED" class="pause-title" />
-                <ui:Button name="ResumeButton" text="Resume" class="pause-button pause-button--primary" />
-                <ui:Button name="SettingsButton" text="Settings" class="pause-button" />
-                <ui:Button name="BackToMenuButton" text="Back to Menu" class="pause-button pause-button--danger" />
+        <!-- Crosshair (Center of screen, shown when aiming) -->
+        <ui:VisualElement name="CrosshairContainer" class="crosshair-container">
+            <ui:VisualElement name="Crosshair" class="crosshair hidden">
+                <ui:VisualElement class="crosshair-line crosshair-horizontal" />
+                <ui:VisualElement class="crosshair-line crosshair-vertical" />
+                <ui:VisualElement class="crosshair-dot" />
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Settings Popup (Hidden by default) -->
+        <!-- Score Popup Container -->
+        <ui:VisualElement name="ScorePopupContainer" class="score-popup-container" />
+
+        <!-- Settings Popup (shown when paused) -->
         <ui:VisualElement name="SettingsPopup" class="full-settings-popup hidden">
             <!-- Dark Overlay -->
             <ui:VisualElement class="pause-overlay" />
@@ -101,7 +99,6 @@
                     <!-- Gameplay Section -->
                     <ui:VisualElement class="settings-section">
                         <ui:Label text="Gameplay Settings" class="section-header" />
-                        <ui:Slider label="Movement Sensitivity" value="1" high-value="1" name="MovementSensitivitySlider" class="setting-control" />
                         <ui:Slider label="Camera Sensitivity" value="0.5" high-value="1" name="CameraSensitivitySlider" class="setting-control" />
                         <ui:Toggle label="Invert Y-Axis" name="InvertYAxisToggle" value="false" class="setting-control" />
                     </ui:VisualElement>
@@ -110,9 +107,10 @@
 
                 <!-- Footer Buttons -->
                 <ui:VisualElement class="settings-footer">
-                    <!-- Left side: Resume -->
+                    <!-- Left side: Resume and Back to Menu -->
                     <ui:VisualElement class="footer-left">
-                        <ui:Button name="SettingsResumeButton" text="Resume" class="footer-button primary-button" />
+                        <ui:Button name="ResumeButton" text="Resume" class="footer-button primary-button" />
+                        <ui:Button name="BackToMenuButton" text="Back to Menu" class="footer-button danger-button" />
                     </ui:VisualElement>
                     <!-- Right side: Apply and Reset -->
                     <ui:VisualElement class="footer-right">

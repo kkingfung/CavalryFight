@@ -10,6 +10,7 @@ TagManager:
   - Fly
   - Animal
   - Water
+  - Horse
   layers:
   - Default
   - TransparentFX

@@ -80,18 +80,7 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Pause Panel (Simple menu) -->
-        <ui:VisualElement name="PausePanel" class="pause-panel" style="display: none;">
-            <ui:VisualElement class="pause-overlay" />
-            <ui:VisualElement class="pause-content">
-                <ui:Label text="PAUSED" class="pause-title" />
-                <ui:Button name="ResumeButton" text="Resume" class="pause-button pause-button--primary" />
-                <ui:Button name="SettingsButton" text="Settings" class="pause-button" />
-                <ui:Button name="LeaveMatchButton" text="Leave Match" class="pause-button pause-button--danger" />
-            </ui:VisualElement>
-        </ui:VisualElement>
-
-        <!-- Settings Popup (Hidden by default) -->
+        <!-- Settings Popup (shown when paused) -->
         <ui:VisualElement name="SettingsPopup" class="full-settings-popup hidden">
             <!-- Dark Overlay -->
             <ui:VisualElement class="overlay" />
@@ -129,7 +118,6 @@
                     <!-- Gameplay Section -->
                     <ui:VisualElement class="settings-section">
                         <ui:Label text="Gameplay Settings" class="section-header" />
-                        <ui:Slider label="Movement Sensitivity" value="1" high-value="1" name="MovementSensitivitySlider" class="setting-control" />
                         <ui:Slider label="Camera Sensitivity" value="0.5" high-value="1" name="CameraSensitivitySlider" class="setting-control" />
                         <ui:Toggle label="Invert Y-Axis" name="InvertYAxisToggle" value="false" class="setting-control" />
                     </ui:VisualElement>
@@ -138,10 +126,10 @@
 
                 <!-- Footer Buttons -->
                 <ui:VisualElement class="settings-footer">
-                    <!-- Left side: Resume and Back to Menu -->
+                    <!-- Left side: Resume and Leave Match -->
                     <ui:VisualElement class="footer-left">
-                        <ui:Button name="SettingsResumeButton" text="Resume" class="footer-button primary-button" />
-                        <ui:Button name="BackToMenuButton" text="Back to Menu" class="footer-button" />
+                        <ui:Button name="ResumeButton" text="Resume" class="footer-button primary-button" />
+                        <ui:Button name="LeaveMatchButton" text="Leave Match" class="footer-button danger-button" />
                     </ui:VisualElement>
                     <!-- Right side: Apply and Reset -->
                     <ui:VisualElement class="footer-right">
