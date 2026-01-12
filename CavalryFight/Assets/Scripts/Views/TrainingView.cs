@@ -181,6 +181,10 @@ namespace CavalryFight.Views
             base.OnDisable();
         }
 
+        // ポーズ切り替えのクールダウン
+        private float _lastPauseToggleTime = 0f;
+        private const float PauseToggleCooldown = 0.3f;
+
         private void Update()
         {
             if (_inputService == null || ViewModel == null)
@@ -195,6 +199,13 @@ namespace CavalryFight.Views
 
             if (menuButtonPressed)
             {
+                // クールダウンチェック（Time.unscaledTimeを使用してポーズ中でも計測）
+                if (Time.unscaledTime - _lastPauseToggleTime < PauseToggleCooldown)
+                {
+                    return;
+                }
+                _lastPauseToggleTime = Time.unscaledTime;
+
                 // KeyBindingViewが表示されている場合は、KeyBindingViewを閉じる
                 if (_keyBindingView != null && _keyBindingView.IsVisible)
                 {

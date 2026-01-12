@@ -28,6 +28,12 @@ namespace CavalryFight.Gameplay.Camera
         [SerializeField] private float _minVerticalAngle = -40f;
         [SerializeField] private float _maxVerticalAngle = 60f;
 
+        [Header("Horizontal Rotation Limits")]
+        [Tooltip("水平回転制限を有効にするか（騎乗時は馬の向き基準で制限）")]
+        [SerializeField] private bool _enableHorizontalLimits = true;
+        [Tooltip("馬の向きからの最大水平回転角度（左右）")]
+        [SerializeField] private float _maxHorizontalAngleFromMount = 150f;
+
         [Header("Smoothing")]
         [Tooltip("カメラ位置の追従スムージング（高いほど滑らか、0で即座に追従）")]
         [SerializeField] private float _positionLerpSpeed = 10f;
@@ -57,6 +63,9 @@ namespace CavalryFight.Gameplay.Camera
 
         // 追従対象（馬またはライダー）
         private Transform? _actualTarget;
+
+        // 馬のTransform（水平回転制限の基準）
+        private Transform? _mountTransform;
 
         // FirstPerson用のターゲット（弓の発射位置）
         private Transform? _firstPersonTarget;
@@ -228,28 +237,44 @@ namespace CavalryFight.Gameplay.Camera
             // カメラ入力を取得
             Vector2 cameraInput = _inputService.GetCameraInput();
 
-            if (cameraInput.magnitude < 0.01f)
+            bool hasInput = cameraInput.magnitude >= 0.01f;
+
+            if (hasInput)
             {
-                return;
+                // 感度を適用（マウスかゲームパッドかで異なる）
+                float sensitivity = _mouseSensitivity;
+
+                // ゲームパッドの場合はより高い感度を使用
+                if (Mathf.Abs(cameraInput.x) > 1f || Mathf.Abs(cameraInput.y) > 1f)
+                {
+                    sensitivity = _gamepadSensitivity * Time.deltaTime;
+                }
+
+                // 水平・垂直回転を計算
+                _horizontalRotation += cameraInput.x * sensitivity;
+                _verticalRotation -= cameraInput.y * sensitivity;
+
+                // 垂直回転を制限
+                _verticalRotation = Mathf.Clamp(_verticalRotation, _minVerticalAngle, _maxVerticalAngle);
             }
 
-            // 感度を適用（マウスかゲームパッドかで異なる）
-            float sensitivity = _mouseSensitivity;
-
-            // ゲームパッドの場合はより高い感度を使用
-            if (Mathf.Abs(cameraInput.x) > 1f || Mathf.Abs(cameraInput.y) > 1f)
+            // 水平回転を制限（馬の向き基準）- 入力がなくても常に適用（馬が回転した場合に追従）
+            if (_enableHorizontalLimits && _mountTransform != null)
             {
-                sensitivity = _gamepadSensitivity * Time.deltaTime;
+                // 馬の現在の向き（Y軸回転のみ）
+                float mountYRotation = _mountTransform.eulerAngles.y;
+
+                // カメラの水平回転と馬の向きの差を計算
+                float angleDiff = Mathf.DeltaAngle(mountYRotation, _horizontalRotation);
+
+                // 制限を適用
+                float clampedAngleDiff = Mathf.Clamp(angleDiff, -_maxHorizontalAngleFromMount, _maxHorizontalAngleFromMount);
+
+                // 制限後の水平回転を計算
+                _horizontalRotation = mountYRotation + clampedAngleDiff;
             }
 
-            // 水平・垂直回転を計算
-            _horizontalRotation += cameraInput.x * sensitivity;
-            _verticalRotation -= cameraInput.y * sensitivity;
-
-            // 垂直回転を制限
-            _verticalRotation = Mathf.Clamp(_verticalRotation, _minVerticalAngle, _maxVerticalAngle);
-
-            // カメラの回転を適用
+            // カメラの回転を適用（入力または制限がある場合）
             ApplyCameraRotation();
         }
 
@@ -429,6 +454,16 @@ namespace CavalryFight.Gameplay.Camera
             // FirstPersonカメラはThirdPersonと同じピボットを使用
             // これにより、回転入力がFirst Personモードでも有効になる
             // SetTargetsで設定されたピボットのCameraFollow/CameraLookAtを使用
+        }
+
+        /// <summary>
+        /// 馬のTransformを設定します（水平回転制限の基準）
+        /// </summary>
+        /// <param name="mountTransform">馬のTransform</param>
+        public void SetMountTransform(Transform mountTransform)
+        {
+            _mountTransform = mountTransform;
+            Debug.Log($"[PlayerCameraController] MountTransform set: {mountTransform?.name ?? "null"}");
         }
 
         #endregion

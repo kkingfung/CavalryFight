@@ -175,6 +175,32 @@ namespace CavalryFight.Gameplay
                         }
                     }
                 }
+
+                // MountTransformを設定（カメラの水平回転制限用）
+                // MAnimalコンポーネントがあるオブジェクトのTransformを使用
+                // （MAnimalが実際の回転を制御するため）
+                if (spawner.SpawnedMount != null && _cameraController != null)
+                {
+                    var mountController = spawner.SpawnedMount.GetComponent<MountController>();
+                    Transform mountTransform;
+
+                    // MAnimalがあるオブジェクトを優先（実際の回転を持つ）
+                    if (mountController != null && mountController.Animal != null)
+                    {
+                        mountTransform = mountController.Animal.transform;
+                    }
+                    else
+                    {
+                        mountTransform = spawner.SpawnedMount.transform;
+                    }
+
+                    _cameraController.SetMountTransform(mountTransform);
+
+                    if (_debugLog)
+                    {
+                        Debug.Log($"[CameraManager] MountTransform をカメラに設定しました: {mountTransform.name}");
+                    }
+                }
             }
         }
 
