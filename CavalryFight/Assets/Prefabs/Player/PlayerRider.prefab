@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 2254594788809253718}
   - component: {fileID: 4175641851181069932}
   - component: {fileID: 3993670823199493896}
-  - component: {fileID: 4242427120526353033}
+  - component: {fileID: 5555555555555555555}
   m_Layer: 0
   m_Name: PlayerRider
   m_TagString: Player
@@ -94,8 +94,8 @@ MonoBehaviour:
   _shootSfx: {fileID: 8300000, guid: 2bc518febeebe50429f452204a9faf5d, type: 3}
   _mountDistance: 2
   _riderController: {fileID: 7550284400033992474}
-  _riderAimController: {fileID: 4242427120526353033}
   _cameraTransform: {fileID: 0}
+  _bowTransform: {fileID: 7028288456246975642}
 --- !u!114 &7550284400033992474
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,6 +112,7 @@ MonoBehaviour:
   _animator: {fileID: 1237107622787857314}
   _rightHandAttachment: {fileID: 9101434269615528383}
   _quiverAttachment: {fileID: 7741585962992390909}
+  _archerController: {fileID: 5555555555555555555}
   _debugLog: 1
 --- !u!114 &8118714726126693239
 MonoBehaviour:
@@ -10975,7 +10976,7 @@ MonoBehaviour:
       Variable: {fileID: 0}
     position:
       UseConstant: 1
-      ConstantValue: 4.908939
+      ConstantValue: 0
       Variable: {fileID: 0}
     lerpPosition:
       UseConstant: 1
@@ -10999,7 +11000,7 @@ MonoBehaviour:
       Variable: {fileID: 0}
     lerpAnimator:
       UseConstant: 1
-      ConstantValue: 5
+      ConstantValue: 4
       Variable: {fileID: 0}
     strafeSpeed:
       UseConstant: 1
@@ -11017,7 +11018,7 @@ MonoBehaviour:
       Variable: {fileID: 0}
     position:
       UseConstant: 1
-      ConstantValue: 4.908939
+      ConstantValue: 0
       Variable: {fileID: 0}
     lerpPosition:
       UseConstant: 1
@@ -11041,7 +11042,7 @@ MonoBehaviour:
       Variable: {fileID: 0}
     lerpAnimator:
       UseConstant: 1
-      ConstantValue: 5
+      ConstantValue: 4
       Variable: {fileID: 0}
     strafeSpeed:
       UseConstant: 1
@@ -11895,8 +11896,8 @@ MonoBehaviour:
   DropWeapon: []
   ExitFast: 0
   StoreSelfHolster: 0
-  UseExternal: 1
-  InstantiateOnEquip: 1
+  UseExternal: 0
+  InstantiateOnEquip: 0
   DestroyOnUnequip: 0
   IgnoreParentWeapon: 0
   OverrideWeaponLayer:
@@ -11905,12 +11906,12 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 0
     Variable: {fileID: 0}
-  UseHolsters: 0
+  UseHolsters: 1
   holsters:
-  - ID: {fileID: 11400000, guid: 8be06e7fc27c57c4e82d4a5cafd76296, type: 2}
+  - ID: {fileID: 11400000, guid: 31941dcdef3462d4c959c444d5b4ad1b, type: 2}
     Index: 0
     Slots:
-    - {fileID: 7606234747619572220}
+    - {fileID: 7741585962992390909}
     Weapon: {fileID: 0}
     Input:
       UseConstant: 1
@@ -11989,7 +11990,7 @@ MonoBehaviour:
   DestroyOnDrop: 0
   startWeapon:
     UseConstant: 1
-    ConstantValue: {fileID: 3973784128776273684}
+    ConstantValue: {fileID: 0}
     Variable: {fileID: 0}
   aim:
     UseConstant: 1
@@ -12004,7 +12005,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
---- !u!114 &4242427120526353033
+--- !u!114 &5555555555555555555
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -12013,20 +12014,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 6323270240798960294}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf89b4b7e01ecae45a31bfed562d09d8, type: 3}
+  m_Script: {fileID: 11500000, guid: bea6f8297fd16cd48ba2d2f8b6d03638, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Gameplay.Player.RiderAimController
+  m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Gameplay.Player.RiderArcherController
   _animator: {fileID: 1237107622787857314}
-  _mountTransform: {fileID: 0}
-  _minVerticalAngle: -45
-  _maxVerticalAngle: 90
-  _minHorizontalAngle: -125
-  _maxHorizontalAngle: 35
-  _aimInSpeed: 10
-  _aimOutSpeed: 5
-  _hairTransforms:
-  - {fileID: 6685347242471257616}
-  _debugLog: 0
+  _bowInHand: {fileID: 3973784128776273684}
+  _bowSheathed: {fileID: 0}
+  _quiver: {fileID: 7741585962992390909}
+  _stringPullDuration: 0.3
+  _stringReleaseDuration: 0.15
+  _pullRange: 0.3
+  _debugLog: 1
 --- !u!1001 &2355707534129116950
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16789,11 +16787,11 @@ MonoBehaviour:
     Variable: {fileID: 0}
   m_IgnoreDraw:
     UseConstant: 1
-    ConstantValue: 0
+    ConstantValue: 1
     Variable: {fileID: 0}
   m_IgnoreStore:
     UseConstant: 1
-    ConstantValue: 0
+    ConstantValue: 1
     Variable: {fileID: 0}
   stance: {fileID: 0}
   strafeOnAim:
@@ -17094,9 +17092,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!4 &6685347242471257616 stripped
+--- !u!4 &4637479969286345230 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 8968417696913342726, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_CorrespondingSourceObject: {fileID: 6983540352480666904, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5351190957211486260 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7706248676735565602, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7028288456246975642 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4699603622695955340, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
   m_PrefabInstance: {fileID: 2355707534129116950}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &7305638920265391115 stripped
@@ -17117,6 +17125,11 @@ Transform:
 --- !u!4 &7911254400169013770 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5583140221868557596, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8042207820577688874 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5704528980088781372, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
   m_PrefabInstance: {fileID: 2355707534129116950}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &8440599268766688328 stripped

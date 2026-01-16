@@ -30,6 +30,14 @@ namespace CavalryFight.Gameplay.Player
         [Tooltip("矢筒を取り付けるポイント（背中）")]
         [SerializeField] private Transform? _quiverAttachment;
 
+        [Header("Archer Controller")]
+        [Tooltip("アーチャーコントローラー（弓のアニメーション制御）")]
+        [SerializeField] private RiderArcherController? _archerController;
+
+        [Header("Animation Gender Swapper")]
+        [Tooltip("性別に応じたアニメーション切り替え（オプション）")]
+        [SerializeField] private RiderAnimationGenderSwapper? _genderSwapper;
+
         [Header("Debug")]
         [SerializeField] private bool _debugLog = false;
 
@@ -40,6 +48,20 @@ namespace CavalryFight.Gameplay.Player
         private bool _isMounted = false;
         private Transform? _mountPoint;
         private bool _originalApplyRootMotion = false;
+
+        #endregion
+
+        #region Archer Controller Property
+
+        /// <summary>
+        /// アーチャーコントローラーを取得します
+        /// </summary>
+        public RiderArcherController? ArcherController => _archerController;
+
+        /// <summary>
+        /// アニメーション性別スワッパーを取得します
+        /// </summary>
+        public RiderAnimationGenderSwapper? GenderSwapper => _genderSwapper;
 
         #endregion
 
@@ -467,6 +489,36 @@ namespace CavalryFight.Gameplay.Player
             if (_animator == null && _debugLog)
             {
                 Debug.LogWarning("[RiderController] Animator が見つかりません");
+            }
+
+            // RiderArcherControllerを自動取得
+            if (_archerController == null)
+            {
+                _archerController = GetComponent<RiderArcherController>();
+                if (_archerController == null)
+                {
+                    _archerController = GetComponentInChildren<RiderArcherController>();
+                }
+
+                if (_archerController != null && _debugLog)
+                {
+                    Debug.Log("[RiderController] RiderArcherController を自動取得しました");
+                }
+            }
+
+            // RiderAnimationGenderSwapperを自動取得
+            if (_genderSwapper == null)
+            {
+                _genderSwapper = GetComponent<RiderAnimationGenderSwapper>();
+                if (_genderSwapper == null)
+                {
+                    _genderSwapper = GetComponentInChildren<RiderAnimationGenderSwapper>();
+                }
+
+                if (_genderSwapper != null && _debugLog)
+                {
+                    Debug.Log("[RiderController] RiderAnimationGenderSwapper を自動取得しました");
+                }
             }
         }
 

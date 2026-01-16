@@ -28,11 +28,21 @@ namespace CavalryFight.Gameplay.Camera
         [SerializeField] private float _minVerticalAngle = -40f;
         [SerializeField] private float _maxVerticalAngle = 60f;
 
-        [Header("Horizontal Rotation Limits")]
+        [Header("Horizontal Rotation Limits (通常時)")]
         [Tooltip("水平回転制限を有効にするか（騎乗時は馬の向き基準で制限）")]
         [SerializeField] private bool _enableHorizontalLimits = true;
         [Tooltip("馬の向きからの最大水平回転角度（左右）")]
         [SerializeField] private float _maxHorizontalAngleFromMount = 150f;
+
+        [Header("Aiming Camera Limits (エイム時)")]
+        [Tooltip("エイム時の垂直角度制限（下方向）- RiderAimControllerと同じ値にすること")]
+        [SerializeField] private float _aimMinVerticalAngle = -30f;
+        [Tooltip("エイム時の垂直角度制限（上方向）- RiderAimControllerと同じ値にすること")]
+        [SerializeField] private float _aimMaxVerticalAngle = 60f;
+        [Tooltip("エイム時の水平角度制限（左方向、負の値）")]
+        [SerializeField] private float _aimMinHorizontalAngle = -35f;
+        [Tooltip("エイム時の水平角度制限（右方向、正の値）")]
+        [SerializeField] private float _aimMaxHorizontalAngle = 125f;
 
         [Header("Smoothing")]
         [Tooltip("カメラ位置の追従スムージング（高いほど滑らか、0で即座に追従）")]
@@ -253,8 +263,15 @@ namespace CavalryFight.Gameplay.Camera
                 // 水平・垂直回転を計算
                 _horizontalRotation += cameraInput.x * sensitivity;
                 _verticalRotation -= cameraInput.y * sensitivity;
+            }
 
-                // 垂直回転を制限
+            // 垂直回転を制限（エイム中はより厳しい制限）
+            if (_isAttacking)
+            {
+                _verticalRotation = Mathf.Clamp(_verticalRotation, _aimMinVerticalAngle, _aimMaxVerticalAngle);
+            }
+            else
+            {
                 _verticalRotation = Mathf.Clamp(_verticalRotation, _minVerticalAngle, _maxVerticalAngle);
             }
 
@@ -267,11 +284,19 @@ namespace CavalryFight.Gameplay.Camera
                 // カメラの水平回転と馬の向きの差を計算
                 float angleDiff = Mathf.DeltaAngle(mountYRotation, _horizontalRotation);
 
-                // 制限を適用
-                float clampedAngleDiff = Mathf.Clamp(angleDiff, -_maxHorizontalAngleFromMount, _maxHorizontalAngleFromMount);
-
-                // 制限後の水平回転を計算
-                _horizontalRotation = mountYRotation + clampedAngleDiff;
+                // エイム中はより厳しい非対称制限を適用
+                if (_isAttacking)
+                {
+                    // 非対称制限: 左は-35°、右は+125°
+                    float clampedAngleDiff = Mathf.Clamp(angleDiff, _aimMinHorizontalAngle, _aimMaxHorizontalAngle);
+                    _horizontalRotation = mountYRotation + clampedAngleDiff;
+                }
+                else
+                {
+                    // 通常時は対称制限
+                    float clampedAngleDiff = Mathf.Clamp(angleDiff, -_maxHorizontalAngleFromMount, _maxHorizontalAngleFromMount);
+                    _horizontalRotation = mountYRotation + clampedAngleDiff;
+                }
             }
 
             // カメラの回転を適用（入力または制限がある場合）

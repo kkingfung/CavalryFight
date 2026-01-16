@@ -57,9 +57,11 @@ namespace CavalryFight.Gameplay.Player
         [Header("References")]
         [Tooltip("騎手コントローラー（P09モデルのラッパー）")]
         [SerializeField] private RiderController? _riderController;
-        [Tooltip("エイムコントローラー（上半身回転）")]
-        [SerializeField] private RiderAimController? _riderAimController;
         [SerializeField] private Transform? _cameraTransform;
+
+        [Header("Bow")]
+        [Tooltip("弓オブジェクト（自動検出）")]
+        [SerializeField] private Transform? _bowTransform;
 
         #endregion
 
@@ -121,7 +123,6 @@ namespace CavalryFight.Gameplay.Player
 
             if (_cameraTransform == null)
             {
-                // カメラが設定されていない場合は、メインカメラを使用
                 UnityEngine.Camera mainCamera = UnityEngine.Camera.main;
                 if (mainCamera != null)
                 {
@@ -131,13 +132,30 @@ namespace CavalryFight.Gameplay.Player
 
             // カスタマイズサービスから矢タイプを適用
             ApplyArrowTypeFromCustomization();
+
+            // 弓の自動検出
+            InitializeBowReferences();
         }
 
         private void Start()
         {
-            // 注意: 騎乗はPlayerSpawnerが処理します
-            // PlayerSpawner.SpawnRider() → RiderController.MountTo() で騎乗
-            // AutoMountAtStart() は不要になりました
+            // 騎乗はPlayerSpawnerが処理します
+        }
+
+        /// <summary>
+        /// 弓の参照を初期化します
+        /// </summary>
+        private void InitializeBowReferences()
+        {
+            if (_bowTransform == null)
+            {
+                var shootable = GetComponentInChildren<MalbersAnimations.Weapons.MShootable>(true);
+                if (shootable != null)
+                {
+                    _bowTransform = shootable.transform;
+                    Debug.Log($"[PlayerController] 弓を自動検出: {_bowTransform.name}");
+                }
+            }
         }
 
         /// <summary>
@@ -205,6 +223,27 @@ namespace CavalryFight.Gameplay.Player
             }
 
             HandleChargeAttack();
+
+            // 弓は手のボーンの子になっているので、手の動きに自動的に追従する
+            // UpdateBowAimingPosition()は不要（手動で位置を上書きすると親子関係が無効になる）
+        }
+
+        /// <summary>
+        /// LateUpdateで弓の位置を強制的に維持（他のスクリプトが上書きするのを防ぐ）
+        /// </summary>
+        private void LateUpdate()
+        {
+            // チャージ中は弓の位置を強制的にゼロに維持
+            if (_isCharging && _bowTransform != null)
+            {
+                // 他のスクリプト（MWeapon等）が位置を上書きしている可能性があるため、
+                // LateUpdateで強制的にゼロに設定
+                if (_bowTransform.localPosition != Vector3.zero || _bowTransform.localRotation != Quaternion.identity)
+                {
+                    _bowTransform.localPosition = Vector3.zero;
+                    _bowTransform.localRotation = Quaternion.identity;
+                }
+            }
         }
 
         #endregion
@@ -330,14 +369,13 @@ namespace CavalryFight.Gameplay.Player
                     _currentCharge = 0f;
                     _riderController?.SetChargeAmount(0f);
 
-                    // 射撃後、騎乗アイドルに戻る
-                    _riderController?.SetAnimationState(RiderAnimationState.MountedIdle);
-
-                    // 上半身のエイム回転を終了
-                    _riderAimController?.SetAiming(false);
+                    // 射撃アニメーションを再生
+                    _riderController?.SetAnimationState(RiderAnimationState.Shooting);
 
                     // TrainingManagerにチャージ終了を通知
                     TrainingManager.Instance?.NotifyChargingEnded();
+
+                    Debug.Log("[PlayerController] Arrow fired");
                 }
             }
         }
@@ -351,21 +389,11 @@ namespace CavalryFight.Gameplay.Player
             _chargeStartTime = Time.time;
             _currentCharge = 0f;
 
-            // エイムアニメーションを開始
+            // エイムアニメーション開始（StateMachineBehavioursが弓の処理を担当）
             _riderController?.SetAnimationState(RiderAnimationState.Aiming);
 
-            // 上半身のエイム回転を開始
-            _riderAimController?.SetAiming(true);
-
             // TrainingManagerにチャージ開始を通知
-            if (TrainingManager.Instance != null)
-            {
-                TrainingManager.Instance.NotifyChargingStarted();
-            }
-            else
-            {
-                Debug.LogWarning("[PlayerController] TrainingManager.Instance is null! Add TrainingManager to the scene.");
-            }
+            TrainingManager.Instance?.NotifyChargingStarted();
 
             Debug.Log("[PlayerController] Charge started");
         }
@@ -380,8 +408,8 @@ namespace CavalryFight.Gameplay.Player
             _riderController?.SetChargeAmount(0f);
             _riderController?.SetAnimationState(RiderAnimationState.MountedIdle);
 
-            // 上半身のエイム回転を終了
-            _riderAimController?.SetAiming(false);
+            // RiderArcherControllerが弓の状態をリセット
+            _riderController?.ArcherController?.ResetBowState();
 
             // TrainingManagerにチャージ終了を通知
             TrainingManager.Instance?.NotifyChargingEnded();
