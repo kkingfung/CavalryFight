@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CavalryFight.Gameplay.Training;
 using CavalryFight.Services.Training;
+using MalbersAnimations;
 
 namespace CavalryFight.Gameplay.Projectiles
 {
@@ -14,6 +15,7 @@ namespace CavalryFight.Gameplay.Projectiles
     /// 物理挙動と衝突検出を管理します。
     /// MasterStylizedProjectilesのVFXと連携します。
     /// トレーニングモードではスコアを、戦闘モードではダメージを与えます。
+    /// Malbers MDamageableを持つ敵にもダメージを与えます。
     /// </remarks>
     [RequireComponent(typeof(Rigidbody))]
     public class ArrowProjectile : MonoBehaviour
@@ -170,6 +172,30 @@ namespace CavalryFight.Gameplay.Projectiles
                 // TrainingTargetが自身でスコア計算とTrainingManager通知を行う
                 trainingTarget.OnHit(hitPoint, _chargeAmount);
                 Debug.Log($"[ArrowProjectile] Hit TrainingTarget: {hitObject.name} | Charge: {_chargeAmount:F2}");
+            }
+            else
+            {
+                // Malbers MDamageableを持つオブジェクトにダメージを与える
+                var damageable = hitObject.GetComponent<MDamageable>();
+                if (damageable == null)
+                {
+                    damageable = hitObject.GetComponentInParent<MDamageable>();
+                }
+
+                if (damageable != null)
+                {
+                    // ダメージ方向を計算（矢の飛行方向）
+                    Vector3 damageDirection = _rigidbody != null ? _rigidbody.linearVelocity.normalized : transform.forward;
+
+                    // Health StatIDを取得
+                    var healthStatID = MTools.GetInstance<StatID>("Health");
+
+                    if (healthStatID != null)
+                    {
+                        // MDamageableにダメージを与える
+                        damageable.ReceiveDamage(damageDirection, gameObject, healthStatID, Damage, false, null, false);
+                    }
+                }
             }
 
             // 刺さるか破壊するか

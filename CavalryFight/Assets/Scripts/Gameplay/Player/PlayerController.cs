@@ -50,6 +50,16 @@ namespace CavalryFight.Gameplay.Player
         [Tooltip("発射時のマズルエフェクト（デフォルト、配列が設定されていない場合に使用）")]
         [SerializeField] private GameObject? _muzzleEffectPrefab;
 
+        [Header("Charging Effect")]
+        [Tooltip("チャージ中のエフェクトプレハブ")]
+        [SerializeField] private GameObject? _chargingEffectPrefab;
+
+        [Tooltip("チャージエフェクトの最小スケール")]
+        [SerializeField] private float _chargingEffectMinScale = 0.1f;
+
+        [Tooltip("チャージエフェクトの最大スケール")]
+        [SerializeField] private float _chargingEffectMaxScale = 1.0f;
+
         [Header("Audio")]
         [SerializeField] private AudioClip? _shootSfx;
 
@@ -86,6 +96,9 @@ namespace CavalryFight.Gameplay.Player
         private GameObject? _currentArrowPrefab;
         private GameObject? _currentMuzzleEffectPrefab;
         private GameObject? _currentHitEffectPrefab;
+
+        // チャージエフェクト
+        private GameObject? _chargingEffectInstance;
 
         // アニメーション制御はRiderControllerに委譲
 
@@ -141,8 +154,6 @@ namespace CavalryFight.Gameplay.Player
 
         private void Start()
         {
-            Debug.Log($"[PlayerController] Start called. _riderController={_riderController != null}");
-
             // RiderControllerが設定されていない場合は自動検出
             if (_riderController == null)
             {
@@ -155,7 +166,6 @@ namespace CavalryFight.Gameplay.Player
                 {
                     _riderController = FindObjectOfType<RiderController>();
                 }
-                Debug.Log($"[PlayerController] RiderController自動検出: {_riderController != null}");
             }
 
             // 騎乗はPlayerSpawnerが処理します
@@ -177,7 +187,6 @@ namespace CavalryFight.Gameplay.Player
                     var target = _riderController.GetCustomizationTarget();
                     if (target != null)
                     {
-                        Debug.Log($"[PlayerController] カスタマイズターゲットが見つかりました: {target.name}");
                         SetupBowToHand();
                         yield break;
                     }
@@ -187,7 +196,6 @@ namespace CavalryFight.Gameplay.Player
                 elapsed += 0.1f;
             }
 
-            Debug.LogWarning("[PlayerController] タイムアウト: カスタマイズターゲットが見つかりませんでした。直接SetupBowToHandを試行します。");
             SetupBowToHand();
         }
 
@@ -203,11 +211,8 @@ namespace CavalryFight.Gameplay.Player
         /// </remarks>
         private void SetupBowToHand()
         {
-            Debug.Log($"[PlayerController] SetupBowToHand called. _riderController={_riderController != null}");
-
             if (_riderController == null)
             {
-                Debug.LogWarning("[PlayerController] RiderController がありません。弓の配置をスキップします。");
                 return;
             }
 
@@ -218,7 +223,6 @@ namespace CavalryFight.Gameplay.Player
             GameObject? riderTarget = _riderController.GetCustomizationTarget();
             if (riderTarget == null)
             {
-                Debug.LogWarning("[PlayerController] カスタマイズターゲットが見つかりません。");
                 return;
             }
 
@@ -240,7 +244,6 @@ namespace CavalryFight.Gameplay.Player
                     if (pc != null)
                     {
                         bowWithConstraint = child.gameObject;
-                        Debug.Log($"[PlayerController] SetupBowToHand: 弓を発見 (ParentConstraint有): {child.name}");
                     }
                     else if (bowWithoutConstraint == null)
                     {
@@ -254,11 +257,8 @@ namespace CavalryFight.Gameplay.Player
 
             if (bowObject == null)
             {
-                Debug.LogWarning("[PlayerController] 弓オブジェクトが見つかりません。");
                 return;
             }
-
-            Debug.Log($"[PlayerController] 弓を発見: {bowObject.name}, 現在の親: {bowObject.transform.parent?.name ?? "null"}, hasPC: {bowObject.GetComponent<ParentConstraint>() != null}");
 
             // ForceBowToLeftHand用のキャッシュを設定
             _p09BowObject = bowObject;
@@ -296,18 +296,12 @@ namespace CavalryFight.Gameplay.Player
                         if (bowPC != null)
                         {
                             bowPC.constraintActive = false;
-                            Debug.Log($"[PlayerController] 弓のParentConstraintを無効化 (sources: {bowPC.sourceCount})");
                         }
 
                         // 弓を左手の子として配置
                         bowObject.transform.SetParent(leftHand);
                         bowObject.transform.localPosition = Vector3.zero;
                         // 回転はForceBowToLeftHandで毎フレーム(0, 90, -90)に設定
-                        Debug.Log($"[PlayerController] 弓を左手に移動: {leftHand.name}");
-                    }
-                    else
-                    {
-                        Debug.Log($"[PlayerController] 弓は既に左手の下にあります。");
                     }
 
                     // 弓が直接アタッチされていることをマーク（Sheathe/Unsheatheで位置変更しない）
@@ -315,10 +309,6 @@ namespace CavalryFight.Gameplay.Player
                     {
                         archerController.MarkBowAsDirectlyAttached();
                     }
-                }
-                else
-                {
-                    Debug.LogWarning("[PlayerController] 左手ボーンが見つかりません。");
                 }
             }
         }
@@ -334,7 +324,6 @@ namespace CavalryFight.Gameplay.Player
                 if (shootable != null)
                 {
                     _bowTransform = shootable.transform;
-                    Debug.Log($"[PlayerController] 弓を自動検出: {_bowTransform.name}");
                 }
             }
         }
@@ -377,7 +366,6 @@ namespace CavalryFight.Gameplay.Player
                 transform.SetParent(nearestHorse.transform);
             }
 
-            Debug.Log($"[PlayerController] Auto-mounted on: {nearestHorse.name} at scene start");
         }
 
         private void Update()
@@ -420,8 +408,16 @@ namespace CavalryFight.Gameplay.Player
             // エイム中は上半身をカメラの向きに回転（アニメーション後に適用）
             if (_isCharging)
             {
+                _isResettingSpineRotation = false;
                 RotateRiderTowardCamera();
             }
+            // リセット中は徐々に前方を向く
+            else if (_isResettingSpineRotation)
+            {
+                SmoothResetSpineRotation();
+            }
+            // 通常時（騎乗中、非エイム）はアニメーションに任せる（補正なし）
+            // アニメーションのMountedIdleが正しく前方を向いていることを前提とする
         }
 
         // P09弓オブジェクトのキャッシュ
@@ -473,14 +469,12 @@ namespace CavalryFight.Gameplay.Player
                     {
                         _p09BowObject = child.gameObject;
                         _bowParentConstraint = child.GetComponent<ParentConstraint>();
-                        Debug.Log($"[PlayerController] ForceBow: Found Bow with ParentConstraint");
-                        break;
+                            break;
                     }
                 }
 
                 if (_p09BowObject == null)
                 {
-                    Debug.LogWarning("[PlayerController] ForceBow: Bow object not found!");
                     return;
                 }
             }
@@ -498,7 +492,6 @@ namespace CavalryFight.Gameplay.Player
                     backSource.weight = 0f;
                     _bowParentConstraint.SetSource(0, handSource);
                     _bowParentConstraint.SetSource(1, backSource);
-                    Debug.Log("[PlayerController] ForceBow: Set ParentConstraint weights - hand=1, back=0");
                 }
             }
 
@@ -612,7 +605,7 @@ namespace CavalryFight.Gameplay.Player
             // チャージ中
             if (_isCharging)
             {
-                // チャージキャンセル
+                // チャージキャンセル（右クリック）
                 if (_inputService.GetCancelAttackButtonDown())
                 {
                     CancelCharge();
@@ -626,9 +619,15 @@ namespace CavalryFight.Gameplay.Player
                 // RiderControllerでチャージ量を更新
                 _riderController?.SetChargeAmount(_currentCharge);
 
+                // チャージエフェクトのスケールを更新
+                UpdateChargingEffectScale(_currentCharge);
+
                 // 矢を発射（ボタン離した時）
                 if (_inputService.GetAttackButtonUp())
                 {
+                    // チャージエフェクトを破棄
+                    DestroyChargingEffect();
+
                     FireArrow(_currentCharge);
                     _isCharging = false;
                     _currentCharge = 0f;
@@ -642,8 +641,6 @@ namespace CavalryFight.Gameplay.Player
 
                     // TrainingManagerにチャージ終了を通知
                     TrainingManager.Instance?.NotifyChargingEnded();
-
-                    Debug.Log("[PlayerController] Arrow fired");
                 }
             }
         }
@@ -660,10 +657,11 @@ namespace CavalryFight.Gameplay.Player
             // エイムアニメーション開始（StateMachineBehavioursが弓の処理を担当）
             _riderController?.SetAnimationState(RiderAnimationState.Aiming);
 
+            // チャージエフェクトを生成
+            SpawnChargingEffect();
+
             // TrainingManagerにチャージ開始を通知
             TrainingManager.Instance?.NotifyChargingStarted();
-
-            Debug.Log("[PlayerController] Charge started");
         }
 
         /// <summary>
@@ -679,13 +677,14 @@ namespace CavalryFight.Gameplay.Player
             // RiderArcherControllerが弓の状態をリセット
             _riderController?.ArcherController?.ResetBowState();
 
+            // チャージエフェクトを破棄
+            DestroyChargingEffect();
+
             // 上半身の回転をリセット
             ResetSpineRotation();
 
             // TrainingManagerにチャージ終了を通知
             TrainingManager.Instance?.NotifyChargingEnded();
-
-            Debug.Log("[PlayerController] Charge canceled");
         }
 
         /// <summary>
@@ -706,17 +705,21 @@ namespace CavalryFight.Gameplay.Player
             // マズルエフェクトを生成（MasterStylizedProjectiles）
             SpawnMuzzleEffect();
 
+            // カメラの向きを取得（矢の発射方向）
+            Vector3 shootDirection = _cameraTransform != null ? _cameraTransform.forward : _bowFirePoint.forward;
+
             // チャージ量に応じた矢の速度を計算
             float arrowSpeed = Mathf.Lerp(_minArrowSpeed, _maxArrowSpeed, chargeAmount);
-            Vector3 velocity = _bowFirePoint.forward * arrowSpeed;
+            Vector3 velocity = shootDirection * arrowSpeed;
 
             // 矢のスポーン位置を前方にオフセット（馬との衝突を防ぐ）
-            Vector3 spawnPosition = _bowFirePoint.position + _bowFirePoint.forward * 0.5f;
+            Vector3 spawnPosition = _bowFirePoint.position + shootDirection * 0.5f;
 
             // 矢の親オブジェクトを作成（スケール1,1,1を維持、物理演算用）
             GameObject arrowParent = new GameObject("Arrow");
             arrowParent.transform.position = spawnPosition;
-            arrowParent.transform.rotation = _bowFirePoint.rotation;
+            arrowParent.transform.rotation = Quaternion.LookRotation(shootDirection);
+
 
             // VFX矢プレハブを親の子としてインスタンス化
             GameObject arrowVisual = Instantiate(arrowPrefabToUse, arrowParent.transform);
@@ -759,9 +762,13 @@ namespace CavalryFight.Gameplay.Player
             arrowRb.linearVelocity = velocity;
 
             // コライダーを親に追加（矢の当たり判定）
+            // 注: isTrigger = false にすることで、相手がTriggerでも衝突を検出できる
             var collider = arrowParent.AddComponent<SphereCollider>();
-            collider.radius = 0.1f;
-            collider.isTrigger = true;
+            collider.radius = 0.15f;  // 少し大きくして当たりやすく
+            collider.isTrigger = false;  // 非Triggerで物理衝突を検出
+
+            // 高速移動でも衝突を検出できるようにContinuous Dynamicに設定
+            arrowRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
             // 発射者と馬のコライダーとの衝突を物理的に無視（Physics.IgnoreCollision）
             IgnoreCollisionWithOwner(collider);
@@ -774,8 +781,6 @@ namespace CavalryFight.Gameplay.Player
 
             // TrainingManagerに通知
             TrainingManager.Instance?.RecordArrowFired();
-
-            Debug.Log($"[PlayerController] Arrow fired! Type: {_currentArrowType}, Charge: {chargeAmount:F2}, Speed: {arrowSpeed:F1}");
         }
 
         #endregion
@@ -817,12 +822,65 @@ namespace CavalryFight.Gameplay.Player
             Destroy(muzzle, 3f);
         }
 
+        /// <summary>
+        /// チャージエフェクトを生成します
+        /// </summary>
+        private void SpawnChargingEffect()
+        {
+            if (_chargingEffectPrefab == null || _bowFirePoint == null)
+            {
+                return;
+            }
+
+            // 既存のエフェクトがあれば破棄
+            DestroyChargingEffect();
+
+            // チャージエフェクトを弓の発射位置に生成し、子として設定
+            _chargingEffectInstance = Instantiate(_chargingEffectPrefab, _bowFirePoint.position, _bowFirePoint.rotation, _bowFirePoint);
+            _chargingEffectInstance.transform.localPosition = Vector3.zero;
+
+            // 初期スケールを最小に設定
+            float initialScale = _chargingEffectMinScale;
+            _chargingEffectInstance.transform.localScale = Vector3.one * initialScale;
+        }
+
+        /// <summary>
+        /// チャージエフェクトのスケールを更新します
+        /// </summary>
+        /// <param name="chargeAmount">チャージ量（0.0～1.0）</param>
+        private void UpdateChargingEffectScale(float chargeAmount)
+        {
+            if (_chargingEffectInstance == null)
+            {
+                return;
+            }
+
+            // チャージ量に応じてスケールを補間
+            float scale = Mathf.Lerp(_chargingEffectMinScale, _chargingEffectMaxScale, chargeAmount);
+            _chargingEffectInstance.transform.localScale = Vector3.one * scale;
+        }
+
+        /// <summary>
+        /// チャージエフェクトを破棄します
+        /// </summary>
+        private void DestroyChargingEffect()
+        {
+            if (_chargingEffectInstance != null)
+            {
+                Destroy(_chargingEffectInstance);
+                _chargingEffectInstance = null;
+            }
+        }
+
         // 上半身（Spine）とHead のキャッシュ
         private Transform? _spineTransform;
         private Transform? _headTransform;
         private float _currentSpineYRotation = 0f;
         private float _currentSpineXRotation = 0f;
         private bool _hairReparented = false;
+        private bool _isResettingSpineRotation = false;
+        private Quaternion _lastSpineWorldRotation = Quaternion.identity;
+        private bool _hasLastSpineRotation = false;
 
         /// <summary>
         /// 騎手の上半身をカメラの向きに回転させます（エイム中）
@@ -840,7 +898,6 @@ namespace CavalryFight.Gameplay.Player
                 if (mainCamera != null)
                 {
                     _cameraTransform = mainCamera.transform;
-                    Debug.Log($"[PlayerController] RotateRider: Camera.main を取得: {_cameraTransform.name}");
                 }
                 else
                 {
@@ -861,18 +918,12 @@ namespace CavalryFight.Gameplay.Player
                 {
                     _spineTransform = animator.GetBoneTransform(HumanBodyBones.Spine);
                     _headTransform = animator.GetBoneTransform(HumanBodyBones.Head);
-                    if (_spineTransform != null)
-                    {
-                        Debug.Log($"[PlayerController] RotateRider: Spine を取得: {_spineTransform.name}");
-                    }
-                    else
+                    if (_spineTransform == null)
                     {
                         return;
                     }
                     if (_headTransform != null)
                     {
-                        Debug.Log($"[PlayerController] RotateRider: Head を取得: {_headTransform.name}");
-
                         // 髪をHeadボーンの子に移動（初回のみ）
                         if (!_hairReparented)
                         {
@@ -929,11 +980,9 @@ namespace CavalryFight.Gameplay.Player
             Quaternion additionalRotation = Quaternion.Euler(_currentSpineXRotation, _currentSpineYRotation, 0f);
             _spineTransform.rotation = _spineTransform.rotation * additionalRotation;
 
-            // 毎秒ログ出力
-            if (Time.frameCount % 60 == 0)
-            {
-                Debug.Log($"[PlayerController] RotateRider: targetY={targetAngleY:F1}, targetX={targetAngleX:F1}, currentY={_currentSpineYRotation:F1}, currentX={_currentSpineXRotation:F1}");
-            }
+            // 現在のワールド回転を保存（リセット時に使用）
+            _lastSpineWorldRotation = _spineTransform.rotation;
+            _hasLastSpineRotation = true;
         }
 
         /// <summary>
@@ -967,19 +1016,66 @@ namespace CavalryFight.Gameplay.Player
                     // ワールド位置と回転を維持
                     t.position = worldPos;
                     t.rotation = worldRot;
-
-                    Debug.Log($"[PlayerController] ReparentHairToHead: {t.name} を Head の子に移動しました");
                 }
             }
         }
 
         /// <summary>
-        /// 上半身の回転をリセットします
+        /// 上半身の回転をリセットします（徐々に戻す）
         /// </summary>
         private void ResetSpineRotation()
         {
-            _currentSpineYRotation = 0f;
-            _currentSpineXRotation = 0f;
+            // フラグを立てて、LateUpdateで徐々にリセット
+            _isResettingSpineRotation = true;
+
+            // 現在のワールド回転を保存（まだ保存されていない場合）
+            if (!_hasLastSpineRotation && _spineTransform != null)
+            {
+                _lastSpineWorldRotation = _spineTransform.rotation;
+                _hasLastSpineRotation = true;
+            }
+        }
+
+        /// <summary>
+        /// 上半身の回転オーバーレイを徐々に0に戻します（アニメーションに任せる）
+        /// </summary>
+        /// <remarks>
+        /// エイム中は騎手がカメラ方向を向くように回転オーバーレイを追加しています。
+        /// 射撃/キャンセル後は、オーバーレイを0に戻してアニメーションの回転に任せます。
+        /// </remarks>
+        private void SmoothResetSpineRotation()
+        {
+            if (_spineTransform == null || _riderController == null)
+            {
+                _isResettingSpineRotation = false;
+                _hasLastSpineRotation = false;
+                _currentSpineYRotation = 0f;
+                _currentSpineXRotation = 0f;
+                return;
+            }
+
+            // より速いリセット速度を使用
+            float resetSpeed = _rotationSpeed * 2f;
+
+            // 目標：オーバーレイを0に戻す（アニメーションの回転のみにする）
+            _currentSpineYRotation = Mathf.LerpAngle(_currentSpineYRotation, 0f, resetSpeed * Time.deltaTime);
+            _currentSpineXRotation = Mathf.LerpAngle(_currentSpineXRotation, 0f, resetSpeed * Time.deltaTime);
+
+            // オーバーレイ回転を適用（0に近づいていく）
+            if (Mathf.Abs(_currentSpineYRotation) > 0.5f || Mathf.Abs(_currentSpineXRotation) > 0.5f)
+            {
+                Quaternion additionalRotation = Quaternion.Euler(_currentSpineXRotation, _currentSpineYRotation, 0f);
+                _spineTransform.rotation = _spineTransform.rotation * additionalRotation;
+            }
+
+            // ほぼ0になったらリセット完了
+            if (Mathf.Abs(_currentSpineYRotation) < 1f && Mathf.Abs(_currentSpineXRotation) < 1f)
+            {
+                _isResettingSpineRotation = false;
+                _hasLastSpineRotation = false;
+                _currentSpineYRotation = 0f;
+                _currentSpineXRotation = 0f;
+            }
         }
 
         #endregion
@@ -1019,7 +1115,6 @@ namespace CavalryFight.Gameplay.Player
 
             if (nearestHorse == null)
             {
-                Debug.Log("[PlayerController] No horse nearby to mount.");
                 return;
             }
 
@@ -1027,7 +1122,6 @@ namespace CavalryFight.Gameplay.Player
             float distance = Vector3.Distance(transform.position, nearestHorse.transform.position);
             if (distance > _mountDistance)
             {
-                Debug.Log($"[PlayerController] Horse too far away: {distance:F1}m (max: {_mountDistance}m)");
                 return;
             }
 
@@ -1050,8 +1144,6 @@ namespace CavalryFight.Gameplay.Player
                 transform.rotation = nearestHorse.transform.rotation;
                 transform.SetParent(nearestHorse.transform);
             }
-
-            Debug.Log($"[PlayerController] Mounted on: {nearestHorse.name}");
         }
 
         /// <summary>
@@ -1108,8 +1200,6 @@ namespace CavalryFight.Gameplay.Player
                 transform.SetParent(null);
                 transform.position = dismountPosition;
             }
-
-            Debug.Log("[PlayerController] Dismounted!");
         }
 
         #endregion
@@ -1142,7 +1232,6 @@ namespace CavalryFight.Gameplay.Player
             var customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
             if (customizationService == null)
             {
-                Debug.Log("[PlayerController] ICustomizationService が取得できませんでした。デフォルトの矢を使用します。");
                 return;
             }
 
@@ -1160,7 +1249,6 @@ namespace CavalryFight.Gameplay.Player
 
             if (_arrowTypeConfig == null)
             {
-                Debug.LogWarning("[PlayerController] ArrowTypeConfig が設定されていません。デフォルトの矢を使用します。");
                 _currentArrowPrefab = null;
                 _currentMuzzleEffectPrefab = null;
                 _currentHitEffectPrefab = null;
@@ -1172,8 +1260,6 @@ namespace CavalryFight.Gameplay.Player
             _currentArrowPrefab = prefabs.arrow;
             _currentMuzzleEffectPrefab = prefabs.muzzle;
             _currentHitEffectPrefab = prefabs.hit;
-
-            Debug.Log($"[PlayerController] 矢タイプを設定: {arrowType} (Arrow: {(_currentArrowPrefab != null ? _currentArrowPrefab.name : "null")})");
         }
 
         /// <summary>

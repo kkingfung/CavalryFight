@@ -35,6 +35,13 @@ namespace CavalryFight.Gameplay.Player
         [SerializeField] private RiderArcherController? _archerController;
 
 
+        [Header("Animation Settings")]
+        [Tooltip("エイムアニメーションへの遷移時間（秒）")]
+        [SerializeField] private float _aimTransitionTime = 0.1f;
+
+        [Tooltip("エイムステート名（Animator Controller内）")]
+        [SerializeField] private string _aimStateName = "Aiming";
+
         [Header("Debug")]
         [SerializeField] private bool _debugLog = false;
 
@@ -227,6 +234,11 @@ namespace CavalryFight.Gameplay.Player
                     {
                         _animator.SetBool(IsAimingHash, false);
                     }
+                    // Shootトリガーを発火してAiming状態から強制的に抜ける
+                    if (HasParameter("Shoot"))
+                    {
+                        _animator.SetTrigger(ShootHash);
+                    }
                     break;
 
                 case RiderAnimationState.Aiming:
@@ -235,10 +247,19 @@ namespace CavalryFight.Gameplay.Player
                     {
                         _animator.SetBool(IsAimingHash, true);
                     }
+                    // CrossFadeで高速遷移（Animator Controllerの遷移時間を無視）
+                    if (!string.IsNullOrEmpty(_aimStateName))
+                    {
+                        _animator.CrossFadeInFixedTime(_aimStateName, _aimTransitionTime);
+                    }
                     break;
 
                 case RiderAnimationState.Shooting:
                     _isAiming = false;
+                    if (hasIsAiming)
+                    {
+                        _animator.SetBool(IsAimingHash, false);
+                    }
                     if (HasParameter("Shoot"))
                     {
                         _animator.SetTrigger(ShootHash);
