@@ -1,7 +1,9 @@
 #nullable enable
 
 using System;
+using CavalryFight.Core.Services;
 using CavalryFight.Gameplay.Match;
+using CavalryFight.Services.Audio;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -36,7 +38,6 @@ namespace CavalryFight.Gameplay.Hunting
         [Header("Audio")]
         [SerializeField] private AudioClip? _attackSound;
         [SerializeField] private AudioClip? _hitSound;
-        [SerializeField] private AudioSource? _audioSource;
 
         #endregion
 
@@ -61,6 +62,7 @@ namespace CavalryFight.Gameplay.Hunting
         private Vector3 _currentVelocity;
         private float _attackCooldownTimer;
         private HuntingRulesHandler? _huntingHandler;
+        private IAudioService? _audioService;
 
         // アニメーターパラメータハッシュ
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
@@ -133,6 +135,9 @@ namespace CavalryFight.Gameplay.Hunting
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            // AudioServiceを取得
+            _audioService = ServiceLocator.Instance.Get<IAudioService>();
 
             // ハンティングルールハンドラーを取得
             if (MatchManager.Instance?.ActiveHandler is HuntingRulesHandler handler)
@@ -231,18 +236,18 @@ namespace CavalryFight.Gameplay.Hunting
                 _animator.SetTrigger(AttackHash);
             }
 
-            if (_audioSource != null && _attackSound != null)
+            if (_attackSound != null)
             {
-                _audioSource.PlayOneShot(_attackSound);
+                _audioService?.PlaySfxAtPosition(_attackSound, transform.position);
             }
         }
 
         [ClientRpc]
         private void PlayHitSoundClientRpc()
         {
-            if (_audioSource != null && _hitSound != null)
+            if (_hitSound != null)
             {
-                _audioSource.PlayOneShot(_hitSound);
+                _audioService?.PlaySfxAtPosition(_hitSound, transform.position);
             }
         }
 

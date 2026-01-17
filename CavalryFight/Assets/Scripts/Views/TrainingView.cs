@@ -181,6 +181,10 @@ namespace CavalryFight.Views
             base.OnDisable();
         }
 
+        // ポーズ切り替えのクールダウン
+        private float _lastPauseToggleTime = 0f;
+        private const float PauseToggleCooldown = 0.3f;
+
         private void Update()
         {
             if (_inputService == null || ViewModel == null)
@@ -188,12 +192,20 @@ namespace CavalryFight.Views
                 return;
             }
 
-            // ポーズボタンチェック（ESCキーを直接チェックもフォールバックとして追加）
+            // ポーズボタンチェック
+            // Note: Input Systemの WasPressedThisFrame() は Time.timeScale = 0 でも動作する
+            // 重複検出を避けるため、レガシー入力は使用しない（Input SystemでもESCがバインドされているため）
             bool menuButtonPressed = _inputService.GetMenuButtonDown();
-            bool escapePressed = UnityEngine.Input.GetKeyDown(KeyCode.Escape);
 
-            if (menuButtonPressed || escapePressed)
+            if (menuButtonPressed)
             {
+                // クールダウンチェック（Time.unscaledTimeを使用してポーズ中でも計測）
+                if (Time.unscaledTime - _lastPauseToggleTime < PauseToggleCooldown)
+                {
+                    return;
+                }
+                _lastPauseToggleTime = Time.unscaledTime;
+
                 // KeyBindingViewが表示されている場合は、KeyBindingViewを閉じる
                 if (_keyBindingView != null && _keyBindingView.IsVisible)
                 {
@@ -948,6 +960,7 @@ namespace CavalryFight.Views
         {
             if (_settingsViewModel != null)
             {
+                Debug.Log($"[TrainingView] SFX volume slider changed: {evt.previousValue:F2} -> {evt.newValue:F2}");
                 _settingsViewModel.SfxVolume = evt.newValue;
             }
         }

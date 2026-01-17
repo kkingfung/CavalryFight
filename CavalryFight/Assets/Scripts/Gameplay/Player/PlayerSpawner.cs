@@ -374,8 +374,32 @@ namespace CavalryFight.Gameplay.Player
                 rotation = mount.transform.rotation;
             }
 
+            // プレハブを非アクティブ状態でインスタンス化（MRider.Awake()が走る前にRigidbodyを追加するため）
+            bool prefabWasActive = _riderPrefab.activeSelf;
+            _riderPrefab.SetActive(false);
+
             GameObject rider = Instantiate(_riderPrefab, position, rotation);
             rider.name = "PlayerRider";
+
+            // プレハブを元に戻す
+            _riderPrefab.SetActive(prefabWasActive);
+
+            // MRiderに必要なRigidbodyを追加（Awake()前に）
+            var rb = rider.GetComponent<Rigidbody>();
+            if (rb == null)
+            {
+                rb = rider.AddComponent<Rigidbody>();
+                rb.useGravity = false;
+                rb.isKinematic = true;
+
+                if (_debugLog)
+                {
+                    Debug.Log("[PlayerSpawner] Rigidbody を追加しました。");
+                }
+            }
+
+            // ライダーをアクティブ化（ここでMRider.Awake()が呼ばれる）
+            rider.SetActive(true);
 
             // スポーンしたオブジェクトをPlayerSpawnerと同じシーンに移動
             // （LoadingScreen等の一時シーンでスポーンされた場合の対策）
@@ -470,12 +494,11 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void ApplyCustomization()
         {
+            Debug.Log($"[PlayerSpawner] ApplyCustomization 開始: _spawnedMount={_spawnedMount != null}, _spawnedRider={_spawnedRider != null}");
+
             if (_customizationService == null)
             {
-                if (_debugLog)
-                {
-                    Debug.Log("[PlayerSpawner] CustomizationService がないため、カスタマイズをスキップします。");
-                }
+                Debug.LogWarning("[PlayerSpawner] CustomizationService がないため、カスタマイズをスキップします。");
                 return;
             }
 
@@ -509,7 +532,183 @@ namespace CavalryFight.Gameplay.Player
                 {
                     Debug.Log($"[PlayerSpawner] 騎手のカスタマイズ適用: {(riderSuccess ? "成功" : "失敗")} (対象: {riderTarget.name})");
                 }
+
+                // 戦闘アニメーターを適用（Kevin Iglesiasの弓アニメーション対応）
+                bool combatAnimatorSuccess = _customizationService.SetCharacterCombatIdleMode(riderTarget, true);
+                if (_debugLog)
+                {
+                    Debug.Log($"[PlayerSpawner] 戦闘アニメーター適用: {(combatAnimatorSuccess ? "成功" : "失敗")}");
+                }
+
+                // 弓オブジェクトをRiderArcherControllerに設定
+                SetupBowForArcherController(riderController, riderTarget);
             }
+        }
+
+        /// <summary>
+        /// 弓オブジェクトを検索してRiderArcherControllerに設定します
+        /// </summary>
+        /// <param name="riderController">RiderController</param>
+        /// <param name="riderTarget">カスタマイズ対象のGameObject</param>
+        private void SetupBowForArcherController(RiderController? riderController, GameObject riderTarget)
+        {
+            Debug.Log($"[PlayerSpawner] SetupBowForArcherController 開始: riderController={riderController != null}, riderTarget={riderTarget.name}");
+
+            if (riderController == null)
+            {
+                Debug.LogWarning("[PlayerSpawner] RiderController が null です");
+                return;
+            }
+
+            var archerController = riderController.ArcherController;
+            if (archerController == null)
+            {
+                Debug.LogWarning("[PlayerSpawner] RiderArcherController が見つかりません。弓の設定をスキップします。");
+                return;
+            }
+
+            Debug.Log($"[PlayerSpawner] ArcherController 取得成功");
+
+            // 弓オブジェクトを検索（P09の弓は "Bow" を含む名前）
+            GameObject? bowObject = FindBowObject(riderTarget.transform);
+
+            if (bowObject != null)
+            {
+                Debug.Log($"[PlayerSpawner] 弓を発見: {bowObject.name}");
+
+                // 弓をRiderArcherControllerに登録
+                archerController.SetBowObject(bowObject, immediatelyInHand: false);
+
+                // 弓の現在の親を確認
+                Transform? currentParent = bowObject.transform.parent;
+                bool isAlreadyUnderHand = IsUnderHandBone(currentParent);
+
+                Debug.Log($"[PlayerSpawner] 弓の現在の親: {currentParent?.name ?? "null"}, 手の下にある: {isAlreadyUnderHand}");
+
+                // 弓が手の下にない場合は移動
+                if (!isAlreadyUnderHand)
+                {
+                    var animator = riderTarget.GetComponentInChildren<Animator>();
+                    if (animator != null)
+                    {
+                        Transform? leftHand = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+                        if (leftHand != null)
+                        {
+                            Debug.Log($"[PlayerSpawner] 左手ボーン発見: {leftHand.name}");
+
+                            // 弓を左手の子として配置
+                            bowObject.transform.SetParent(leftHand);
+                            bowObject.transform.localPosition = new Vector3(0.05f, 0.02f, 0f);
+                            bowObject.transform.localRotation = Quaternion.Euler(0f, -90f, -90f);
+
+                            Debug.Log($"[PlayerSpawner] 弓を左手に移動完了: {leftHand.name}");
+                        }
+                        else
+                        {
+                            Debug.LogWarning("[PlayerSpawner] 左手ボーンが見つかりません");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[PlayerSpawner] Animatorが見つかりません");
+                    }
+                }
+                else
+                {
+                    Debug.Log($"[PlayerSpawner] 弓は既に手の下にあります。移動しません。");
+                }
+
+                // 弓がアクティブであることを確認
+                if (!bowObject.activeSelf)
+                {
+                    bowObject.SetActive(true);
+                    Debug.Log($"[PlayerSpawner] 弓をアクティブ化: {bowObject.name}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[PlayerSpawner] 弓オブジェクトが見つかりません。");
+            }
+        }
+
+        /// <summary>
+        /// 指定されたTransformが手のボーンの下にあるかチェックします
+        /// </summary>
+        /// <param name="transform">チェックするTransform</param>
+        /// <returns>手のボーンの下にあればtrue</returns>
+        private bool IsUnderHandBone(Transform? transform)
+        {
+            if (transform == null)
+            {
+                return false;
+            }
+
+            // 手のボーン名のパターン（実際のボーン名のみ、"Weapon"コンテナは除外）
+            // P09のボーン名例: "LeftHand", "Hand_L", "L_Hand"
+            string[] handBonePatterns = { "LeftHand", "Hand_L", "L_Hand", "Left Hand" };
+
+            Transform? current = transform;
+            while (current != null)
+            {
+                foreach (var pattern in handBonePatterns)
+                {
+                    if (current.name.Contains(pattern))
+                    {
+                        return true;
+                    }
+                }
+                current = current.parent;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 弓オブジェクトを検索します
+        /// </summary>
+        /// <param name="parent">検索開始Transform</param>
+        /// <returns>見つかった弓オブジェクト</returns>
+        private GameObject? FindBowObject(Transform parent)
+        {
+            // アクティブな弓オブジェクトを検索
+            var allChildren = parent.GetComponentsInChildren<Transform>(true);
+
+            foreach (var child in allChildren)
+            {
+                // "Bow" を含み、アクティブなオブジェクトを探す
+                // P09の弓は通常 "P09_Bow_XX" のような名前
+                if (child.name.Contains("Bow") && child.gameObject.activeSelf)
+                {
+                    // Sword+Bow（剣弓複合）は除外
+                    if (child.name.Contains("Sword"))
+                    {
+                        continue;
+                    }
+
+                    if (_debugLog)
+                    {
+                        Debug.Log($"[PlayerSpawner] 弓を発見: {child.name}, Parent: {child.parent?.name ?? "null"}, Active: {child.gameObject.activeSelf}");
+                    }
+
+                    return child.gameObject;
+                }
+            }
+
+            // アクティブな弓が見つからない場合、非アクティブも検索
+            foreach (var child in allChildren)
+            {
+                if (child.name.Contains("Bow") && !child.name.Contains("Sword"))
+                {
+                    if (_debugLog)
+                    {
+                        Debug.Log($"[PlayerSpawner] 弓を発見（非アクティブ）: {child.name}, Parent: {child.parent?.name ?? "null"}");
+                    }
+
+                    return child.gameObject;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

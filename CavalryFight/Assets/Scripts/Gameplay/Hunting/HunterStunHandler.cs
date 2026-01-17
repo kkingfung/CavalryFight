@@ -1,7 +1,9 @@
 #nullable enable
 
 using System;
+using CavalryFight.Core.Services;
 using CavalryFight.Gameplay.Match;
+using CavalryFight.Services.Audio;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -25,7 +27,6 @@ namespace CavalryFight.Gameplay.Hunting
         [Header("Audio")]
         [SerializeField] private AudioClip? _stunStartSound;
         [SerializeField] private AudioClip? _stunEndSound;
-        [SerializeField] private AudioSource? _audioSource;
 
         [Header("Animation")]
         [SerializeField] private Animator? _animator;
@@ -58,6 +59,7 @@ namespace CavalryFight.Gameplay.Hunting
 
         private GameObject? _activeStunEffect;
         private HuntingRulesHandler? _huntingHandler;
+        private IAudioService? _audioService;
 
         // アニメーターパラメータハッシュ
         private static readonly int StunnedHash = Animator.StringToHash("Stunned");
@@ -125,6 +127,9 @@ namespace CavalryFight.Gameplay.Hunting
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            // AudioServiceを取得
+            _audioService = ServiceLocator.Instance.Get<IAudioService>();
 
             // ハンティングルールハンドラーを取得
             if (MatchManager.Instance?.ActiveHandler is HuntingRulesHandler handler)
@@ -246,9 +251,9 @@ namespace CavalryFight.Gameplay.Hunting
             }
 
             // 効果音
-            if (_audioSource != null && _stunStartSound != null)
+            if (_stunStartSound != null)
             {
-                _audioSource.PlayOneShot(_stunStartSound);
+                _audioService?.PlaySfxAtPosition(_stunStartSound, transform.position);
             }
 
             // ビジュアルエフェクト
@@ -271,9 +276,9 @@ namespace CavalryFight.Gameplay.Hunting
             }
 
             // 効果音
-            if (_audioSource != null && _stunEndSound != null)
+            if (_stunEndSound != null)
             {
-                _audioSource.PlayOneShot(_stunEndSound);
+                _audioService?.PlaySfxAtPosition(_stunEndSound, transform.position);
             }
 
             // ビジュアルエフェクト

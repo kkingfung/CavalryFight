@@ -1,6 +1,8 @@
 #nullable enable
 
 using System;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
 using CavalryFight.Services.Lobby;
 using UnityEngine;
 using UnityEngine.AI;
@@ -50,7 +52,7 @@ namespace CavalryFight.Services.AI
 
         private Animator? _animator;
         private NavMeshAgent? _navAgent;
-        private AudioSource? _audioSource;
+        private IAudioService? _audioService;
 
         // BlazeAI関連（グローバル名前空間、存在しない場合はnull）
         private MonoBehaviour? _blazeAI;
@@ -121,15 +123,15 @@ namespace CavalryFight.Services.AI
         {
             _animator = GetComponent<Animator>();
             _navAgent = GetComponent<NavMeshAgent>();
-            _audioSource = GetComponent<AudioSource>();
 
             // BlazeAIコンポーネントを取得（任意、リフレクションで型を検索）
             TryGetBlazeAI();
+        }
 
-            if (_audioSource == null)
-            {
-                _audioSource = gameObject.AddComponent<AudioSource>();
-            }
+        private void Start()
+        {
+            // AudioServiceを取得
+            _audioService = ServiceLocator.Instance.Get<IAudioService>();
         }
 
         /// <summary>
@@ -911,9 +913,9 @@ namespace CavalryFight.Services.AI
             _animator?.SetTrigger(ShootParam);
 
             // 音
-            if (_shootSfx != null && _audioSource != null)
+            if (_shootSfx != null)
             {
-                _audioSource.PlayOneShot(_shootSfx);
+                _audioService?.PlaySfxAtPosition(_shootSfx, transform.position);
             }
 
             // サービスに通知

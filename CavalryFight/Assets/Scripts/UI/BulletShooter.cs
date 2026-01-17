@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
 
 namespace MasterStylizedProjectile
 {
@@ -81,10 +83,20 @@ namespace MasterStylizedProjectile
             
                 if (CurEffect.ChargeClip != null)
                 {
-                    GameObject AudioObj = new GameObject();
-                    var audiosource = AudioObj.AddComponent<AudioSource>();
-                    audiosource.clip = CurEffect.ChargeClip;
-                    audiosource.Play();
+                    // AudioServiceを経由して再生（ボリューム設定を反映）
+                    var audioService = ServiceLocator.Instance.Get<IAudioService>();
+                    if (audioService != null)
+                    {
+                        audioService.PlaySfxAtPosition(CurEffect.ChargeClip, StartNodeTrans.position);
+                    }
+                    else
+                    {
+                        // フォールバック
+                        GameObject AudioObj = new GameObject();
+                        var audiosource = AudioObj.AddComponent<AudioSource>();
+                        audiosource.clip = CurEffect.ChargeClip;
+                        audiosource.Play();
+                    }
                 }
                 yield return new WaitForSeconds(CurEffect.ChargeParticleTime);
                 Destroy(ChargePar.gameObject);

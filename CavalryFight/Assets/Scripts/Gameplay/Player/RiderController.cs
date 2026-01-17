@@ -30,6 +30,18 @@ namespace CavalryFight.Gameplay.Player
         [Tooltip("矢筒を取り付けるポイント（背中）")]
         [SerializeField] private Transform? _quiverAttachment;
 
+        [Header("Archer Controller")]
+        [Tooltip("アーチャーコントローラー（弓のアニメーション制御）")]
+        [SerializeField] private RiderArcherController? _archerController;
+
+
+        [Header("Animation Settings")]
+        [Tooltip("エイムアニメーションへの遷移時間（秒）")]
+        [SerializeField] private float _aimTransitionTime = 0.1f;
+
+        [Tooltip("エイムステート名（Animator Controller内）")]
+        [SerializeField] private string _aimStateName = "Aiming";
+
         [Header("Debug")]
         [SerializeField] private bool _debugLog = false;
 
@@ -39,6 +51,17 @@ namespace CavalryFight.Gameplay.Player
 
         private bool _isMounted = false;
         private Transform? _mountPoint;
+        private bool _originalApplyRootMotion = false;
+        private bool _isAiming = false;
+
+        #endregion
+
+        #region Archer Controller Property
+
+        /// <summary>
+        /// アーチャーコントローラーを取得します
+        /// </summary>
+        public RiderArcherController? ArcherController => _archerController;
 
         #endregion
 
@@ -91,68 +114,215 @@ namespace CavalryFight.Gameplay.Player
             }
         }
 
+        private void LateUpdate()
+        {
+            // 騎乗中は位置と回転をマウントポイントに強制的に同期
+            // これはアニメーションのルートモーションが位置/回転を変えてしまうのを防ぐ
+            if (_isMounted && _mountPoint != null)
+            {
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
+            }
+        }
+
         #endregion
 
         #region Public Methods - Animation
+
+        // アニメーターパラメータ名（ハッシュ化して高速アクセス）
+        private static readonly int IsMountedHash = Animator.StringToHash("IsMounted");
+        private static readonly int IsAimingHash = Animator.StringToHash("IsAiming");
+        private static readonly int ShootHash = Animator.StringToHash("Shoot");
+        private static readonly int ChargeAmountHash = Animator.StringToHash("ChargeAmount");
+        private static readonly int AimHorizontalHash = Animator.StringToHash("AimHorizontal");
+        private static readonly int AimVerticalHash = Animator.StringToHash("AimVertical");
+
+        // Aimレイヤーインデックス
+        private int _aimLayerIndex = -1;
+
+        /// <summary>
+        /// Aimレイヤーのインデックスを取得・キャッシュします
+        /// </summary>
+        private int GetAimLayerIndex()
+        {
+            if (_aimLayerIndex < 0 && _animator != null)
+            {
+                _aimLayerIndex = _animator.GetLayerIndex("Aim");
+            }
+            return _aimLayerIndex;
+        }
+
+        /// <summary>
+        /// Animatorにパラメータが存在するか確認します
+        /// </summary>
+        /// <param name="paramName">パラメータ名</param>
+        /// <returns>存在すればtrue</returns>
+        private bool HasParameter(string paramName)
+        {
+            if (_animator == null)
+            {
+                return false;
+            }
+
+            foreach (var param in _animator.parameters)
+            {
+                if (param.name == paramName)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// アニメーション状態を設定します
         /// </summary>
         /// <param name="state">設定するアニメーション状態</param>
         /// <remarks>
-        /// 注意: 現在のP09 AnimatorにはIsMounted/IsAiming/Shootパラメータが存在しないため、
-        /// カスタムAnimator Controllerを作成するまではログ出力のみ行います。
+        /// P09_Rider_Controller.controller が設定されている場合、
+        /// IsMounted/IsAiming/Shootパラメータを使用してアニメーションを制御します。
+        /// 設定されていない場合は、ログ出力のみ行います。
         /// </remarks>
         public void SetAnimationState(RiderAnimationState state)
         {
-            // TODO: P09用のカスタムAnimator Controllerを作成したら、以下のコメントを解除
-            // 現在はAnimatorパラメータが存在しないため、状態のログ出力のみ
-
             if (_debugLog)
             {
                 Debug.Log($"[RiderController] Animation state: {state}");
             }
 
-            // Animatorパラメータが存在する場合のみ設定
-            // if (_animator == null)
-            // {
-            //     return;
-            // }
-            //
-            // switch (state)
-            // {
-            //     case RiderAnimationState.Idle:
-            //         _animator.SetBool("IsMounted", false);
-            //         _animator.SetBool("IsAiming", false);
-            //         break;
-            //     case RiderAnimationState.MountedIdle:
-            //         _animator.SetBool("IsMounted", true);
-            //         _animator.SetBool("IsAiming", false);
-            //         break;
-            //     case RiderAnimationState.Aiming:
-            //         _animator.SetBool("IsAiming", true);
-            //         break;
-            //     case RiderAnimationState.Shooting:
-            //         _animator.SetTrigger("Shoot");
-            //         break;
-            // }
+            // Animatorが存在しない場合はスキップ
+            if (_animator == null)
+            {
+                return;
+            }
+
+            // パラメータが存在するか確認（初回のみ）
+            bool hasIsMounted = HasParameter("IsMounted");
+            bool hasIsAiming = HasParameter("IsAiming");
+
+            if (!hasIsMounted && !hasIsAiming)
+            {
+                // P09_Rider_Controllerが設定されていない場合
+                if (_debugLog)
+                {
+                    Debug.LogWarning("[RiderController] AnimatorController にパラメータが存在しません。P09_Rider_Controller を設定してください。");
+                }
+                return;
+            }
+
+            switch (state)
+            {
+                case RiderAnimationState.Idle:
+                    _isAiming = false;
+                    if (hasIsMounted)
+                    {
+                        _animator.SetBool(IsMountedHash, false);
+                    }
+                    if (hasIsAiming)
+                    {
+                        _animator.SetBool(IsAimingHash, false);
+                    }
+                    break;
+
+                case RiderAnimationState.MountedIdle:
+                    _isAiming = false;
+                    if (hasIsMounted)
+                    {
+                        _animator.SetBool(IsMountedHash, true);
+                    }
+                    if (hasIsAiming)
+                    {
+                        _animator.SetBool(IsAimingHash, false);
+                    }
+                    // Shootトリガーを発火してAiming状態から強制的に抜ける
+                    if (HasParameter("Shoot"))
+                    {
+                        _animator.SetTrigger(ShootHash);
+                    }
+                    break;
+
+                case RiderAnimationState.Aiming:
+                    _isAiming = true;
+                    if (hasIsAiming)
+                    {
+                        _animator.SetBool(IsAimingHash, true);
+                    }
+                    // CrossFadeで高速遷移（Animator Controllerの遷移時間を無視）
+                    if (!string.IsNullOrEmpty(_aimStateName))
+                    {
+                        _animator.CrossFadeInFixedTime(_aimStateName, _aimTransitionTime);
+                    }
+                    break;
+
+                case RiderAnimationState.Shooting:
+                    _isAiming = false;
+                    if (hasIsAiming)
+                    {
+                        _animator.SetBool(IsAimingHash, false);
+                    }
+                    if (HasParameter("Shoot"))
+                    {
+                        _animator.SetTrigger(ShootHash);
+                    }
+                    break;
+            }
         }
 
         /// <summary>
         /// チャージ量を設定します（弓を引く強さ）
         /// </summary>
         /// <param name="chargeAmount">0.0〜1.0のチャージ量</param>
-        /// <remarks>
-        /// TODO: カスタムAnimator Controllerを作成したら実装
-        /// </remarks>
         public void SetChargeAmount(float chargeAmount)
         {
-            // TODO: P09用のカスタムAnimator Controllerを作成したら実装
-            // if (_animator == null)
-            // {
-            //     return;
-            // }
-            // _animator.SetFloat("ChargeAmount", Mathf.Clamp01(chargeAmount));
+            if (_animator == null)
+            {
+                return;
+            }
+
+            if (HasParameter("ChargeAmount"))
+            {
+                _animator.SetFloat(ChargeAmountHash, Mathf.Clamp01(chargeAmount));
+            }
+        }
+
+        /// <summary>
+        /// エイム方向を設定します（Blend Tree用）
+        /// </summary>
+        /// <param name="horizontal">水平方向 (-1 to 1)</param>
+        /// <param name="vertical">垂直方向 (-1 to 1)</param>
+        public void SetAimDirection(float horizontal, float vertical)
+        {
+            if (_animator == null)
+            {
+                return;
+            }
+
+            if (HasParameter("AimHorizontal"))
+            {
+                _animator.SetFloat(AimHorizontalHash, Mathf.Clamp(horizontal, -1f, 1f));
+            }
+            if (HasParameter("AimVertical"))
+            {
+                _animator.SetFloat(AimVerticalHash, Mathf.Clamp(vertical, -1f, 1f));
+            }
+        }
+
+        /// <summary>
+        /// Aimレイヤーのウェイトを設定します
+        /// </summary>
+        /// <param name="weight">0.0〜1.0のウェイト</param>
+        public void SetAimLayerWeight(float weight)
+        {
+            if (_animator == null)
+            {
+                return;
+            }
+
+            int layerIndex = GetAimLayerIndex();
+            if (layerIndex >= 0)
+            {
+                _animator.SetLayerWeight(layerIndex, Mathf.Clamp01(weight));
+            }
         }
 
         #endregion
@@ -176,6 +346,13 @@ namespace CavalryFight.Gameplay.Player
 
             // 物理演算を無効化（馬との衝突を防ぐ）
             DisablePhysics();
+
+            // ルートモーションを無効化（アニメーションが位置/回転を変えるのを防ぐ）
+            if (_animator != null)
+            {
+                _originalApplyRootMotion = _animator.applyRootMotion;
+                _animator.applyRootMotion = false;
+            }
 
             // 騎乗ポイントの子として配置
             transform.SetParent(mountPoint);
@@ -268,6 +445,12 @@ namespace CavalryFight.Gameplay.Player
             // 物理演算を有効化
             EnablePhysics();
 
+            // ルートモーションを元に戻す
+            if (_animator != null)
+            {
+                _animator.applyRootMotion = _originalApplyRootMotion;
+            }
+
             // アイドルアニメーションに切り替え
             SetAnimationState(RiderAnimationState.Idle);
 
@@ -325,6 +508,22 @@ namespace CavalryFight.Gameplay.Player
             {
                 Debug.LogWarning("[RiderController] Animator が見つかりません");
             }
+
+            // RiderArcherControllerを自動取得
+            if (_archerController == null)
+            {
+                _archerController = GetComponent<RiderArcherController>();
+                if (_archerController == null)
+                {
+                    _archerController = GetComponentInChildren<RiderArcherController>();
+                }
+
+                if (_archerController != null && _debugLog)
+                {
+                    Debug.Log("[RiderController] RiderArcherController を自動取得しました");
+                }
+            }
+
         }
 
         /// <summary>

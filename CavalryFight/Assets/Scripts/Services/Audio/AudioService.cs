@@ -80,7 +80,9 @@ namespace CavalryFight.Services.Audio
             get => _sfxVolume;
             set
             {
+                float oldValue = _sfxVolume;
                 _sfxVolume = Mathf.Clamp01(value);
+                Debug.Log($"[AudioService] SfxVolume changed: {oldValue:F2} -> {_sfxVolume:F2}");
                 VolumeChanged?.Invoke(this, new VolumeChangedEventArgs(VolumeType.Sfx, _sfxVolume));
             }
         }
@@ -137,6 +139,22 @@ namespace CavalryFight.Services.Audio
             GameObject.DontDestroyOnLoad(managerObject);
             _audioManager = managerObject.AddComponent<AudioManager>();
             _audioManager.Initialize(this);
+
+            // GlobalAudioControllerを作成（サードパーティアセットのAudioSourceも制御）
+            var globalControllerObject = new GameObject("GlobalAudioController");
+            GameObject.DontDestroyOnLoad(globalControllerObject);
+            var globalController = globalControllerObject.AddComponent<GlobalAudioController>();
+
+            // BGM用AudioSourceをグローバル制御から除外（BGMは別途UpdateBgmVolumeで制御）
+            if (_audioManager.BgmSource != null)
+            {
+                globalController.ExcludeSource(_audioManager.BgmSource);
+            }
+            // SFX用AudioSourceも除外（PlayOneShotで個別にボリューム制御しているため）
+            if (_audioManager.SfxSource != null)
+            {
+                globalController.ExcludeSource(_audioManager.SfxSource);
+            }
 
             UpdateBgmVolume();
 
@@ -281,6 +299,14 @@ namespace CavalryFight.Services.Audio
             }
 
             float volume = _masterVolume * _sfxVolume * Mathf.Clamp01(volumeScale);
+            Debug.Log($"[AudioService] PlaySfx: {clip.name}, master={_masterVolume:F2}, sfx={_sfxVolume:F2}, scale={volumeScale:F2}, final={volume:F2}");
+
+            // ボリュームが0の場合は再生しない
+            if (volume <= 0.001f)
+            {
+                return;
+            }
+
             _audioManager.SfxSource.PlayOneShot(clip, volume);
         }
 
@@ -296,7 +322,25 @@ namespace CavalryFight.Services.Audio
                 return;
 
             float volume = _masterVolume * _sfxVolume * Mathf.Clamp01(volumeScale);
-            AudioSource.PlayClipAtPoint(clip, position, volume);
+            Debug.Log($"[AudioService] PlaySfxAtPosition: {clip.name}, master={_masterVolume:F2}, sfx={_sfxVolume:F2}, scale={volumeScale:F2}, final={volume:F2}");
+
+            // ボリュームが0の場合は再生しない
+            if (volume <= 0.001f)
+            {
+                return;
+            }
+
+            // AudioSource.PlayClipAtPointの代わりに、一時的なGameObjectを作成してボリュームを適用
+            GameObject tempGO = new GameObject("TempSfxSource");
+            tempGO.transform.position = position;
+            AudioSource audioSource = tempGO.AddComponent<AudioSource>();
+            audioSource.clip = clip;
+            audioSource.volume = volume;
+            audioSource.spatialBlend = 1.0f; // 3Dサウンド
+            audioSource.Play();
+
+            // クリップ再生終了後に自動削除
+            GameObject.Destroy(tempGO, clip.length + 0.1f);
         }
 
         #endregion

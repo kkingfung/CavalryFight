@@ -30,6 +30,16 @@ namespace CavalryFight.Gameplay.Player
         [Tooltip("騎手が座る位置")]
         [SerializeField] private Transform? _mountPoint;
 
+        [Header("Boost Settings")]
+        [Tooltip("ブースト時の速度倍率")]
+        [SerializeField] private float _boostSpeedMultiplier = 1.5f;
+
+        [Tooltip("ブースト持続時間（秒）")]
+        [SerializeField] private float _boostDuration = 2f;
+
+        [Tooltip("ブーストのクールダウン時間（秒）")]
+        [SerializeField] private float _boostCooldown = 5f;
+
         [Header("Debug")]
         [SerializeField] private bool _debugLog = false;
 
@@ -41,6 +51,13 @@ namespace CavalryFight.Gameplay.Player
         private MAnimal? _animal;
         private bool _hasRider = false;
         private bool _isSprinting = false;
+
+        // ブースト関連
+        private bool _isBoosting = false;
+        private float _boostEndTime = 0f;
+        private float _boostCooldownEndTime = 0f;
+        private int _originalSpeedIndex = 1;
+        private float _originalAnimatorSpeed = 1f;
 
         #endregion
 
@@ -74,6 +91,26 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         public Animator? Animator => _animator;
 
+        /// <summary>
+        /// ブースト中かどうかを取得します
+        /// </summary>
+        public bool IsBoosting => _isBoosting;
+
+        /// <summary>
+        /// ブーストがクールダウン中かどうかを取得します
+        /// </summary>
+        public bool IsBoostOnCooldown => Time.time < _boostCooldownEndTime;
+
+        /// <summary>
+        /// ブーストのクールダウン残り時間を取得します（秒）
+        /// </summary>
+        public float BoostCooldownRemaining => Mathf.Max(0f, _boostCooldownEndTime - Time.time);
+
+        /// <summary>
+        /// ブーストの残り時間を取得します（秒）
+        /// </summary>
+        public float BoostTimeRemaining => _isBoosting ? Mathf.Max(0f, _boostEndTime - Time.time) : 0f;
+
         #endregion
 
         #region Unity Lifecycle
@@ -89,7 +126,22 @@ namespace CavalryFight.Gameplay.Player
                 _animal = GetComponentInChildren<MAnimal>();
             }
 
+            // ブーストイベントを購読
+            if (_inputService != null)
+            {
+                _inputService.BoostButtonPressed += OnBoostButtonPressed;
+            }
+
             ValidateReferences();
+        }
+
+        private void OnDestroy()
+        {
+            // イベント購読を解除
+            if (_inputService != null)
+            {
+                _inputService.BoostButtonPressed -= OnBoostButtonPressed;
+            }
         }
 
         private void Update()
@@ -98,6 +150,7 @@ namespace CavalryFight.Gameplay.Player
             if (_hasRider && _inputService != null && _inputService.InputEnabled && _animal != null)
             {
                 HandleMovementInput();
+                UpdateBoostState();
             }
         }
 
@@ -125,6 +178,7 @@ namespace CavalryFight.Gameplay.Player
         {
             _hasRider = false;
             _isSprinting = false;
+            _isBoosting = false;
 
             // MAnimalの移動を停止
             if (_animal != null)
@@ -157,6 +211,12 @@ namespace CavalryFight.Gameplay.Player
 
             // MAnimalに入力を渡す（MAnimalが物理とアニメーションを処理）
             _animal.SetInputAxis(moveInput);
+
+            // ブースト中はスプリント状態を上書きしない
+            if (_isBoosting)
+            {
+                return;
+            }
 
             // スプリント状態の更新
             if (_isSprinting != isSprinting)
@@ -231,6 +291,129 @@ namespace CavalryFight.Gameplay.Player
             {
                 Debug.Log("[MountController] Jump input sent to MAnimal");
             }
+        }
+
+        /// <summary>
+        /// ブーストボタンが押されたときのイベントハンドラ
+        /// </summary>
+        /// <remarks>
+        /// InputServiceのBoostButtonPressedイベントは、攻撃チャージ中でない場合のみ発火します。
+        /// これにより、右クリックがチャージキャンセルとブーストで適切に使い分けられます。
+        /// </remarks>
+        private void OnBoostButtonPressed(object? sender, System.EventArgs e)
+        {
+            // 騎手がいない場合やMAnimalがない場合はスキップ
+            if (!_hasRider || _animal == null)
+            {
+                return;
+            }
+
+            TryStartBoost();
+        }
+
+        /// <summary>
+        /// ブーストを開始しようとします
+        /// </summary>
+        private void TryStartBoost()
+        {
+            // 既にブースト中またはクールダウン中の場合はスキップ
+            if (_isBoosting)
+            {
+                if (_debugLog)
+                {
+                    Debug.Log("[MountController] Boost skipped: already boosting");
+                }
+                return;
+            }
+
+            if (Time.time < _boostCooldownEndTime)
+            {
+                if (_debugLog)
+                {
+                    float remaining = _boostCooldownEndTime - Time.time;
+                    Debug.Log($"[MountController] Boost on cooldown: {remaining:F1}s remaining");
+                }
+                return;
+            }
+
+            // ブースト開始
+            StartBoost();
+        }
+
+        /// <summary>
+        /// ブーストを開始します
+        /// </summary>
+        private void StartBoost()
+        {
+            if (_animal == null)
+            {
+                return;
+            }
+
+            _isBoosting = true;
+            _boostEndTime = Time.time + _boostDuration;
+
+            // MAnimalの現在のスピードインデックスとアニメーター速度を保存
+            _originalSpeedIndex = _animal.CurrentSpeedIndex;
+            _originalAnimatorSpeed = _animal.AnimatorSpeed;
+
+            // スピードインデックスを最大に設定（ギャロップ）
+            // MAnimalは Speed_CurrentIndex_Set でスピードを切り替える
+            // 通常: 1=Walk, 2=Trot, 3=Gallop
+            _animal.Speed_CurrentIndex_Set(3); // ギャロップにセット
+
+            // さらにスプリントも有効化
+            _animal.Sprint_Set(true);
+
+            // アニメーター速度を上げる（これが実際の移動速度に影響）
+            _animal.SetAnimatorSpeed(_boostSpeedMultiplier);
+
+            // ブースト開始ログ（常に出力）
+            Debug.Log($"[MountController] BOOST ACTIVATED! Duration: {_boostDuration}s, AnimatorSpeed: {_boostSpeedMultiplier}");
+        }
+
+        /// <summary>
+        /// ブースト状態を更新します
+        /// </summary>
+        private void UpdateBoostState()
+        {
+            if (!_isBoosting)
+            {
+                return;
+            }
+
+            // ブースト終了判定
+            if (Time.time >= _boostEndTime)
+            {
+                EndBoost();
+            }
+        }
+
+        /// <summary>
+        /// ブーストを終了します
+        /// </summary>
+        private void EndBoost()
+        {
+            if (_animal == null)
+            {
+                return;
+            }
+
+            _isBoosting = false;
+            _boostCooldownEndTime = Time.time + _boostCooldown;
+
+            // アニメーター速度を元に戻す
+            _animal.SetAnimatorSpeed(_originalAnimatorSpeed);
+
+            // スピードインデックスを元に戻す
+            _animal.Speed_CurrentIndex_Set(_originalSpeedIndex);
+
+            // スプリントをユーザーの現在の入力状態に戻す
+            bool currentSprint = _inputService?.GetSprintButton() ?? false;
+            _animal.Sprint_Set(currentSprint);
+
+            // ブースト終了ログ（常に出力）
+            Debug.Log($"[MountController] BOOST ENDED. Cooldown: {_boostCooldown}s");
         }
 
         #endregion
