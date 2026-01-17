@@ -2030,7 +2030,7 @@ MonoBehaviour:
   _aimMinVerticalAngle: -30
   _aimMaxVerticalAngle: 60
   _aimMinHorizontalAngle: -125
-  _aimMaxHorizontalAngle: 35
+  _aimMaxHorizontalAngle: 45
   _positionLerpSpeed: 10
   _rotationLerpSpeed: 15
   _followTarget: {fileID: 0}

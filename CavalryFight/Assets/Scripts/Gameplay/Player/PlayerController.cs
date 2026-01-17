@@ -1,6 +1,8 @@
 #nullable enable
 
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Animations;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Input;
 using CavalryFight.Services.Audio;
@@ -139,7 +141,186 @@ namespace CavalryFight.Gameplay.Player
 
         private void Start()
         {
+            Debug.Log($"[PlayerController] Start called. _riderController={_riderController != null}");
+
+            // RiderControllerが設定されていない場合は自動検出
+            if (_riderController == null)
+            {
+                _riderController = GetComponent<RiderController>();
+                if (_riderController == null)
+                {
+                    _riderController = GetComponentInChildren<RiderController>();
+                }
+                if (_riderController == null)
+                {
+                    _riderController = FindObjectOfType<RiderController>();
+                }
+                Debug.Log($"[PlayerController] RiderController自動検出: {_riderController != null}");
+            }
+
             // 騎乗はPlayerSpawnerが処理します
+
+            // 弓を手に配置（遅延実行でカスタマイズが適用されるのを待つ）
+            StartCoroutine(SetupBowToHandDelayed());
+        }
+
+        private IEnumerator SetupBowToHandDelayed()
+        {
+            // カスタマイズが適用されるのを待つ（最大2秒）
+            float timeout = 2f;
+            float elapsed = 0f;
+
+            while (elapsed < timeout)
+            {
+                if (_riderController != null)
+                {
+                    var target = _riderController.GetCustomizationTarget();
+                    if (target != null)
+                    {
+                        Debug.Log($"[PlayerController] カスタマイズターゲットが見つかりました: {target.name}");
+                        SetupBowToHand();
+                        yield break;
+                    }
+                }
+
+                yield return new WaitForSeconds(0.1f);
+                elapsed += 0.1f;
+            }
+
+            Debug.LogWarning("[PlayerController] タイムアウト: カスタマイズターゲットが見つかりませんでした。直接SetupBowToHandを試行します。");
+            SetupBowToHand();
+        }
+
+        /// <summary>
+        /// 弓オブジェクトを左手に配置します
+        /// </summary>
+        /// <remarks>
+        /// P09の弓構造:
+        /// - 実際の弓メッシュ（例: Bow_1, Bow_2など）はParentConstraintを持ち、2つのTargetを参照
+        /// - Weapon_Target_Hand_L: 手の位置ターゲット
+        /// - Bow_Target_Back: 背中の位置ターゲット
+        /// "Target"を含むオブジェクトは制約ターゲットなのでスキップします。
+        /// </remarks>
+        private void SetupBowToHand()
+        {
+            Debug.Log($"[PlayerController] SetupBowToHand called. _riderController={_riderController != null}");
+
+            if (_riderController == null)
+            {
+                Debug.LogWarning("[PlayerController] RiderController がありません。弓の配置をスキップします。");
+                return;
+            }
+
+            // RiderArcherControllerを取得
+            var archerController = _riderController.ArcherController;
+
+            // P09モデルから弓を探す
+            GameObject? riderTarget = _riderController.GetCustomizationTarget();
+            if (riderTarget == null)
+            {
+                Debug.LogWarning("[PlayerController] カスタマイズターゲットが見つかりません。");
+                return;
+            }
+
+            // 弓オブジェクトを検索 - ParentConstraintを持つものを優先、"Target"を含むものはスキップ
+            GameObject? bowWithConstraint = null;
+            GameObject? bowWithoutConstraint = null;
+            var allChildren = riderTarget.GetComponentsInChildren<Transform>(true);
+            foreach (var child in allChildren)
+            {
+                // "Target"を含むものは制約ターゲットなのでスキップ
+                if (child.name.Contains("Target"))
+                {
+                    continue;
+                }
+
+                if (child.name.Contains("Bow") && !child.name.Contains("Sword") && child.gameObject.activeSelf)
+                {
+                    var pc = child.GetComponent<ParentConstraint>();
+                    if (pc != null)
+                    {
+                        bowWithConstraint = child.gameObject;
+                        Debug.Log($"[PlayerController] SetupBowToHand: 弓を発見 (ParentConstraint有): {child.name}");
+                    }
+                    else if (bowWithoutConstraint == null)
+                    {
+                        bowWithoutConstraint = child.gameObject;
+                    }
+                }
+            }
+
+            // ParentConstraintを持つ弓を優先
+            GameObject? bowObject = bowWithConstraint ?? bowWithoutConstraint;
+
+            if (bowObject == null)
+            {
+                Debug.LogWarning("[PlayerController] 弓オブジェクトが見つかりません。");
+                return;
+            }
+
+            Debug.Log($"[PlayerController] 弓を発見: {bowObject.name}, 現在の親: {bowObject.transform.parent?.name ?? "null"}, hasPC: {bowObject.GetComponent<ParentConstraint>() != null}");
+
+            // ForceBowToLeftHand用のキャッシュを設定
+            _p09BowObject = bowObject;
+
+            // 弓をRiderArcherControllerに設定
+            if (archerController != null)
+            {
+                archerController.SetBowObject(bowObject, immediatelyInHand: true);
+            }
+
+            // 弓が左手の下にない場合は移動
+            var animator = riderTarget.GetComponentInChildren<Animator>();
+            if (animator != null)
+            {
+                Transform? leftHand = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+                if (leftHand != null)
+                {
+                    // 弓が既に左手の下にあるかチェック
+                    bool isUnderLeftHand = false;
+                    Transform? current = bowObject.transform.parent;
+                    while (current != null)
+                    {
+                        if (current == leftHand)
+                        {
+                            isUnderLeftHand = true;
+                            break;
+                        }
+                        current = current.parent;
+                    }
+
+                    if (!isUnderLeftHand)
+                    {
+                        // ParentConstraintを無効化（これが弓の位置を上書きするのを防ぐ）
+                        var bowPC = bowObject.GetComponent<ParentConstraint>();
+                        if (bowPC != null)
+                        {
+                            bowPC.constraintActive = false;
+                            Debug.Log($"[PlayerController] 弓のParentConstraintを無効化 (sources: {bowPC.sourceCount})");
+                        }
+
+                        // 弓を左手の子として配置
+                        bowObject.transform.SetParent(leftHand);
+                        bowObject.transform.localPosition = Vector3.zero;
+                        // 回転はForceBowToLeftHandで毎フレーム(0, 90, -90)に設定
+                        Debug.Log($"[PlayerController] 弓を左手に移動: {leftHand.name}");
+                    }
+                    else
+                    {
+                        Debug.Log($"[PlayerController] 弓は既に左手の下にあります。");
+                    }
+
+                    // 弓が直接アタッチされていることをマーク（Sheathe/Unsheatheで位置変更しない）
+                    if (archerController != null)
+                    {
+                        archerController.MarkBowAsDirectlyAttached();
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[PlayerController] 左手ボーンが見つかりません。");
+                }
+            }
         }
 
         /// <summary>
@@ -233,16 +414,100 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void LateUpdate()
         {
-            // チャージ中は弓の位置を強制的にゼロに維持
-            if (_isCharging && _bowTransform != null)
+            // P09の弓を常に左手に固定し、回転を(0, 90, -90)に維持
+            ForceBowToLeftHand(_isCharging);
+
+            // エイム中は上半身をカメラの向きに回転（アニメーション後に適用）
+            if (_isCharging)
             {
-                // 他のスクリプト（MWeapon等）が位置を上書きしている可能性があるため、
-                // LateUpdateで強制的にゼロに設定
-                if (_bowTransform.localPosition != Vector3.zero || _bowTransform.localRotation != Quaternion.identity)
+                RotateRiderTowardCamera();
+            }
+        }
+
+        // P09弓オブジェクトのキャッシュ
+        private GameObject? _p09BowObject;              // Bowオブジェクト（ParentConstraintを持つ）
+        private ParentConstraint? _bowParentConstraint; // BowのParentConstraint
+
+        /// <summary>
+        /// P09の弓を手に配置し、アニメーションによる回転変化を補正します
+        /// </summary>
+        /// <param name="isAiming">エイム中かどうか</param>
+        /// <remarks>
+        /// P09の弓構造:
+        /// - Bow: ParentConstraintで手/背中を切り替え、回転は(0,90,-90)に設定
+        /// - Skeleton_P09_Bow: アニメーションで回転する骨格
+        /// - Bow_003等: 実際のメッシュ
+        ///
+        /// アニメーションがSkeleton_P09_Bowを回転させるため、
+        /// Bowオブジェクトに(0,90,-90)を設定して打ち消します。
+        /// </remarks>
+        private void ForceBowToLeftHand(bool isAiming)
+        {
+            // 初回のみ: 弓オブジェクトを検索してキャッシュ
+            if (_p09BowObject == null)
+            {
+                if (_riderController == null)
                 {
-                    _bowTransform.localPosition = Vector3.zero;
-                    _bowTransform.localRotation = Quaternion.identity;
+                    _riderController = GetComponentInChildren<RiderController>();
+                    if (_riderController == null)
+                    {
+                        _riderController = FindObjectOfType<RiderController>();
+                    }
+                    if (_riderController == null)
+                    {
+                        return;
+                    }
                 }
+
+                var riderTarget = _riderController.GetCustomizationTarget();
+                if (riderTarget == null)
+                {
+                    return;
+                }
+
+                // Bowオブジェクトを検索（ParentConstraintを持つもの）
+                var allChildren = riderTarget.GetComponentsInChildren<Transform>(true);
+                foreach (var child in allChildren)
+                {
+                    if (child.name == "Bow" && child.GetComponent<ParentConstraint>() != null)
+                    {
+                        _p09BowObject = child.gameObject;
+                        _bowParentConstraint = child.GetComponent<ParentConstraint>();
+                        Debug.Log($"[PlayerController] ForceBow: Found Bow with ParentConstraint");
+                        break;
+                    }
+                }
+
+                if (_p09BowObject == null)
+                {
+                    Debug.LogWarning("[PlayerController] ForceBow: Bow object not found!");
+                    return;
+                }
+            }
+
+            // ParentConstraintの重みを手側に設定（Source 0 = Hand, Source 1 = Back）
+            if (_bowParentConstraint != null && _bowParentConstraint.sourceCount >= 2)
+            {
+                var handSource = _bowParentConstraint.GetSource(0);
+                var backSource = _bowParentConstraint.GetSource(1);
+
+                // 手の重みを1、背中の重みを0に
+                if (handSource.weight < 1f || backSource.weight > 0f)
+                {
+                    handSource.weight = 1f;
+                    backSource.weight = 0f;
+                    _bowParentConstraint.SetSource(0, handSource);
+                    _bowParentConstraint.SetSource(1, backSource);
+                    Debug.Log("[PlayerController] ForceBow: Set ParentConstraint weights - hand=1, back=0");
+                }
+            }
+
+            // Bowの位置を(0,0,0)、回転を(0, 90, -90)に設定
+            // これによりアニメーションによる位置/回転の変化を打ち消す
+            if (_p09BowObject != null)
+            {
+                _p09BowObject.transform.localPosition = Vector3.zero;
+                _p09BowObject.transform.localRotation = Quaternion.Euler(0f, 90f, -90f);
             }
         }
 
@@ -372,6 +637,9 @@ namespace CavalryFight.Gameplay.Player
                     // 射撃アニメーションを再生
                     _riderController?.SetAnimationState(RiderAnimationState.Shooting);
 
+                    // 上半身の回転をリセット
+                    ResetSpineRotation();
+
                     // TrainingManagerにチャージ終了を通知
                     TrainingManager.Instance?.NotifyChargingEnded();
 
@@ -410,6 +678,9 @@ namespace CavalryFight.Gameplay.Player
 
             // RiderArcherControllerが弓の状態をリセット
             _riderController?.ArcherController?.ResetBowState();
+
+            // 上半身の回転をリセット
+            ResetSpineRotation();
 
             // TrainingManagerにチャージ終了を通知
             TrainingManager.Instance?.NotifyChargingEnded();
@@ -544,6 +815,171 @@ namespace CavalryFight.Gameplay.Player
 
             // 自動削除（パーティクルシステムの場合は自動で消えるが念のため）
             Destroy(muzzle, 3f);
+        }
+
+        // 上半身（Spine）とHead のキャッシュ
+        private Transform? _spineTransform;
+        private Transform? _headTransform;
+        private float _currentSpineYRotation = 0f;
+        private float _currentSpineXRotation = 0f;
+        private bool _hairReparented = false;
+
+        /// <summary>
+        /// 騎手の上半身をカメラの向きに回転させます（エイム中）
+        /// </summary>
+        /// <remarks>
+        /// 騎乗中にエイムしている場合、騎手の上半身（Spine）がカメラの水平方向を向くように回転します。
+        /// アニメーションの回転に追加の回転を乗せる形で適用します。
+        /// </remarks>
+        private void RotateRiderTowardCamera()
+        {
+            // カメラ参照がない場合は取得を試みる
+            if (_cameraTransform == null)
+            {
+                UnityEngine.Camera mainCamera = UnityEngine.Camera.main;
+                if (mainCamera != null)
+                {
+                    _cameraTransform = mainCamera.transform;
+                    Debug.Log($"[PlayerController] RotateRider: Camera.main を取得: {_cameraTransform.name}");
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (_riderController == null)
+            {
+                return;
+            }
+
+            // SpineボーンとHeadボーンを取得（初回のみ）
+            if (_spineTransform == null || _headTransform == null)
+            {
+                Animator? animator = _riderController.Animator;
+                if (animator != null)
+                {
+                    _spineTransform = animator.GetBoneTransform(HumanBodyBones.Spine);
+                    _headTransform = animator.GetBoneTransform(HumanBodyBones.Head);
+                    if (_spineTransform != null)
+                    {
+                        Debug.Log($"[PlayerController] RotateRider: Spine を取得: {_spineTransform.name}");
+                    }
+                    else
+                    {
+                        return;
+                    }
+                    if (_headTransform != null)
+                    {
+                        Debug.Log($"[PlayerController] RotateRider: Head を取得: {_headTransform.name}");
+
+                        // 髪をHeadボーンの子に移動（初回のみ）
+                        if (!_hairReparented)
+                        {
+                            ReparentHairToHead(animator);
+                            _hairReparented = true;
+                        }
+                    }
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // カメラの水平方向（Y軸回転のみ）を取得
+            Vector3 cameraForward = _cameraTransform.forward;
+            cameraForward.y = 0f;
+
+            if (cameraForward.sqrMagnitude < 0.001f)
+            {
+                return;
+            }
+
+            cameraForward.Normalize();
+
+            // 馬（マウント）の向きを取得
+            Transform mountTransform = _riderController.transform.parent;
+            if (mountTransform == null)
+            {
+                return;
+            }
+
+            // 馬の向きとカメラの向きの角度差を計算
+            Vector3 mountForward = mountTransform.forward;
+            mountForward.y = 0f;
+            mountForward.Normalize();
+
+            float targetAngleY = Vector3.SignedAngle(mountForward, cameraForward, Vector3.up);
+
+            // 90度オフセットを追加（角度0で左を向いているため、+90で前を向く）
+            targetAngleY += 90f;
+
+            // 垂直角度を取得（カメラの上下向き）
+            float targetAngleX = -_cameraTransform.eulerAngles.x;
+            // 角度を-180～180の範囲に正規化
+            if (targetAngleX < -180f) targetAngleX += 360f;
+            if (targetAngleX > 180f) targetAngleX -= 360f;
+
+            // スムーズに目標角度に近づける
+            _currentSpineYRotation = Mathf.LerpAngle(_currentSpineYRotation, targetAngleY, _rotationSpeed * Time.deltaTime);
+            _currentSpineXRotation = Mathf.LerpAngle(_currentSpineXRotation, targetAngleX, _rotationSpeed * Time.deltaTime);
+
+            // アニメーションの回転に追加の回転を乗せる（Y軸とX軸）
+            Quaternion additionalRotation = Quaternion.Euler(_currentSpineXRotation, _currentSpineYRotation, 0f);
+            _spineTransform.rotation = _spineTransform.rotation * additionalRotation;
+
+            // 毎秒ログ出力
+            if (Time.frameCount % 60 == 0)
+            {
+                Debug.Log($"[PlayerController] RotateRider: targetY={targetAngleY:F1}, targetX={targetAngleX:F1}, currentY={_currentSpineYRotation:F1}, currentX={_currentSpineXRotation:F1}");
+            }
+        }
+
+        /// <summary>
+        /// 髪オブジェクトをHeadボーンの子に移動します
+        /// </summary>
+        /// <param name="animator">キャラクターのAnimator</param>
+        private void ReparentHairToHead(Animator animator)
+        {
+            if (_headTransform == null)
+            {
+                return;
+            }
+
+            // P09モデルのルートを取得
+            Transform root = animator.transform;
+
+            // Hair を含む名前のオブジェクトを検索
+            var allTransforms = root.GetComponentsInChildren<Transform>(true);
+            foreach (var t in allTransforms)
+            {
+                // Hair_ で始まるオブジェクト（例: Hair_01, Hair_02）を検索
+                if (t.name.StartsWith("Hair_") && t.parent != _headTransform)
+                {
+                    // 現在のワールド位置と回転を保存
+                    Vector3 worldPos = t.position;
+                    Quaternion worldRot = t.rotation;
+
+                    // Headの子に移動
+                    t.SetParent(_headTransform);
+
+                    // ワールド位置と回転を維持
+                    t.position = worldPos;
+                    t.rotation = worldRot;
+
+                    Debug.Log($"[PlayerController] ReparentHairToHead: {t.name} を Head の子に移動しました");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 上半身の回転をリセットします
+        /// </summary>
+        private void ResetSpineRotation()
+        {
+            _currentSpineYRotation = 0f;
+            _currentSpineXRotation = 0f;
         }
 
         #endregion

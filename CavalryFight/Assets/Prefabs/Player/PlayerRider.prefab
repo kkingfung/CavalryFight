@@ -12018,12 +12018,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Gameplay.Player.RiderArcherController
   _animator: {fileID: 1237107622787857314}
+  _bowObject: {fileID: 0}
   _bowInHand: {fileID: 3973784128776273684}
   _bowSheathed: {fileID: 0}
   _quiver: {fileID: 7741585962992390909}
+  _spineTransform: {fileID: 5175799897692454777}
+  _cameraTransform: {fileID: 0}
+  _maxHorizontalRotation: 50
+  _maxVerticalRotation: 45
+  _aimRotationSpeed: 10
   _stringPullDuration: 0.3
   _stringReleaseDuration: 0.15
-  _pullRange: 0.3
+  _constraintTransitionSpeed: 5
   _debugLog: 1
 --- !u!1001 &2355707534129116950
 PrefabInstance:
@@ -14252,6 +14258,10 @@ PrefabInstance:
     - target: {fileID: 4699603622695955340, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.039751202
+      objectReference: {fileID: 0}
+    - target: {fileID: 4699603622695955340, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.1132956
       objectReference: {fileID: 0}
     - target: {fileID: 4699603622695955340, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -17092,14 +17102,9 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!4 &4637479969286345230 stripped
+--- !u!4 &5175799897692454777 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 6983540352480666904, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
-  m_PrefabInstance: {fileID: 2355707534129116950}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &5351190957211486260 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7706248676735565602, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_CorrespondingSourceObject: {fileID: 7450366728926398575, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
   m_PrefabInstance: {fileID: 2355707534129116950}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &7028288456246975642 stripped
@@ -17125,11 +17130,6 @@ Transform:
 --- !u!4 &7911254400169013770 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5583140221868557596, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
-  m_PrefabInstance: {fileID: 2355707534129116950}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &8042207820577688874 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5704528980088781372, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
   m_PrefabInstance: {fileID: 2355707534129116950}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &8440599268766688328 stripped

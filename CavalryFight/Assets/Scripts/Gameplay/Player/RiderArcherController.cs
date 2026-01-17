@@ -62,9 +62,6 @@ namespace CavalryFight.Gameplay.Player
         [Tooltip("弦を離す時間")]
         [SerializeField] private float _stringReleaseDuration = 0.15f;
 
-        [Tooltip("弓を引く距離（視覚的フィードバック用）")]
-        [SerializeField] private float _pullRange = 0.3f;
-
         [Tooltip("ParentConstraintの重み変更速度")]
         [SerializeField] private float _constraintTransitionSpeed = 5f;
 
@@ -86,6 +83,9 @@ namespace CavalryFight.Gameplay.Player
         private ParentConstraint? _bowParentConstraint;
         private float _targetHandWeight = 0f;    // 手の重み（目標値）
         private float _currentHandWeight = 0f;   // 手の重み（現在値）
+
+        // 弓が直接手にアタッチされているか（ParentConstraintを使用しない場合）
+        private bool _bowDirectlyAttachedToHand = false;
 
         // エイム回転関連
         private Quaternion _targetSpineRotation = Quaternion.identity;
@@ -144,7 +144,7 @@ namespace CavalryFight.Gameplay.Player
             // カメラを自動取得
             if (_cameraTransform == null)
             {
-                var mainCamera = Camera.main;
+                var mainCamera = UnityEngine.Camera.main;
                 if (mainCamera != null)
                 {
                     _cameraTransform = mainCamera.transform;
@@ -223,6 +223,12 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void UpdateBowConstraintWeight()
         {
+            // 弓が直接手にアタッチされている場合はParentConstraintを使用しない
+            if (_bowDirectlyAttachedToHand)
+            {
+                return;
+            }
+
             if (_bowParentConstraint == null || _bowParentConstraint.sourceCount < 2)
             {
                 return;
@@ -469,8 +475,16 @@ namespace CavalryFight.Gameplay.Player
                 _originalSpineRotation = _spineTransform.localRotation;
             }
 
+            // 弓が直接手にアタッチされている場合は位置変更不要
+            if (_bowDirectlyAttachedToHand)
+            {
+                if (_debugLog)
+                {
+                    Debug.Log("[RiderArcherController] 弓は直接手にアタッチ済み - 位置変更スキップ");
+                }
+            }
             // ParentConstraintがある場合は重みを変更（手に移動）
-            if (_bowParentConstraint != null)
+            else if (_bowParentConstraint != null)
             {
                 _targetHandWeight = 1f;
                 if (_debugLog)
@@ -519,8 +533,16 @@ namespace CavalryFight.Gameplay.Player
         {
             yield return new WaitForSeconds(delay);
 
+            // 弓が直接手にアタッチされている場合は位置変更不要（常に手に保持）
+            if (_bowDirectlyAttachedToHand)
+            {
+                if (_debugLog)
+                {
+                    Debug.Log("[RiderArcherController] 弓は直接手にアタッチ済み - 収納スキップ（常に手に保持）");
+                }
+            }
             // ParentConstraintがある場合は重みを変更（背中に移動）
-            if (_bowParentConstraint != null)
+            else if (_bowParentConstraint != null)
             {
                 _targetHandWeight = 0f;
                 if (_debugLog)
@@ -619,12 +641,25 @@ namespace CavalryFight.Gameplay.Player
             }
 
             _isBowLoaded = false;
-            _isAiming = false;
 
-            // ParentConstraintを背中の位置に戻す
-            _targetHandWeight = 0f;
-            _currentHandWeight = 0f;
-            UpdateBowConstraintWeight();
+            // 弓が直接手にアタッチされている場合は、位置をリセットしない（常に手に保持）
+            if (_bowDirectlyAttachedToHand)
+            {
+                // _isAimingはtrueのまま維持（弓は常に手にある）
+                if (_debugLog)
+                {
+                    Debug.Log("[RiderArcherController] 弓は直接アタッチ済み - 位置リセットスキップ");
+                }
+            }
+            else
+            {
+                _isAiming = false;
+
+                // ParentConstraintを背中の位置に戻す
+                _targetHandWeight = 0f;
+                _currentHandWeight = 0f;
+                UpdateBowConstraintWeight();
+            }
 
             // 脊椎の回転を元に戻す
             if (_spineTransform != null)
@@ -651,11 +686,120 @@ namespace CavalryFight.Gameplay.Player
         /// 弓オブジェクトを設定します（ParentConstraint対応）
         /// </summary>
         /// <param name="bowObject">弓オブジェクト</param>
-        public void SetBowObject(GameObject bowObject)
+        /// <param name="immediatelyInHand">trueの場合、即座に手に配置</param>
+        public void SetBowObject(GameObject bowObject, bool immediatelyInHand = false)
         {
             _bowObject = bowObject;
             _bowInHand = bowObject;
             InitializeBowConstraint();
+
+            // 即座に手に配置する場合はParentConstraintを無効化して直接アタッチ
+            if (immediatelyInHand)
+            {
+                Debug.Log($"[RiderArcherController] SetBowObject: immediatelyInHand=true, 弓を直接手に配置します");
+
+                // ParentConstraintを無効化
+                if (_bowParentConstraint != null)
+                {
+                    _bowParentConstraint.constraintActive = false;
+                    Debug.Log("[RiderArcherController] ParentConstraintを無効化しました");
+                }
+
+                // 直接アタッチフラグを設定
+                _bowDirectlyAttachedToHand = true;
+                _isAiming = true;
+
+                // 脊椎の初期回転を保存
+                if (_spineTransform != null)
+                {
+                    _originalSpineRotation = _spineTransform.localRotation;
+                }
+
+                // 左手ボーンを取得して直接アタッチ
+                if (_animator != null)
+                {
+                    Transform? leftHand = _animator.GetBoneTransform(HumanBodyBones.LeftHand);
+                    if (leftHand != null)
+                    {
+                        bowObject.transform.SetParent(leftHand);
+                        // 位置と回転はPlayerController.ForceBowToLeftHandで毎フレーム設定するため、ここでは設定しない
+                        Debug.Log($"[RiderArcherController] 弓を左手に直接アタッチ: parent={leftHand.name}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[RiderArcherController] 左手ボーンが見つかりません");
+                    }
+                }
+
+                return;
+            }
+
+            // ParentConstraintが見つかった場合、制約を有効化（通常モード）
+            if (_bowParentConstraint != null)
+            {
+                _bowParentConstraint.constraintActive = true;
+
+                if (_debugLog)
+                {
+                    Debug.Log($"[RiderArcherController] 弓オブジェクトを設定: {bowObject.name}, ParentConstraint有効化");
+                }
+            }
+            else
+            {
+                if (_debugLog)
+                {
+                    Debug.Log($"[RiderArcherController] 弓オブジェクトを設定: {bowObject.name} (ParentConstraintなし)");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 弓を指定されたボーンに直接アタッチします（ParentConstraintがない場合のフォールバック）
+        /// </summary>
+        /// <param name="handBone">手のボーン</param>
+        /// <param name="localPosition">ローカル位置</param>
+        /// <param name="localRotation">ローカル回転</param>
+        public void AttachBowToHand(Transform handBone, Vector3 localPosition, Quaternion localRotation)
+        {
+            if (_bowObject == null)
+            {
+                Debug.LogWarning("[RiderArcherController] 弓オブジェクトが設定されていません");
+                return;
+            }
+
+            // ParentConstraintがない場合は直接親子関係を設定
+            if (_bowParentConstraint == null)
+            {
+                _bowObject.transform.SetParent(handBone);
+                _bowObject.transform.localPosition = localPosition;
+                _bowObject.transform.localRotation = localRotation;
+
+                // 直接アタッチフラグを設定（Sheathe/Unsheatheで位置変更しない）
+                _bowDirectlyAttachedToHand = true;
+
+                if (_debugLog)
+                {
+                    Debug.Log($"[RiderArcherController] 弓を手に直接アタッチ: {handBone.name}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 弓が直接手にアタッチされていることをマークします
+        /// </summary>
+        public void MarkBowAsDirectlyAttached()
+        {
+            _bowDirectlyAttachedToHand = true;
+            _isAiming = true;  // 常にエイム状態とみなす
+
+            // ParentConstraintを無効化（これが弓の位置を上書きするのを防ぐ）
+            if (_bowParentConstraint != null)
+            {
+                _bowParentConstraint.constraintActive = false;
+                Debug.Log("[RiderArcherController] ParentConstraintを無効化しました");
+            }
+
+            Debug.Log("[RiderArcherController] 弓を直接アタッチ済みとしてマーク");
         }
 
         #endregion

@@ -34,9 +34,6 @@ namespace CavalryFight.Gameplay.Player
         [Tooltip("アーチャーコントローラー（弓のアニメーション制御）")]
         [SerializeField] private RiderArcherController? _archerController;
 
-        [Header("Animation Gender Swapper")]
-        [Tooltip("性別に応じたアニメーション切り替え（オプション）")]
-        [SerializeField] private RiderAnimationGenderSwapper? _genderSwapper;
 
         [Header("Debug")]
         [SerializeField] private bool _debugLog = false;
@@ -48,6 +45,7 @@ namespace CavalryFight.Gameplay.Player
         private bool _isMounted = false;
         private Transform? _mountPoint;
         private bool _originalApplyRootMotion = false;
+        private bool _isAiming = false;
 
         #endregion
 
@@ -57,11 +55,6 @@ namespace CavalryFight.Gameplay.Player
         /// アーチャーコントローラーを取得します
         /// </summary>
         public RiderArcherController? ArcherController => _archerController;
-
-        /// <summary>
-        /// アニメーション性別スワッパーを取得します
-        /// </summary>
-        public RiderAnimationGenderSwapper? GenderSwapper => _genderSwapper;
 
         #endregion
 
@@ -213,6 +206,7 @@ namespace CavalryFight.Gameplay.Player
             switch (state)
             {
                 case RiderAnimationState.Idle:
+                    _isAiming = false;
                     if (hasIsMounted)
                     {
                         _animator.SetBool(IsMountedHash, false);
@@ -224,6 +218,7 @@ namespace CavalryFight.Gameplay.Player
                     break;
 
                 case RiderAnimationState.MountedIdle:
+                    _isAiming = false;
                     if (hasIsMounted)
                     {
                         _animator.SetBool(IsMountedHash, true);
@@ -235,6 +230,7 @@ namespace CavalryFight.Gameplay.Player
                     break;
 
                 case RiderAnimationState.Aiming:
+                    _isAiming = true;
                     if (hasIsAiming)
                     {
                         _animator.SetBool(IsAimingHash, true);
@@ -242,6 +238,7 @@ namespace CavalryFight.Gameplay.Player
                     break;
 
                 case RiderAnimationState.Shooting:
+                    _isAiming = false;
                     if (HasParameter("Shoot"))
                     {
                         _animator.SetTrigger(ShootHash);
@@ -506,20 +503,6 @@ namespace CavalryFight.Gameplay.Player
                 }
             }
 
-            // RiderAnimationGenderSwapperを自動取得
-            if (_genderSwapper == null)
-            {
-                _genderSwapper = GetComponent<RiderAnimationGenderSwapper>();
-                if (_genderSwapper == null)
-                {
-                    _genderSwapper = GetComponentInChildren<RiderAnimationGenderSwapper>();
-                }
-
-                if (_genderSwapper != null && _debugLog)
-                {
-                    Debug.Log("[RiderController] RiderAnimationGenderSwapper を自動取得しました");
-                }
-            }
         }
 
         /// <summary>

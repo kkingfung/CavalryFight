@@ -960,6 +960,7 @@ namespace CavalryFight.Views
         {
             if (_settingsViewModel != null)
             {
+                Debug.Log($"[TrainingView] SFX volume slider changed: {evt.previousValue:F2} -> {evt.newValue:F2}");
                 _settingsViewModel.SfxVolume = evt.newValue;
             }
         }

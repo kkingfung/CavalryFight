@@ -40,7 +40,7 @@ namespace CavalryFight.Gameplay.Camera
         [Tooltip("エイム時の垂直角度制限（上方向）- RiderAimControllerと同じ値にすること")]
         [SerializeField] private float _aimMaxVerticalAngle = 60f;
         [Tooltip("エイム時の水平角度制限（左方向、負の値）")]
-        [SerializeField] private float _aimMinHorizontalAngle = -35f;
+        [SerializeField] private float _aimMinHorizontalAngle = -125f;
         [Tooltip("エイム時の水平角度制限（右方向、正の値）")]
         [SerializeField] private float _aimMaxHorizontalAngle = 125f;
 

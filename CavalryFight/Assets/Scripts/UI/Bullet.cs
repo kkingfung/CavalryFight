@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
 
 namespace MasterStylizedProjectile
 {
@@ -22,16 +19,30 @@ namespace MasterStylizedProjectile
         
         private float initialYPosition;
         
+        private IAudioService? _audioService;
+
         private void Start()
         {
             // 存储初始y坐标（用于平射时保持y坐标不变）
             initialYPosition = transform.position.y;
-            
+
+            // AudioServiceを取得
+            _audioService = ServiceLocator.Instance.Get<IAudioService>();
+
             if (bulletClip != null)
             {
-                var audio = gameObject.AddComponent<AudioSource>();
-                audio.clip = bulletClip;
-                audio.Play();
+                // AudioServiceを経由して再生（ボリューム設定を反映）
+                if (_audioService != null)
+                {
+                    _audioService.PlaySfxAtPosition(bulletClip, transform.position);
+                }
+                else
+                {
+                    // フォールバック
+                    var audio = gameObject.AddComponent<AudioSource>();
+                    audio.clip = bulletClip;
+                    audio.Play();
+                }
             }
         }
         private void Update()

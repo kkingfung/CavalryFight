@@ -1,6 +1,8 @@
 #nullable enable
 
 using UnityEngine;
+using CavalryFight.Core.Services;
+using CavalryFight.Services.Audio;
 using CavalryFight.Services.Training;
 
 namespace CavalryFight.Gameplay.Training
@@ -44,7 +46,7 @@ namespace CavalryFight.Gameplay.Training
 
         #region Private Fields
 
-        private AudioSource? _audioSource;
+        private IAudioService? _audioService;
         private Collider? _collider;
         private bool _isActive = true;
 
@@ -68,15 +70,16 @@ namespace CavalryFight.Gameplay.Training
 
         private void Awake()
         {
-            _audioSource = GetComponent<AudioSource>();
             _collider = GetComponent<Collider>();
+        }
 
-            // AudioSourceがなければ追加
-            if (_audioSource == null && _hitSound != null)
+        private void Start()
+        {
+            // AudioServiceを取得
+            _audioService = ServiceLocator.Instance.Get<IAudioService>();
+            if (_audioService == null)
             {
-                _audioSource = gameObject.AddComponent<AudioSource>();
-                _audioSource.playOnAwake = false;
-                _audioSource.spatialBlend = 1f;
+                Debug.LogWarning("[TrainingTarget] AudioService not found!");
             }
         }
 
@@ -211,9 +214,9 @@ namespace CavalryFight.Gameplay.Training
         /// </summary>
         private void PlayHitSound()
         {
-            if (_hitSound != null && _audioSource != null)
+            if (_hitSound != null && _audioService != null)
             {
-                _audioSource.PlayOneShot(_hitSound);
+                _audioService.PlaySfxAtPosition(_hitSound, transform.position);
             }
         }
 
