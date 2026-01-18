@@ -279,7 +279,7 @@ namespace CavalryFight.ViewModels
         /// <summary>
         /// マップ名
         /// </summary>
-        public string MapName => ReplayData?.MapName ?? "";
+        public string MapName => ReplayData?.MapName.ToString() ?? "";
 
         /// <summary>
         /// ゲームモード

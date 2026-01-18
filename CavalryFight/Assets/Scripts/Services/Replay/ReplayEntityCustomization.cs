@@ -26,14 +26,33 @@ namespace CavalryFight.Services.Replay
         public string DisplayName = string.Empty;
 
         /// <summary>
-        /// キャラクターカスタマイズ
+        /// エンティティタイプ
         /// </summary>
+        /// <remarks>
+        /// Player, Enemy, Wolf, Prey など
+        /// </remarks>
+        public EntityType EntityType = EntityType.Enemy;
+
+        /// <summary>
+        /// キャラクターカスタマイズ（騎手用）
+        /// </summary>
+        /// <remarks>
+        /// EntityType が Player または Enemy の場合に使用
+        /// </remarks>
         public CharacterCustomization Character = new();
 
         /// <summary>
-        /// 馬カスタマイズ
+        /// 馬カスタマイズ（騎手用）
         /// </summary>
+        /// <remarks>
+        /// EntityType が Player または Enemy の場合に使用
+        /// </remarks>
         public MountCustomization Mount = new();
+
+        /// <summary>
+        /// チームインデックス（ウルフ等の着色用）
+        /// </summary>
+        public int TeamIndex = 0;
 
         /// <summary>
         /// ReplayEntityCustomizationの新しいインスタンスを初期化します
@@ -68,8 +87,23 @@ namespace CavalryFight.Services.Replay
         {
             EntityId = entityId;
             DisplayName = displayName;
+            EntityType = EntityType.Enemy;
             Character = character;
             Mount = mount;
+        }
+
+        /// <summary>
+        /// ウルフエンティティ用のReplayEntityCustomizationを作成します
+        /// </summary>
+        /// <param name="entityId">エンティティID</param>
+        /// <param name="displayName">表示名</param>
+        /// <param name="teamIndex">チームインデックス</param>
+        public ReplayEntityCustomization(string entityId, string displayName, int teamIndex)
+        {
+            EntityId = entityId;
+            DisplayName = displayName;
+            EntityType = EntityType.Wolf;
+            TeamIndex = teamIndex;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using CavalryFight.Core.Services;
+using CavalryFight.Services.Lobby;
 
 namespace CavalryFight.Services.Replay
 {
@@ -162,7 +163,7 @@ namespace CavalryFight.Services.Replay
         /// <param name="mapName">マップ名</param>
         /// <param name="gameMode">ゲームモード</param>
         /// <param name="playerName">プレイヤー名</param>
-        public void StartRecording(string mapName, string gameMode, string playerName = "Player")
+        public void StartRecording(MapName mapName, string gameMode, string playerName = "Player")
         {
             if (_isRecording)
             {
@@ -309,6 +310,24 @@ namespace CavalryFight.Services.Replay
             {
                 Debug.Log($"[ReplayRecorder] Entity unregistered: {entityId}");
             }
+        }
+
+        /// <summary>
+        /// ウルフエンティティのカスタマイズデータを登録します
+        /// </summary>
+        /// <param name="entityId">エンティティID</param>
+        /// <param name="displayName">表示名</param>
+        /// <param name="teamIndex">チームインデックス</param>
+        public void RegisterWolfCustomization(string entityId, string displayName, int teamIndex)
+        {
+            if (!_isRecording || _currentRecording == null)
+            {
+                return;
+            }
+
+            var customization = new ReplayEntityCustomization(entityId, displayName, teamIndex);
+            _currentRecording.Wolves.Add(customization);
+            Debug.Log($"[ReplayRecorder] Wolf customization registered: {entityId} (Team: {teamIndex})");
         }
 
         /// <summary>

@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using CavalryFight.Core.Services;
 using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
 using Unity.Netcode;
@@ -189,6 +191,12 @@ namespace CavalryFight.Gameplay.Match
             _roomSettings.OnValueChanged += OnRoomSettingsValueChanged;
 
             Debug.Log($"[MatchManager] Network spawned. IsServer: {IsServer}, IsClient: {IsClient}");
+
+            // サーバーの場合、LobbyServiceからデータを取得してマッチを初期化
+            if (IsServer)
+            {
+                InitializeFromLobbyService();
+            }
         }
 
         public override void OnNetworkDespawn()
@@ -484,6 +492,126 @@ namespace CavalryFight.Gameplay.Match
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// LobbyServiceからマッチ情報を取得して初期化します
+        /// </summary>
+        private void InitializeFromLobbyService()
+        {
+            var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+            if (lobbyService == null)
+            {
+                Debug.LogError("[MatchManager] ILobbyService not found. Cannot initialize match.");
+                return;
+            }
+
+            var roomSettings = lobbyService.CurrentRoomSettings;
+            var playerSlots = lobbyService.PlayerSlots.ToArray();
+
+            Debug.Log($"[MatchManager] Initializing from LobbyService. Map: {roomSettings.MapName}, GameMode: {roomSettings.GameMode}, Players: {playerSlots.Length}");
+
+            // マップをロード
+            LoadMap(roomSettings.MapName);
+
+            // マッチを初期化
+            InitializeMatchInternal(roomSettings, playerSlots);
+        }
+
+        /// <summary>
+        /// マップをロードします
+        /// </summary>
+        /// <param name="mapName">マップ名</param>
+        private void LoadMap(MapName mapName)
+        {
+            if (FieldLoader.Instance != null)
+            {
+                bool success = FieldLoader.Instance.LoadField(mapName);
+                Debug.Log($"[MatchManager] LoadMap: {mapName} - {(success ? "Success" : "Failed")}");
+            }
+            else
+            {
+                Debug.LogWarning("[MatchManager] FieldLoader.Instance not found. Map will not be loaded.");
+            }
+        }
+
+        /// <summary>
+        /// マッチを内部的に初期化します
+        /// </summary>
+        /// <param name="settings">ルーム設定</param>
+        /// <param name="slots">プレイヤースロット</param>
+        private void InitializeMatchInternal(RoomSettings settings, PlayerSlot[] slots)
+        {
+            _roomSettings.Value = settings;
+
+            // プレイヤースロットを設定
+            _playerSlots?.Clear();
+            foreach (var slot in slots)
+            {
+                _playerSlots?.Add(slot);
+            }
+
+            // プレイヤースコアを初期化
+            _playerScores?.Clear();
+            foreach (var slot in slots)
+            {
+                _playerScores?.Add(new Services.Match.PlayerScore
+                {
+                    ClientId = slot.PlayerId,
+                    PlayerName = slot.PlayerName,
+                    Score = 0,
+                    RemainingArrows = settings.ArrowLimit,
+                    HitCount = 0,
+                    ShotCount = 0,
+                    TeamIndex = slot.TeamIndex
+                });
+            }
+
+            // RulesHandlersを自動検索
+            AutoFindRulesHandlers();
+
+            // ゲームモードに応じたハンドラーを選択
+            SelectHandler(settings.GameMode);
+
+            // ハンドラーを初期化
+            _activeHandler?.Initialize(this, settings);
+
+            // 状態を更新
+            _matchState.Value = MatchState.WaitingForPlayers;
+
+            Debug.Log($"[MatchManager] Match initialized. Mode: {settings.GameMode}, Players: {slots.Length}");
+
+            // カウントダウンを開始
+            StartCountdownRpc();
+        }
+
+        /// <summary>
+        /// RulesHandlerを自動的に検索して設定します
+        /// </summary>
+        private void AutoFindRulesHandlers()
+        {
+            if (_arenaHandler == null)
+            {
+                _arenaHandler = GetComponentInChildren<ArenaRulesHandler>();
+            }
+            if (_scoreMatchHandler == null)
+            {
+                _scoreMatchHandler = GetComponentInChildren<ScoreMatchRulesHandler>();
+            }
+            if (_teamFightHandler == null)
+            {
+                _teamFightHandler = GetComponentInChildren<TeamFightRulesHandler>();
+            }
+            if (_deathmatchHandler == null)
+            {
+                _deathmatchHandler = GetComponentInChildren<DeathmatchRulesHandler>();
+            }
+            if (_huntingHandler == null)
+            {
+                _huntingHandler = GetComponentInChildren<HuntingRulesHandler>();
+            }
+
+            Debug.Log($"[MatchManager] AutoFindRulesHandlers - Arena: {_arenaHandler != null}, ScoreMatch: {_scoreMatchHandler != null}, TeamFight: {_teamFightHandler != null}, Deathmatch: {_deathmatchHandler != null}, Hunting: {_huntingHandler != null}");
+        }
 
         private void SelectHandler(GameMode mode)
         {

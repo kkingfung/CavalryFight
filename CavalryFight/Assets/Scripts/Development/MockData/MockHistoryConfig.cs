@@ -48,7 +48,7 @@ namespace CavalryFight.Development.MockData
             {
                 MatchId = "match-002",
                 GameMode = "TeamFight",
-                MapName = "Castle",
+                MapName = "PlayGround",
                 MatchDate = "2025-12-29 20:15",
                 MatchDuration = 420f,
                 IsVictory = false,
@@ -111,7 +111,7 @@ namespace CavalryFight.Development.MockData
             {
                 MatchId = "match-005",
                 GameMode = "Deathmatch",
-                MapName = "Desert",
+                MapName = "Nature",
                 MatchDate = "2025-12-26 12:00",
                 MatchDuration = 180f,
                 IsVictory = false,
@@ -132,7 +132,7 @@ namespace CavalryFight.Development.MockData
             {
                 MatchId = "match-006",
                 GameMode = "Arena",
-                MapName = "Castle",
+                MapName = "PlayGround",
                 MatchDate = "2025-12-25 21:30",
                 MatchDuration = 480f,
                 IsVictory = true,
@@ -174,7 +174,7 @@ namespace CavalryFight.Development.MockData
             {
                 MatchId = "match-008",
                 GameMode = "TeamFight",
-                MapName = "Desert",
+                MapName = "Nature",
                 MatchDate = "2025-12-23 19:00",
                 MatchDuration = 360f,
                 IsVictory = false, // IsDraw判定はスコアで行う

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Customization;
+using CavalryFight.Services.Lobby;
 
 namespace CavalryFight.Services.Replay
 {
@@ -26,6 +27,9 @@ namespace CavalryFight.Services.Replay
 
         [Tooltip("騎手のプレハブ")]
         [SerializeField] private GameObject? _riderPrefab;
+
+        [Tooltip("ウルフのプレハブ（ハンティングモード用、サードパーティアセット）")]
+        [SerializeField] private GameObject? _wolfPrefab;
 
         [Header("Settings")]
         [Tooltip("デバッグログを出力するか")]
@@ -58,8 +62,11 @@ namespace CavalryFight.Services.Replay
             public GameObject? Root;
             public GameObject? Rider;
             public GameObject? Mount;
+            public GameObject? Wolf;
             public Animator? RiderAnimator;
             public Animator? MountAnimator;
+            public Animator? WolfAnimator;
+            public EntityType EntityType = EntityType.Unknown;
         }
 
         #endregion
@@ -252,7 +259,7 @@ namespace CavalryFight.Services.Replay
         /// FieldLoaderなどの外部コンポーネントがこのイベントを購読して
         /// 実際のフィールドロードを行います。
         /// </remarks>
-        public static event Action<string>? FieldLoadRequested;
+        public static event Action<MapName>? FieldLoadRequested;
 
         #endregion
 
@@ -262,7 +269,7 @@ namespace CavalryFight.Services.Replay
         /// フィールドのロードを要求します
         /// </summary>
         /// <param name="mapName">マップ名</param>
-        private void LoadField(string mapName)
+        private void LoadField(MapName mapName)
         {
             if (FieldLoadRequested != null)
             {
@@ -300,6 +307,18 @@ namespace CavalryFight.Services.Replay
             foreach (var enemyCustomization in _currentReplay.Enemies)
             {
                 SpawnEnemyEntity(enemyCustomization);
+            }
+
+            // ウルフをスポーン（ハンティングモード）
+            foreach (var wolfCustomization in _currentReplay.Wolves)
+            {
+                SpawnWolfEntity(wolfCustomization);
+            }
+
+            // その他のエンティティをスポーン
+            foreach (var otherCustomization in _currentReplay.OtherEntities)
+            {
+                SpawnOtherEntity(otherCustomization);
             }
 
             if (_debugLog)
@@ -354,7 +373,8 @@ namespace CavalryFight.Services.Replay
                 Mount = mount,
                 Rider = rider,
                 RiderAnimator = rider?.GetComponentInChildren<Animator>(),
-                MountAnimator = mount?.GetComponentInChildren<Animator>()
+                MountAnimator = mount?.GetComponentInChildren<Animator>(),
+                EntityType = EntityType.Player
             };
 
             _spawnedEntities["player_0"] = playerEntity;
@@ -364,7 +384,8 @@ namespace CavalryFight.Services.Replay
             {
                 Root = mount,
                 Mount = mount,
-                MountAnimator = mount?.GetComponentInChildren<Animator>()
+                MountAnimator = mount?.GetComponentInChildren<Animator>(),
+                EntityType = EntityType.Mount
             };
             _spawnedEntities["mount_0"] = mountEntity;
         }
@@ -423,7 +444,8 @@ namespace CavalryFight.Services.Replay
                 Mount = mount,
                 Rider = rider,
                 RiderAnimator = rider?.GetComponentInChildren<Animator>(),
-                MountAnimator = mount?.GetComponentInChildren<Animator>()
+                MountAnimator = mount?.GetComponentInChildren<Animator>(),
+                EntityType = EntityType.Enemy
             };
 
             _spawnedEntities[customization.EntityId] = enemyEntity;
@@ -433,9 +455,111 @@ namespace CavalryFight.Services.Replay
             {
                 Root = mount,
                 Mount = mount,
-                MountAnimator = mount?.GetComponentInChildren<Animator>()
+                MountAnimator = mount?.GetComponentInChildren<Animator>(),
+                EntityType = EntityType.Mount
             };
             _spawnedEntities[mountEntityId] = mountEntity;
+        }
+
+        /// <summary>
+        /// ウルフエンティティをスポーンします（ハンティングモード用）
+        /// </summary>
+        /// <param name="customization">ウルフのカスタマイズデータ</param>
+        private void SpawnWolfEntity(ReplayEntityCustomization customization)
+        {
+            if (_wolfPrefab == null)
+            {
+                if (_debugLog)
+                {
+                    Debug.LogWarning("[ReplayPlaybackManager] ウルフプレハブが設定されていないため、ウルフをスポーンできません。");
+                }
+                return;
+            }
+
+            if (_currentReplay == null)
+            {
+                return;
+            }
+
+            // 初期位置を取得
+            Vector3 position = Vector3.zero;
+            Quaternion rotation = Quaternion.identity;
+
+            if (_currentReplay.Frames.Count > 0)
+            {
+                var firstFrame = _currentReplay.Frames[0];
+                foreach (var snapshot in firstFrame.Entities)
+                {
+                    if (snapshot.EntityId == customization.EntityId)
+                    {
+                        position = snapshot.Position;
+                        rotation = snapshot.Rotation;
+                        break;
+                    }
+                }
+            }
+
+            // ウルフをスポーン
+            var wolf = SpawnWolf(position, rotation, customization.TeamIndex);
+
+            // エンティティを登録
+            var wolfEntity = new SpawnedEntity
+            {
+                Root = wolf,
+                Wolf = wolf,
+                WolfAnimator = wolf?.GetComponentInChildren<Animator>(),
+                EntityType = EntityType.Wolf
+            };
+
+            _spawnedEntities[customization.EntityId] = wolfEntity;
+
+            if (_debugLog)
+            {
+                Debug.Log($"[ReplayPlaybackManager] ウルフをスポーンしました: {customization.EntityId} (Team: {customization.TeamIndex})");
+            }
+        }
+
+        /// <summary>
+        /// その他のエンティティをスポーンします（獲物、NPC等）
+        /// </summary>
+        /// <param name="customization">エンティティのカスタマイズデータ</param>
+        private void SpawnOtherEntity(ReplayEntityCustomization customization)
+        {
+            // TODO: 獲物やNPCのスポーン処理を実装
+            // 現時点ではスキップ
+            if (_debugLog)
+            {
+                Debug.Log($"[ReplayPlaybackManager] その他のエンティティをスキップしました: {customization.EntityId} (Type: {customization.EntityType})");
+            }
+        }
+
+        /// <summary>
+        /// ウルフをスポーンします
+        /// </summary>
+        /// <param name="position">スポーン位置</param>
+        /// <param name="rotation">スポーン回転</param>
+        /// <param name="teamIndex">チームインデックス</param>
+        /// <returns>スポーンされたウルフのGameObject</returns>
+        private GameObject? SpawnWolf(Vector3 position, Quaternion rotation, int teamIndex)
+        {
+            if (_wolfPrefab == null)
+            {
+                return null;
+            }
+
+            var wolf = Instantiate(_wolfPrefab, position, rotation, _entityContainer);
+            wolf.name = $"ReplayWolf_Team{teamIndex}";
+
+            // ゲームプレイコンポーネントを無効化
+            DisableGameplayComponents(wolf);
+
+            // WolfControllerを無効化
+            DisableComponentByName(wolf, "WolfController");
+
+            // チームマテリアルの適用はHuntingRulesHandlerに依存するため、
+            // リプレイでは簡易的な着色のみ対応（または将来的にマテリアル設定を追加）
+
+            return wolf;
         }
 
         /// <summary>
@@ -566,8 +690,26 @@ namespace CavalryFight.Services.Replay
         /// </summary>
         private void ApplySnapshotToEntity(EntitySnapshot snapshot, SpawnedEntity entity)
         {
+            // ウルフの場合
+            if (entity.EntityType == EntityType.Wolf && entity.Wolf != null)
+            {
+                entity.Wolf.transform.position = snapshot.Position;
+                entity.Wolf.transform.rotation = snapshot.Rotation;
+
+                // アニメーションを適用
+                if (entity.WolfAnimator != null)
+                {
+                    ApplyAnimationState(entity.WolfAnimator, snapshot);
+                }
+
+                // 表示/非表示
+                if (entity.Wolf.activeSelf != snapshot.IsAlive)
+                {
+                    entity.Wolf.SetActive(snapshot.IsAlive);
+                }
+            }
             // 馬の場合はRootを移動
-            if (snapshot.EntityId.Contains("mount") && entity.Mount != null)
+            else if (snapshot.EntityId.Contains("mount") && entity.Mount != null)
             {
                 entity.Mount.transform.position = snapshot.Position;
                 entity.Mount.transform.rotation = snapshot.Rotation;

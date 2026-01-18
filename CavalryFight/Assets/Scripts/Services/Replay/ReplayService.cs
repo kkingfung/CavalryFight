@@ -383,7 +383,7 @@ namespace CavalryFight.Services.Replay
             {
                 ReplayId = metadata.ReplayId,
                 RecordedAt = metadata.RecordedAt.ToString("o"),
-                MapName = metadata.MapName,
+                MapName = Enum.TryParse<Lobby.MapName>(metadata.MapName, out var parsedMap) ? parsedMap : Lobby.MapName.Arena,
                 GameMode = metadata.GameMode,
                 PlayerName = metadata.PlayerName,
                 MatchDuration = metadata.MatchDuration,

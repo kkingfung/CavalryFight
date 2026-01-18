@@ -1,7 +1,9 @@
 #nullable enable
 
 using System.Collections.Generic;
+using CavalryFight.Core.Services;
 using CavalryFight.Gameplay.Match;
+using CavalryFight.Services.Replay;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -42,6 +44,8 @@ namespace CavalryFight.Gameplay.Hunting
 
         private Dictionary<ulong, NetworkObject> _spawnedWolves = new Dictionary<ulong, NetworkObject>();
         private HuntingRulesHandler? _huntingHandler;
+        private IReplayRecorder? _replayRecorder;
+        private int _wolfSpawnCounter = 0;
 
         #endregion
 
@@ -80,6 +84,9 @@ namespace CavalryFight.Gameplay.Hunting
             {
                 _huntingHandler = handler;
             }
+
+            // リプレイレコーダーを取得
+            _replayRecorder = ServiceLocator.Instance.Get<IReplayRecorder>();
 
             Debug.Log($"[WolfSpawner] Network spawned. IsServer: {IsServer}");
         }
@@ -141,6 +148,10 @@ namespace CavalryFight.Gameplay.Hunting
             // 既存のウルフがあれば削除
             if (_spawnedWolves.TryGetValue(clientId, out var existingWolf))
             {
+                // リプレイレコーダーから登録解除
+                string oldEntityId = $"wolf_{clientId}";
+                _replayRecorder?.UnregisterEntity(oldEntityId);
+
                 existingWolf.Despawn();
                 _spawnedWolves.Remove(clientId);
             }
@@ -161,6 +172,14 @@ namespace CavalryFight.Gameplay.Hunting
                 }
 
                 _spawnedWolves[clientId] = networkObject;
+
+                // リプレイレコーダーにウルフを登録
+                string entityId = $"wolf_{clientId}";
+                _replayRecorder?.RegisterEntity(entityId, EntityType.Wolf, wolfInstance);
+
+                // ウルフのカスタマイズデータを登録（リプレイ再生用）
+                string displayName = $"Wolf {clientId}";
+                _replayRecorder?.RegisterWolfCustomization(entityId, displayName, teamIndex);
 
                 Debug.Log($"[WolfSpawner] Spawned wolf for player {clientId} at {position}");
             }
@@ -183,6 +202,10 @@ namespace CavalryFight.Gameplay.Hunting
 
             if (_spawnedWolves.TryGetValue(clientId, out var wolf))
             {
+                // リプレイレコーダーから登録解除
+                string entityId = $"wolf_{clientId}";
+                _replayRecorder?.UnregisterEntity(entityId);
+
                 wolf.Despawn();
                 _spawnedWolves.Remove(clientId);
                 Debug.Log($"[WolfSpawner] Despawned wolf for player {clientId}");
@@ -201,6 +224,10 @@ namespace CavalryFight.Gameplay.Hunting
 
             foreach (var kvp in _spawnedWolves)
             {
+                // リプレイレコーダーから登録解除
+                string entityId = $"wolf_{kvp.Key}";
+                _replayRecorder?.UnregisterEntity(entityId);
+
                 if (kvp.Value != null)
                 {
                     kvp.Value.Despawn();

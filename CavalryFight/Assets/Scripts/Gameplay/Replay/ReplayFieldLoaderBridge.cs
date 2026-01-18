@@ -1,6 +1,7 @@
 #nullable enable
 
 using UnityEngine;
+using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Replay;
 
 namespace CavalryFight.Gameplay.Replay
@@ -34,11 +35,11 @@ namespace CavalryFight.Gameplay.Replay
         /// フィールドロード要求を処理します
         /// </summary>
         /// <param name="mapName">マップ名</param>
-        private void OnFieldLoadRequested(string mapName)
+        private void OnFieldLoadRequested(MapName mapName)
         {
             if (FieldLoader.Instance != null)
             {
-                bool success = FieldLoader.Instance.LoadFieldByName(mapName);
+                bool success = FieldLoader.Instance.LoadField(mapName);
                 Debug.Log($"[ReplayFieldLoaderBridge] フィールドロード: {mapName} - {(success ? "成功" : "失敗")}");
             }
             else

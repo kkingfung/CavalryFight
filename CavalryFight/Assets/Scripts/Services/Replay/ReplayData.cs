@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using CavalryFight.Services.Customization;
+using CavalryFight.Services.Lobby;
 
 namespace CavalryFight.Services.Replay
 {
@@ -49,7 +50,7 @@ namespace CavalryFight.Services.Replay
         /// <summary>
         /// マップ名
         /// </summary>
-        public string MapName = string.Empty;
+        public MapName MapName = MapName.Arena;
 
         /// <summary>
         /// ゲームモード
@@ -76,9 +77,22 @@ namespace CavalryFight.Services.Replay
         public MountCustomization PlayerMount = new();
 
         /// <summary>
-        /// 敵のカスタマイズデータリスト
+        /// 敵のカスタマイズデータリスト（騎手）
         /// </summary>
         public List<ReplayEntityCustomization> Enemies = new();
+
+        /// <summary>
+        /// ウルフのカスタマイズデータリスト（ハンティングモード用）
+        /// </summary>
+        /// <remarks>
+        /// サードパーティのウルフアセットを使用するエンティティのデータ
+        /// </remarks>
+        public List<ReplayEntityCustomization> Wolves = new();
+
+        /// <summary>
+        /// その他のエンティティのカスタマイズデータリスト（獲物、NPC等）
+        /// </summary>
+        public List<ReplayEntityCustomization> OtherEntities = new();
 
         #endregion
 

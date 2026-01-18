@@ -68,6 +68,9 @@ namespace CavalryFight.Views
         private const int MaxKillFeedEntries = 2;
         private const float KillFeedEntryDuration = 5f;
 
+        // Crosshair
+        private VisualElement? _crosshair;
+
         #endregion
 
         #region Services
@@ -75,6 +78,13 @@ namespace CavalryFight.Views
         private IAudioService? _audioService;
         private IInputService? _inputService;
         private ISceneManagementService? _sceneService;
+
+        #endregion
+
+        #region Crosshair State
+
+        private GameObject? _localPlayerObject;
+        private bool _wasCharging = false;
 
         #endregion
 
@@ -114,6 +124,9 @@ namespace CavalryFight.Views
 
             // 入力処理
             HandleInput();
+
+            // クロスヘア更新
+            UpdateCrosshair();
         }
 
         /// <summary>
@@ -204,6 +217,20 @@ namespace CavalryFight.Views
 
             // Kill Feed
             _killFeedContainer = Q<VisualElement>("KillFeedContainer");
+
+            // Crosshair
+            _crosshair = Q<VisualElement>("Crosshair");
+            if (_crosshair != null)
+            {
+                Debug.Log("[MatchView] Crosshair element found.");
+            }
+
+            // CrosshairContainerはマウスイベントを無視（UIの下のゲームをクリック可能に）
+            var crosshairContainer = Q<VisualElement>("CrosshairContainer");
+            if (crosshairContainer != null)
+            {
+                crosshairContainer.pickingMode = PickingMode.Ignore;
+            }
         }
 
         private void RegisterEventHandlers()
@@ -703,6 +730,107 @@ namespace CavalryFight.Views
             if (clip != null && _audioService != null)
             {
                 _audioService.PlaySfx(clip);
+            }
+        }
+
+        #endregion
+
+        #region Crosshair
+
+        /// <summary>
+        /// クロスヘアの表示/非表示を更新します
+        /// </summary>
+        private void UpdateCrosshair()
+        {
+            // ローカルプレイヤーを検索（まだ取得していない場合）
+            if (_localPlayerObject == null)
+            {
+                FindLocalPlayer();
+            }
+
+            // プレイヤーが見つからない場合は何もしない
+            if (_localPlayerObject == null)
+            {
+                return;
+            }
+
+            // チャージ状態を取得（PlayerControllerのIsChargingプロパティを使用）
+            bool isCharging = GetPlayerChargingState();
+            if (isCharging != _wasCharging)
+            {
+                _wasCharging = isCharging;
+                if (isCharging)
+                {
+                    ShowCrosshair();
+                }
+                else
+                {
+                    HideCrosshair();
+                }
+            }
+        }
+
+        /// <summary>
+        /// ローカルプレイヤーを検索します
+        /// </summary>
+        private void FindLocalPlayer()
+        {
+            // "PlayerController"コンポーネントを持つオブジェクトを検索
+            var playerControllers = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+            foreach (var controller in playerControllers)
+            {
+                if (controller.GetType().Name == "PlayerController")
+                {
+                    _localPlayerObject = controller.gameObject;
+                    Debug.Log($"[MatchView] Found PlayerController: {controller.gameObject.name}");
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// プレイヤーのチャージ状態を取得します
+        /// </summary>
+        private bool GetPlayerChargingState()
+        {
+            if (_localPlayerObject == null)
+            {
+                return false;
+            }
+
+            // PlayerControllerのIsChargingプロパティをリフレクションで取得
+            var controller = _localPlayerObject.GetComponent("PlayerController");
+            if (controller != null)
+            {
+                var property = controller.GetType().GetProperty("IsCharging");
+                if (property != null)
+                {
+                    return (bool)property.GetValue(controller);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// クロスヘアを表示します
+        /// </summary>
+        private void ShowCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.RemoveFromClassList("hidden");
+            }
+        }
+
+        /// <summary>
+        /// クロスヘアを非表示にします
+        /// </summary>
+        private void HideCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.AddToClassList("hidden");
             }
         }
 

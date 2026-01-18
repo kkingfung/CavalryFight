@@ -63,6 +63,8 @@ namespace CavalryFight.Gameplay
 
         private void Awake()
         {
+            Debug.Log($"[SPAWN-DEBUG] SpawnManager.Awake() called. GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+
             if (_instance != null && _instance != this)
             {
                 Debug.LogWarning("[SpawnManager] Duplicate instance detected. Destroying this one.");
@@ -71,9 +73,11 @@ namespace CavalryFight.Gameplay
             }
 
             _instance = this;
+            Debug.Log($"[SPAWN-DEBUG] SpawnManager.Instance set. _autoFindSpawnPoints={_autoFindSpawnPoints}");
 
             if (_autoFindSpawnPoints)
             {
+                Debug.Log($"[SPAWN-DEBUG] SpawnManager: Auto-finding spawn points...");
                 FindAllSpawnPoints();
             }
         }
@@ -95,15 +99,20 @@ namespace CavalryFight.Gameplay
         /// </summary>
         public void FindAllSpawnPoints()
         {
+            Debug.Log($"[SPAWN-DEBUG] SpawnManager.FindAllSpawnPoints() called");
+
             _allSpawnPoints.Clear();
             _teamSpawnPoints.Clear();
 
             var spawnPoints = FindObjectsByType<SpawnPoint>(FindObjectsSortMode.None);
+            Debug.Log($"[SPAWN-DEBUG] SpawnManager: FindObjectsByType<SpawnPoint> returned {spawnPoints.Length} spawn points");
+
             _allSpawnPoints.AddRange(spawnPoints.OrderByDescending(sp => sp.Priority));
 
             // チーム別に分類
             foreach (var sp in _allSpawnPoints)
             {
+                Debug.Log($"[SPAWN-DEBUG] SpawnManager: Found SpawnPoint '{sp.name}' at {sp.Position}, TeamId={sp.TeamId}, Priority={sp.Priority}");
                 if (!_teamSpawnPoints.ContainsKey(sp.TeamId))
                 {
                     _teamSpawnPoints[sp.TeamId] = new List<SpawnPoint>();
@@ -111,6 +120,7 @@ namespace CavalryFight.Gameplay
                 _teamSpawnPoints[sp.TeamId].Add(sp);
             }
 
+            Debug.Log($"[SPAWN-DEBUG] SpawnManager.FindAllSpawnPoints() completed. Total: {_allSpawnPoints.Count}, Teams: {string.Join(", ", _teamSpawnPoints.Keys)}");
             Debug.Log($"[SpawnManager] Found {_allSpawnPoints.Count} spawn points. Teams: {string.Join(", ", _teamSpawnPoints.Keys)}");
         }
 

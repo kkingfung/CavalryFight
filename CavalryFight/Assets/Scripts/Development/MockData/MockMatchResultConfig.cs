@@ -20,7 +20,7 @@ namespace CavalryFight.Development.MockData
 
         [Header("Match Info")]
         /// <summary>マップ名</summary>
-        [SerializeField] private string _mapName = "Training Grounds";
+        [SerializeField] private string _mapName = "TrainingRoom";
 
         /// <summary>ゲームモード名</summary>
         [SerializeField] private string _gameMode = "Arena";

@@ -163,12 +163,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d16278500c445a4fac3d16bac8d5071, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CavalryFight.Gameplay.FieldLoader
-  _fieldPrefabs:
-  - {fileID: 726086245243862947, guid: f004cf0cfa968d245ae51ec99f723c9f, type: 3}
-  - {fileID: 5737750326801843015, guid: 748fe8aeda1981647b2c126be0287562, type: 3}
-  - {fileID: 6070379242774429732, guid: 9322f42f818a45946b5a049e09d41eed, type: 3}
-  - {fileID: 2577814836489027979, guid: ebd633ea32db3a64d8c9b9a44fd1815f, type: 3}
-  _defaultFieldIndex: 0
+  _mapConfig: {fileID: 11400000, guid: 1974bc5878b38d649a629721694eab80, type: 2}
+  _defaultMapName: 0
+  _enableDefaultLoad: 0
   _skipDefaultLoad: 1
   _fieldParent: {fileID: 428173305}
   _spawnPosition: {x: 0, y: 0, z: 0}
@@ -279,6 +276,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: CavalryFight.Services::CavalryFight.Services.Replay.ReplayPlaybackManager
   _mountPrefab: {fileID: 5522642034731160747, guid: 74652f6182ce61e488ad09d6c7cc771c, type: 3}
   _riderPrefab: {fileID: 6323270240798960294, guid: e50086d163adbb740b54c8047c9a9e60, type: 3}
+  _wolfPrefab: {fileID: 1438017827249262, guid: a578de702f2191b4fa9cdcec1ad493c5, type: 3}
   _debugLog: 1
 --- !u!4 &759145224
 Transform:

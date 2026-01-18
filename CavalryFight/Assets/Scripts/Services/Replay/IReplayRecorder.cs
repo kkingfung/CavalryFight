@@ -3,6 +3,7 @@
 using System;
 using UnityEngine;
 using CavalryFight.Core.Services;
+using CavalryFight.Services.Lobby;
 
 namespace CavalryFight.Services.Replay
 {
@@ -70,7 +71,7 @@ namespace CavalryFight.Services.Replay
         /// <param name="mapName">マップ名</param>
         /// <param name="gameMode">ゲームモード</param>
         /// <param name="playerName">プレイヤー名</param>
-        void StartRecording(string mapName, string gameMode, string playerName = "Player");
+        void StartRecording(MapName mapName, string gameMode, string playerName = "Player");
 
         /// <summary>
         /// 録画を停止します
@@ -101,6 +102,14 @@ namespace CavalryFight.Services.Replay
         /// </summary>
         /// <param name="entityId">エンティティID</param>
         void UnregisterEntity(string entityId);
+
+        /// <summary>
+        /// ウルフエンティティのカスタマイズデータを登録します
+        /// </summary>
+        /// <param name="entityId">エンティティID</param>
+        /// <param name="displayName">表示名</param>
+        /// <param name="teamIndex">チームインデックス</param>
+        void RegisterWolfCustomization(string entityId, string displayName, int teamIndex);
 
         /// <summary>
         /// 騎手の騎乗状態を更新します

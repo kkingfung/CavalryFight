@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Replay;
 using UnityEngine;
 
@@ -268,21 +269,21 @@ namespace CavalryFight.Development.MockData.MockServices
                 // 敗北 - 2人対戦
                 (playerScore: 900, enemyScore: 1500, playerCount: 2, rank: 2, kills: 4, deaths: 10, map: "Forest", mode: "ScoreMatch"),
                 // 引き分け - 2人対戦
-                (playerScore: 1200, enemyScore: 1200, playerCount: 2, rank: 1, kills: 8, deaths: 8, map: "Castle", mode: "ScoreMatch"),
+                (playerScore: 1200, enemyScore: 1200, playerCount: 2, rank: 1, kills: 8, deaths: 8, map: "PlayGround", mode: "ScoreMatch"),
                 // 勝利 - 4人対戦
-                (playerScore: 2000, enemyScore: 1500, playerCount: 4, rank: 1, kills: 15, deaths: 5, map: "Desert", mode: "Arena"),
+                (playerScore: 2000, enemyScore: 1500, playerCount: 4, rank: 1, kills: 15, deaths: 5, map: "Nature", mode: "Arena"),
                 // 敗北 - 4人対戦
                 (playerScore: 800, enemyScore: 1800, playerCount: 4, rank: 3, kills: 6, deaths: 12, map: "Arena", mode: "Arena"),
                 // 勝利 - 8人対戦
-                (playerScore: 3000, enemyScore: 2500, playerCount: 8, rank: 1, kills: 20, deaths: 4, map: "Castle", mode: "Team Battle"),
+                (playerScore: 3000, enemyScore: 2500, playerCount: 8, rank: 1, kills: 20, deaths: 4, map: "PlayGround", mode: "Team Battle"),
                 // 敗北 - 8人対戦
                 (playerScore: 1200, enemyScore: 2800, playerCount: 8, rank: 5, kills: 8, deaths: 15, map: "Forest", mode: "Team Battle"),
                 // 引き分け - 8人対戦
-                (playerScore: 2000, enemyScore: 2000, playerCount: 8, rank: 1, kills: 14, deaths: 14, map: "Desert", mode: "Team Battle"),
+                (playerScore: 2000, enemyScore: 2000, playerCount: 8, rank: 1, kills: 14, deaths: 14, map: "Nature", mode: "Team Battle"),
                 // 勝利 - ハンティング 4人
                 (playerScore: 1800, enemyScore: 1400, playerCount: 4, rank: 1, kills: 12, deaths: 3, map: "Forest", mode: "Hunting"),
                 // 敗北 - ハンティング 8人
-                (playerScore: 900, enemyScore: 2200, playerCount: 8, rank: 6, kills: 5, deaths: 11, map: "Desert", mode: "Hunting"),
+                (playerScore: 900, enemyScore: 2200, playerCount: 8, rank: 6, kills: 5, deaths: 11, map: "Nature", mode: "Hunting"),
             };
 
             for (int i = 0; i < defaultEntries.Length; i++)
@@ -340,7 +341,7 @@ namespace CavalryFight.Development.MockData.MockServices
                 MatchDuration = 300f,
                 FinalPlayerScore = 1500,
                 FinalEnemyScore = 1200,
-                MapName = "Training Grounds",
+                MapName = MapName.Arena,
                 GameMode = "Arena",
                 PlayerName = "You"
             };
@@ -394,7 +395,7 @@ namespace CavalryFight.Development.MockData.MockServices
         /// <returns>マップ名</returns>
         private string GetMockMapName(int index)
         {
-            string[] maps = { "Training Grounds", "Castle Arena", "Forest Valley", "Desert Outpost", "Mountain Pass" };
+            string[] maps = { "Arena", "Forest", "Nature", "PlayGround", "TrainingRoom" };
             return maps[index % maps.Length];
         }
 

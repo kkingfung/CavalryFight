@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Replay;
 using UnityEngine;
 
@@ -70,7 +71,7 @@ namespace CavalryFight.Development.MockData
                 ReplayId = _replayId,
                 RecordedAt = DateTime.UtcNow.ToString("o"),
                 MatchDuration = _duration,
-                MapName = _matchResult?.MapName ?? "Training Grounds",
+                MapName = ParseMapName(_matchResult?.MapName),
                 GameMode = _matchResult?.GameMode ?? "Arena",
                 PlayerName = "You"
             };
@@ -121,6 +122,24 @@ namespace CavalryFight.Development.MockData
             replay.GenerateHighlightsFromScoreEvents();
 
             return replay;
+        }
+
+        /// <summary>
+        /// 文字列からMapNameを解析します
+        /// </summary>
+        private static MapName ParseMapName(string? mapNameString)
+        {
+            if (string.IsNullOrEmpty(mapNameString))
+            {
+                return MapName.Arena;
+            }
+
+            if (Enum.TryParse<MapName>(mapNameString, true, out var result))
+            {
+                return result;
+            }
+
+            return MapName.Arena;
         }
 
         #endregion

@@ -70,6 +70,15 @@
             <ui:Label name="CountdownLabel" text="3" class="countdown-label" />
         </ui:VisualElement>
 
+        <!-- Crosshair (Center of screen, shown when hunter is aiming) -->
+        <ui:VisualElement name="CrosshairContainer" class="crosshair-container">
+            <ui:VisualElement name="Crosshair" class="crosshair hidden">
+                <ui:VisualElement class="crosshair-line crosshair-horizontal" />
+                <ui:VisualElement class="crosshair-line crosshair-vertical" />
+                <ui:VisualElement class="crosshair-dot" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
         <!-- Score Popup Container -->
         <ui:VisualElement name="ScorePopupContainer" class="score-popup-container" />
 

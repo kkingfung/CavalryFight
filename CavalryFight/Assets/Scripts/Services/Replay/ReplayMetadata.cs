@@ -164,7 +164,7 @@ namespace CavalryFight.Services.Replay
             {
                 ReplayId = replayData.ReplayId,
                 RecordedAt = recordedAt,
-                MapName = replayData.MapName,
+                MapName = replayData.MapName.ToString(),
                 GameMode = replayData.GameMode,
                 PlayerName = replayData.PlayerName,
                 MatchDuration = replayData.MatchDuration,

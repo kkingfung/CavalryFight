@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf5588cb2796c65409fafc5bd6aa83bf, type: 3}
+  m_Name: MapConfig
+  m_EditorClassIdentifier: CavalryFight.Services::CavalryFight.Services.Lobby.MapConfig
+  _maps:
+  - MapName: 0
+    DisplayName: Arena
+    Prefab: {fileID: 726086245243862947, guid: f004cf0cfa968d245ae51ec99f723c9f, type: 3}
+    Thumbnail: {fileID: 0}
+    Description: 
+    SupportedGameModes: 0000000001000000020000000300000004000000
+  - MapName: 1
+    DisplayName: Forest
+    Prefab: {fileID: 5737750326801843015, guid: 748fe8aeda1981647b2c126be0287562, type: 3}
+    Thumbnail: {fileID: 0}
+    Description: 
+    SupportedGameModes: 0000000001000000020000000300000004000000
+  - MapName: 2
+    DisplayName: Nature
+    Prefab: {fileID: 6070379242774429732, guid: 9322f42f818a45946b5a049e09d41eed, type: 3}
+    Thumbnail: {fileID: 0}
+    Description: 
+    SupportedGameModes: 0000000001000000020000000300000004000000
+  - MapName: 3
+    DisplayName: PlayGround
+    Prefab: {fileID: 2577814836489027979, guid: ebd633ea32db3a64d8c9b9a44fd1815f, type: 3}
+    Thumbnail: {fileID: 0}
+    Description: 
+    SupportedGameModes: 0000000001000000020000000300000004000000
+  - MapName: 4
+    DisplayName: TrainingRoom
+    Prefab: {fileID: 258029488021878844, guid: 3faf27fe6e02a02499cd5826046a961e, type: 3}
+    Thumbnail: {fileID: 0}
+    Description: 
+    SupportedGameModes: 0000000001000000020000000300000004000000
+  _defaultMap: 0

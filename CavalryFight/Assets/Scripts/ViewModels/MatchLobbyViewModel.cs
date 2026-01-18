@@ -517,6 +517,13 @@ namespace CavalryFight.ViewModels
                 return;
             }
 
+            // マップ名を解析
+            MapName parsedMapName = MapName.Arena;
+            if (System.Enum.TryParse<MapName>(SelectedMap, true, out var mapNameResult))
+            {
+                parsedMapName = mapNameResult;
+            }
+
             var roomSettings = new RoomSettings
             {
                 RoomName = new FixedString64Bytes(RoomName),
@@ -526,7 +533,7 @@ namespace CavalryFight.ViewModels
                 IsPublic = false,
                 TimeLimit = 300,
                 ArrowLimit = 0, // デフォルトは無制限（ScoreMatchの場合は後で設定変更可能）
-                MapName = new FixedString64Bytes(SelectedMap)
+                MapName = parsedMapName
             };
 
             _isCancelled = false;

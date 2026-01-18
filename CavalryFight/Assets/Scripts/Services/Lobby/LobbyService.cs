@@ -941,10 +941,12 @@ namespace CavalryFight.Services.Lobby
 
             var slots = _networkRoomData.GetAllPlayerSlots();
 
-            // すべての人間プレイヤーが準備完了か確認
+            // すべての人間プレイヤー（ホスト以外）が準備完了か確認
+            // ホストは常に準備完了とみなす
+            ulong hostClientId = Unity.Netcode.NetworkManager.Singleton?.LocalClientId ?? 0;
             bool allReady = slots
                 .Where(s => !s.IsEmpty() && !s.IsAI)
-                .All(s => s.IsReady);
+                .All(s => s.IsReady || s.PlayerId == hostClientId);
 
             if (!allReady)
             {

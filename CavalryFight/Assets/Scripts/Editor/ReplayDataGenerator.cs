@@ -6,6 +6,7 @@ using System.IO;
 using UnityEngine;
 using UnityEditor;
 using CavalryFight.Services.Customization;
+using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Replay;
 
 namespace CavalryFight.Editor
@@ -106,11 +107,18 @@ namespace CavalryFight.Editor
         {
             var random = new System.Random();
 
+            // マップ名を解析
+            MapName parsedMapName = MapName.Arena;
+            if (Enum.TryParse<MapName>(mapName, true, out var mapNameResult))
+            {
+                parsedMapName = mapNameResult;
+            }
+
             var replayData = new ReplayData
             {
                 ReplayId = Guid.NewGuid().ToString(),
                 RecordedAt = DateTime.UtcNow.ToString("o"),
-                MapName = mapName,
+                MapName = parsedMapName,
                 GameMode = gameMode,
                 PlayerName = playerName,
                 MatchDuration = duration,
