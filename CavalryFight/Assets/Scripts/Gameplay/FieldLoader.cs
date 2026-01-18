@@ -25,6 +25,9 @@ namespace CavalryFight.Gameplay
         [Tooltip("デフォルトでロードするフィールドのインデックス（-1 = 自動ロードしない）")]
         [SerializeField] private int _defaultFieldIndex = 0;
 
+        [Tooltip("デフォルトロードをスキップする（リプレイシーンなど外部からロードする場合）")]
+        [SerializeField] private bool _skipDefaultLoad = false;
+
         [Tooltip("フィールドをインスタンス化する親Transform（空の場合はルート）")]
         [SerializeField] private Transform? _fieldParent;
 
@@ -115,6 +118,16 @@ namespace CavalryFight.Gameplay
 
         private void Start()
         {
+            // スキップフラグが設定されている場合はデフォルトロードをスキップ
+            if (_skipDefaultLoad)
+            {
+                if (_debugLog)
+                {
+                    Debug.Log("[FieldLoader] デフォルトロードをスキップしました（外部からのロードを待機）");
+                }
+                return;
+            }
+
             // デフォルトフィールドをロード
             if (_defaultFieldIndex >= 0 && _defaultFieldIndex < _fieldPrefabs.Count)
             {

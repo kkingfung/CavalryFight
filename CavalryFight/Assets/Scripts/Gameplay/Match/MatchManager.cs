@@ -532,16 +532,63 @@ namespace CavalryFight.Gameplay.Match
             _matchState.Value = MatchState.InProgress;
             _matchTime.Value = 0f;
 
+            // AIプレイヤーをスポーン
+            SpawnAIPlayers();
+
             _activeHandler?.OnMatchStart();
             NotifyMatchStartedClientRpc();
 
+            // AIを有効化
+            AISpawner.Instance?.EnableAllAI();
+
             Debug.Log("[MatchManager] Match started!");
+        }
+
+        /// <summary>
+        /// PlayerSlotsに基づいてAIプレイヤーをスポーンします
+        /// </summary>
+        private void SpawnAIPlayers()
+        {
+            if (AISpawner.Instance == null)
+            {
+                Debug.LogWarning("[MatchManager] AISpawner not found in scene. AI players will not spawn.");
+                return;
+            }
+
+            if (_playerSlots == null)
+            {
+                return;
+            }
+
+            // AIをスポーン（各スロットの難易度を使用）
+            foreach (var slot in _playerSlots)
+            {
+                if (slot.IsAI)
+                {
+                    // そのAIの難易度でAISpawnerを初期化
+                    AISpawner.Instance.Initialize(RoomSettings.GameMode, slot.AIDifficulty);
+
+                    // AIをスポーン（チームを指定）
+                    var spawnedIds = AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
+
+                    if (spawnedIds.Count > 0)
+                    {
+                        Debug.Log($"[MatchManager] Spawned AI for slot. PlayerName: {slot.PlayerName}, Team: {slot.TeamIndex}, Difficulty: {slot.AIDifficulty}");
+                    }
+                }
+            }
+
+            Debug.Log($"[MatchManager] Total AI spawned: {AISpawner.Instance.SpawnedAICount}");
         }
 
         private void EndMatch(ulong winnerId)
         {
             _matchState.Value = MatchState.Ended;
             _activeHandler?.OnMatchEnd();
+
+            // AIを無効化・削除
+            AISpawner.Instance?.DisableAllAI();
+            AISpawner.Instance?.DespawnAllAI();
 
             var result = new MatchEndResult
             {

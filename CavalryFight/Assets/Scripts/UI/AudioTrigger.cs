@@ -1,3 +1,5 @@
+#nullable enable
+
 using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Audio;

@@ -111,6 +111,19 @@ namespace CavalryFight.Views
             // 再生時間を更新
             ViewModel?.Tick(Time.unscaledDeltaTime);
 
+            // ReplayPlaybackManagerにフレームを適用
+            if (ViewModel != null && ReplayPlaybackManager.Instance != null)
+            {
+                ReplayPlaybackManager.Instance.ApplyFrameAtTime(ViewModel.CurrentTime);
+
+                // カメラマネージャーに現在のフレームを設定
+                if (ReplayCameraManager.Instance != null)
+                {
+                    var frame = ViewModel.GetCurrentFrame();
+                    ReplayCameraManager.Instance.SetCurrentFrame(frame);
+                }
+            }
+
             // キーボードショートカット
             HandleKeyboardInput();
         }
@@ -568,6 +581,95 @@ namespace CavalryFight.Views
         private void OnCameraModeChanged(object? sender, ReplayViewModel.CameraMode mode)
         {
             UpdateCameraMode();
+
+            // カメラマネージャーにモード変更を通知
+            if (ReplayCameraManager.Instance != null)
+            {
+                // ViewModelのCameraModeをReplayCameraModeに変換
+                var cameraMode = mode switch
+                {
+                    ReplayViewModel.CameraMode.Follow => ReplayCameraMode.Follow,
+                    ReplayViewModel.CameraMode.Free => ReplayCameraMode.Free,
+                    ReplayViewModel.CameraMode.Cinematic => ReplayCameraMode.Cinematic,
+                    _ => ReplayCameraMode.Follow
+                };
+                ReplayCameraManager.Instance.SetCameraMode(cameraMode);
+            }
+
+            // フリーカメラモード切り替え時のUI設定
+            bool isFreeCameraMode = mode == ReplayViewModel.CameraMode.Free;
+            SetFreeCameraModeUI(isFreeCameraMode);
+
+            if (isFreeCameraMode)
+            {
+                BlurUIFocus();
+            }
+        }
+
+        /// <summary>
+        /// UIのフォーカスを解除してカメラ入力を優先します
+        /// </summary>
+        private void BlurUIFocus()
+        {
+            // フォーカスを解除
+            if (RootVisualElement != null)
+            {
+                RootVisualElement.focusController?.focusedElement?.Blur();
+            }
+        }
+
+        /// <summary>
+        /// フリーカメラモード用にUIの入力を無効化します
+        /// </summary>
+        private void SetFreeCameraModeUI(bool isFreeCameraMode)
+        {
+            if (_uiContainer == null)
+            {
+                return;
+            }
+
+            // フリーカメラモードではUIの入力を無効化（表示は維持）
+            _uiContainer.pickingMode = isFreeCameraMode ? PickingMode.Ignore : PickingMode.Position;
+
+            // ルート要素全体のpickingModeを設定
+            // これにより「Screen position out of view frustum」エラーを防止
+            if (RootVisualElement != null)
+            {
+                RootVisualElement.pickingMode = isFreeCameraMode ? PickingMode.Ignore : PickingMode.Position;
+            }
+
+            // スライダーのフォーカスを無効化
+            if (_timelineSlider != null)
+            {
+                _timelineSlider.focusable = !isFreeCameraMode;
+                _timelineSlider.pickingMode = isFreeCameraMode ? PickingMode.Ignore : PickingMode.Position;
+            }
+
+            // ドロップダウンのフォーカスを無効化
+            if (_speedDropdown != null)
+            {
+                _speedDropdown.focusable = !isFreeCameraMode;
+                _speedDropdown.pickingMode = isFreeCameraMode ? PickingMode.Ignore : PickingMode.Position;
+            }
+
+            // すべてのボタンのpickingModeを設定
+            SetButtonPickingMode(_skipBackButton, isFreeCameraMode);
+            SetButtonPickingMode(_playPauseButton, isFreeCameraMode);
+            SetButtonPickingMode(_skipForwardButton, isFreeCameraMode);
+            SetButtonPickingMode(_stopButton, isFreeCameraMode);
+            SetButtonPickingMode(_prevHighlightButton, isFreeCameraMode);
+            SetButtonPickingMode(_nextHighlightButton, isFreeCameraMode);
+            SetButtonPickingMode(_cameraModeButton, isFreeCameraMode);
+            SetButtonPickingMode(_toggleUIButton, isFreeCameraMode);
+            SetButtonPickingMode(_exitButton, isFreeCameraMode);
+        }
+
+        private void SetButtonPickingMode(Button? button, bool isFreeCameraMode)
+        {
+            if (button != null)
+            {
+                button.pickingMode = isFreeCameraMode ? PickingMode.Ignore : PickingMode.Position;
+            }
         }
 
         #endregion

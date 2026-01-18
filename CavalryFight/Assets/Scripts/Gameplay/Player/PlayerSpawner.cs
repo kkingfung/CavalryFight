@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Customization;
+using CavalryFight.Services.Replay;
 using MalbersAnimations.Controller;
 
 namespace CavalryFight.Gameplay.Player
@@ -51,9 +52,14 @@ namespace CavalryFight.Gameplay.Player
         #region Private Fields
 
         private ICustomizationService? _customizationService;
+        private IReplayRecorder? _replayRecorder;
         private GameObject? _spawnedMount;
         private GameObject? _spawnedRider;
         private GameObject? _spawnedTracker;
+
+        // リプレイ用エンティティID
+        private const string PLAYER_MOUNT_ENTITY_ID = "player_mount_0";
+        private const string PLAYER_RIDER_ENTITY_ID = "player_rider_0";
 
         #endregion
 
@@ -104,6 +110,7 @@ namespace CavalryFight.Gameplay.Player
             Instance = this;
 
             _customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
+            _replayRecorder = ServiceLocator.Instance.Get<IReplayRecorder>();
 
             if (_customizationService == null)
             {
@@ -253,6 +260,9 @@ namespace CavalryFight.Gameplay.Player
 
             // カスタマイズを適用
             ApplyCustomization();
+
+            // リプレイレコーダーにエンティティを登録
+            RegisterEntitiesForReplay();
 
             if (_debugLog)
             {
@@ -879,6 +889,9 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void CleanupSpawnedObjects()
         {
+            // リプレイレコーダーからエンティティを解除
+            UnregisterEntitiesFromReplay();
+
             if (_spawnedMount != null)
             {
                 Destroy(_spawnedMount);
@@ -896,6 +909,62 @@ namespace CavalryFight.Gameplay.Player
                 Destroy(_spawnedTracker);
                 _spawnedTracker = null;
             }
+        }
+
+        /// <summary>
+        /// リプレイレコーダーにエンティティを登録します
+        /// </summary>
+        private void RegisterEntitiesForReplay()
+        {
+            if (_replayRecorder == null || !_replayRecorder.IsRecording)
+            {
+                return;
+            }
+
+            // 馬を登録
+            if (_spawnedMount != null)
+            {
+                _replayRecorder.RegisterEntity(PLAYER_MOUNT_ENTITY_ID, EntityType.Mount, _spawnedMount);
+
+                if (_debugLog)
+                {
+                    Debug.Log($"[PlayerSpawner] 馬をリプレイに登録: {PLAYER_MOUNT_ENTITY_ID}");
+                }
+            }
+
+            // 騎手を登録（馬との関連付け）
+            if (_spawnedRider != null && _spawnedMount != null)
+            {
+                // MountPointを取得
+                Transform? mountPoint = FindMountPoint(_spawnedMount);
+
+                _replayRecorder.RegisterRiderEntity(
+                    PLAYER_RIDER_ENTITY_ID,
+                    EntityType.Player,
+                    _spawnedRider,
+                    PLAYER_MOUNT_ENTITY_ID,
+                    mountPoint
+                );
+
+                if (_debugLog)
+                {
+                    Debug.Log($"[PlayerSpawner] 騎手をリプレイに登録: {PLAYER_RIDER_ENTITY_ID} -> {PLAYER_MOUNT_ENTITY_ID}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// リプレイレコーダーからエンティティを解除します
+        /// </summary>
+        private void UnregisterEntitiesFromReplay()
+        {
+            if (_replayRecorder == null)
+            {
+                return;
+            }
+
+            _replayRecorder.UnregisterEntity(PLAYER_RIDER_ENTITY_ID);
+            _replayRecorder.UnregisterEntity(PLAYER_MOUNT_ENTITY_ID);
         }
 
         #endregion

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.AI;
 using CavalryFight.Services.Lobby;
+using CavalryFight.Services.Replay;
 using UnityEngine;
 
 // SpawnPointはCavalryFight.Gameplayの既存クラスを使用
@@ -48,8 +49,10 @@ namespace CavalryFight.Gameplay.Match
         #region Private Fields
 
         private IAICombatService? _aiCombatService;
+        private IReplayRecorder? _replayRecorder;
         private MatchManager? _matchManager;
         private readonly List<ulong> _spawnedAIIds = new List<ulong>();
+        private readonly Dictionary<ulong, (string mountId, string riderId)> _aiEntityIds = new();
         private ulong _nextAIId = 1000; // AIのIDは1000から開始（プレイヤーと区別）
 
         #endregion
@@ -100,6 +103,7 @@ namespace CavalryFight.Gameplay.Match
         {
             // サービスを取得
             _aiCombatService = ServiceLocator.Instance.Get<IAICombatService>();
+            _replayRecorder = ServiceLocator.Instance.Get<IReplayRecorder>();
 
             if (_aiCombatService == null)
             {
@@ -221,6 +225,9 @@ namespace CavalryFight.Gameplay.Match
         /// <param name="aiId">AI ID</param>
         public void DespawnAI(ulong aiId)
         {
+            // リプレイレコーダーから解除
+            UnregisterAIFromReplay(aiId);
+
             _aiCombatService?.DespawnAIPlayer(aiId);
             _spawnedAIIds.Remove(aiId);
 
@@ -237,6 +244,12 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         public void DespawnAllAI()
         {
+            // リプレイレコーダーから全AI解除
+            foreach (ulong aiId in _spawnedAIIds)
+            {
+                UnregisterAIFromReplay(aiId);
+            }
+
             _aiCombatService?.DespawnAllAIPlayers();
 
             foreach (ulong aiId in _spawnedAIIds)
@@ -245,6 +258,7 @@ namespace CavalryFight.Gameplay.Match
             }
 
             _spawnedAIIds.Clear();
+            _aiEntityIds.Clear();
 
             if (_debugLog)
             {
@@ -417,7 +431,159 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         private void OnAISpawnedInternal(ulong aiId, GameObject aiObject)
         {
+            // リプレイレコーダーにAIエンティティを登録
+            RegisterAIForReplay(aiId, aiObject);
+
             AISpawned?.Invoke(aiId, aiObject);
+        }
+
+        /// <summary>
+        /// AIエンティティをリプレイレコーダーに登録します
+        /// </summary>
+        private void RegisterAIForReplay(ulong aiId, GameObject aiObject)
+        {
+            if (_replayRecorder == null || !_replayRecorder.IsRecording)
+            {
+                return;
+            }
+
+            string mountEntityId = $"ai_mount_{aiId}";
+            string riderEntityId = $"ai_rider_{aiId}";
+
+            // AIオブジェクトの構造を確認（馬と騎手を分離）
+            // AICombatServiceのSpawnAIPlayerが返すのはルートオブジェクト
+            // 馬は通常ルートオブジェクト自体、騎手はMRiderを持つ子オブジェクト
+
+            // 馬（ルートまたはMAnimalを持つオブジェクト）を登録
+            var mAnimal = aiObject.GetComponent<MonoBehaviour>();
+            GameObject? mountObject = null;
+            GameObject? riderObject = null;
+
+            // MAnimalを探す（馬）
+            foreach (var comp in aiObject.GetComponents<MonoBehaviour>())
+            {
+                if (comp != null && comp.GetType().Name.Contains("MAnimal"))
+                {
+                    mountObject = aiObject;
+                    break;
+                }
+            }
+
+            // MRiderを探す（騎手）
+            foreach (var comp in aiObject.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (comp != null && comp.GetType().Name.Contains("MRider"))
+                {
+                    riderObject = comp.gameObject;
+                    break;
+                }
+            }
+
+            // 馬が見つからない場合、AIオブジェクト自体を馬として扱う
+            if (mountObject == null)
+            {
+                mountObject = aiObject;
+            }
+
+            // 馬を登録
+            _replayRecorder.RegisterEntity(mountEntityId, EntityType.Mount, mountObject);
+
+            // 騎手が見つかった場合は登録
+            if (riderObject != null)
+            {
+                // MountPointを探す
+                Transform? mountPoint = FindMountPoint(mountObject);
+
+                _replayRecorder.RegisterRiderEntity(
+                    riderEntityId,
+                    EntityType.Enemy,
+                    riderObject,
+                    mountEntityId,
+                    mountPoint
+                );
+
+                if (_debugLog)
+                {
+                    Debug.Log($"[AISpawner] AI騎手をリプレイに登録: {riderEntityId} -> {mountEntityId}");
+                }
+            }
+
+            // エンティティIDを保存
+            _aiEntityIds[aiId] = (mountEntityId, riderEntityId);
+
+            if (_debugLog)
+            {
+                Debug.Log($"[AISpawner] AI馬をリプレイに登録: {mountEntityId}");
+            }
+        }
+
+        /// <summary>
+        /// AIエンティティをリプレイレコーダーから解除します
+        /// </summary>
+        private void UnregisterAIFromReplay(ulong aiId)
+        {
+            if (_replayRecorder == null)
+            {
+                return;
+            }
+
+            if (_aiEntityIds.TryGetValue(aiId, out var entityIds))
+            {
+                _replayRecorder.UnregisterEntity(entityIds.riderId);
+                _replayRecorder.UnregisterEntity(entityIds.mountId);
+                _aiEntityIds.Remove(aiId);
+            }
+        }
+
+        /// <summary>
+        /// 馬のMountPointを探します
+        /// </summary>
+        private Transform? FindMountPoint(GameObject mount)
+        {
+            string[] mountPointNames = { "MountPoint", "Mount Point", "Seat", "RiderSeat", "Sit Point", "SitPoint" };
+
+            foreach (string name in mountPointNames)
+            {
+                Transform? point = mount.transform.Find(name);
+                if (point != null)
+                {
+                    return point;
+                }
+            }
+
+            // 再帰的に検索
+            foreach (string name in mountPointNames)
+            {
+                Transform? point = FindChildRecursive(mount.transform, name);
+                if (point != null)
+                {
+                    return point;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 子オブジェクトを再帰的に検索します
+        /// </summary>
+        private Transform? FindChildRecursive(Transform parent, string name)
+        {
+            foreach (Transform child in parent)
+            {
+                if (child.name.Contains(name))
+                {
+                    return child;
+                }
+
+                Transform? found = FindChildRecursive(child, name);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

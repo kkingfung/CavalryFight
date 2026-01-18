@@ -12,7 +12,8 @@ namespace CavalryFight.Services.Replay
     /// </summary>
     /// <remarks>
     /// リプレイ中にプレイヤーが自由にカメラを操作できます。
-    /// キーバインディング設定に従って移動、マウスで視点変更、スクロールで速度変更が可能です。
+    /// IInputServiceを使用して移動・カメラ入力を取得します。
+    /// スクロールで速度変更が可能です。
     /// スクリーンショット撮影に最適です。
     /// </remarks>
     public class FreeCameraController : IReplayCameraController
@@ -23,16 +24,21 @@ namespace CavalryFight.Services.Replay
         private bool _enabled = true;
         private Vector3 _initialPosition;
         private Quaternion _initialRotation;
+        private IInputService? _inputService;
         private IInputBindingService? _inputBindingService;
 
         // 移動設定
-        private float _moveSpeed = 10f;
-        private float _fastMoveSpeed = 50f;
-        private float _slowMoveSpeed = 2f;
+        private float _moveSpeed = 5f;
+        private float _fastMoveSpeed = 15f;
+        private float _slowMoveSpeed = 1f;
         private float _currentMoveSpeed;
 
+        // 境界設定
+        private Vector3 _boundaryMin = new Vector3(-100f, 1f, -100f);
+        private Vector3 _boundaryMax = new Vector3(100f, 50f, 100f);
+
         // 視点設定
-        private float _lookSensitivity = 2f;
+        private float _lookSensitivity = 100f;
         private float _pitch = 0f;
         private float _yaw = 0f;
 
@@ -71,6 +77,24 @@ namespace CavalryFight.Services.Replay
             set { _lookSensitivity = Mathf.Max(0.1f, value); }
         }
 
+        /// <summary>
+        /// 境界の最小値を取得または設定します
+        /// </summary>
+        public Vector3 BoundaryMin
+        {
+            get { return _boundaryMin; }
+            set { _boundaryMin = value; }
+        }
+
+        /// <summary>
+        /// 境界の最大値を取得または設定します
+        /// </summary>
+        public Vector3 BoundaryMax
+        {
+            get { return _boundaryMax; }
+            set { _boundaryMax = value; }
+        }
+
         #endregion
 
         #region Constructor
@@ -97,20 +121,37 @@ namespace CavalryFight.Services.Replay
             _initialPosition = camera.transform.position;
             _initialRotation = camera.transform.rotation;
 
+            // 初期位置のNaNチェック
+            if (float.IsNaN(_initialPosition.x) || float.IsNaN(_initialPosition.y) || float.IsNaN(_initialPosition.z))
+            {
+                _initialPosition = Vector3.zero;
+                Debug.LogWarning("[FreeCameraController] カメラの初期位置がNaNでした。(0,0,0)に設定します。");
+            }
+
             // 初期回転からピッチとヨーを計算
             Vector3 eulerAngles = camera.transform.eulerAngles;
             _pitch = eulerAngles.x;
             _yaw = eulerAngles.y;
 
-            // InputBindingServiceを取得
+            // 速度を初期化
+            _currentVelocity = Vector3.zero;
+            _currentMoveSpeed = _moveSpeed;
+
+            // InputServiceとInputBindingServiceを取得
+            _inputService = ServiceLocator.Instance.Get<IInputService>();
             _inputBindingService = ServiceLocator.Instance.Get<IInputBindingService>();
+
+            if (_inputService == null)
+            {
+                Debug.LogWarning("[FreeCameraController] InputService not found. Using fallback input.");
+            }
 
             if (_inputBindingService == null)
             {
                 Debug.LogWarning("[FreeCameraController] InputBindingService not found. Using default key codes.");
             }
 
-            Debug.Log("[FreeCameraController] Initialized.");
+            Debug.Log($"[FreeCameraController] Initialized. Position: {_initialPosition}, MoveSpeed: {_moveSpeed}");
         }
 
         /// <summary>
@@ -176,14 +217,31 @@ namespace CavalryFight.Services.Replay
                 return;
             }
 
-            // 右クリックでカメラ回転
-            if (InputHelper.GetMouseButton(1))
-            {
-                float mouseX = InputHelper.GetAxis("Mouse X") * _lookSensitivity;
-                float mouseY = InputHelper.GetAxis("Mouse Y") * _lookSensitivity;
+            Vector2 cameraInput = Vector2.zero;
 
-                _yaw += mouseX;
-                _pitch -= mouseY;
+            // IInputServiceからカメラ入力を取得（キーバインディングに従う）
+            if (_inputService != null)
+            {
+                cameraInput = _inputService.GetCameraInput();
+            }
+            else
+            {
+                // フォールバック: マウス入力を直接使用
+                cameraInput.x = InputHelper.GetAxis("Mouse X");
+                cameraInput.y = InputHelper.GetAxis("Mouse Y");
+            }
+
+            // NaNチェック
+            if (float.IsNaN(cameraInput.x) || float.IsNaN(cameraInput.y))
+            {
+                cameraInput = Vector2.zero;
+            }
+
+            // カメラ入力がある場合のみ回転
+            if (cameraInput.sqrMagnitude > 0.0001f)
+            {
+                _yaw += cameraInput.x * _lookSensitivity;
+                _pitch -= cameraInput.y * _lookSensitivity;
 
                 // ピッチを-90～90度に制限
                 _pitch = Mathf.Clamp(_pitch, -90f, 90f);
@@ -194,37 +252,86 @@ namespace CavalryFight.Services.Replay
 
         private void UpdateMovement(float deltaTime)
         {
-            if (_camera == null)
+            if (_camera == null || deltaTime <= 0f)
             {
                 return;
             }
 
             Vector3 moveDirection = Vector3.zero;
 
-            // 前後左右移動（キーバインディング対応）
-            if (IsActionPressed(InputAction.MoveForward))
+            // IInputServiceから移動入力を取得
+            Vector2 moveInput = Vector2.zero;
+
+            if (_inputService != null)
             {
-                moveDirection += _camera.transform.forward;
+                moveInput = _inputService.GetMovementInput();
             }
-            if (IsActionPressed(InputAction.MoveBackward))
+            else
             {
-                moveDirection -= _camera.transform.forward;
-            }
-            if (IsActionPressed(InputAction.MoveRight))
-            {
-                moveDirection += _camera.transform.right;
-            }
-            if (IsActionPressed(InputAction.MoveLeft))
-            {
-                moveDirection -= _camera.transform.right;
+                // フォールバック: キーバインディングまたはデフォルトキー
+                if (IsActionPressed(InputAction.MoveForward))
+                {
+                    moveInput.y += 1f;
+                }
+                if (IsActionPressed(InputAction.MoveBackward))
+                {
+                    moveInput.y -= 1f;
+                }
+                if (IsActionPressed(InputAction.MoveRight))
+                {
+                    moveInput.x += 1f;
+                }
+                if (IsActionPressed(InputAction.MoveLeft))
+                {
+                    moveInput.x -= 1f;
+                }
             }
 
-            // 上下移動（キーバインディング対応）
-            if (IsActionPressed(InputAction.Mount))
+            // NaNチェック
+            if (float.IsNaN(moveInput.x) || float.IsNaN(moveInput.y))
+            {
+                moveInput = Vector2.zero;
+            }
+
+            // カメラの向きを取得（NaNチェック付き）
+            Vector3 forward = _camera.transform.forward;
+            Vector3 right = _camera.transform.right;
+
+            // カメラの向きがNaNの場合はデフォルト値を使用
+            if (float.IsNaN(forward.x) || float.IsNaN(forward.y) || float.IsNaN(forward.z))
+            {
+                forward = Vector3.forward;
+            }
+            if (float.IsNaN(right.x) || float.IsNaN(right.y) || float.IsNaN(right.z))
+            {
+                right = Vector3.right;
+            }
+
+            // 移動方向を計算（カメラ向きに基づく）
+            moveDirection += forward * moveInput.y;
+            moveDirection += right * moveInput.x;
+
+            // 上下移動（MountとJumpを使用）
+            bool moveUp = false;
+            bool moveDown = false;
+
+            if (_inputService != null)
+            {
+                // Jump = 上昇、Mount = 下降
+                moveUp = _inputService.GetJumpButton();
+                moveDown = IsActionPressed(InputAction.Mount);
+            }
+            else
+            {
+                moveUp = IsActionPressed(InputAction.Jump);
+                moveDown = IsActionPressed(InputAction.Mount);
+            }
+
+            if (moveUp)
             {
                 moveDirection += Vector3.up;
             }
-            if (IsActionPressed(InputAction.Jump))
+            if (moveDown)
             {
                 moveDirection -= Vector3.up;
             }
@@ -235,21 +342,90 @@ namespace CavalryFight.Services.Replay
                 moveDirection.Normalize();
             }
 
-            // 高速/低速移動モディファイア（キーバインディング対応）
-            float speed = _currentMoveSpeed;
-            if (IsActionPressed(InputAction.Attack))
+            // moveDirectionのNaNチェック
+            if (float.IsNaN(moveDirection.x) || float.IsNaN(moveDirection.y) || float.IsNaN(moveDirection.z))
             {
-                speed = _fastMoveSpeed;
-            }
-            else if (IsActionPressed(InputAction.CancelAttack))
-            {
-                speed = _slowMoveSpeed;
+                moveDirection = Vector3.zero;
             }
 
-            // スムージング付き移動
+            // 高速/低速移動モディファイア
+            float speed = _currentMoveSpeed;
+
+            if (_inputService != null)
+            {
+                // SprintでFast、CancelAttack（Ctrl）でSlow
+                if (_inputService.GetSprintButton())
+                {
+                    speed = _fastMoveSpeed;
+                }
+                else if (IsActionPressed(InputAction.CancelAttack))
+                {
+                    speed = _slowMoveSpeed;
+                }
+            }
+            else
+            {
+                if (IsActionPressed(InputAction.Attack))
+                {
+                    speed = _fastMoveSpeed;
+                }
+                else if (IsActionPressed(InputAction.CancelAttack))
+                {
+                    speed = _slowMoveSpeed;
+                }
+            }
+
+            // 入力がない場合はスムーズに減速
             Vector3 targetVelocity = moveDirection * speed;
-            Vector3 smoothVelocity = Vector3.SmoothDamp(_currentVelocity, targetVelocity, ref _currentVelocity, _smoothTime);
-            _camera.transform.position += smoothVelocity * deltaTime;
+
+            // SmoothDampの代わりにシンプルな補間を使用（NaN防止）
+            float lerpFactor = Mathf.Clamp01(deltaTime / _smoothTime);
+            _currentVelocity = Vector3.Lerp(_currentVelocity, targetVelocity, lerpFactor);
+
+            // NaNチェック
+            if (float.IsNaN(_currentVelocity.x) || float.IsNaN(_currentVelocity.y) || float.IsNaN(_currentVelocity.z))
+            {
+                _currentVelocity = Vector3.zero;
+            }
+
+            // 現在位置を取得（NaNチェック付き）
+            Vector3 currentPosition = _camera.transform.position;
+            if (float.IsNaN(currentPosition.x) || float.IsNaN(currentPosition.y) || float.IsNaN(currentPosition.z))
+            {
+                // 現在位置がNaNの場合は初期位置にリセット
+                currentPosition = _initialPosition;
+                _camera.transform.position = _initialPosition;
+                _currentVelocity = Vector3.zero;
+                Debug.LogWarning("[FreeCameraController] カメラ位置がNaNでした。初期位置にリセットしました。");
+                return;
+            }
+
+            // 新しい位置を計算
+            Vector3 newPosition = currentPosition + _currentVelocity * deltaTime;
+
+            // NaNチェック
+            if (float.IsNaN(newPosition.x) || float.IsNaN(newPosition.y) || float.IsNaN(newPosition.z))
+            {
+                Debug.LogWarning($"[FreeCameraController] 新しい位置がNaN: velocity={_currentVelocity}, deltaTime={deltaTime}");
+                _currentVelocity = Vector3.zero;
+                return; // 無効な位置は適用しない
+            }
+
+            // 境界内に制限
+            newPosition = ClampToBoundary(newPosition);
+            _camera.transform.position = newPosition;
+        }
+
+        /// <summary>
+        /// 位置を境界内に制限します
+        /// </summary>
+        private Vector3 ClampToBoundary(Vector3 position)
+        {
+            return new Vector3(
+                Mathf.Clamp(position.x, _boundaryMin.x, _boundaryMax.x),
+                Mathf.Clamp(position.y, _boundaryMin.y, _boundaryMax.y),
+                Mathf.Clamp(position.z, _boundaryMin.z, _boundaryMax.z)
+            );
         }
 
         private bool IsActionPressed(InputAction action)
@@ -279,7 +455,7 @@ namespace CavalryFight.Services.Replay
                 InputAction.MoveBackward => InputHelper.GetKey(KeyCode.S),
                 InputAction.MoveLeft => InputHelper.GetKey(KeyCode.A),
                 InputAction.MoveRight => InputHelper.GetKey(KeyCode.D),
-                InputAction.Jump => InputHelper.GetKey(KeyCode.Q),
+                InputAction.Jump => InputHelper.GetKey(KeyCode.Space),
                 InputAction.Mount => InputHelper.GetKey(KeyCode.E),
                 InputAction.Attack => InputHelper.GetKey(KeyCode.LeftShift),
                 InputAction.CancelAttack => InputHelper.GetKey(KeyCode.LeftControl),

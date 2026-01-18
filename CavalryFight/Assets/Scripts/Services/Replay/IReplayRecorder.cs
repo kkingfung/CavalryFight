@@ -87,10 +87,28 @@ namespace CavalryFight.Services.Replay
         void RegisterEntity(string entityId, EntityType entityType, GameObject gameObject);
 
         /// <summary>
+        /// 騎手エンティティを馬と関連付けて登録します
+        /// </summary>
+        /// <param name="riderEntityId">騎手のエンティティID</param>
+        /// <param name="entityType">エンティティタイプ</param>
+        /// <param name="riderGameObject">騎手のGameObject</param>
+        /// <param name="mountEntityId">騎乗している馬のエンティティID</param>
+        /// <param name="mountPoint">騎乗ポイントのTransform</param>
+        void RegisterRiderEntity(string riderEntityId, EntityType entityType, GameObject riderGameObject, string mountEntityId, Transform? mountPoint = null);
+
+        /// <summary>
         /// エンティティの登録を解除します
         /// </summary>
         /// <param name="entityId">エンティティID</param>
         void UnregisterEntity(string entityId);
+
+        /// <summary>
+        /// 騎手の騎乗状態を更新します
+        /// </summary>
+        /// <param name="riderEntityId">騎手のエンティティID</param>
+        /// <param name="mountEntityId">騎乗している馬のエンティティID（降りた場合はnull）</param>
+        /// <param name="mountPoint">騎乗ポイントのTransform</param>
+        void UpdateRiderMountState(string riderEntityId, string? mountEntityId, Transform? mountPoint);
 
         /// <summary>
         /// イベントを記録します

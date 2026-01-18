@@ -28,8 +28,13 @@ namespace CavalryFight.Services.Replay
         Projectile = 3,
 
         /// <summary>
+        /// 馬
+        /// </summary>
+        Mount = 4,
+
+        /// <summary>
         /// その他の重要なオブジェクト
         /// </summary>
-        Other = 4
+        Other = 5
     }
 }

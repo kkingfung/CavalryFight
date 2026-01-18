@@ -164,7 +164,7 @@ namespace CavalryFight.Gameplay.Player
                 }
                 if (_riderController == null)
                 {
-                    _riderController = FindObjectOfType<RiderController>();
+                    _riderController = FindFirstObjectByType<RiderController>();
                 }
             }
 
@@ -447,7 +447,7 @@ namespace CavalryFight.Gameplay.Player
                     _riderController = GetComponentInChildren<RiderController>();
                     if (_riderController == null)
                     {
-                        _riderController = FindObjectOfType<RiderController>();
+                        _riderController = FindFirstObjectByType<RiderController>();
                     }
                     if (_riderController == null)
                     {

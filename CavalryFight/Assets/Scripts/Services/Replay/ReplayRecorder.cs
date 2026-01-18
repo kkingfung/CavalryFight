@@ -32,9 +32,32 @@ namespace CavalryFight.Services.Replay
         private ReplayData? _currentRecording = null;
         private float _recordingTime = 0f;
         private float _nextKeyframeTime = 0f;
-        private Dictionary<string, (EntityType type, GameObject gameObject)> _registeredEntities = new Dictionary<string, (EntityType, GameObject)>();
+        private Dictionary<string, RegisteredEntity> _registeredEntities = new();
         private int _currentPlayerScore = 0;
         private int _currentEnemyScore = 0;
+
+        #endregion
+
+        #region Nested Types
+
+        /// <summary>
+        /// 登録されたエンティティの情報
+        /// </summary>
+        private class RegisteredEntity
+        {
+            public EntityType Type;
+            public GameObject GameObject = null!;
+            public Rigidbody? Rigidbody;
+            public Animator? Animator;
+
+            // 騎手用の追加情報
+            public string? MountEntityId;
+            public Transform? MountPoint;
+
+            // キャッシュされたコンポーネント参照（リフレクションを避けるため）
+            public MonoBehaviour? MRiderComponent;
+            public MonoBehaviour? MAnimalComponent;
+        }
 
         #endregion
 
@@ -229,8 +252,51 @@ namespace CavalryFight.Services.Replay
                 return;
             }
 
-            _registeredEntities[entityId] = (entityType, gameObject);
+            var entity = new RegisteredEntity
+            {
+                Type = entityType,
+                GameObject = gameObject,
+                Rigidbody = gameObject.GetComponent<Rigidbody>(),
+                Animator = gameObject.GetComponent<Animator>()
+            };
+
+            // Malbersコンポーネントをキャッシュ（名前で検索してリフレクションを最小化）
+            CacheMalbersComponents(entity, gameObject);
+
+            _registeredEntities[entityId] = entity;
             Debug.Log($"[ReplayRecorder] Entity registered: {entityId} ({entityType})");
+        }
+
+        /// <summary>
+        /// 騎手エンティティを馬と関連付けて登録します
+        /// </summary>
+        /// <param name="riderEntityId">騎手のエンティティID</param>
+        /// <param name="entityType">エンティティタイプ</param>
+        /// <param name="riderGameObject">騎手のGameObject</param>
+        /// <param name="mountEntityId">騎乗している馬のエンティティID</param>
+        /// <param name="mountPoint">騎乗ポイントのTransform</param>
+        public void RegisterRiderEntity(string riderEntityId, EntityType entityType, GameObject riderGameObject, string mountEntityId, Transform? mountPoint = null)
+        {
+            if (!_isRecording)
+            {
+                return;
+            }
+
+            var entity = new RegisteredEntity
+            {
+                Type = entityType,
+                GameObject = riderGameObject,
+                Rigidbody = riderGameObject.GetComponent<Rigidbody>(),
+                Animator = riderGameObject.GetComponent<Animator>(),
+                MountEntityId = mountEntityId,
+                MountPoint = mountPoint
+            };
+
+            // Malbersコンポーネントをキャッシュ
+            CacheMalbersComponents(entity, riderGameObject);
+
+            _registeredEntities[riderEntityId] = entity;
+            Debug.Log($"[ReplayRecorder] Rider entity registered: {riderEntityId} -> Mount: {mountEntityId}");
         }
 
         /// <summary>
@@ -242,6 +308,21 @@ namespace CavalryFight.Services.Replay
             if (_registeredEntities.Remove(entityId))
             {
                 Debug.Log($"[ReplayRecorder] Entity unregistered: {entityId}");
+            }
+        }
+
+        /// <summary>
+        /// 騎手の騎乗状態を更新します
+        /// </summary>
+        /// <param name="riderEntityId">騎手のエンティティID</param>
+        /// <param name="mountEntityId">騎乗している馬のエンティティID（降りた場合はnull）</param>
+        /// <param name="mountPoint">騎乗ポイントのTransform</param>
+        public void UpdateRiderMountState(string riderEntityId, string? mountEntityId, Transform? mountPoint)
+        {
+            if (_registeredEntities.TryGetValue(riderEntityId, out var entity))
+            {
+                entity.MountEntityId = mountEntityId;
+                entity.MountPoint = mountPoint;
             }
         }
 
@@ -360,17 +441,14 @@ namespace CavalryFight.Services.Replay
             foreach (var kvp in _registeredEntities)
             {
                 string entityId = kvp.Key;
-                var (entityType, gameObject) = kvp.Value;
+                var entity = kvp.Value;
 
-                if (gameObject == null)
+                if (entity.GameObject == null)
                 {
                     continue;
                 }
 
-                var rigidbody = gameObject.GetComponent<Rigidbody>();
-                var animator = gameObject.GetComponent<Animator>();
-
-                var snapshot = EntitySnapshot.FromGameObject(entityId, entityType, gameObject, rigidbody, animator);
+                var snapshot = CreateSnapshot(entityId, entity);
                 frame.AddEntity(snapshot);
             }
 
@@ -378,6 +456,216 @@ namespace CavalryFight.Services.Replay
 
             // イベントを発火
             FrameRecorded?.Invoke(this, new ReplayFrameRecordedEventArgs(frame));
+        }
+
+        /// <summary>
+        /// エンティティからスナップショットを作成します
+        /// </summary>
+        private EntitySnapshot CreateSnapshot(string entityId, RegisteredEntity entity)
+        {
+            var snapshot = EntitySnapshot.FromGameObject(
+                entityId,
+                entity.Type,
+                entity.GameObject,
+                entity.Rigidbody,
+                entity.Animator
+            );
+
+            // 騎乗状態を記録
+            if (!string.IsNullOrEmpty(entity.MountEntityId))
+            {
+                // MRiderコンポーネントから騎乗状態を取得
+                bool isRiding = GetMRiderIsRiding(entity.MRiderComponent);
+
+                if (isRiding && entity.MountPoint != null)
+                {
+                    snapshot.IsMounted = true;
+                    snapshot.MountedOnEntityId = entity.MountEntityId;
+                    snapshot.LocalPositionOnMount = entity.MountPoint.InverseTransformPoint(entity.GameObject.transform.position);
+                    snapshot.LocalRotationOnMount = Quaternion.Inverse(entity.MountPoint.rotation) * entity.GameObject.transform.rotation;
+                }
+            }
+
+            // Malbers状態を記録
+            if (entity.MAnimalComponent != null)
+            {
+                CaptureMalbersState(snapshot, entity.MAnimalComponent);
+            }
+
+            return snapshot;
+        }
+
+        /// <summary>
+        /// MalbersコンポーネントをGameObjectから検索してキャッシュします
+        /// </summary>
+        private void CacheMalbersComponents(RegisteredEntity entity, GameObject gameObject)
+        {
+            var components = gameObject.GetComponents<MonoBehaviour>();
+            foreach (var comp in components)
+            {
+                if (comp == null) continue;
+
+                string typeName = comp.GetType().Name;
+                if (typeName == "MRider" || typeName.Contains("MRider"))
+                {
+                    entity.MRiderComponent = comp;
+                }
+                else if (typeName == "MAnimal" || typeName.Contains("MAnimal"))
+                {
+                    entity.MAnimalComponent = comp;
+                }
+            }
+
+            // 子オブジェクトも検索
+            if (entity.MRiderComponent == null || entity.MAnimalComponent == null)
+            {
+                var childComponents = gameObject.GetComponentsInChildren<MonoBehaviour>(true);
+                foreach (var comp in childComponents)
+                {
+                    if (comp == null) continue;
+
+                    string typeName = comp.GetType().Name;
+                    if (entity.MRiderComponent == null && (typeName == "MRider" || typeName.Contains("MRider")))
+                    {
+                        entity.MRiderComponent = comp;
+                    }
+                    else if (entity.MAnimalComponent == null && (typeName == "MAnimal" || typeName.Contains("MAnimal")))
+                    {
+                        entity.MAnimalComponent = comp;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// MRiderのIsRiding状態を取得します
+        /// </summary>
+        private bool GetMRiderIsRiding(MonoBehaviour? mRider)
+        {
+            if (mRider == null) return false;
+
+            try
+            {
+                var type = mRider.GetType();
+                var property = type.GetProperty("IsRiding") ?? type.GetProperty("IsMounted") ?? type.GetProperty("Mounted");
+                if (property != null)
+                {
+                    return (bool)property.GetValue(mRider);
+                }
+
+                var field = type.GetField("IsRiding") ?? type.GetField("IsMounted") ?? type.GetField("Mounted");
+                if (field != null)
+                {
+                    return (bool)field.GetValue(mRider);
+                }
+            }
+            catch
+            {
+                // リフレクションエラーは無視
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// MAnimalからMalbers状態をキャプチャします
+        /// </summary>
+        private void CaptureMalbersState(EntitySnapshot snapshot, MonoBehaviour mAnimal)
+        {
+            try
+            {
+                var type = mAnimal.GetType();
+
+                // ActiveStateID を取得
+                var stateIdProp = type.GetProperty("ActiveStateID");
+                if (stateIdProp != null)
+                {
+                    var value = stateIdProp.GetValue(mAnimal);
+                    if (value is int intValue)
+                    {
+                        snapshot.MalbersStateId = intValue;
+                    }
+                    else
+                    {
+                        // StateIDが独自の型の場合、ID プロパティを取得
+                        var idProp = value?.GetType().GetProperty("ID");
+                        if (idProp != null)
+                        {
+                            snapshot.MalbersStateId = (int)idProp.GetValue(value)!;
+                        }
+                    }
+                }
+
+                // ActiveMode を取得
+                var modeProp = type.GetProperty("ActiveMode");
+                if (modeProp != null)
+                {
+                    var mode = modeProp.GetValue(mAnimal);
+                    if (mode != null)
+                    {
+                        var modeIdProp = mode.GetType().GetProperty("ID");
+                        if (modeIdProp != null)
+                        {
+                            var modeIdValue = modeIdProp.GetValue(mode);
+                            if (modeIdValue is int intModeId)
+                            {
+                                snapshot.MalbersModeId = intModeId;
+                            }
+                            else
+                            {
+                                var idProp = modeIdValue?.GetType().GetProperty("ID");
+                                if (idProp != null)
+                                {
+                                    snapshot.MalbersModeId = (int)idProp.GetValue(modeIdValue)!;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Stance を取得
+                var stanceProp = type.GetProperty("Stance");
+                if (stanceProp != null)
+                {
+                    var stanceValue = stanceProp.GetValue(mAnimal);
+                    if (stanceValue is int intStance)
+                    {
+                        snapshot.MalbersStanceId = intStance;
+                    }
+                    else
+                    {
+                        var idProp = stanceValue?.GetType().GetProperty("ID");
+                        if (idProp != null)
+                        {
+                            snapshot.MalbersStanceId = (int)idProp.GetValue(stanceValue)!;
+                        }
+                    }
+                }
+
+                // HorizontalSpeed (Forward Speed) を取得
+                var speedProp = type.GetProperty("HorizontalSpeed") ?? type.GetProperty("ForwardSpeed") ?? type.GetProperty("Speed");
+                if (speedProp != null)
+                {
+                    snapshot.ForwardSpeed = (float)speedProp.GetValue(mAnimal)!;
+                }
+
+                // 入力値を取得
+                var verticalProp = type.GetProperty("VerticalSmooth") ?? type.GetProperty("Vertical");
+                if (verticalProp != null)
+                {
+                    snapshot.VerticalInput = (float)verticalProp.GetValue(mAnimal)!;
+                }
+
+                var horizontalProp = type.GetProperty("HorizontalSmooth") ?? type.GetProperty("Horizontal");
+                if (horizontalProp != null)
+                {
+                    snapshot.HorizontalInput = (float)horizontalProp.GetValue(mAnimal)!;
+                }
+            }
+            catch
+            {
+                // リフレクションエラーは無視
+            }
         }
 
         private void GenerateHighlights(ReplayData replayData)

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using CavalryFight.Services.Customization;
 
 namespace CavalryFight.Services.Replay
 {
@@ -59,6 +60,25 @@ namespace CavalryFight.Services.Replay
         /// プレイヤー名
         /// </summary>
         public string PlayerName = "Player";
+
+        #endregion
+
+        #region Customization Data
+
+        /// <summary>
+        /// プレイヤーのキャラクターカスタマイズ
+        /// </summary>
+        public CharacterCustomization PlayerCharacter = new();
+
+        /// <summary>
+        /// プレイヤーの馬カスタマイズ
+        /// </summary>
+        public MountCustomization PlayerMount = new();
+
+        /// <summary>
+        /// 敵のカスタマイズデータリスト
+        /// </summary>
+        public List<ReplayEntityCustomization> Enemies = new();
 
         #endregion
 
