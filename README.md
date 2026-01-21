@@ -280,7 +280,7 @@ CavalryFightへの貢献を歓迎します！
 
 2. **フォーク＆クローン**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/CavalryFight.git
+   git clone https://github.com/kkingfung/CavalryFight.git
    ```
 
 3. **ブランチを作成**
