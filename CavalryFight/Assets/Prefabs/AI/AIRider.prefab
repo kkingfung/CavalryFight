@@ -16430,6 +16430,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3172638082541525861, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7101342932398230895}
     - targetCorrespondingSourceObject: {fileID: 1699141397005813762, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1152538882772149726}
@@ -16437,6 +16440,37 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1082677890426839881}
   m_SourcePrefab: {fileID: 100100000, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+--- !u!1 &916022944293563507 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3172638082541525861, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7101342932398230895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 916022944293563507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c679a00ab40ffb40a81fbe6a2def1b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CavalryFight.Services::CavalryFight.Services.AI.AIPlayerController
+  _bowFirePoint: {fileID: 7859296689335465768}
+  _arrowPrefab: {fileID: 6416721847607379014, guid: 6a9e7375c8d619d4d935e3c767bde078, type: 3}
+  _minArrowSpeed: 5
+  _maxArrowSpeed: 100
+  _maxChargeTime: 3
+  _attackRange: 0.1
+  _maxHealth: 100
+  _enemyLayers:
+    serializedVersion: 2
+    m_Bits: 4096
+  _obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  _shootSfx: {fileID: 8300000, guid: 2bc518febeebe50429f452204a9faf5d, type: 3}
 --- !u!95 &1237107622787857314 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 3574223480302374068, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
@@ -17028,6 +17062,11 @@ GameObject:
 --- !u!4 &7741585962992390909 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5466953162998277611, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7859296689335465768 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5593738157800833086, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
   m_PrefabInstance: {fileID: 2355707534129116950}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &7911254400169013770 stripped

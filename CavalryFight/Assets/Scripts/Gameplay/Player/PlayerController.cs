@@ -343,7 +343,6 @@ namespace CavalryFight.Gameplay.Player
 
             if (nearestHorse == null)
             {
-                Debug.LogWarning("[PlayerController] No horse found for auto-mount at start!");
                 return;
             }
 
@@ -697,7 +696,6 @@ namespace CavalryFight.Gameplay.Player
             // マッチモードで矢が残っているかチェック
             if (!CanFireArrow())
             {
-                Debug.Log("[PlayerController] Cannot fire - no arrows remaining!");
                 return;
             }
 
@@ -748,7 +746,8 @@ namespace CavalryFight.Gameplay.Player
             var arrowProjectile = arrowParent.AddComponent<ArrowProjectile>();
 
             // 発射者と馬を無視対象に設定（衝突判定の前に設定する）
-            arrowProjectile.AddIgnoredObject(gameObject);
+            // isOwner: true でオーナーを設定（スコア通知用）
+            arrowProjectile.AddIgnoredObject(gameObject, isOwner: true);
             // 親（馬）も無視対象に追加
             if (transform.parent != null)
             {

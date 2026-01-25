@@ -207,7 +207,6 @@ namespace CavalryFight.Gameplay.Match
         {
             _entityLoadProgress = progress;
             _loadStatusMessage = message;
-            Debug.Log($"[LOAD-PROGRESS] {progress:P0} - {message}");
         }
 
         /// <summary>
@@ -224,19 +223,12 @@ namespace CavalryFight.Gameplay.Match
             _entityLoadProgress = 1f;
             _loadStatusMessage = "Ready!";
 
-            Debug.Log("[MatchManager] All entities ready! Notifying SceneManagementService...");
-
             // SceneManagementServiceにゲームプレイ準備完了を通知
             // これによりローディング画面が閉じる
             var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
             if (sceneService != null && sceneService.IsWaitingForGameplayReady)
             {
-                Debug.Log("[MatchManager] Calling SignalGameplayReady() to close loading screen");
                 sceneService.SignalGameplayReady();
-            }
-            else
-            {
-                Debug.Log("[MatchManager] SceneManagementService not waiting for gameplay ready (possibly direct scene load)");
             }
 
             AllEntitiesReady?.Invoke();
@@ -367,13 +359,7 @@ namespace CavalryFight.Gameplay.Match
             var matchService = ServiceLocator.Instance.Get<IMatchService>();
             if (matchService != null)
             {
-                Debug.Log($"[SCORE-DEBUG] MatchManager.RegisterWithMatchService: MatchService instance: {matchService.GetHashCode()}");
                 matchService.RegisterMatchDataProvider(this);
-                Debug.Log("[MatchManager] Registered as IMatchDataProvider with MatchService.");
-            }
-            else
-            {
-                Debug.LogWarning("[MatchManager] MatchService not found. Cannot register as data provider.");
             }
         }
 
@@ -386,7 +372,6 @@ namespace CavalryFight.Gameplay.Match
             if (matchService != null)
             {
                 matchService.UnregisterMatchDataProvider();
-                Debug.Log("[MatchManager] Unregistered from MatchService.");
             }
         }
 
@@ -396,11 +381,8 @@ namespace CavalryFight.Gameplay.Match
 
         private void Awake()
         {
-            Debug.Log($"[SPAWN-DEBUG] MatchManager.Awake() called on GameObject: {gameObject.name}");
-
             if (_instance != null && _instance != this)
             {
-                Debug.LogWarning("[SPAWN-DEBUG] MatchManager: Instance already exists. Destroying duplicate.");
                 Destroy(gameObject);
                 return;
             }
@@ -408,8 +390,6 @@ namespace CavalryFight.Gameplay.Match
 
             _playerSlots = new NetworkList<PlayerSlot>();
             _playerScores = new NetworkList<Services.Match.PlayerScore>();
-
-            Debug.Log("[SPAWN-DEBUG] MatchManager.Awake() completed. Instance set.");
         }
 
         public override void OnNetworkSpawn()
@@ -422,17 +402,10 @@ namespace CavalryFight.Gameplay.Match
             // MatchServiceにデータプロバイダーとして登録
             RegisterWithMatchService();
 
-            Debug.Log($"[SPAWN-DEBUG] MatchManager.OnNetworkSpawn() called. IsServer: {IsServer}, IsClient: {IsClient}");
-
             // サーバーの場合、LobbyServiceからデータを取得してマッチを初期化
             if (IsServer)
             {
-                Debug.Log("[SPAWN-DEBUG] MatchManager: IsServer=true, calling InitializeFromLobbyService()");
                 InitializeFromLobbyService();
-            }
-            else
-            {
-                Debug.Log("[SPAWN-DEBUG] MatchManager: IsServer=false, skipping InitializeFromLobbyService()");
             }
         }
 
@@ -452,9 +425,6 @@ namespace CavalryFight.Gameplay.Match
 
         public override void OnDestroy()
         {
-            Debug.Log("[MATCH-DEBUG] MatchManager.OnDestroy() called");
-            Debug.Log($"[MATCH-DEBUG] OnDestroy StackTrace:\n{System.Environment.StackTrace}");
-
             // ローカルテストモードの場合、ここで登録解除
             if (!IsSpawned)
             {
@@ -468,29 +438,16 @@ namespace CavalryFight.Gameplay.Match
             base.OnDestroy();
         }
 
-        private void OnDisable()
-        {
-            Debug.Log("[MATCH-DEBUG] MatchManager.OnDisable() called");
-            Debug.Log($"[MATCH-DEBUG] OnDisable StackTrace:\n{System.Environment.StackTrace}");
-        }
-
         private void Start()
         {
-            Debug.Log($"[AI-SPAWN-DEBUG] MatchManager.Start() called");
-            Debug.Log($"[AI-SPAWN-DEBUG] NetworkManager.Singleton={(NetworkManager.Singleton != null ? "exists" : "NULL")}");
-            Debug.Log($"[AI-SPAWN-DEBUG] NetworkManager.IsListening={(NetworkManager.Singleton?.IsListening ?? false)}");
-            Debug.Log($"[AI-SPAWN-DEBUG] MatchManager.IsSpawned={IsSpawned}");
-
             // LobbyServiceにデータがあるかチェック（Lobbyから遷移した場合）
             var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
             bool hasLobbyData = lobbyService != null && lobbyService.PlayerSlots.Count > 0;
-            Debug.Log($"[AI-SPAWN-DEBUG] LobbyService hasData={hasLobbyData}");
 
             // NetworkManagerが起動していない場合、またはこのNetworkBehaviourがスポーンされていない場合
             // 開発テスト用にローカルモードで初期化
             if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening)
             {
-                Debug.Log("[AI-SPAWN-DEBUG] >>> Taking LOCAL TEST MODE path (NetworkManager not running)");
                 StartCoroutine(InitializeLocalTestMode());
             }
             else if (!IsSpawned)
@@ -499,19 +456,13 @@ namespace CavalryFight.Gameplay.Match
                 // LobbyServiceにデータがある場合は、すぐにローカルモードで初期化（3秒待たない）
                 if (hasLobbyData)
                 {
-                    Debug.Log("[AI-SPAWN-DEBUG] >>> Taking LOCAL TEST MODE path immediately (has LobbyService data, skip 3s wait)");
                     StartCoroutine(InitializeLocalTestMode());
                 }
                 else
                 {
-                    Debug.Log("[AI-SPAWN-DEBUG] >>> Taking WAIT FOR NETWORK SPAWN path (no LobbyService data)");
                     // 少し待ってからもう一度チェック
                     StartCoroutine(WaitForNetworkSpawnOrFallback());
                 }
-            }
-            else
-            {
-                Debug.Log("[AI-SPAWN-DEBUG] >>> MatchManager already spawned via network, skipping local init");
             }
         }
 
@@ -520,7 +471,6 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         private System.Collections.IEnumerator WaitForNetworkSpawnOrFallback()
         {
-            Debug.Log("[AI-SPAWN-DEBUG] WaitForNetworkSpawnOrFallback() started - waiting up to 3s for network spawn");
             float waitTime = 0f;
             const float maxWaitTime = 3f; // 最大3秒待機
 
@@ -530,16 +480,9 @@ namespace CavalryFight.Gameplay.Match
                 waitTime += 0.1f;
             }
 
-            Debug.Log($"[AI-SPAWN-DEBUG] WaitForNetworkSpawnOrFallback() finished waiting. IsSpawned={IsSpawned}, waitTime={waitTime:F1}s");
-
             if (!IsSpawned)
             {
-                Debug.Log("[AI-SPAWN-DEBUG] MatchManager still not spawned after waiting. >>> Falling back to LOCAL TEST MODE");
                 StartCoroutine(InitializeLocalTestMode());
-            }
-            else
-            {
-                Debug.Log("[AI-SPAWN-DEBUG] MatchManager spawned successfully during wait - AI will spawn via OnNetworkSpawn path");
             }
         }
 
@@ -548,14 +491,10 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         private System.Collections.IEnumerator InitializeLocalTestMode()
         {
-            Debug.Log("[AI-SPAWN-DEBUG] ========================================");
-            Debug.Log("[AI-SPAWN-DEBUG] InitializeLocalTestMode() STARTED");
-            Debug.Log("[AI-SPAWN-DEBUG] ========================================");
             UpdateLoadProgress(0.1f, "Initializing...");
 
             // LobbyServiceからルーム設定とプレイヤースロットを取得（Lobbyから遷移した場合）
             var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
-            Debug.Log($"[AI-SPAWN-DEBUG] LobbyService={(lobbyService != null ? "exists" : "NULL")}, PlayerSlots.Count={(lobbyService?.PlayerSlots?.Count ?? 0)}");
 
             RoomSettings settings;
             PlayerSlot[] slots;
@@ -565,14 +504,6 @@ namespace CavalryFight.Gameplay.Match
                 // Lobbyから遷移した場合
                 settings = lobbyService.CurrentRoomSettings;
                 slots = lobbyService.PlayerSlots.ToArray();
-                Debug.Log($"[AI-SPAWN-DEBUG] Using LobbyService data. Mode: {settings.GameMode}, Players: {slots.Length}");
-
-                // スロットの詳細をログ出力
-                for (int i = 0; i < slots.Length; i++)
-                {
-                    var slot = slots[i];
-                    Debug.Log($"[AI-SPAWN-DEBUG] PlayerSlot[{i}] - Name: {slot.PlayerName}, IsAI: {slot.IsAI}, Team: {slot.TeamIndex}, Difficulty: {slot.AIDifficulty}");
-                }
             }
             else
             {
@@ -581,16 +512,13 @@ namespace CavalryFight.Gameplay.Match
                 var localPlayerSlot = new PlayerSlot(0, 0UL, "LocalPlayer");
                 localPlayerSlot.TeamIndex = 0;
                 slots = new PlayerSlot[] { localPlayerSlot };
-                Debug.Log("[AI-SPAWN-DEBUG] Using default settings (no LobbyService data)");
             }
 
             // マップをロード（OnNetworkSpawn経由でない場合は手動でロード）
             UpdateLoadProgress(0.2f, "Loading field...");
-            Debug.Log($"[AI-SPAWN-DEBUG] Loading map: {settings.MapName}");
             LoadMap(settings.MapName);
 
             // フィールドロード完了を待つ
-            Debug.Log($"[AI-SPAWN-DEBUG] Waiting for FieldLoader... FieldLoader.Instance={(FieldLoader.Instance != null ? "exists" : "NULL")}");
             float fieldLoadWaitTime = 0f;
             const float maxFieldLoadWaitTime = 10f;
             while ((FieldLoader.Instance == null || !FieldLoader.Instance.IsLoaded) && fieldLoadWaitTime < maxFieldLoadWaitTime)
@@ -601,11 +529,10 @@ namespace CavalryFight.Gameplay.Match
 
             if (FieldLoader.Instance == null || !FieldLoader.Instance.IsLoaded)
             {
-                Debug.LogError($"[AI-SPAWN-DEBUG] FieldLoader failed to load after {fieldLoadWaitTime:F1}s. Aborting local test mode.");
+                Debug.LogError("[MatchManager] FieldLoader failed to load. Aborting local test mode.");
                 yield break;
             }
 
-            Debug.Log("[AI-SPAWN-DEBUG] Field loaded, initializing match...");
             UpdateLoadProgress(0.4f, "Preparing match...");
 
             // RulesHandlersを自動検索
@@ -613,10 +540,8 @@ namespace CavalryFight.Gameplay.Match
 
             // ルーム設定を適用（ローカルモードでもRoomSettingsプロパティで参照できるように）
             _roomSettings.Value = settings;
-            Debug.Log($"[AI-SPAWN-DEBUG] Applied RoomSettings - TimeLimit: {settings.TimeLimit}s, GameMode: {settings.GameMode}, ArrowLimit: {settings.ArrowLimit}");
 
             // プレイヤースコアを初期化（ローカルテストモード用）
-            Debug.Log($"[AI-SPAWN-DEBUG] Initializing player scores for {slots.Length} players...");
             _playerScores?.Clear();
             foreach (var slot in slots)
             {
@@ -632,7 +557,6 @@ namespace CavalryFight.Gameplay.Match
                 };
                 _playerScores?.Add(playerScore);
             }
-            Debug.Log($"[AI-SPAWN-DEBUG] Player scores initialized. Total: {_playerScores?.Count ?? 0}");
 
             // ゲームモードハンドラーを初期化
             SelectHandler(settings.GameMode);
@@ -645,29 +569,18 @@ namespace CavalryFight.Gameplay.Match
             // AIプレイヤーをスポーン（スロットにAIがいる場合）
             // ★重要: AIはここでスポーンするが、有効化はカウントダウン終了後
             UpdateLoadProgress(0.7f, "Spawning opponents...");
-            Debug.Log($"[AI-SPAWN-DEBUG] ========== AI SPAWN PHASE START ==========");
-            Debug.Log($"[AI-SPAWN-DEBUG] AISpawner.Instance={(AISpawner.Instance != null ? "exists" : "NULL")}");
-            Debug.Log($"[AI-SPAWN-DEBUG] Total slots to check: {slots.Length}");
             int aiCount = 0;
             if (AISpawner.Instance != null)
             {
                 foreach (var slot in slots)
                 {
-                    Debug.Log($"[AI-SPAWN-DEBUG] Checking slot: {slot.PlayerName}, IsAI={slot.IsAI}, Team={slot.TeamIndex}");
                     if (slot.IsAI)
                     {
-                        Debug.Log($"[AI-SPAWN-DEBUG] >>> Calling AISpawner.SpawnAIPlayers for: {slot.PlayerName}");
                         AISpawner.Instance.Initialize(settings.GameMode, slot.AIDifficulty);
                         var spawnedIds = AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
-
                         if (spawnedIds.Count > 0)
                         {
                             aiCount++;
-                            Debug.Log($"[AI-SPAWN-DEBUG] Spawned AI successfully. ID: {spawnedIds[0]}");
-                        }
-                        else
-                        {
-                            Debug.LogWarning($"[AI-SPAWN-DEBUG] FAILED to spawn AI for slot: {slot.PlayerName}");
                         }
                     }
                 }
@@ -675,48 +588,23 @@ namespace CavalryFight.Gameplay.Match
                 // AIがスロットにいなかった場合、テスト用に1体スポーン
                 if (aiCount == 0)
                 {
-                    Debug.Log("[AI-SPAWN-DEBUG] No AI in slots found, spawning 1 test AI...");
                     AISpawner.Instance.Initialize(settings.GameMode, AIDifficulty.Normal);
-                    Debug.Log("[AI-SPAWN-DEBUG] >>> Calling AISpawner.SpawnAIPlayers for test AI");
-                    var spawnedIds = AISpawner.Instance.SpawnAIPlayers(1, -1);
-                    aiCount = spawnedIds.Count;
-                    Debug.Log($"[AI-SPAWN-DEBUG] Test AI spawn result: {aiCount} spawned");
+                    AISpawner.Instance.SpawnAIPlayers(1, -1);
                 }
-
-                Debug.Log($"[AI-SPAWN-DEBUG] ========== AI SPAWN PHASE END: Total spawned={aiCount} ==========");
-            }
-            else
-            {
-                Debug.LogError("[AI-SPAWN-DEBUG] AISpawner.Instance is NULL! Cannot spawn AI.");
             }
 
             _aiSpawned = true;
 
-            // ★重要: AIは有効化しない（カウントダウン終了後に有効化）
-            // AISpawner.Instance.EnableAllAI() はここでは呼ばない
-            Debug.Log("[AI-SPAWN-DEBUG] AI spawned but NOT enabled yet (will enable after countdown)");
-
             // MatchServiceにデータプロバイダーとして登録（ローカルテストモード用）
-            Debug.Log("[AI-SPAWN-DEBUG] About to register with MatchService...");
-            try
-            {
-                RegisterWithMatchService();
-                Debug.Log("[AI-SPAWN-DEBUG] Registered with MatchService successfully");
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"[AI-SPAWN-DEBUG] Exception in RegisterWithMatchService: {ex.Message}\n{ex.StackTrace}");
-            }
+            RegisterWithMatchService();
 
             // すべてのエンティティの準備完了を通知
             UpdateLoadProgress(0.95f, "Finalizing...");
             yield return new WaitForSeconds(0.2f); // 少し待ってからUIが更新される時間を確保
 
-            Debug.Log("[AI-SPAWN-DEBUG] Local test mode initialized complete - NotifyAllEntitiesReady()");
             NotifyAllEntitiesReady();
 
             // ローカルテストモードでカウントダウンを開始
-            Debug.Log("[AI-SPAWN-DEBUG] Starting countdown coroutine...");
             StartCoroutine(RunLocalCountdown());
         }
 
@@ -725,8 +613,6 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         private System.Collections.IEnumerator WaitForPlayerSpawn()
         {
-            Debug.Log("[AI-SPAWN-DEBUG] WaitForPlayerSpawn() started");
-
             float waitTime = 0f;
             const float maxWaitTime = 10f;
 
@@ -736,7 +622,6 @@ namespace CavalryFight.Gameplay.Match
                 if (PlayerSpawner.Instance != null && PlayerSpawner.Instance.IsSpawned)
                 {
                     _playerSpawned = true;
-                    Debug.Log("[AI-SPAWN-DEBUG] Player spawned successfully!");
                     yield break;
                 }
 
@@ -746,7 +631,6 @@ namespace CavalryFight.Gameplay.Match
 
             if (!_playerSpawned)
             {
-                Debug.LogWarning($"[AI-SPAWN-DEBUG] Player spawn timeout after {waitTime:F1}s. Continuing anyway...");
                 _playerSpawned = true; // タイムアウトでも続行
             }
         }
@@ -756,8 +640,6 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         private System.Collections.IEnumerator RunLocalCountdown()
         {
-            Debug.Log("[MATCH-DEBUG] RunLocalCountdown: Starting countdown...");
-
             // カウントダウン状態に遷移
             _matchState.Value = MatchState.Countdown;
 
@@ -768,11 +650,9 @@ namespace CavalryFight.Gameplay.Match
             {
                 int seconds = Mathf.CeilToInt(countdownTimer);
 
-                // 秒数が変わった時だけ通知（毎フレーム通知するとログが多すぎる）
+                // 秒数が変わった時だけ通知
                 if (seconds != lastSeconds)
                 {
-                    Debug.Log($"[COUNTDOWN-DEBUG] RunLocalCountdown: seconds={seconds}");
-
                     // イベントを発火
                     CountdownUpdated?.Invoke(seconds);
                     RaiseProviderCountdownUpdated(seconds);
@@ -783,8 +663,6 @@ namespace CavalryFight.Gameplay.Match
                 countdownTimer -= Time.deltaTime;
                 yield return null;
             }
-
-            Debug.Log("[MATCH-DEBUG] RunLocalCountdown: Countdown finished, starting match...");
 
             // マッチ開始
             _matchState.Value = MatchState.InProgress;
@@ -797,8 +675,6 @@ namespace CavalryFight.Gameplay.Match
             // AIを有効化（まだ有効化されていない場合）
             AISpawner.Instance?.EnableAllAI();
 
-            Debug.Log("[MATCH-DEBUG] RunLocalCountdown: Match started!");
-
             // ローカルモード用のマッチ時間更新を開始
             StartCoroutine(RunLocalMatchTimer());
         }
@@ -808,8 +684,6 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         private System.Collections.IEnumerator RunLocalMatchTimer()
         {
-            Debug.Log("[MATCH-DEBUG] RunLocalMatchTimer: Started");
-
             while (_matchState.Value == MatchState.InProgress)
             {
                 _matchTime.Value += Time.deltaTime;
@@ -818,7 +692,6 @@ namespace CavalryFight.Gameplay.Match
                 // 時間制限チェック
                 if (RoomSettings.TimeLimit > 0 && _matchTime.Value >= RoomSettings.TimeLimit)
                 {
-                    Debug.Log("[MATCH-DEBUG] RunLocalMatchTimer: Time limit reached!");
                     // マッチ終了処理（ローカルモード用）
                     _matchState.Value = MatchState.Ended;
                     _activeHandler?.OnMatchEnd();
@@ -827,8 +700,6 @@ namespace CavalryFight.Gameplay.Match
 
                 yield return null;
             }
-
-            Debug.Log("[MATCH-DEBUG] RunLocalMatchTimer: Ended");
         }
 
         private void Update()
@@ -900,8 +771,6 @@ namespace CavalryFight.Gameplay.Match
 
             // 状態を更新
             _matchState.Value = MatchState.WaitingForPlayers;
-
-            Debug.Log($"[MatchManager] Match initialized. Mode: {settings.GameMode}, Players: {slots.Length}");
         }
 
         /// <summary>
@@ -921,8 +790,6 @@ namespace CavalryFight.Gameplay.Match
 
             _countdownTimer = _countdownDuration;
             _matchState.Value = MatchState.Countdown;
-
-            Debug.Log("[MatchManager] Countdown started");
         }
 
         /// <summary>
@@ -965,8 +832,6 @@ namespace CavalryFight.Gameplay.Match
 
                     // イベント発火
                     NotifyPlayerScoredClientRpc(clientId, score, hitLocation);
-
-                    Debug.Log($"[MatchManager] Player {clientId} scored {score} (total: {playerScore.Score})");
                     break;
                 }
             }
@@ -994,11 +859,43 @@ namespace CavalryFight.Gameplay.Match
         {
             if (_playerScores == null)
             {
-                Debug.LogWarning("[MatchManager] RecordArrowFiredLocal: _playerScores is null");
                 return;
             }
 
             RecordArrowFiredInternal(clientId);
+        }
+
+        /// <summary>
+        /// プレイヤーのスコアを追加します（ローカルモード用）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <param name="score">追加するスコア</param>
+        /// <param name="hitLocation">命中部位</param>
+        public void AddPlayerScoreLocal(ulong clientId, int score, HitLocation hitLocation)
+        {
+            if (_playerScores == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < _playerScores.Count; i++)
+            {
+                if (_playerScores[i].ClientId == clientId)
+                {
+                    var playerScore = _playerScores[i];
+                    playerScore.Score += score;
+                    playerScore.HitCount++;
+                    _playerScores[i] = playerScore;
+
+                    // ハンドラーに通知
+                    _activeHandler?.OnPlayerScored(clientId, score, hitLocation);
+
+                    // ローカルモードではイベントを直接発火
+                    PlayerScored?.Invoke(clientId, score, hitLocation);
+                    RaiseProviderPlayerScored(clientId, score, hitLocation);
+                    break;
+                }
+            }
         }
 
         /// <summary>
@@ -1017,8 +914,6 @@ namespace CavalryFight.Gameplay.Match
                         playerScore.RemainingArrows--;
                     }
                     _playerScores[i] = playerScore;
-
-                    Debug.Log($"[MatchManager] Arrow fired by {clientId}. Remaining: {playerScore.RemainingArrows}, Shots: {playerScore.ShotCount}");
 
                     // ハンドラーに通知
                     _activeHandler?.OnArrowFired(clientId);
@@ -1049,7 +944,6 @@ namespace CavalryFight.Gameplay.Match
         [ClientRpc]
         private void NotifyCountdownClientRpc(int seconds)
         {
-            Debug.Log($"[COUNTDOWN-DEBUG] NotifyCountdownClientRpc: seconds={seconds}");
             CountdownUpdated?.Invoke(seconds);
             RaiseProviderCountdownUpdated(seconds);
         }
@@ -1085,33 +979,14 @@ namespace CavalryFight.Gameplay.Match
 
         #region Public Methods
 
-        // GetPlayerScoreのデバッグカウンター
-        private int _getPlayerScoreDebugCounter = 0;
-
         /// <summary>
         /// プレイヤーのスコア情報を取得します
         /// </summary>
         public Services.Match.PlayerScore? GetPlayerScore(ulong clientId)
         {
-            _getPlayerScoreDebugCounter++;
-            bool shouldLog = _getPlayerScoreDebugCounter <= 10;
-
             if (_playerScores == null)
             {
-                if (shouldLog)
-                {
-                    Debug.Log($"[SCORE-DEBUG] MatchManager.GetPlayerScore({clientId}): _playerScores is NULL!");
-                }
                 return null;
-            }
-
-            if (shouldLog)
-            {
-                Debug.Log($"[SCORE-DEBUG] MatchManager.GetPlayerScore({clientId}): _playerScores.Count={_playerScores.Count}");
-                foreach (var s in _playerScores)
-                {
-                    Debug.Log($"[SCORE-DEBUG]   - ClientId={s.ClientId}, Name={s.PlayerName}, Arrows={s.RemainingArrows}");
-                }
             }
 
             foreach (var score in _playerScores)
@@ -1187,26 +1062,15 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         private void InitializeFromLobbyService()
         {
-            Debug.Log("[SPAWN-DEBUG] MatchManager.InitializeFromLobbyService() called");
-
             var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
             if (lobbyService == null)
             {
-                Debug.LogError("[SPAWN-DEBUG] MatchManager: ILobbyService not found. Cannot initialize match.");
+                Debug.LogError("[MatchManager] ILobbyService not found. Cannot initialize match.");
                 return;
             }
 
             var roomSettings = lobbyService.CurrentRoomSettings;
             var playerSlots = lobbyService.PlayerSlots.ToArray();
-
-            Debug.Log($"[SPAWN-DEBUG] MatchManager.InitializeFromLobbyService() - Map: {roomSettings.MapName}, GameMode: {roomSettings.GameMode}, PlayerSlots: {playerSlots.Length}");
-
-            // ログに各スロットの詳細を出力
-            for (int i = 0; i < playerSlots.Length; i++)
-            {
-                var slot = playerSlots[i];
-                Debug.Log($"[SPAWN-DEBUG] MatchManager: PlayerSlot[{i}] - Name: {slot.PlayerName}, IsAI: {slot.IsAI}, Team: {slot.TeamIndex}, Difficulty: {slot.AIDifficulty}");
-            }
 
             // マップをロード
             LoadMap(roomSettings.MapName);
@@ -1223,12 +1087,7 @@ namespace CavalryFight.Gameplay.Match
         {
             if (FieldLoader.Instance != null)
             {
-                bool success = FieldLoader.Instance.LoadField(mapName);
-                Debug.Log($"[MatchManager] LoadMap: {mapName} - {(success ? "Success" : "Failed")}");
-            }
-            else
-            {
-                Debug.LogWarning("[MatchManager] FieldLoader.Instance not found. Map will not be loaded.");
+                FieldLoader.Instance.LoadField(mapName);
             }
         }
 
@@ -1276,8 +1135,6 @@ namespace CavalryFight.Gameplay.Match
             // 状態を更新
             _matchState.Value = MatchState.WaitingForPlayers;
 
-            Debug.Log($"[MatchManager] Match initialized. Mode: {settings.GameMode}, Players: {slots.Length}");
-
             // エンティティスポーンのコルーチンを開始
             StartCoroutine(SpawnEntitiesAndStartCountdown(settings, slots));
         }
@@ -1296,30 +1153,20 @@ namespace CavalryFight.Gameplay.Match
             // AIプレイヤーをスポーン（スロットにAIがいる場合）
             // ★重要: AIはここでスポーンするが、有効化はカウントダウン終了後
             UpdateLoadProgress(0.7f, "Spawning opponents...");
-            Debug.Log($"[SPAWN-DEBUG] MatchManager: Spawning AI during initialization (network mode)");
 
             if (AISpawner.Instance != null)
             {
-                int aiCount = 0;
                 foreach (var slot in slots)
                 {
                     if (slot.IsAI)
                     {
-                        Debug.Log($"[SPAWN-DEBUG] MatchManager: Spawning AI - Name: {slot.PlayerName}, Team: {slot.TeamIndex}, Difficulty: {slot.AIDifficulty}");
                         AISpawner.Instance.Initialize(settings.GameMode, slot.AIDifficulty);
-                        var spawnedIds = AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
-                        if (spawnedIds.Count > 0)
-                        {
-                            aiCount++;
-                            Debug.Log($"[SPAWN-DEBUG] MatchManager: AI spawned successfully. ID: {spawnedIds[0]}");
-                        }
+                        AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
                     }
                 }
-                Debug.Log($"[SPAWN-DEBUG] MatchManager: Total AI spawned during initialization: {aiCount}");
             }
 
             _aiSpawned = true;
-            Debug.Log("[SPAWN-DEBUG] MatchManager: AI spawned but NOT enabled yet (will enable after countdown)");
 
             // すべてのエンティティの準備完了を通知
             UpdateLoadProgress(0.95f, "Finalizing...");
@@ -1356,8 +1203,6 @@ namespace CavalryFight.Gameplay.Match
             {
                 _huntingHandler = GetComponentInChildren<HuntingRulesHandler>();
             }
-
-            Debug.Log($"[MatchManager] AutoFindRulesHandlers - Arena: {_arenaHandler != null}, ScoreMatch: {_scoreMatchHandler != null}, TeamFight: {_teamFightHandler != null}, Deathmatch: {_deathmatchHandler != null}, Hunting: {_huntingHandler != null}");
         }
 
         private void SelectHandler(GameMode mode)
@@ -1392,7 +1237,6 @@ namespace CavalryFight.Gameplay.Match
 
             if (_countdownTimer <= 0)
             {
-                Debug.Log("[SPAWN-DEBUG] MatchManager.UpdateCountdown(): Countdown finished, calling StartMatch()");
                 StartMatch();
             }
         }
@@ -1405,33 +1249,21 @@ namespace CavalryFight.Gameplay.Match
 
         private void StartMatch()
         {
-            Debug.Log("[SPAWN-DEBUG] MatchManager.StartMatch() called");
-
             _matchState.Value = MatchState.InProgress;
             _matchTime.Value = 0f;
 
-            // ★重要: AIはInitializeMatchInternal()で既にスポーン済み
-            // ここではスポーンしない（SpawnAIPlayers()は呼ばない）
             // AIがまだスポーンされていない場合のみスポーン（フォールバック）
             if (!_aiSpawned)
             {
-                Debug.Log("[SPAWN-DEBUG] MatchManager: AI not spawned yet, spawning now as fallback...");
                 SpawnAIPlayers();
                 _aiSpawned = true;
-            }
-            else
-            {
-                Debug.Log("[SPAWN-DEBUG] MatchManager: AI already spawned during initialization");
             }
 
             _activeHandler?.OnMatchStart();
             NotifyMatchStartedClientRpc();
 
-            // AIを有効化（ここで初めて有効化）
-            Debug.Log("[SPAWN-DEBUG] MatchManager: Enabling AI now...");
+            // AIを有効化
             AISpawner.Instance?.EnableAllAI();
-
-            Debug.Log("[SPAWN-DEBUG] MatchManager.StartMatch() completed");
         }
 
         /// <summary>
@@ -1439,49 +1271,19 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         private void SpawnAIPlayers()
         {
-            Debug.Log($"[SPAWN-DEBUG] MatchManager.SpawnAIPlayers() called");
-
-            if (AISpawner.Instance == null)
+            if (AISpawner.Instance == null || _playerSlots == null)
             {
-                Debug.LogWarning("[SPAWN-DEBUG] MatchManager: AISpawner.Instance is NULL! AI players will not spawn.");
                 return;
             }
 
-            if (_playerSlots == null)
-            {
-                Debug.LogWarning("[SPAWN-DEBUG] MatchManager: _playerSlots is NULL!");
-                return;
-            }
-
-            Debug.Log($"[SPAWN-DEBUG] MatchManager: _playerSlots.Count={_playerSlots.Count}");
-
-            int aiCount = 0;
             foreach (var slot in _playerSlots)
             {
-                Debug.Log($"[SPAWN-DEBUG] MatchManager: Checking slot - PlayerName: {slot.PlayerName}, IsAI: {slot.IsAI}, Team: {slot.TeamIndex}");
-
                 if (slot.IsAI)
                 {
-                    aiCount++;
-                    // そのAIの難易度でAISpawnerを初期化
-                    Debug.Log($"[SPAWN-DEBUG] MatchManager: Initializing AISpawner for slot. Difficulty: {slot.AIDifficulty}");
                     AISpawner.Instance.Initialize(RoomSettings.GameMode, slot.AIDifficulty);
-
-                    // AIをスポーン（チームを指定）
-                    var spawnedIds = AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
-
-                    if (spawnedIds.Count > 0)
-                    {
-                        Debug.Log($"[SPAWN-DEBUG] MatchManager: Spawned AI for slot. PlayerName: {slot.PlayerName}, Team: {slot.TeamIndex}, Difficulty: {slot.AIDifficulty}");
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[SPAWN-DEBUG] MatchManager: FAILED to spawn AI for slot: {slot.PlayerName}");
-                    }
+                    AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
                 }
             }
-
-            Debug.Log($"[SPAWN-DEBUG] MatchManager.SpawnAIPlayers() completed. AI slots found: {aiCount}, Total AI spawned: {AISpawner.Instance.SpawnedAICount}");
         }
 
         private void EndMatch(ulong winnerId)
@@ -1502,20 +1304,17 @@ namespace CavalryFight.Gameplay.Match
             };
 
             NotifyMatchEndedClientRpc(result);
-
-            Debug.Log($"[MatchManager] Match ended! Winner: {winnerId}, Duration: {_matchTime.Value:F1}s");
         }
 
         private void OnMatchStateValueChanged(MatchState previousValue, MatchState newValue)
         {
             MatchStateChanged?.Invoke(newValue);
             RaiseProviderMatchStateChanged(newValue);
-            Debug.Log($"[MatchManager] State changed: {previousValue} -> {newValue}");
         }
 
         private void OnRoomSettingsValueChanged(RoomSettings previousValue, RoomSettings newValue)
         {
-            Debug.Log($"[MatchManager] Room settings updated. Mode: {newValue.GameMode}");
+            // 必要に応じて処理
         }
 
         private void OnHandlerMatchEndTriggered(ulong winnerId)

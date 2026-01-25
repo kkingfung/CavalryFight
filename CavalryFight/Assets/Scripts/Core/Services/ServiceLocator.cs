@@ -90,8 +90,6 @@ namespace CavalryFight.Core.Services
             {
                 service.Initialize();
             }
-
-            Debug.Log($"[ServiceLocator] Registered service: {serviceType.Name}");
         }
 
         /// <summary>
@@ -109,8 +107,6 @@ namespace CavalryFight.Core.Services
 
             var serviceType = typeof(TService);
             _factories[serviceType] = () => factory();
-
-            Debug.Log($"[ServiceLocator] Registered factory for service: {serviceType.Name}");
         }
 
         /// <summary>
@@ -140,7 +136,6 @@ namespace CavalryFight.Core.Services
                     newService.Initialize();
                 }
 
-                Debug.Log($"[ServiceLocator] Created service from factory: {serviceType.Name}");
                 return newService;
             }
 
@@ -192,7 +187,6 @@ namespace CavalryFight.Core.Services
             {
                 service?.Dispose();
                 _services.Remove(serviceType);
-                Debug.Log($"[ServiceLocator] Unregistered service: {serviceType.Name}");
             }
 
             _factories.Remove(serviceType);
@@ -208,18 +202,14 @@ namespace CavalryFight.Core.Services
         {
             if (_isInitialized)
             {
-                Debug.LogWarning("[ServiceLocator] Already initialized.");
                 return;
             }
-
-            Debug.Log("[ServiceLocator] Initializing all services...");
 
             foreach (var service in _services.Values)
             {
                 try
                 {
                     service.Initialize();
-                    Debug.Log($"[ServiceLocator] Initialized: {service.GetType().Name}");
                 }
                 catch (Exception ex)
                 {
@@ -228,7 +218,6 @@ namespace CavalryFight.Core.Services
             }
 
             _isInitialized = true;
-            Debug.Log("[ServiceLocator] All services initialized.");
         }
 
         /// <summary>
@@ -238,11 +227,8 @@ namespace CavalryFight.Core.Services
         {
             if (_isInitialized)
             {
-                Debug.LogWarning("[ServiceLocator] Already initialized.");
                 return;
             }
-
-            Debug.Log("[ServiceLocator] Initializing all services asynchronously...");
 
             foreach (var service in _services.Values)
             {
@@ -251,12 +237,10 @@ namespace CavalryFight.Core.Services
                     if (service is IAsyncService asyncService)
                     {
                         await asyncService.InitializeAsync();
-                        Debug.Log($"[ServiceLocator] Initialized (async): {service.GetType().Name}");
                     }
                     else
                     {
                         service.Initialize();
-                        Debug.Log($"[ServiceLocator] Initialized: {service.GetType().Name}");
                     }
                 }
                 catch (Exception ex)
@@ -266,7 +250,6 @@ namespace CavalryFight.Core.Services
             }
 
             _isInitialized = true;
-            Debug.Log("[ServiceLocator] All services initialized.");
         }
 
         /// <summary>
@@ -277,14 +260,11 @@ namespace CavalryFight.Core.Services
         /// </remarks>
         public void Shutdown()
         {
-            Debug.Log("[ServiceLocator] Shutting down all services...");
-
             foreach (var service in _services.Values)
             {
                 try
                 {
                     service?.Dispose();
-                    Debug.Log($"[ServiceLocator] Disposed: {service?.GetType().Name}");
                 }
                 catch (Exception ex)
                 {
@@ -295,8 +275,6 @@ namespace CavalryFight.Core.Services
             _services.Clear();
             _factories.Clear();
             _isInitialized = false;
-
-            Debug.Log("[ServiceLocator] Shutdown complete.");
         }
 
         /// <summary>
