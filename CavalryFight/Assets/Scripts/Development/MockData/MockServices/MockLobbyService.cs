@@ -95,6 +95,9 @@ namespace CavalryFight.Development.MockData.MockServices
         /// <inheritdoc />
         public event Action<IReadOnlyList<RoomInfo>>? AvailableRoomsUpdated;
 
+        /// <inheritdoc />
+        public event Action? ReturnToRoomRequested;
+
         #endregion
 
         #region Properties
@@ -803,6 +806,19 @@ namespace CavalryFight.Development.MockData.MockServices
 
             Debug.Log("[MockLobbyService] Countdown cancelled");
             CountdownCancelled?.Invoke();
+            return true;
+        }
+
+        /// <inheritdoc />
+        public bool RequestReturnToRoom()
+        {
+            if (!_isHost)
+            {
+                return false;
+            }
+
+            Debug.Log("[MockLobbyService] Return to room requested");
+            ReturnToRoomRequested?.Invoke();
             return true;
         }
 

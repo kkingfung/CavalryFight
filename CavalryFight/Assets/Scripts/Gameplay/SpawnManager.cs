@@ -63,21 +63,20 @@ namespace CavalryFight.Gameplay
 
         private void Awake()
         {
-            Debug.Log($"[SPAWN-DEBUG] SpawnManager.Awake() called. GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+            Debug.Log($"[AI-SPAWN] SpawnManager.Awake() GameObject={gameObject.name}, Scene={gameObject.scene.name}");
 
             if (_instance != null && _instance != this)
             {
-                Debug.LogWarning("[SpawnManager] Duplicate instance detected. Destroying this one.");
+                Debug.LogWarning("[AI-SPAWN] SpawnManager duplicate instance detected. Destroying.");
                 Destroy(gameObject);
                 return;
             }
 
             _instance = this;
-            Debug.Log($"[SPAWN-DEBUG] SpawnManager.Instance set. _autoFindSpawnPoints={_autoFindSpawnPoints}");
 
             if (_autoFindSpawnPoints)
             {
-                Debug.Log($"[SPAWN-DEBUG] SpawnManager: Auto-finding spawn points...");
+                Debug.Log($"[AI-SPAWN] SpawnManager: Auto-finding spawn points...");
                 FindAllSpawnPoints();
             }
         }
@@ -99,20 +98,18 @@ namespace CavalryFight.Gameplay
         /// </summary>
         public void FindAllSpawnPoints()
         {
-            Debug.Log($"[SPAWN-DEBUG] SpawnManager.FindAllSpawnPoints() called");
-
             _allSpawnPoints.Clear();
             _teamSpawnPoints.Clear();
 
             var spawnPoints = FindObjectsByType<SpawnPoint>(FindObjectsSortMode.None);
-            Debug.Log($"[SPAWN-DEBUG] SpawnManager: FindObjectsByType<SpawnPoint> returned {spawnPoints.Length} spawn points");
+            Debug.Log($"[AI-SPAWN] SpawnManager found {spawnPoints.Length} SpawnPoint objects");
 
             _allSpawnPoints.AddRange(spawnPoints.OrderByDescending(sp => sp.Priority));
 
             // チーム別に分類
             foreach (var sp in _allSpawnPoints)
             {
-                Debug.Log($"[SPAWN-DEBUG] SpawnManager: Found SpawnPoint '{sp.name}' at {sp.Position}, TeamId={sp.TeamId}, Priority={sp.Priority}");
+                Debug.Log($"[AI-SPAWN] SpawnPoint: name={sp.name}, pos={sp.Position}, rot={sp.Rotation.eulerAngles}, team={sp.TeamId}");
                 if (!_teamSpawnPoints.ContainsKey(sp.TeamId))
                 {
                     _teamSpawnPoints[sp.TeamId] = new List<SpawnPoint>();
@@ -120,8 +117,7 @@ namespace CavalryFight.Gameplay
                 _teamSpawnPoints[sp.TeamId].Add(sp);
             }
 
-            Debug.Log($"[SPAWN-DEBUG] SpawnManager.FindAllSpawnPoints() completed. Total: {_allSpawnPoints.Count}, Teams: {string.Join(", ", _teamSpawnPoints.Keys)}");
-            Debug.Log($"[SpawnManager] Found {_allSpawnPoints.Count} spawn points. Teams: {string.Join(", ", _teamSpawnPoints.Keys)}");
+            Debug.Log($"[AI-SPAWN] SpawnManager ready. Total={_allSpawnPoints.Count}, Teams=[{string.Join(", ", _teamSpawnPoints.Keys)}]");
         }
 
         /// <summary>

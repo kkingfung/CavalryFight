@@ -230,11 +230,17 @@ namespace CavalryFight.Views
                 Debug.Log("[HuntingView] Crosshair element found.");
             }
 
-            // CrosshairContainerはマウスイベントを無視（UIの下のゲームをクリック可能に）
+            // フルスクリーンのオーバーレイコンテナはマウスイベントを無視
+            // （設定ポップアップなど他のUIがクリックを受け取れるように）
             var crosshairContainer = Q<VisualElement>("CrosshairContainer");
             if (crosshairContainer != null)
             {
                 crosshairContainer.pickingMode = PickingMode.Ignore;
+            }
+
+            if (_scorePopupContainer != null)
+            {
+                _scorePopupContainer.pickingMode = PickingMode.Ignore;
             }
         }
 
@@ -350,10 +356,18 @@ namespace CavalryFight.Views
             if (ViewModel.IsPaused)
             {
                 _settingsPopupController?.Show();
+
+                // カーソルを表示してロック解除（UIをクリック可能にする）
+                UnityEngine.Cursor.lockState = CursorLockMode.None;
+                UnityEngine.Cursor.visible = true;
             }
             else
             {
                 _settingsPopupController?.Hide();
+
+                // カーソルをロックして非表示に戻す
+                UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+                UnityEngine.Cursor.visible = false;
             }
 
             if (_hudPanel != null)
@@ -617,6 +631,7 @@ namespace CavalryFight.Views
 
                 case nameof(HuntingViewModel.CountdownValue):
                 case nameof(HuntingViewModel.IsCountingDown):
+                case nameof(HuntingViewModel.MatchState):
                     UpdateCountdownPanel();
                     break;
 

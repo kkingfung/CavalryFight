@@ -67,6 +67,11 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         public event Action? CountdownCancelled;
 
+        /// <summary>
+        /// マッチが終了してルームに戻る時に発生します
+        /// </summary>
+        public event Action? ReturnToRoomRequested;
+
         #endregion
 
         #region Properties
@@ -304,6 +309,28 @@ namespace CavalryFight.Services.Lobby
             CountdownCancelled?.Invoke();
         }
 
+        /// <summary>
+        /// マッチを終了してルームに戻ることを要求します（サーバーのみ）
+        /// </summary>
+        [Rpc(SendTo.Server)]
+        public void RequestReturnToRoomServerRpc()
+        {
+            // ホストのみ実行可能
+            if (!IsServer)
+            {
+                Debug.LogWarning("[NetworkLobbyManager] RequestReturnToRoomServerRpc called by non-server!");
+                return;
+            }
+
+            Debug.Log("[NetworkLobbyManager] Return to room requested");
+
+            // 全クライアントに通知
+            NotifyReturnToRoomClientRpc();
+
+            // サーバー側でもイベント発火
+            ReturnToRoomRequested?.Invoke();
+        }
+
         #endregion
 
         #region Client RPC Methods
@@ -360,6 +387,21 @@ namespace CavalryFight.Services.Lobby
             if (!IsServer)
             {
                 CountdownCancelled?.Invoke();
+            }
+        }
+
+        /// <summary>
+        /// ルームに戻ることを全クライアントに通知します
+        /// </summary>
+        [Rpc(SendTo.Everyone)]
+        private void NotifyReturnToRoomClientRpc()
+        {
+            Debug.Log("[NetworkLobbyManager] ReturnToRoom notification received");
+
+            // クライアント側でもイベントを発火
+            if (!IsServer)
+            {
+                ReturnToRoomRequested?.Invoke();
             }
         }
 

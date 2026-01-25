@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Lobby;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace CavalryFight.Services.AI
 {
@@ -39,6 +40,16 @@ namespace CavalryFight.Services.AI
         /// <param name="gameMode">ゲームモード</param>
         /// <param name="difficulty">AI難易度</param>
         void Initialize(GameMode gameMode, AIDifficulty difficulty);
+
+        /// <summary>
+        /// AIをスポーンするターゲットシーンを設定します
+        /// </summary>
+        /// <remarks>
+        /// ローディング画面表示中にAIをスポーンする場合、AIオブジェクトがローディングシーンに
+        /// 作成されてしまう問題を回避するため、事前にターゲットシーンを設定する必要があります。
+        /// </remarks>
+        /// <param name="scene">AIをスポーンするシーン</param>
+        void SetTargetScene(Scene scene);
 
         /// <summary>
         /// AIプレイヤーをスポーンします

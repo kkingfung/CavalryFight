@@ -479,6 +479,16 @@
     justify-content: center;
 }
 
+/* Dark overlay behind settings panel - must not block clicks on the panel */
+.full-settings-popup > .overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
 .full-settings-panel {
     background-color: rgba(30, 30, 30, 0.95);
     border-radius: 15px;

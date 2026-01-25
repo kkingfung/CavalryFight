@@ -67,6 +67,16 @@ namespace CavalryFight.Services.Lobby
         private bool _isLocalHost = false;
 
         /// <summary>
+        /// ホスト開始処理中かどうか（重複呼び出し防止用）
+        /// </summary>
+        private bool _isStartingHost = false;
+
+        /// <summary>
+        /// ルーム参加処理中かどうか（重複呼び出し防止用）
+        /// </summary>
+        private bool _isJoiningRoom = false;
+
+        /// <summary>
         /// NetworkLobbyManagerへの参照
         /// </summary>
         private NetworkLobbyManager? _networkLobbyManager;
@@ -159,6 +169,11 @@ namespace CavalryFight.Services.Lobby
         /// 利用可能なルームリストが更新された時に発生します
         /// </summary>
         public event Action<IReadOnlyList<RoomInfo>>? AvailableRoomsUpdated;
+
+        /// <summary>
+        /// マッチからルームに戻る時に発生します
+        /// </summary>
+        public event Action? ReturnToRoomRequested;
 
         #endregion
 
@@ -321,6 +336,7 @@ namespace CavalryFight.Services.Lobby
                 _networkLobbyManager.CountdownStarted += OnNetworkCountdownStarted;
                 _networkLobbyManager.CountdownUpdated += OnNetworkCountdownUpdated;
                 _networkLobbyManager.CountdownCancelled += OnNetworkCountdownCancelled;
+                _networkLobbyManager.ReturnToRoomRequested += OnNetworkReturnToRoomRequested;
             }
 
             if (_networkRoomData != null)
@@ -343,6 +359,7 @@ namespace CavalryFight.Services.Lobby
                 _networkLobbyManager.CountdownStarted -= OnNetworkCountdownStarted;
                 _networkLobbyManager.CountdownUpdated -= OnNetworkCountdownUpdated;
                 _networkLobbyManager.CountdownCancelled -= OnNetworkCountdownCancelled;
+                _networkLobbyManager.ReturnToRoomRequested -= OnNetworkReturnToRoomRequested;
             }
 
             if (_networkRoomData != null)
@@ -431,6 +448,15 @@ namespace CavalryFight.Services.Lobby
         }
 
         /// <summary>
+        /// ネットワークルームへの復帰要求イベントハンドラ
+        /// </summary>
+        private void OnNetworkReturnToRoomRequested()
+        {
+            Debug.Log("[LobbyService] Return to room requested");
+            ReturnToRoomRequested?.Invoke();
+        }
+
+        /// <summary>
         /// クライアント切断イベントハンドラ
         /// </summary>
         /// <param name="clientId">切断されたクライアントID</param>
@@ -477,8 +503,23 @@ namespace CavalryFight.Services.Lobby
                 return false;
             }
 
+            // 既にホスト開始処理中の場合は重複呼び出しを防止
+            if (_isStartingHost)
+            {
+                Debug.LogWarning("[LobbyService] Host operation already in progress.");
+                return false;
+            }
+
+            // NetworkManagerが既に稼働中の場合は新規ホスト開始を防止
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            {
+                Debug.LogWarning("[LobbyService] NetworkManager is already running.");
+                return false;
+            }
+
             try
             {
+                _isStartingHost = true;
                 _currentRoomSettings = roomSettings;
 
                 // Relayを開始してジョインコードを取得（非同期）
@@ -489,6 +530,7 @@ namespace CavalryFight.Services.Lobby
             }
             catch (Exception ex)
             {
+                _isStartingHost = false;
                 Debug.LogError($"[LobbyService] Failed to create room: {ex.Message}");
                 ErrorOccurred?.Invoke($"Failed to create room: {ex.Message}");
                 return false;
@@ -501,95 +543,111 @@ namespace CavalryFight.Services.Lobby
         /// <param name="playerName">プレイヤー名</param>
         private async System.Threading.Tasks.Task StartHostRelayAsync(string playerName)
         {
-            // RelayManager の初期化を確実に待つ
-            bool initialized = await _relayManager.InitializeAsync();
-            if (!initialized)
+            try
             {
-                ErrorOccurred?.Invoke("Failed to initialize RelayManager.");
-                return;
-            }
-
-            string? joinCode = await _relayManager.StartHostAsync();
-
-            if (joinCode == null)
-            {
-                ErrorOccurred?.Invoke("Failed to create relay allocation.");
-                return;
-            }
-
-            // NetworkManagerを開始
-            if (!NetworkManager.Singleton.StartHost())
-            {
-                ErrorOccurred?.Invoke("Failed to start host.");
-                return;
-            }
-
-            _isInRoom = true;
-            _isLocalHost = true;
-
-            // ローカルプレイヤー情報を設定
-            _localPlayerInfo = new LobbyPlayerInfo(
-                NetworkManager.Singleton.LocalClientId,
-                playerName,
-                true
-            );
-            _localPlayerInfo.IsLocalPlayer = true;
-
-            // プレイヤー名を保存
-            SavePlayerName(playerName);
-
-            // NetworkLobbyManagerの登録を確認
-            if (_networkLobbyManager == null)
-            {
-                Debug.LogError("[LobbyService] NetworkLobbyManager is not registered! Please ensure it is in the Startup scene.");
-                ErrorOccurred?.Invoke("NetworkLobbyManager not found. Cannot create room.");
-                return;
-            }
-
-            // NetworkLobbyManagerにプレイヤー名を登録
-            if (_networkLobbyManager != null)
-            {
-                _networkLobbyManager.RegisterPlayerName(playerName);
-            }
-
-            // NetworkRoomDataのスポーンを待機（タイムアウト付きポーリング）
-            const int maxWaitTimeMs = 5000; // 5秒でタイムアウト
-            const int checkIntervalMs = 50; // 50ms毎にチェック
-            int elapsedMs = 0;
-
-            while (elapsedMs < maxWaitTimeMs)
-            {
-                if (_networkLobbyManager != null)
+                // RelayManager の初期化を確実に待つ
+                bool initialized = await _relayManager.InitializeAsync();
+                if (!initialized)
                 {
-                    _networkRoomData = _networkLobbyManager.NetworkRoomData;
-
-                    if (_networkRoomData != null && _networkRoomData.IsSpawned)
-                    {
-                        // スポーン完了
-                        break;
-                    }
+                    ErrorOccurred?.Invoke("Failed to initialize RelayManager.");
+                    return;
                 }
 
-                await System.Threading.Tasks.Task.Delay(checkIntervalMs);
-                elapsedMs += checkIntervalMs;
-            }
+                string? joinCode = await _relayManager.StartHostAsync();
 
-            // NetworkRoomDataの初期設定
-            if (_networkRoomData == null || !_networkRoomData.IsSpawned)
+                if (joinCode == null)
+                {
+                    ErrorOccurred?.Invoke("Failed to create relay allocation.");
+                    return;
+                }
+
+                // 念のためNetworkManagerが既に稼働中かチェック
+                if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+                {
+                    Debug.LogWarning("[LobbyService] NetworkManager is already listening. Skipping StartHost.");
+                    ErrorOccurred?.Invoke("NetworkManager is already running.");
+                    return;
+                }
+
+                // NetworkManagerを開始
+                if (!NetworkManager.Singleton.StartHost())
+                {
+                    ErrorOccurred?.Invoke("Failed to start host.");
+                    return;
+                }
+
+                _isInRoom = true;
+                _isLocalHost = true;
+
+                // ローカルプレイヤー情報を設定
+                _localPlayerInfo = new LobbyPlayerInfo(
+                    NetworkManager.Singleton.LocalClientId,
+                    playerName,
+                    true
+                );
+                _localPlayerInfo.IsLocalPlayer = true;
+
+                // プレイヤー名を保存
+                SavePlayerName(playerName);
+
+                // NetworkLobbyManagerの登録を確認
+                if (_networkLobbyManager == null)
+                {
+                    Debug.LogError("[LobbyService] NetworkLobbyManager is not registered! Please ensure it is in the Startup scene.");
+                    ErrorOccurred?.Invoke("NetworkLobbyManager not found. Cannot create room.");
+                    return;
+                }
+
+                // NetworkLobbyManagerにプレイヤー名を登録
+                if (_networkLobbyManager != null)
+                {
+                    _networkLobbyManager.RegisterPlayerName(playerName);
+                }
+
+                // NetworkRoomDataのスポーンを待機（タイムアウト付きポーリング）
+                const int maxWaitTimeMs = 5000; // 5秒でタイムアウト
+                const int checkIntervalMs = 50; // 50ms毎にチェック
+                int elapsedMs = 0;
+
+                while (elapsedMs < maxWaitTimeMs)
+                {
+                    if (_networkLobbyManager != null)
+                    {
+                        _networkRoomData = _networkLobbyManager.NetworkRoomData;
+
+                        if (_networkRoomData != null && _networkRoomData.IsSpawned)
+                        {
+                            // スポーン完了
+                            break;
+                        }
+                    }
+
+                    await System.Threading.Tasks.Task.Delay(checkIntervalMs);
+                    elapsedMs += checkIntervalMs;
+                }
+
+                // NetworkRoomDataの初期設定
+                if (_networkRoomData == null || !_networkRoomData.IsSpawned)
+                {
+                    Debug.LogError("[LobbyService] NetworkRoomData failed to spawn within timeout.");
+                    ErrorOccurred?.Invoke("Failed to initialize room data.");
+                    return;
+                }
+
+                // ルーム設定を適用
+                _networkRoomData.UpdateRoomSettings(_currentRoomSettings);
+
+                // ホストを最初のスロットに追加
+                _networkRoomData.AddPlayer(NetworkManager.Singleton.LocalClientId, playerName);
+
+                RoomCreated?.Invoke(joinCode);
+                Debug.Log($"[LobbyService] Room created with join code: {joinCode}");
+            }
+            finally
             {
-                Debug.LogError("[LobbyService] NetworkRoomData failed to spawn within timeout.");
-                ErrorOccurred?.Invoke("Failed to initialize room data.");
-                return;
+                // 成功・失敗に関わらずフラグをリセット
+                _isStartingHost = false;
             }
-
-            // ルーム設定を適用
-            _networkRoomData.UpdateRoomSettings(_currentRoomSettings);
-
-            // ホストを最初のスロットに追加
-            _networkRoomData.AddPlayer(NetworkManager.Singleton.LocalClientId, playerName);
-
-            RoomCreated?.Invoke(joinCode);
-            Debug.Log($"[LobbyService] Room created with join code: {joinCode}");
         }
 
         /// <summary>
@@ -1037,6 +1095,35 @@ namespace CavalryFight.Services.Lobby
             return true;
         }
 
+        /// <summary>
+        /// マッチを終了してルームに戻ることを要求します（ホストのみ）
+        /// </summary>
+        /// <remarks>
+        /// このメソッドを呼び出すと、すべてのクライアントに通知が送られ、
+        /// 全員がMatchRoomシーンに戻ります。
+        /// </remarks>
+        /// <returns>成功した場合はtrue</returns>
+        public bool RequestReturnToRoom()
+        {
+            if (!IsHost)
+            {
+                Debug.LogError("[LobbyService] Only host can request return to room.");
+                return false;
+            }
+
+            if (_networkLobbyManager == null)
+            {
+                Debug.LogError("[LobbyService] NetworkLobbyManager not available.");
+                return false;
+            }
+
+            // NetworkLobbyManager の ServerRpc を呼び出してすべてのクライアントに通知
+            _networkLobbyManager.RequestReturnToRoomServerRpc();
+
+            Debug.Log("[LobbyService] Return to room requested");
+            return true;
+        }
+
         #endregion
 
         #region Guest Methods
@@ -1066,6 +1153,22 @@ namespace CavalryFight.Services.Lobby
                 return false;
             }
 
+            // 既に参加処理中の場合は重複呼び出しを防止
+            if (_isJoiningRoom)
+            {
+                Debug.LogWarning("[LobbyService] Join operation already in progress.");
+                return false;
+            }
+
+            // NetworkManagerが既に稼働中の場合は参加を防止
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            {
+                Debug.LogWarning("[LobbyService] NetworkManager is already running.");
+                return false;
+            }
+
+            _isJoiningRoom = true;
+
             // Relayに参加（非同期）
             _ = JoinRelayAsync(joinCode, playerName, password);
 
@@ -1080,51 +1183,67 @@ namespace CavalryFight.Services.Lobby
         /// <param name="password">パスワード</param>
         private async System.Threading.Tasks.Task JoinRelayAsync(string joinCode, string playerName, string password)
         {
-            // RelayManager の初期化を確実に待つ
-            bool initialized = await _relayManager.InitializeAsync();
-            if (!initialized)
+            try
             {
-                ErrorOccurred?.Invoke("Failed to initialize RelayManager.");
-                return;
+                // RelayManager の初期化を確実に待つ
+                bool initialized = await _relayManager.InitializeAsync();
+                if (!initialized)
+                {
+                    ErrorOccurred?.Invoke("Failed to initialize RelayManager.");
+                    return;
+                }
+
+                bool relayJoined = await _relayManager.JoinRelayAsync(joinCode);
+
+                if (!relayJoined)
+                {
+                    ErrorOccurred?.Invoke("Failed to join relay.");
+                    return;
+                }
+
+                // 念のためNetworkManagerが既に稼働中かチェック
+                if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+                {
+                    Debug.LogWarning("[LobbyService] NetworkManager is already listening. Skipping StartClient.");
+                    ErrorOccurred?.Invoke("NetworkManager is already running.");
+                    return;
+                }
+
+                // NetworkManagerを開始
+                if (!NetworkManager.Singleton.StartClient())
+                {
+                    ErrorOccurred?.Invoke("Failed to start client.");
+                    return;
+                }
+
+                _isInRoom = true;
+                _isLocalHost = false; // ゲストフラグを設定
+
+                // ローカルプレイヤー情報を設定
+                _localPlayerInfo = new LobbyPlayerInfo(
+                    NetworkManager.Singleton.LocalClientId,
+                    playerName,
+                    false
+                );
+                _localPlayerInfo.IsLocalPlayer = true;
+
+                // プレイヤー名を保存
+                SavePlayerName(playerName);
+
+                // NetworkLobbyManagerにプレイヤー名を登録
+                if (_networkLobbyManager != null)
+                {
+                    _networkLobbyManager.RegisterPlayerName(playerName);
+                }
+
+                RoomJoined?.Invoke();
+                Debug.Log($"[LobbyService] Joined room with code: {joinCode}");
             }
-
-            bool relayJoined = await _relayManager.JoinRelayAsync(joinCode);
-
-            if (!relayJoined)
+            finally
             {
-                ErrorOccurred?.Invoke("Failed to join relay.");
-                return;
+                // 成功・失敗に関わらずフラグをリセット
+                _isJoiningRoom = false;
             }
-
-            // NetworkManagerを開始
-            if (!NetworkManager.Singleton.StartClient())
-            {
-                ErrorOccurred?.Invoke("Failed to start client.");
-                return;
-            }
-
-            _isInRoom = true;
-            _isLocalHost = false; // ゲストフラグを設定
-
-            // ローカルプレイヤー情報を設定
-            _localPlayerInfo = new LobbyPlayerInfo(
-                NetworkManager.Singleton.LocalClientId,
-                playerName,
-                false
-            );
-            _localPlayerInfo.IsLocalPlayer = true;
-
-            // プレイヤー名を保存
-            SavePlayerName(playerName);
-
-            // NetworkLobbyManagerにプレイヤー名を登録
-            if (_networkLobbyManager != null)
-            {
-                _networkLobbyManager.RegisterPlayerName(playerName);
-            }
-
-            RoomJoined?.Invoke();
-            Debug.Log($"[LobbyService] Joined room with code: {joinCode}");
         }
 
         #endregion
@@ -1146,17 +1265,20 @@ namespace CavalryFight.Services.Lobby
                 return;
             }
 
+            // まずRelay/Transport接続をクリーンアップ（NetworkManager.Shutdownの前に）
+            _relayManager.Cleanup();
+
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 // ホストの場合はサーバーをシャットダウン（すべてのクライアントが切断される）
                 // ゲストの場合はクライアントのみシャットダウン
-                NetworkManager.Singleton.Shutdown();
+                NetworkManager.Singleton.Shutdown(true); // discardMessageQueue: true で即座にシャットダウン
             }
-
-            _relayManager.Cleanup();
 
             _isInRoom = false;
             _isLocalHost = false;
+            _isStartingHost = false; // 重複呼び出し防止フラグもリセット
+            _isJoiningRoom = false; // 参加処理中フラグもリセット
             _localPlayerInfo = null;
             _networkRoomData = null; // Clear reference to old NetworkRoomData
 

@@ -178,6 +178,17 @@ namespace CavalryFight.Views
             ViewModel?.LoadBindings();
         }
 
+        /// <summary>
+        /// 有効化時の処理
+        /// </summary>
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            // 初期状態で非表示にする（他のUIをブロックしないように）
+            Hide();
+        }
+
         #endregion
 
         #region Protected Methods
@@ -445,6 +456,24 @@ namespace CavalryFight.Views
             if (uiDocument != null)
             {
                 uiDocument.sortingOrder = 100;
+
+                // UIDocumentのrootVisualElementを表示可能に設定
+                if (uiDocument.rootVisualElement != null)
+                {
+                    uiDocument.rootVisualElement.style.display = DisplayStyle.Flex;
+                    uiDocument.rootVisualElement.pickingMode = PickingMode.Position;
+                }
+            }
+
+            // RootVisualElementが取得されていない場合は再試行
+            if (_root == null && uiDocument != null)
+            {
+                var rootVisualElement = uiDocument.rootVisualElement;
+                if (rootVisualElement != null)
+                {
+                    _root = rootVisualElement.Q<VisualElement>("root");
+                    _overlay = rootVisualElement.Q<VisualElement>("Overlay");
+                }
             }
 
             if (_root != null)
@@ -468,6 +497,14 @@ namespace CavalryFight.Views
         public void Hide()
         {
             _isVisible = false;
+
+            // UIDocumentのrootVisualElementもクリックをブロックしないように設定
+            var uiDocument = GetComponent<UIDocument>();
+            if (uiDocument != null && uiDocument.rootVisualElement != null)
+            {
+                uiDocument.rootVisualElement.style.display = DisplayStyle.None;
+                uiDocument.rootVisualElement.pickingMode = PickingMode.Ignore;
+            }
 
             if (_root != null)
             {

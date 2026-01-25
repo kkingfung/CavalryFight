@@ -478,6 +478,12 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public void CreateRoom()
         {
+            // 既に処理中の場合は何もしない（重複クリック防止）
+            if (IsProcessing)
+            {
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(RoomName))
             {
                 StatusMessage = "Please enter a room name";
@@ -547,8 +553,8 @@ namespace CavalryFight.ViewModels
             }
             else
             {
-                StatusMessage = "Failed to create room";
-                ErrorOccurred?.Invoke(this, "Failed to create room");
+                // サービスが既に処理中のためにfalseを返した場合は単に元の状態に戻す
+                StatusMessage = "Host or join a room";
                 IsProcessing = false;
             }
         }
@@ -558,6 +564,12 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public void JoinRoom()
         {
+            // 既に処理中の場合は何もしない（重複クリック防止）
+            if (IsProcessing)
+            {
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(JoinCode))
             {
                 StatusMessage = "Please enter a join code";
@@ -600,8 +612,8 @@ namespace CavalryFight.ViewModels
             }
             else
             {
-                StatusMessage = "Failed to join room";
-                ErrorOccurred?.Invoke(this, "Failed to join room");
+                // サービスが既に処理中のためにfalseを返した場合は単に元の状態に戻す
+                StatusMessage = "Host or join a room";
                 IsProcessing = false;
             }
 

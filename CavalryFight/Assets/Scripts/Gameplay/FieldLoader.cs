@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using CavalryFight.Services.Lobby;
 using UnityEngine;
@@ -61,6 +62,7 @@ namespace CavalryFight.Gameplay
 
         private GameObject? _loadedField;
         private MapName? _currentMapName;
+        private bool _isReady = false; // NavMesh構築完了後にtrue
 
         #endregion
 
@@ -83,7 +85,11 @@ namespace CavalryFight.Gameplay
         /// <summary>
         /// フィールドがロード済みかどうかを取得します
         /// </summary>
-        public bool IsLoaded => _loadedField != null;
+        /// <remarks>
+        /// NavMesh構築が完了するまでfalseを返します。
+        /// AIスポーンはこのプロパティがtrueになるまで待つ必要があります。
+        /// </remarks>
+        public bool IsLoaded => _loadedField != null && _isReady;
 
         /// <summary>
         /// 現在ロードされているマップ名を取得します
@@ -297,6 +303,7 @@ namespace CavalryFight.Gameplay
                 Destroy(_loadedField);
                 _loadedField = null;
                 _currentMapName = null;
+                _isReady = false;
 
                 if (_debugLog)
                 {
@@ -340,6 +347,9 @@ namespace CavalryFight.Gameplay
                 _loadedField = null;
             }
 
+            // 新しいフィールドロード開始時にリセット
+            _isReady = false;
+
             // フィールドをインスタンス化
             Quaternion rotation = Quaternion.Euler(_spawnRotation);
             Debug.Log($"[SPAWN-DEBUG] FieldLoader: Instantiating prefab at pos={_spawnPosition}, rot={_spawnRotation}, parent={(_fieldParent != null ? _fieldParent.name : "null")}");
@@ -353,6 +363,61 @@ namespace CavalryFight.Gameplay
                 Debug.Log($"[FieldLoader] フィールドをロードしました: {_currentMapName} (prefab: {prefab.name})");
             }
 
+            // RuntimeNavMeshBuilderがあればNavMesh構築を待つ
+            var navMeshBuilder = _loadedField.GetComponent<RuntimeNavMeshBuilder>();
+            if (navMeshBuilder != null)
+            {
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: Found RuntimeNavMeshBuilder, waiting for NavMesh build...");
+                StartCoroutine(WaitForNavMeshAndNotify(navMeshBuilder));
+            }
+            else
+            {
+                // NavMeshBuilderがない場合は即座に通知
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: No RuntimeNavMeshBuilder found, notifying immediately...");
+                NotifyFieldLoadComplete();
+            }
+
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader.LoadFieldInternal() completed successfully. IsLoaded={IsLoaded}");
+            return true;
+        }
+
+        /// <summary>
+        /// NavMesh構築を待ってからフィールドロード完了を通知します
+        /// </summary>
+        /// <param name="navMeshBuilder">NavMeshビルダー</param>
+        private IEnumerator WaitForNavMeshAndNotify(RuntimeNavMeshBuilder navMeshBuilder)
+        {
+            // NavMesh構築完了を待つ（最大5秒）
+            float timeout = 5f;
+            float elapsed = 0f;
+
+            while (!navMeshBuilder.IsBuilt && elapsed < timeout)
+            {
+                yield return new WaitForSeconds(0.1f);
+                elapsed += 0.1f;
+            }
+
+            if (navMeshBuilder.IsBuilt)
+            {
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: NavMesh build completed, notifying...");
+            }
+            else
+            {
+                Debug.LogWarning($"[SPAWN-DEBUG] FieldLoader: NavMesh build timeout after {timeout}s, notifying anyway...");
+            }
+
+            NotifyFieldLoadComplete();
+        }
+
+        /// <summary>
+        /// フィールドロード完了を通知します
+        /// </summary>
+        private void NotifyFieldLoadComplete()
+        {
+            // NavMesh構築完了 - IsLoadedがtrueになる
+            _isReady = true;
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader: _isReady set to true. IsLoaded={IsLoaded}");
+
             // SpawnManagerにSpawnPointの再検索を通知
             Debug.Log($"[SPAWN-DEBUG] FieldLoader: Notifying SpawnManager...");
             NotifySpawnManager();
@@ -361,9 +426,6 @@ namespace CavalryFight.Gameplay
             int listenerCount = FieldLoaded?.GetInvocationList()?.Length ?? 0;
             Debug.Log($"[SPAWN-DEBUG] FieldLoader: Firing FieldLoaded event. Listeners: {listenerCount}");
             FieldLoaded?.Invoke(this, EventArgs.Empty);
-
-            Debug.Log($"[SPAWN-DEBUG] FieldLoader.LoadFieldInternal() completed successfully. IsLoaded={IsLoaded}");
-            return true;
         }
 
         /// <summary>

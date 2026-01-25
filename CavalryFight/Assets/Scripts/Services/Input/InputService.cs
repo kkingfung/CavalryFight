@@ -150,11 +150,8 @@ namespace CavalryFight.Services.Input
         /// </remarks>
         public void Initialize()
         {
-            Debug.LogWarning("[InputService] ========== INITIALIZING ==========");
-
             // GameInputActionsを作成
             _inputActions = new GameInputActions();
-            Debug.Log("[InputService] GameInputActions created.");
 
             // 保存されたキーバインディングを読み込む
             LoadBindingOverrides();
@@ -167,12 +164,9 @@ namespace CavalryFight.Services.Input
             _inputActions.Gameplay.Mount.performed += OnMountPerformed;
             _inputActions.Gameplay.Jump.performed += OnJumpPerformed;
             _inputActions.UI.Menu.performed += OnMenuPerformed;
-            Debug.Log("[InputService] Event handlers subscribed.");
 
             // 入力を有効化
             _inputActions.Enable();
-
-            Debug.LogWarning($"[InputService] ========== INITIALIZED (InputEnabled={_inputEnabled}) ==========");
         }
 
         /// <summary>
@@ -194,11 +188,6 @@ namespace CavalryFight.Services.Input
             if (!string.IsNullOrEmpty(rebinds))
             {
                 _inputActions.asset.LoadBindingOverridesFromJson(rebinds);
-                Debug.Log("[InputService] Custom key bindings loaded from PlayerPrefs.");
-            }
-            else
-            {
-                Debug.Log("[InputService] No custom key bindings found, using defaults.");
             }
         }
 
@@ -212,7 +201,6 @@ namespace CavalryFight.Services.Input
         public void ReloadBindingOverrides()
         {
             LoadBindingOverrides();
-            Debug.Log("[InputService] Key bindings reloaded.");
         }
 
         /// <summary>
@@ -223,7 +211,6 @@ namespace CavalryFight.Services.Input
         /// </remarks>
         public void Dispose()
         {
-            Debug.Log("[InputService] Disposing...");
 
             // イベントハンドラをクリア
             AttackButtonPressed = null;
@@ -260,25 +247,12 @@ namespace CavalryFight.Services.Input
         /// <returns>移動ベクトル（X: 水平、Y: 垂直）</returns>
         public Vector2 GetMovementInput()
         {
-            if (_inputActions == null)
+            if (_inputActions == null || !_inputEnabled)
             {
-                Debug.LogWarning("[InputService] GetMovementInput: _inputActions is null!");
-                return Vector2.zero;
-            }
-
-            if (!_inputEnabled)
-            {
-                // 入力無効時は静かにゼロを返す（毎フレームログは出さない）
                 return Vector2.zero;
             }
 
             Vector2 input = _inputActions.Gameplay.Move.ReadValue<Vector2>();
-
-            // デバッグ: 入力があった時のみログ出力
-            if (input.magnitude > 0.01f)
-            {
-                Debug.Log($"[InputService] Move input detected: {input}");
-            }
 
             // 正規化（斜め移動が速くならないように）
             if (input.magnitude > 1.0f)
@@ -562,9 +536,6 @@ namespace CavalryFight.Services.Input
         {
             // 攻撃チャージ状態をリセット
             _isAttackCharging = false;
-
-            // 新しいInput Systemでは他の状態は自動的にリセットされる
-            Debug.Log("[InputService] Input reset.");
         }
 
         /// <summary>
@@ -573,7 +544,6 @@ namespace CavalryFight.Services.Input
         public void DisableInput()
         {
             InputEnabled = false;
-            Debug.Log("[InputService] Input disabled.");
         }
 
         /// <summary>
@@ -582,7 +552,6 @@ namespace CavalryFight.Services.Input
         public void EnableInput()
         {
             InputEnabled = true;
-            Debug.Log("[InputService] Input enabled.");
         }
 
         #endregion

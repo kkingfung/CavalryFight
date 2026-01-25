@@ -28,6 +28,7 @@ namespace CavalryFight.ViewModels
 
         private readonly ISceneManagementService? _sceneService;
         private readonly IMatchService? _matchService;
+        private readonly ILobbyService? _lobbyService;
 
         private GameMode _currentGameMode;
         private MatchState _matchState;
@@ -393,6 +394,7 @@ namespace CavalryFight.ViewModels
         {
             _sceneService = sceneService ?? throw new ArgumentNullException(nameof(sceneService));
             _matchService = matchService ?? ServiceLocator.Instance.Get<IMatchService>();
+            _lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
 
             // コマンド初期化
             TogglePauseCommand = new RelayCommand(TogglePause, () => IsMatchInProgress);
@@ -409,6 +411,7 @@ namespace CavalryFight.ViewModels
                 MatchState = _matchService.CurrentState;
             }
 
+            Debug.Log($"[SCORE-DEBUG] MatchViewModel initialized. _matchService instance: {_matchService?.GetHashCode() ?? 0}");
             Debug.Log("[MatchViewModel] Initialized");
         }
 
@@ -460,26 +463,62 @@ namespace CavalryFight.ViewModels
         /// <summary>
         /// マッチを退出します
         /// </summary>
+        /// <remarks>
+        /// マッチを終了してルームに戻ります。
+        /// ルームからは退出しません（ルームは維持されます）。
+        /// ホストがマッチを退出すると、全プレイヤーがルームに戻ります。
+        /// </remarks>
         public void LeaveMatch()
         {
-            Debug.Log("[MatchViewModel] Leaving match...");
+            Debug.Log("[MatchViewModel] Leaving match, returning to room...");
+
             BackToMenuRequested?.Invoke(this, EventArgs.Empty);
-            _sceneService?.LoadMainMenu();
+
+            // ホストの場合は全プレイヤーにルームへの復帰を通知
+            if (_lobbyService != null && _lobbyService.IsHost)
+            {
+                Debug.Log("[MatchViewModel] Host is leaving, notifying all players to return to room...");
+                _lobbyService.RequestReturnToRoom();
+            }
+
+            // ルームに戻る（ルームからは退出しない）
+            _sceneService?.LoadMatchRoom();
         }
+
+        // デバッグ用のフレームカウンター
+        private int _debugUpdateCounter = 0;
 
         /// <summary>
         /// 毎フレーム更新
         /// </summary>
         public void Update()
         {
+            _debugUpdateCounter++;
+
+            // 最初の数フレームと、その後100フレームごとにログ出力
+            bool shouldLog = _debugUpdateCounter <= 5 || _debugUpdateCounter % 100 == 0;
+
             if (_matchService == null)
             {
+                if (shouldLog)
+                {
+                    Debug.Log($"[TIMER-DEBUG] MatchViewModel.Update: _matchService is NULL! Frame={_debugUpdateCounter}");
+                }
                 return;
             }
 
             // 時間の更新
-            MatchTime = _matchService.MatchTime;
-            RemainingTime = _matchService.RemainingTime;
+            float newMatchTime = _matchService.MatchTime;
+            float newRemainingTime = _matchService.RemainingTime;
+
+            // 定期的にログ出力（値の変化に関係なく）
+            if (shouldLog)
+            {
+                Debug.Log($"[TIMER-DEBUG] MatchViewModel.Update: Frame={_debugUpdateCounter}, MatchTime={newMatchTime:F1}, RemainingTime={newRemainingTime:F1}, HasTimeLimit={HasTimeLimit}, RemainingTimeText={RemainingTimeText}");
+            }
+
+            MatchTime = newMatchTime;
+            RemainingTime = newRemainingTime;
 
             // ローカルプレイヤーのスコアを更新
             UpdateLocalPlayerScore();
@@ -509,7 +548,7 @@ namespace CavalryFight.ViewModels
         {
             if (_matchService == null)
             {
-                Debug.LogWarning("[MatchViewModel] IMatchService is null");
+                Debug.LogWarning("[COUNTDOWN-DEBUG] MatchViewModel.SubscribeToMatchService: IMatchService is null!");
                 return;
             }
 
@@ -518,6 +557,8 @@ namespace CavalryFight.ViewModels
             _matchService.MatchEndedWithResult += OnMatchEnded;
             _matchService.PlayerScored += OnPlayerScored;
             _matchService.HitRegistered += OnHitRegistered;
+            _matchService.CountdownUpdated += OnCountdownUpdated;
+            Debug.Log("[COUNTDOWN-DEBUG] MatchViewModel.SubscribeToMatchService: Subscribed to CountdownUpdated event");
         }
 
         private void UnsubscribeFromMatchService()
@@ -532,11 +573,18 @@ namespace CavalryFight.ViewModels
             _matchService.MatchEndedWithResult -= OnMatchEnded;
             _matchService.PlayerScored -= OnPlayerScored;
             _matchService.HitRegistered -= OnHitRegistered;
+            _matchService.CountdownUpdated -= OnCountdownUpdated;
         }
 
         private void OnMatchStateChanged(MatchState newState)
         {
             MatchState = newState;
+        }
+
+        private void OnCountdownUpdated(int seconds)
+        {
+            Debug.Log($"[COUNTDOWN-DEBUG] MatchViewModel.OnCountdownUpdated: seconds={seconds}");
+            CountdownValue = seconds;
         }
 
         private void OnMatchStarted()
@@ -608,6 +656,17 @@ namespace CavalryFight.ViewModels
             }
 
             var playerScore = _matchService.GetPlayerScore(_localPlayerId);
+
+            // 最初の数フレームだけログ出力
+            if (_debugUpdateCounter <= 5)
+            {
+                Debug.Log($"[ARROW-DEBUG] UpdateLocalPlayerScore: _localPlayerId={_localPlayerId}, playerScore.HasValue={playerScore.HasValue}");
+                if (playerScore.HasValue)
+                {
+                    Debug.Log($"[ARROW-DEBUG] PlayerScore - Score={playerScore.Value.Score}, RemainingArrows={playerScore.Value.RemainingArrows}, Hits={playerScore.Value.HitCount}, Shots={playerScore.Value.ShotCount}");
+                }
+            }
+
             if (playerScore.HasValue)
             {
                 LocalPlayerScore = playerScore.Value.Score;

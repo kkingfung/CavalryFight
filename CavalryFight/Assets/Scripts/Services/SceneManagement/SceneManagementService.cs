@@ -7,6 +7,7 @@ using AdvancedSceneManager.Models;
 using AdvancedSceneManager.Core;
 using AdvancedSceneManager.Utility;
 using AdvancedSceneManager.Callbacks.Events;
+using AdvancedSceneManager.Loading;
 using UnityEngine;
 
 namespace CavalryFight.Services.SceneManagement
@@ -48,6 +49,12 @@ namespace CavalryFight.Services.SceneManagement
         private string _currentSceneName = string.Empty;
         private ReturnDestination _returnDestination = ReturnDestination.MainMenu;
 
+        // ゲームプレイシーンの遅延完了通知用
+        private bool _waitingForGameplayReady;
+        private bool _sceneLoadFinished;
+        private float _sceneLoadDuration;
+        private LoadingScreenBase? _activeLoadingScreen;
+
         // シーンコレクション参照
         private SceneCollection? _startupCollection;
         private SceneCollection? _mainMenuCollection;
@@ -80,6 +87,11 @@ namespace CavalryFight.Services.SceneManagement
         /// 設定画面からの戻り先を取得します。
         /// </summary>
         public ReturnDestination CurrentReturnDestination => _returnDestination;
+
+        /// <summary>
+        /// ゲームプレイシーンの準備完了待ちかどうかを取得します。
+        /// </summary>
+        public bool IsWaitingForGameplayReady => _waitingForGameplayReady;
 
         #endregion
 
@@ -342,7 +354,7 @@ namespace CavalryFight.Services.SceneManagement
 
             try
             {
-                OpenCollection(_matchCollection);
+                OpenCollectionWithGameplayWait(_matchCollection);
             }
             catch (Exception ex)
             {
@@ -365,7 +377,7 @@ namespace CavalryFight.Services.SceneManagement
 
             try
             {
-                OpenCollection(_trainingCollection);
+                OpenCollectionWithGameplayWait(_trainingCollection);
             }
             catch (Exception ex)
             {
@@ -457,13 +469,50 @@ namespace CavalryFight.Services.SceneManagement
 
             try
             {
-                OpenCollection(_huntingCollection);
+                OpenCollectionWithGameplayWait(_huntingCollection);
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[SceneManagementService] Failed to open Hunting collection: {ex.Message}");
                 SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs("Hunting", ex.Message, ex));
             }
+        }
+
+        /// <summary>
+        /// ゲームプレイシーンの準備完了を通知します。
+        /// </summary>
+        /// <remarks>
+        /// Match、Training、Huntingシーンで使用します。
+        /// このメソッドが呼ばれるまでローディング画面は閉じません。
+        /// </remarks>
+        public void SignalGameplayReady()
+        {
+            if (!_waitingForGameplayReady)
+            {
+                Debug.LogWarning("[SceneManagementService] SignalGameplayReady called but not waiting for gameplay ready.");
+                return;
+            }
+
+            Debug.Log("[SceneManagementService] Gameplay ready signal received. Closing loading screen...");
+
+            _waitingForGameplayReady = false;
+
+            // ローディング画面をフェードイン（閉じる）
+            if (_activeLoadingScreen != null)
+            {
+                // コルーチンを開始してフェードイン
+                LoadingScreenUtility.FadeIn(_activeLoadingScreen).StartCoroutine();
+                Debug.Log("[SceneManagementService] Loading screen fade in (close) initiated.");
+                _activeLoadingScreen = null;
+            }
+            else
+            {
+                Debug.LogWarning("[SceneManagementService] No active loading screen to close.");
+            }
+
+            // SceneLoadCompletedイベントを発火（保存していた値を使用）
+            SceneLoadCompleted?.Invoke(this, new SceneLoadEventArgs(_currentSceneName, _sceneLoadDuration));
+            Debug.Log($"[SceneManagementService] SceneLoadCompleted event fired for: {_currentSceneName}");
         }
 
         #endregion
@@ -532,6 +581,60 @@ namespace CavalryFight.Services.SceneManagement
             {
                 operation.With(LoadingScreenUtility.fade);
             }
+
+            _currentOperation = operation;
+            return operation;
+        }
+
+        /// <summary>
+        /// ゲームプレイシーン用にシーンコレクションを開きます。
+        /// ローディング画面はSignalGameplayReady()が呼ばれるまで閉じません。
+        /// </summary>
+        /// <param name="collection">開くシーンコレクション</param>
+        /// <returns>シーン操作</returns>
+        private SceneOperation OpenCollectionWithGameplayWait(SceneCollection collection)
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
+
+            _currentSceneName = collection.name;
+            _loadStartTime = Time.realtimeSinceStartup;
+            _waitingForGameplayReady = true;
+            _sceneLoadFinished = false;
+            _activeLoadingScreen = null;
+
+            Debug.Log($"[SceneManagementService] Opening gameplay collection with wait: {collection.name}");
+
+            // ローディング画面をフェードアウト（画面を黒くする = 表示する）
+            if (LoadingScreenUtility.fade != null)
+            {
+                var fadeAsync = LoadingScreenUtility.FadeOut();
+                fadeAsync.OnComplete(loadingScreen =>
+                {
+                    _activeLoadingScreen = loadingScreen;
+                    Debug.Log("[SceneManagementService] Loading screen fade out completed, stored reference");
+                });
+                Debug.Log("[SceneManagementService] Loading screen fade out initiated (manual)");
+            }
+
+            var operation = collection.Open(false);
+
+            if (operation == null)
+            {
+                throw new InvalidOperationException($"Failed to open collection: {collection.name}");
+            }
+
+            // 進捗更新のコールバックを登録
+            operation.OnProgressChanged(OnProgressUpdated);
+
+            // ★重要: ローディング画面は手動制御するため、operation.With()は使わない
+            // これにより、シーンロード完了時にASMが自動でローディング画面を閉じなくなる
+
+            // シーンロード開始を通知
+            _isLoading = true;
+            SceneLoadStarted?.Invoke(this, new SceneLoadEventArgs(_currentSceneName, 0f));
 
             _currentOperation = operation;
             return operation;
@@ -674,11 +777,23 @@ namespace CavalryFight.Services.SceneManagement
                 if (e.operation != null && e.operation.wasCancelled)
                 {
                     Debug.LogWarning($"[SceneManagementService] Scene open cancelled: {_currentSceneName}");
+                    _waitingForGameplayReady = false;
                     SceneLoadFailed?.Invoke(this, new SceneLoadErrorEventArgs(_currentSceneName, "Operation was cancelled"));
                     return;
                 }
 
                 Debug.Log($"[SceneManagementService] Scene open completed: {_currentSceneName} ({duration:F2}s)");
+
+                // ゲームプレイシーンの準備完了待ちの場合は、SceneLoadCompletedを発火しない
+                // ローディング画面も閉じない（SignalGameplayReady()が呼ばれるまで待つ）
+                if (_waitingForGameplayReady)
+                {
+                    _sceneLoadFinished = true;
+                    _sceneLoadDuration = duration;
+                    Debug.Log($"[SceneManagementService] Gameplay scene loaded, waiting for SignalGameplayReady()...");
+                    // ★ローディング画面は閉じない - SignalGameplayReady()で閉じる
+                    return;
+                }
 
                 SceneLoadCompleted?.Invoke(this, new SceneLoadEventArgs(_currentSceneName, duration));
             }

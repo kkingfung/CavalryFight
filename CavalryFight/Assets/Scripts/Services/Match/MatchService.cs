@@ -59,6 +59,11 @@ namespace CavalryFight.Services.Match
         /// </summary>
         public event Action<MatchState>? MatchStateChanged;
 
+        /// <summary>
+        /// カウントダウンが更新された時に発生します
+        /// </summary>
+        public event Action<int>? CountdownUpdated;
+
         #endregion
 
         #region Fields
@@ -69,6 +74,11 @@ namespace CavalryFight.Services.Match
         private NetworkMatchManager? _networkMatchManager;
 
         /// <summary>
+        /// マッチデータプロバイダー（MatchManager等が登録）
+        /// </summary>
+        private IMatchDataProvider? _matchDataProvider;
+
+        /// <summary>
         /// マッチ開始監視フラグ
         /// </summary>
         private bool _wasMatchStarted = false;
@@ -77,6 +87,11 @@ namespace CavalryFight.Services.Match
         /// 前回のマッチ状態
         /// </summary>
         private MatchState _previousState = MatchState.WaitingForPlayers;
+
+        /// <summary>
+        /// NetworkMatchManager未検出の警告を出力済みかどうか
+        /// </summary>
+        private bool _hasLoggedManagerNotFound = false;
 
         /// <summary>
         /// マッチ開始時刻
@@ -100,7 +115,22 @@ namespace CavalryFight.Services.Match
         /// <summary>
         /// マッチが開始されているかどうかを取得します
         /// </summary>
-        public bool IsMatchStarted => _networkMatchManager?.IsMatchStarted ?? false;
+        public bool IsMatchStarted
+        {
+            get
+            {
+                // IMatchDataProviderを優先（MatchManagerがローカルモードで動作している場合）
+                if (_matchDataProvider != null)
+                {
+                    return _matchDataProvider.IsMatchInProgress;
+                }
+                if (_networkMatchManager != null)
+                {
+                    return _networkMatchManager.IsMatchStarted;
+                }
+                return false;
+            }
+        }
 
         /// <summary>
         /// 現在のマッチ状態を取得します
@@ -109,36 +139,63 @@ namespace CavalryFight.Services.Match
         {
             get
             {
-                if (_networkMatchManager == null)
+                // IMatchDataProviderを優先（MatchManagerがローカルモードで動作している場合）
+                if (_matchDataProvider != null)
                 {
-                    return MatchState.WaitingForPlayers;
+                    return _matchDataProvider.CurrentMatchState;
                 }
 
-                // NetworkMatchManagerの状態を確認
-                if (!_networkMatchManager.IsMatchStarted)
+                if (_networkMatchManager != null)
                 {
-                    return MatchState.WaitingForPlayers;
+                    if (!_networkMatchManager.IsMatchStarted)
+                    {
+                        return MatchState.WaitingForPlayers;
+                    }
+                    if (_networkMatchManager.IsMatchEnded)
+                    {
+                        return MatchState.Ended;
+                    }
+                    return MatchState.InProgress;
                 }
 
-                // マッチが終了している場合
-                if (_networkMatchManager.IsMatchEnded)
-                {
-                    return MatchState.Ended;
-                }
-
-                return MatchState.InProgress;
+                return MatchState.WaitingForPlayers;
             }
         }
 
         /// <summary>
         /// 現在のゲームモードを取得します
         /// </summary>
-        public GameMode CurrentGameMode => _currentGameMode;
+        public GameMode CurrentGameMode
+        {
+            get
+            {
+                if (_matchDataProvider != null)
+                {
+                    return _matchDataProvider.CurrentGameMode;
+                }
+                return _currentGameMode;
+            }
+        }
 
         /// <summary>
         /// 残り時間（秒）を取得します
         /// </summary>
-        public float RemainingTime => _networkMatchManager?.RemainingTime ?? 0f;
+        public float RemainingTime
+        {
+            get
+            {
+                // IMatchDataProviderを優先（MatchManagerがローカルモードで動作している場合）
+                if (_matchDataProvider != null)
+                {
+                    return _matchDataProvider.RemainingTime;
+                }
+                if (_networkMatchManager != null)
+                {
+                    return _networkMatchManager.RemainingTime;
+                }
+                return 0f;
+            }
+        }
 
         /// <summary>
         /// マッチ経過時間（秒）を取得します
@@ -147,6 +204,10 @@ namespace CavalryFight.Services.Match
         {
             get
             {
+                if (_matchDataProvider != null)
+                {
+                    return _matchDataProvider.MatchTime;
+                }
                 if (!IsMatchStarted)
                 {
                     return 0f;
@@ -169,16 +230,24 @@ namespace CavalryFight.Services.Match
         /// </summary>
         public void Initialize()
         {
+            // フラグをリセット
+            _hasLoggedManagerNotFound = false;
+
             // NetworkMatchManagerのインスタンスを検索
             _networkMatchManager = NetworkMatchManager.Instance;
 
-            if (_networkMatchManager == null)
+            if (_networkMatchManager != null)
             {
-                Debug.LogWarning("[MatchService] NetworkMatchManager instance not found. Service will wait for it to spawn.");
+                _hasLoggedManagerNotFound = false;
+                SubscribeToNetworkEvents();
             }
             else
             {
-                SubscribeToNetworkEvents();
+                if (!_hasLoggedManagerNotFound)
+                {
+                    Debug.Log("[MatchService] NetworkMatchManager not found. Service will wait for it to spawn.");
+                    _hasLoggedManagerNotFound = true;
+                }
             }
         }
 
@@ -205,7 +274,7 @@ namespace CavalryFight.Services.Match
                 SubscribeToNetworkEvents();
             }
 
-            // マッチ開始状態の変化を監視
+            // マッチ開始状態の変化を監視（NetworkMatchManagerが存在する場合）
             if (_networkMatchManager != null)
             {
                 bool isMatchStarted = _networkMatchManager.IsMatchStarted;
@@ -218,14 +287,14 @@ namespace CavalryFight.Services.Match
                 }
 
                 _wasMatchStarted = isMatchStarted;
+            }
 
-                // 状態変化を監視
-                var currentState = CurrentState;
-                if (currentState != _previousState)
-                {
-                    _previousState = currentState;
-                    MatchStateChanged?.Invoke(currentState);
-                }
+            // 状態変化を監視
+            var currentState = CurrentState;
+            if (currentState != _previousState)
+            {
+                _previousState = currentState;
+                MatchStateChanged?.Invoke(currentState);
             }
         }
 
@@ -235,7 +304,134 @@ namespace CavalryFight.Services.Match
         public void Dispose()
         {
             UnsubscribeFromNetworkEvents();
+            UnregisterMatchDataProvider();
             _networkMatchManager = null;
+        }
+
+        #endregion
+
+        #region Match Data Provider
+
+        /// <summary>
+        /// マッチデータプロバイダーを登録します
+        /// </summary>
+        /// <remarks>
+        /// MatchManagerなど、異なるアセンブリからマッチデータを提供するオブジェクトが
+        /// このメソッドを呼び出して登録します。
+        /// </remarks>
+        /// <param name="provider">マッチデータプロバイダー</param>
+        public void RegisterMatchDataProvider(IMatchDataProvider provider)
+        {
+            Debug.Log($"[SCORE-DEBUG] MatchService.RegisterMatchDataProvider called. MatchService instance: {GetHashCode()}");
+
+            if (_matchDataProvider != null)
+            {
+                Debug.LogWarning("[MatchService] Match data provider already registered. Unregistering previous provider.");
+                UnregisterMatchDataProvider();
+            }
+
+            _matchDataProvider = provider;
+            SubscribeToProviderEvents();
+
+            Debug.Log($"[MatchService] Match data provider registered. _matchDataProvider is now set: {_matchDataProvider != null}");
+        }
+
+        /// <summary>
+        /// マッチデータプロバイダーの登録を解除します
+        /// </summary>
+        public void UnregisterMatchDataProvider()
+        {
+            if (_matchDataProvider == null)
+            {
+                return;
+            }
+
+            UnsubscribeFromProviderEvents();
+            _matchDataProvider = null;
+
+            Debug.Log("[MatchService] Match data provider unregistered.");
+        }
+
+        /// <summary>
+        /// プロバイダーイベントを購読します
+        /// </summary>
+        private void SubscribeToProviderEvents()
+        {
+            if (_matchDataProvider == null)
+            {
+                Debug.LogWarning("[COUNTDOWN-DEBUG] SubscribeToProviderEvents: _matchDataProvider is null!");
+                return;
+            }
+
+            _matchDataProvider.MatchStateChanged += OnProviderMatchStateChanged;
+            _matchDataProvider.MatchStarted += OnProviderMatchStarted;
+            _matchDataProvider.MatchEnded += OnProviderMatchEnded;
+            _matchDataProvider.PlayerScored += OnProviderPlayerScored;
+            _matchDataProvider.CountdownUpdated += OnProviderCountdownUpdated;
+            Debug.Log("[COUNTDOWN-DEBUG] SubscribeToProviderEvents: Subscribed to all provider events including CountdownUpdated");
+        }
+
+        /// <summary>
+        /// プロバイダーイベントの購読を解除します
+        /// </summary>
+        private void UnsubscribeFromProviderEvents()
+        {
+            if (_matchDataProvider == null)
+            {
+                return;
+            }
+
+            _matchDataProvider.MatchStateChanged -= OnProviderMatchStateChanged;
+            _matchDataProvider.MatchStarted -= OnProviderMatchStarted;
+            _matchDataProvider.MatchEnded -= OnProviderMatchEnded;
+            _matchDataProvider.PlayerScored -= OnProviderPlayerScored;
+            _matchDataProvider.CountdownUpdated -= OnProviderCountdownUpdated;
+        }
+
+        /// <summary>
+        /// プロバイダーからマッチ状態変更が通知された時のハンドラ
+        /// </summary>
+        private void OnProviderMatchStateChanged(MatchState state)
+        {
+            MatchStateChanged?.Invoke(state);
+        }
+
+        /// <summary>
+        /// プロバイダーからマッチ開始が通知された時のハンドラ
+        /// </summary>
+        private void OnProviderMatchStarted()
+        {
+            _matchStartTime = Time.time;
+            MatchStarted?.Invoke();
+        }
+
+        /// <summary>
+        /// プロバイダーからマッチ終了が通知された時のハンドラ
+        /// </summary>
+        private void OnProviderMatchEnded(MatchEndResult result)
+        {
+            // マッチ結果を生成して保存
+            _lastMatchResult = CreateMatchResult(result.WinnerId);
+
+            MatchEnded?.Invoke(result.WinnerId);
+            MatchEndedWithResult?.Invoke(result);
+        }
+
+        /// <summary>
+        /// プロバイダーからプレイヤースコアが通知された時のハンドラ
+        /// </summary>
+        private void OnProviderPlayerScored(ulong clientId, int score, HitLocation hitLocation)
+        {
+            PlayerScored?.Invoke(clientId, score, hitLocation);
+        }
+
+        /// <summary>
+        /// プロバイダーからカウントダウン更新が通知された時のハンドラ
+        /// </summary>
+        private void OnProviderCountdownUpdated(int seconds)
+        {
+            Debug.Log($"[COUNTDOWN-DEBUG] MatchService.OnProviderCountdownUpdated: seconds={seconds}");
+            CountdownUpdated?.Invoke(seconds);
         }
 
         #endregion
@@ -456,35 +652,67 @@ namespace CavalryFight.Services.Match
             Debug.Log($"[MatchService] Arrow fired: origin={origin}, direction={direction}, velocity={initialVelocity}");
         }
 
+        // GetPlayerScoreのデバッグカウンター
+        private int _getPlayerScoreDebugCounter = 0;
+
         /// <summary>
         /// プレイヤーのスコア情報を取得します
         /// </summary>
         /// <param name="clientId">クライアントID</param>
-        /// <returns>プレイヤースコア（null = 見つからない）</returns>
+        /// <returns>プレイヤースコア（null = 見つからない、またはマッチが開始されていない場合）</returns>
         public PlayerScore? GetPlayerScore(ulong clientId)
         {
-            if (_networkMatchManager == null)
+            _getPlayerScoreDebugCounter++;
+            bool shouldLog = _getPlayerScoreDebugCounter <= 10;
+
+            // IMatchDataProviderを優先（MatchManagerがローカルモードで動作している場合）
+            if (_matchDataProvider != null)
             {
-                Debug.LogWarning("[MatchService] Cannot get player score: NetworkMatchManager not available.");
-                return null;
+                var score = _matchDataProvider.GetPlayerScore(clientId);
+                if (shouldLog)
+                {
+                    Debug.Log($"[SCORE-DEBUG] MatchService.GetPlayerScore({clientId}): _matchDataProvider exists, score.HasValue={score.HasValue}");
+                }
+                return score;
             }
 
-            return _networkMatchManager.GetPlayerScore(clientId);
+            if (_networkMatchManager != null)
+            {
+                if (shouldLog)
+                {
+                    Debug.Log($"[SCORE-DEBUG] MatchService.GetPlayerScore({clientId}): Using _networkMatchManager");
+                }
+                return _networkMatchManager.GetPlayerScore(clientId);
+            }
+
+            if (shouldLog)
+            {
+                Debug.Log($"[SCORE-DEBUG] MatchService.GetPlayerScore({clientId}): Both providers are NULL!");
+            }
+
+            // マッチ外では正常な状態
+            return null;
         }
 
         /// <summary>
         /// すべてのプレイヤーのスコア情報を取得します
         /// </summary>
-        /// <returns>プレイヤースコア配列</returns>
+        /// <returns>プレイヤースコア配列（マッチが開始されていない場合は空配列）</returns>
         public PlayerScore[] GetAllPlayerScores()
         {
-            if (_networkMatchManager == null)
+            // IMatchDataProviderを優先（MatchManagerがローカルモードで動作している場合）
+            if (_matchDataProvider != null)
             {
-                Debug.LogWarning("[MatchService] Cannot get all player scores: NetworkMatchManager not available.");
-                return Array.Empty<PlayerScore>();
+                return _matchDataProvider.GetAllPlayerScores();
             }
 
-            return _networkMatchManager.GetAllPlayerScores();
+            if (_networkMatchManager != null)
+            {
+                return _networkMatchManager.GetAllPlayerScores();
+            }
+
+            // マッチ外では正常な状態
+            return Array.Empty<PlayerScore>();
         }
 
         /// <summary>
@@ -503,12 +731,18 @@ namespace CavalryFight.Services.Match
         /// <returns>チームのスコア</returns>
         public int GetTeamScore(int teamIndex)
         {
-            if (_networkMatchManager == null)
+            // IMatchDataProviderを優先（MatchManagerがローカルモードで動作している場合）
+            if (_matchDataProvider != null)
             {
-                return 0;
+                return _matchDataProvider.GetTeamScore(teamIndex);
             }
 
-            return _networkMatchManager.GetTeamScore(teamIndex);
+            if (_networkMatchManager != null)
+            {
+                return _networkMatchManager.GetTeamScore(teamIndex);
+            }
+
+            return 0;
         }
 
         /// <summary>

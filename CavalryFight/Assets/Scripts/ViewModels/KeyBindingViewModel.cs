@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Commands;
+using CavalryFight.Core.Services;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using InputAction = UnityEngine.InputSystem.InputAction;
 
 namespace CavalryFight.ViewModels
 {
@@ -121,8 +123,6 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public KeyBindingViewModel()
         {
-            Debug.LogWarning("=== [KeyBindingViewModel] CONSTRUCTOR STARTED ===");
-
             _inputActions = new GameInputActions();
             _bindings = new List<KeyBindingEntry>();
 
@@ -134,8 +134,6 @@ namespace CavalryFight.ViewModels
 
             // バインディングを初期化
             InitializeBindings();
-
-            Debug.LogWarning($"=== [KeyBindingViewModel] ViewModel initialized with {_bindings.Count} bindings ===");
         }
 
         #endregion
@@ -165,8 +163,6 @@ namespace CavalryFight.ViewModels
 
             // UIアクションマップのバインディングを追加
             AddActionBindings(_inputActions.UI.Menu, "Menu (Pause)");
-
-            Debug.LogWarning($"=== [KeyBindingViewModel] InitializeBindings completed with {_bindings.Count} total bindings ===");
         }
 
         /// <summary>
@@ -197,13 +193,9 @@ namespace CavalryFight.ViewModels
                     var firstPart = action.bindings[partIndex];
                     if (!string.IsNullOrEmpty(firstPart.groups) && !firstPart.groups.Contains("Keyboard&Mouse"))
                     {
-                        Debug.Log($"[KeyBindingViewModel] Skipping non-Keyboard&Mouse composite: {binding.name}");
                         continue;
                     }
                 }
-
-                string compositeName = binding.name; // 例: "WASD", "Arrow Keys"
-                Debug.Log($"[KeyBindingViewModel] Found composite '{compositeName}' for {displayName}");
 
                 // コンポジットの個々のパーツを追加
                 for (int j = i + 1; j < action.bindings.Count && action.bindings[j].isPartOfComposite; j++)
@@ -229,7 +221,6 @@ namespace CavalryFight.ViewModels
                     };
 
                     _bindings.Add(entry);
-                    Debug.Log($"[KeyBindingViewModel] Added composite part: {entry.ActionName} = {entry.CurrentBinding}");
                 }
             }
         }
@@ -259,26 +250,21 @@ namespace CavalryFight.ViewModels
             {
                 var binding = action.bindings[i];
 
-                Debug.Log($"[KeyBindingViewModel] Checking binding {i} for {displayName}: path={binding.path}, groups={binding.groups}, isComposite={binding.isComposite}, isPartOfComposite={binding.isPartOfComposite}");
-
                 // コンポジットバインディング（WASDなど）はスキップ
                 if (binding.isComposite)
                 {
-                    Debug.Log($"[KeyBindingViewModel] Skipping composite binding for {displayName}");
                     continue;
                 }
 
                 // コンポジットの一部もスキップ（個別のW,A,S,Dなど）
                 if (binding.isPartOfComposite)
                 {
-                    Debug.Log($"[KeyBindingViewModel] Skipping part of composite for {displayName}");
                     continue;
                 }
 
                 // Keyboard&Mouseグループのみ、または空のグループ（デフォルト）
                 if (!string.IsNullOrEmpty(binding.groups) && binding.groups != "Keyboard&Mouse")
                 {
-                    Debug.Log($"[KeyBindingViewModel] Skipping non-Keyboard&Mouse binding: {binding.groups}");
                     continue;
                 }
 
@@ -291,7 +277,6 @@ namespace CavalryFight.ViewModels
                 };
 
                 _bindings.Add(entry);
-                Debug.Log($"[KeyBindingViewModel] Added binding for {displayName}: {entry.CurrentBinding}");
             }
         }
 
@@ -322,11 +307,8 @@ namespace CavalryFight.ViewModels
         {
             if (entry == null)
             {
-                Debug.LogError("[KeyBindingViewModel] ExecuteStartRebind called with null entry!");
                 return;
             }
-
-            Debug.LogWarning($"=== [KeyBindingViewModel] STARTING REBIND for {entry.ActionName} at index {entry.BindingIndex} ===");
 
             // アクションを無効化（リバインディング中は入力を受け付けない）
             entry.Action.Disable();
@@ -346,8 +328,6 @@ namespace CavalryFight.ViewModels
                 .OnComplete(operation => OnRebindComplete(entry))
                 .OnCancel(operation => OnRebindCanceled())
                 .Start();
-
-            Debug.LogWarning($"=== [KeyBindingViewModel] Rebinding operation STARTED. Waiting for input... ===");
         }
 
         /// <summary>
@@ -363,7 +343,6 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void ExecuteCancelRebind()
         {
-            Debug.Log("[KeyBindingViewModel] Canceling rebind.");
             _rebindingOperation?.Cancel();
         }
 
@@ -372,12 +351,9 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void ExecuteResetToDefault()
         {
-            Debug.Log("[KeyBindingViewModel] Resetting to default bindings.");
-
             // リバインディング中の場合はキャンセル
             if (IsRebinding)
             {
-                Debug.Log("[KeyBindingViewModel] Canceling active rebinding before reset.");
                 _rebindingOperation?.Cancel();
             }
 
@@ -399,12 +375,9 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void ExecuteClose()
         {
-            Debug.Log("[KeyBindingViewModel] Closing popup.");
-
             // リバインディング中の場合はキャンセル
             if (IsRebinding)
             {
-                Debug.Log("[KeyBindingViewModel] Canceling active rebinding before close.");
                 _rebindingOperation?.Cancel();
             }
 
@@ -423,15 +396,12 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void OnRebindComplete(KeyBindingEntry entry)
         {
-            Debug.LogWarning($"=== [KeyBindingViewModel] REBIND COMPLETED for {entry.ActionName} ===");
-
             CurrentRebindingEntry = null;
             IsRebinding = false;
             RebindingPrompt = string.Empty;
 
             // バインディング表示を更新
             entry.CurrentBinding = GetBindingDisplayString(entry.Action, entry.BindingIndex);
-            Debug.LogWarning($"=== [KeyBindingViewModel] New binding: {entry.CurrentBinding} ===");
             BindingUpdated?.Invoke(this, entry);
 
             // クリーンアップ
@@ -440,7 +410,6 @@ namespace CavalryFight.ViewModels
 
             // アクションを再有効化
             entry.Action.Enable();
-            Debug.Log($"[KeyBindingViewModel] Action '{entry.ActionName}' re-enabled after rebind.");
         }
 
         /// <summary>
@@ -448,8 +417,6 @@ namespace CavalryFight.ViewModels
         /// </summary>
         private void OnRebindCanceled()
         {
-            Debug.LogWarning("=== [KeyBindingViewModel] REBIND CANCELED ===");
-
             // アクションを再有効化（キャンセル前に保存）
             var entry = CurrentRebindingEntry;
 
@@ -465,7 +432,6 @@ namespace CavalryFight.ViewModels
             if (entry != null)
             {
                 entry.Action.Enable();
-                Debug.Log($"[KeyBindingViewModel] Action '{entry.ActionName}' re-enabled after cancel.");
             }
         }
 
@@ -481,7 +447,13 @@ namespace CavalryFight.ViewModels
             string rebinds = _inputActions.asset.SaveBindingOverridesAsJson();
             PlayerPrefs.SetString("InputBindings", rebinds);
             PlayerPrefs.Save();
-            Debug.Log("[KeyBindingViewModel] Bindings saved.");
+
+            // InputServiceに変更を即座に反映
+            var inputService = ServiceLocator.Instance.Get<CavalryFight.Services.Input.IInputService>();
+            if (inputService != null)
+            {
+                inputService.ReloadBindingOverrides();
+            }
         }
 
         /// <summary>
@@ -494,7 +466,6 @@ namespace CavalryFight.ViewModels
             if (!string.IsNullOrEmpty(rebinds))
             {
                 _inputActions.asset.LoadBindingOverridesFromJson(rebinds);
-                Debug.Log("[KeyBindingViewModel] Bindings loaded.");
 
                 // UIを更新
                 foreach (var entry in _bindings)
@@ -520,7 +491,6 @@ namespace CavalryFight.ViewModels
             _inputActions?.Dispose();
 
             base.OnDispose();
-            Debug.Log("[KeyBindingViewModel] ViewModel disposed.");
         }
 
         #endregion

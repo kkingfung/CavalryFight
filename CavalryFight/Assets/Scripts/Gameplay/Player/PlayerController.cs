@@ -9,6 +9,7 @@ using CavalryFight.Services.Audio;
 using CavalryFight.Services.Training;
 using CavalryFight.Services.Customization;
 using CavalryFight.Gameplay.Projectiles;
+using CavalryFight.Gameplay.Match;
 
 namespace CavalryFight.Gameplay.Player
 {
@@ -693,6 +694,13 @@ namespace CavalryFight.Gameplay.Player
         /// <param name="chargeAmount">チャージ量（0.0～1.0）</param>
         private void FireArrow(float chargeAmount)
         {
+            // マッチモードで矢が残っているかチェック
+            if (!CanFireArrow())
+            {
+                Debug.Log("[PlayerController] Cannot fire - no arrows remaining!");
+                return;
+            }
+
             // カスタマイズで設定された矢プレハブを優先、なければデフォルトを使用
             GameObject? arrowPrefabToUse = _currentArrowPrefab ?? _arrowPrefab;
 
@@ -781,6 +789,55 @@ namespace CavalryFight.Gameplay.Player
 
             // TrainingManagerに通知
             TrainingManager.Instance?.RecordArrowFired();
+
+            // MatchManagerに通知（マッチモード用）
+            if (MatchManager.Instance != null)
+            {
+                // ローカルプレイヤーID（NetworkManager未使用の場合は0）
+                ulong localPlayerId = Unity.Netcode.NetworkManager.Singleton?.LocalClientId ?? 0;
+                MatchManager.Instance.RecordArrowFiredLocal(localPlayerId);
+            }
+        }
+
+        /// <summary>
+        /// 矢を発射できるかどうかをチェックします
+        /// </summary>
+        /// <returns>発射可能な場合はtrue</returns>
+        private bool CanFireArrow()
+        {
+            // トレーニングモードでは常に発射可能
+            if (TrainingManager.Instance != null)
+            {
+                return true;
+            }
+
+            // マッチモードでない場合は発射可能
+            if (MatchManager.Instance == null)
+            {
+                return true;
+            }
+
+            // ルーム設定を取得
+            var roomSettings = MatchManager.Instance.RoomSettings;
+
+            // 矢が無制限の場合（ArrowLimit == 0）は発射可能
+            if (roomSettings.ArrowLimit == 0)
+            {
+                return true;
+            }
+
+            // プレイヤーの残り矢数を取得
+            ulong localPlayerId = Unity.Netcode.NetworkManager.Singleton?.LocalClientId ?? 0;
+            var playerScore = MatchManager.Instance.GetPlayerScore(localPlayerId);
+
+            if (playerScore == null)
+            {
+                // プレイヤースコアが見つからない場合は発射可能（初期化前など）
+                return true;
+            }
+
+            // 残り矢数が0以下の場合は発射不可
+            return playerScore.Value.RemainingArrows > 0;
         }
 
         #endregion

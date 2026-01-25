@@ -6,6 +6,7 @@ using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Audio;
 using CavalryFight.Services.Input;
+using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.Services.Training;
@@ -78,6 +79,7 @@ namespace CavalryFight.Views
         private IAudioService? _audioService;
         private IInputService? _inputService;
         private ISceneManagementService? _sceneService;
+        private ILobbyService? _lobbyService;
 
         #endregion
 
@@ -110,6 +112,14 @@ namespace CavalryFight.Views
             _audioService = ServiceLocator.Instance.Get<IAudioService>();
             _inputService = ServiceLocator.Instance.Get<IInputService>();
             _sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            _lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+
+            // ルーム復帰イベントを購読（ゲスト用：ホストがマッチを終了した時）
+            if (_lobbyService != null)
+            {
+                _lobbyService.ReturnToRoomRequested += OnReturnToRoomRequested;
+                _lobbyService.HostDisconnected += OnHostDisconnected;
+            }
 
             if (_sceneService != null)
             {
@@ -225,11 +235,24 @@ namespace CavalryFight.Views
                 Debug.Log("[MatchView] Crosshair element found.");
             }
 
-            // CrosshairContainerはマウスイベントを無視（UIの下のゲームをクリック可能に）
+            // フルスクリーンのオーバーレイコンテナはマウスイベントを無視
+            // （設定ポップアップなど他のUIがクリックを受け取れるように）
             var crosshairContainer = Q<VisualElement>("CrosshairContainer");
             if (crosshairContainer != null)
             {
                 crosshairContainer.pickingMode = PickingMode.Ignore;
+            }
+
+            var scorePopupContainer = Q<VisualElement>("ScorePopupContainer");
+            if (scorePopupContainer != null)
+            {
+                scorePopupContainer.pickingMode = PickingMode.Ignore;
+            }
+
+            var killFeedContainer = Q<VisualElement>("KillFeedContainer");
+            if (killFeedContainer != null)
+            {
+                killFeedContainer.pickingMode = PickingMode.Ignore;
             }
         }
 
@@ -332,10 +355,18 @@ namespace CavalryFight.Views
             if (ViewModel.IsPaused)
             {
                 _settingsPopupController?.Show();
+
+                // カーソルを表示してロック解除（UIをクリック可能にする）
+                UnityEngine.Cursor.lockState = CursorLockMode.None;
+                UnityEngine.Cursor.visible = true;
             }
             else
             {
                 _settingsPopupController?.Hide();
+
+                // カーソルをロックして非表示に戻す
+                UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+                UnityEngine.Cursor.visible = false;
             }
 
             // ポーズ時はHUDを薄くする
@@ -551,6 +582,24 @@ namespace CavalryFight.Views
             ViewModel?.LeaveMatch();
         }
 
+        /// <summary>
+        /// ルーム復帰イベントハンドラ（ホストがマッチを終了した時に呼ばれる）
+        /// </summary>
+        private void OnReturnToRoomRequested()
+        {
+            Debug.Log("[MatchView] Return to room requested by host");
+            _sceneService?.LoadMatchRoom();
+        }
+
+        /// <summary>
+        /// ホスト切断イベントハンドラ（ホストがルームを退出した時に呼ばれる）
+        /// </summary>
+        private void OnHostDisconnected()
+        {
+            Debug.Log("[MatchView] Host disconnected, returning to lobby");
+            _sceneService?.LoadLobby();
+        }
+
         private void OnContinueClicked(ClickEvent evt)
         {
             PlayButtonSound();
@@ -603,6 +652,7 @@ namespace CavalryFight.Views
 
                 case nameof(MatchViewModel.CountdownValue):
                 case nameof(MatchViewModel.IsCountingDown):
+                case nameof(MatchViewModel.MatchState):
                     UpdateCountdownPanel();
                     break;
 
@@ -842,6 +892,13 @@ namespace CavalryFight.Views
         {
             // TimeScaleを元に戻す
             Time.timeScale = 1f;
+
+            // LobbyServiceのイベント購読解除
+            if (_lobbyService != null)
+            {
+                _lobbyService.ReturnToRoomRequested -= OnReturnToRoomRequested;
+                _lobbyService.HostDisconnected -= OnHostDisconnected;
+            }
 
             // SettingsPopupControllerのクリーンアップ
             if (_settingsPopupController != null)

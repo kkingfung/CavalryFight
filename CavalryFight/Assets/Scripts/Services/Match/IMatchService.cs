@@ -72,6 +72,11 @@ namespace CavalryFight.Services.Match
         /// </summary>
         event Action<MatchState>? MatchStateChanged;
 
+        /// <summary>
+        /// カウントダウンが更新された時に発生します
+        /// </summary>
+        event Action<int>? CountdownUpdated;
+
         #endregion
 
         #region Properties
@@ -180,6 +185,25 @@ namespace CavalryFight.Services.Match
         /// </summary>
         /// <param name="config">新しいスコアリング設定</param>
         void UpdateScoringConfig(ScoringConfig config);
+
+        #endregion
+
+        #region Match Data Provider
+
+        /// <summary>
+        /// マッチデータプロバイダーを登録します
+        /// </summary>
+        /// <remarks>
+        /// MatchManagerなど、異なるアセンブリからマッチデータを提供するオブジェクトが
+        /// このメソッドを呼び出して登録します。
+        /// </remarks>
+        /// <param name="provider">マッチデータプロバイダー</param>
+        void RegisterMatchDataProvider(IMatchDataProvider provider);
+
+        /// <summary>
+        /// マッチデータプロバイダーの登録を解除します
+        /// </summary>
+        void UnregisterMatchDataProvider();
 
         #endregion
     }
