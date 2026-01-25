@@ -92,6 +92,11 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         event Action<IReadOnlyList<RoomInfo>>? AvailableRoomsUpdated;
 
+        /// <summary>
+        /// マッチからルームに戻る時に発生します
+        /// </summary>
+        event Action? ReturnToRoomRequested;
+
         #endregion
 
         #region Properties
@@ -206,6 +211,16 @@ namespace CavalryFight.Services.Lobby
         /// </summary>
         /// <returns>成功した場合はtrue</returns>
         bool CancelGameCountdown();
+
+        /// <summary>
+        /// マッチを終了してルームに戻ることを要求します（ホストのみ）
+        /// </summary>
+        /// <remarks>
+        /// このメソッドを呼び出すと、すべてのクライアントに通知が送られ、
+        /// 全員がMatchRoomシーンに戻ります。
+        /// </remarks>
+        /// <returns>成功した場合はtrue</returns>
+        bool RequestReturnToRoom();
 
         #endregion
 

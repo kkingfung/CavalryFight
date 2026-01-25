@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Customization;
+using CavalryFight.Services.Replay;
 using MalbersAnimations.Controller;
 
 namespace CavalryFight.Gameplay.Player
@@ -51,9 +52,14 @@ namespace CavalryFight.Gameplay.Player
         #region Private Fields
 
         private ICustomizationService? _customizationService;
+        private IReplayRecorder? _replayRecorder;
         private GameObject? _spawnedMount;
         private GameObject? _spawnedRider;
         private GameObject? _spawnedTracker;
+
+        // リプレイ用エンティティID
+        private const string PLAYER_MOUNT_ENTITY_ID = "player_mount_0";
+        private const string PLAYER_RIDER_ENTITY_ID = "player_rider_0";
 
         #endregion
 
@@ -94,6 +100,8 @@ namespace CavalryFight.Gameplay.Player
 
         private void Awake()
         {
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.Awake() called. GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+
             if (Instance != null && Instance != this)
             {
                 Debug.LogWarning("[PlayerSpawner] Duplicate instance detected. Destroying this one.");
@@ -102,8 +110,12 @@ namespace CavalryFight.Gameplay.Player
             }
 
             Instance = this;
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.Instance set. _mountPrefab={_mountPrefab != null}, _riderPrefab={_riderPrefab != null}");
 
             _customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
+            _replayRecorder = ServiceLocator.Instance.Get<IReplayRecorder>();
+
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: CustomizationService={_customizationService != null}, ReplayRecorder={_replayRecorder != null}");
 
             if (_customizationService == null)
             {
@@ -113,9 +125,16 @@ namespace CavalryFight.Gameplay.Player
 
         private void Start()
         {
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.Start() called. _autoSpawnOnStart={_autoSpawnOnStart}, _waitForFieldLoader={_waitForFieldLoader}");
+
             if (_autoSpawnOnStart)
             {
+                Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Auto spawn enabled, calling TrySpawnPlayer()");
                 TrySpawnPlayer();
+            }
+            else
+            {
+                Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Auto spawn DISABLED (_autoSpawnOnStart=false)");
             }
         }
 
@@ -153,21 +172,28 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void TrySpawnPlayer()
         {
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.TrySpawnPlayer() called. _waitForFieldLoader={_waitForFieldLoader}, FieldLoader.Instance={FieldLoader.Instance != null}");
+
             // FieldLoaderがない、または待機しない設定の場合は即座にスポーン
             if (!_waitForFieldLoader || FieldLoader.Instance == null)
             {
+                Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Not waiting for FieldLoader. Spawning immediately.");
                 SpawnPlayer();
                 return;
             }
 
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: FieldLoader.Instance.IsLoaded={FieldLoader.Instance.IsLoaded}");
+
             // フィールドが既にロード済みの場合
             if (FieldLoader.Instance.IsLoaded)
             {
+                Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Field already loaded. Spawning immediately.");
                 SpawnPlayer();
                 return;
             }
 
             // フィールドのロード完了を待つ
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Field NOT loaded. Subscribing to FieldLoaded event and waiting...");
             FieldLoader.Instance.FieldLoaded += OnFieldLoaded;
 
             if (_debugLog)
@@ -181,6 +207,8 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void OnFieldLoaded(object? sender, EventArgs e)
         {
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.OnFieldLoaded() callback received!");
+
             if (FieldLoader.Instance != null)
             {
                 FieldLoader.Instance.FieldLoaded -= OnFieldLoaded;
@@ -191,6 +219,7 @@ namespace CavalryFight.Gameplay.Player
                 Debug.Log("[PlayerSpawner] FieldLoader のロードが完了しました。プレイヤーをスポーンします。");
             }
 
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Calling SpawnPlayer() after field load");
             SpawnPlayer();
         }
 
@@ -210,27 +239,37 @@ namespace CavalryFight.Gameplay.Player
         /// <returns>スポーンに成功したかどうか</returns>
         public bool SpawnPlayer(SpawnPoint? spawnPoint)
         {
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.SpawnPlayer() called. spawnPoint param={spawnPoint != null}");
+
             // プレハブのチェック
             if (_mountPrefab == null)
             {
+                Debug.LogError("[SPAWN-DEBUG] PlayerSpawner.SpawnPlayer FAILED: _mountPrefab is NULL");
                 Debug.LogError("[PlayerSpawner] MountPrefab が設定されていません！");
                 return false;
             }
 
             if (_riderPrefab == null)
             {
+                Debug.LogError("[SPAWN-DEBUG] PlayerSpawner.SpawnPlayer FAILED: _riderPrefab is NULL");
                 Debug.LogError("[PlayerSpawner] RiderPrefab が設定されていません！");
                 return false;
             }
 
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Prefabs OK. _mountPrefab={_mountPrefab.name}, _riderPrefab={_riderPrefab.name}");
+
             // スポーンポイントを取得
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Getting spawn point. _spawnPoint={_spawnPoint != null}, SpawnManager.Instance={SpawnManager.Instance != null}");
             SpawnPoint? targetSpawnPoint = spawnPoint ?? _spawnPoint ?? GetSpawnPointFromManager();
 
             if (targetSpawnPoint == null)
             {
+                Debug.LogError("[SPAWN-DEBUG] PlayerSpawner.SpawnPlayer FAILED: No spawn point found!");
                 Debug.LogError("[PlayerSpawner] スポーンポイントが見つかりません！");
                 return false;
             }
+
+            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: SpawnPoint found: {targetSpawnPoint.name}, Position={targetSpawnPoint.Position}");
 
             // 既存のスポーンオブジェクトを削除
             CleanupSpawnedObjects();
@@ -253,6 +292,9 @@ namespace CavalryFight.Gameplay.Player
 
             // カスタマイズを適用
             ApplyCustomization();
+
+            // リプレイレコーダーにエンティティを登録
+            RegisterEntitiesForReplay();
 
             if (_debugLog)
             {
@@ -879,6 +921,9 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void CleanupSpawnedObjects()
         {
+            // リプレイレコーダーからエンティティを解除
+            UnregisterEntitiesFromReplay();
+
             if (_spawnedMount != null)
             {
                 Destroy(_spawnedMount);
@@ -896,6 +941,62 @@ namespace CavalryFight.Gameplay.Player
                 Destroy(_spawnedTracker);
                 _spawnedTracker = null;
             }
+        }
+
+        /// <summary>
+        /// リプレイレコーダーにエンティティを登録します
+        /// </summary>
+        private void RegisterEntitiesForReplay()
+        {
+            if (_replayRecorder == null || !_replayRecorder.IsRecording)
+            {
+                return;
+            }
+
+            // 馬を登録
+            if (_spawnedMount != null)
+            {
+                _replayRecorder.RegisterEntity(PLAYER_MOUNT_ENTITY_ID, EntityType.Mount, _spawnedMount);
+
+                if (_debugLog)
+                {
+                    Debug.Log($"[PlayerSpawner] 馬をリプレイに登録: {PLAYER_MOUNT_ENTITY_ID}");
+                }
+            }
+
+            // 騎手を登録（馬との関連付け）
+            if (_spawnedRider != null && _spawnedMount != null)
+            {
+                // MountPointを取得
+                Transform? mountPoint = FindMountPoint(_spawnedMount);
+
+                _replayRecorder.RegisterRiderEntity(
+                    PLAYER_RIDER_ENTITY_ID,
+                    EntityType.Player,
+                    _spawnedRider,
+                    PLAYER_MOUNT_ENTITY_ID,
+                    mountPoint
+                );
+
+                if (_debugLog)
+                {
+                    Debug.Log($"[PlayerSpawner] 騎手をリプレイに登録: {PLAYER_RIDER_ENTITY_ID} -> {PLAYER_MOUNT_ENTITY_ID}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// リプレイレコーダーからエンティティを解除します
+        /// </summary>
+        private void UnregisterEntitiesFromReplay()
+        {
+            if (_replayRecorder == null)
+            {
+                return;
+            }
+
+            _replayRecorder.UnregisterEntity(PLAYER_RIDER_ENTITY_ID);
+            _replayRecorder.UnregisterEntity(PLAYER_MOUNT_ENTITY_ID);
         }
 
         #endregion

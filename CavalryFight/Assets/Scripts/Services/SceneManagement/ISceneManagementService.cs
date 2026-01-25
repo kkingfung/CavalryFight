@@ -173,6 +173,20 @@ namespace CavalryFight.Services.SceneManagement
         /// </summary>
         void LoadHunting();
 
+        /// <summary>
+        /// ゲームプレイシーンの準備完了を通知します。
+        /// </summary>
+        /// <remarks>
+        /// Match、Training、Huntingシーンで使用します。
+        /// このメソッドが呼ばれるまでローディング画面は閉じません。
+        /// </remarks>
+        void SignalGameplayReady();
+
+        /// <summary>
+        /// ゲームプレイシーンの準備完了待ちかどうかを取得します。
+        /// </summary>
+        bool IsWaitingForGameplayReady { get; }
+
         #endregion
 
         #region Low-Level Scene Operations

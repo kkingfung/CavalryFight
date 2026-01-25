@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 418eaf5e63de4b648aa9fe53a69b4f1b, type: 3}
   m_Name: AIServiceConfig
   m_EditorClassIdentifier: CavalryFight.Services::CavalryFight.Services.AI.AIServiceConfig
-  _aiRiderPrefab: {fileID: 6015852618751096838, guid: 420221e9c0a03fa47bc9e8b9d37ef1a0, type: 3}
-  _aiMountPrefab: {fileID: 6972691621713743424, guid: 282ecc41fadd0394b8655747913150aa, type: 3}
+  _aiRiderPrefab: {fileID: 6323270240798960294, guid: 1926c3068fcfba347812f4100dc9c602, type: 3}
+  _aiMountPrefab: {fileID: 5522642034731160747, guid: 8a81899a665c6d64fb173b3b6a010319, type: 3}
   _difficultyConfig: {fileID: 11400000, guid: 10dd71f2a5d9b38499d600af5b4398da, type: 2}
   _gameModeBehavior: {fileID: 11400000, guid: b96a7aca794533847beae32bb4daf67d, type: 2}

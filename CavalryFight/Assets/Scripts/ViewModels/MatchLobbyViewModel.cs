@@ -478,6 +478,12 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public void CreateRoom()
         {
+            // 既に処理中の場合は何もしない（重複クリック防止）
+            if (IsProcessing)
+            {
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(RoomName))
             {
                 StatusMessage = "Please enter a room name";
@@ -517,6 +523,13 @@ namespace CavalryFight.ViewModels
                 return;
             }
 
+            // マップ名を解析
+            MapName parsedMapName = MapName.Arena;
+            if (System.Enum.TryParse<MapName>(SelectedMap, true, out var mapNameResult))
+            {
+                parsedMapName = mapNameResult;
+            }
+
             var roomSettings = new RoomSettings
             {
                 RoomName = new FixedString64Bytes(RoomName),
@@ -526,7 +539,7 @@ namespace CavalryFight.ViewModels
                 IsPublic = false,
                 TimeLimit = 300,
                 ArrowLimit = 0, // デフォルトは無制限（ScoreMatchの場合は後で設定変更可能）
-                MapName = new FixedString64Bytes(SelectedMap)
+                MapName = parsedMapName
             };
 
             _isCancelled = false;
@@ -540,8 +553,8 @@ namespace CavalryFight.ViewModels
             }
             else
             {
-                StatusMessage = "Failed to create room";
-                ErrorOccurred?.Invoke(this, "Failed to create room");
+                // サービスが既に処理中のためにfalseを返した場合は単に元の状態に戻す
+                StatusMessage = "Host or join a room";
                 IsProcessing = false;
             }
         }
@@ -551,6 +564,12 @@ namespace CavalryFight.ViewModels
         /// </summary>
         public void JoinRoom()
         {
+            // 既に処理中の場合は何もしない（重複クリック防止）
+            if (IsProcessing)
+            {
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(JoinCode))
             {
                 StatusMessage = "Please enter a join code";
@@ -593,8 +612,8 @@ namespace CavalryFight.ViewModels
             }
             else
             {
-                StatusMessage = "Failed to join room";
-                ErrorOccurred?.Invoke(this, "Failed to join room");
+                // サービスが既に処理中のためにfalseを返した場合は単に元の状態に戻す
+                StatusMessage = "Host or join a room";
                 IsProcessing = false;
             }
 

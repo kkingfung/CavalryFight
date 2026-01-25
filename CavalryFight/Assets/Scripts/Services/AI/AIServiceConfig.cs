@@ -23,6 +23,10 @@ namespace CavalryFight.Services.AI
         [Tooltip("AI馬のプレハブ")]
         [SerializeField] private GameObject? _aiMountPrefab;
 
+        [Header("Arrow Settings")]
+        [Tooltip("AI用の矢プレハブ")]
+        [SerializeField] private GameObject? _arrowPrefab;
+
         #endregion
 
         #region Config Assets
@@ -47,6 +51,11 @@ namespace CavalryFight.Services.AI
         /// AI馬のプレハブ
         /// </summary>
         public GameObject? AIMountPrefab => _aiMountPrefab;
+
+        /// <summary>
+        /// AI用の矢プレハブ
+        /// </summary>
+        public GameObject? ArrowPrefab => _arrowPrefab;
 
         /// <summary>
         /// 難易度設定

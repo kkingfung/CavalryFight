@@ -3,8 +3,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CavalryFight.Gameplay.Training;
+using CavalryFight.Gameplay.Match;
 using CavalryFight.Services.Training;
+using CavalryFight.Services.AI;
 using MalbersAnimations;
+using Unity.Netcode;
 
 namespace CavalryFight.Gameplay.Projectiles
 {
@@ -42,6 +45,9 @@ namespace CavalryFight.Gameplay.Projectiles
 
         // 発射者（自分自身への当たり判定を無視するため）
         private readonly List<GameObject> _ignoredObjects = new();
+
+        // 発射者のGameObject（スコア通知用）
+        private GameObject? _ownerObject;
 
         #endregion
 
@@ -93,6 +99,14 @@ namespace CavalryFight.Gameplay.Projectiles
 
             // 発射者自身との衝突を無視
             if (IsOwnerOrChild(other.gameObject))
+            {
+                return;
+            }
+
+            // Malbersのゾーン（Zone Jump, Zone Stance等）を無視
+            // これらはAIの制御用トリガーで、実際のヒット対象ではない
+            if (other.gameObject.name.StartsWith("Zone ") ||
+                other.gameObject.layer == LayerMask.NameToLayer("Ignore Raycast"))
             {
                 return;
             }
@@ -171,29 +185,55 @@ namespace CavalryFight.Gameplay.Projectiles
             {
                 // TrainingTargetが自身でスコア計算とTrainingManager通知を行う
                 trainingTarget.OnHit(hitPoint, _chargeAmount);
-                Debug.Log($"[ArrowProjectile] Hit TrainingTarget: {hitObject.name} | Charge: {_chargeAmount:F2}");
             }
             else
             {
-                // Malbers MDamageableを持つオブジェクトにダメージを与える
-                var damageable = hitObject.GetComponent<MDamageable>();
-                if (damageable == null)
+                // AIPlayerControllerを持つオブジェクトにダメージを与える
+                var aiController = hitObject.GetComponent<AIPlayerController>();
+                if (aiController == null)
                 {
-                    damageable = hitObject.GetComponentInParent<MDamageable>();
+                    aiController = hitObject.GetComponentInParent<AIPlayerController>();
                 }
 
-                if (damageable != null)
+                // AIマウントに当たった場合、ルートオブジェクトの子階層からAIPlayerControllerを探す
+                // （AIRiderはAIMountの子として配置されているため）
+                if (aiController == null)
                 {
-                    // ダメージ方向を計算（矢の飛行方向）
-                    Vector3 damageDirection = _rigidbody != null ? _rigidbody.linearVelocity.normalized : transform.forward;
+                    Transform root = hitObject.transform.root;
+                    aiController = root.GetComponentInChildren<AIPlayerController>();
+                }
 
-                    // Health StatIDを取得
-                    var healthStatID = MTools.GetInstance<StatID>("Health");
+                if (aiController != null)
+                {
+                    // AIにダメージを与える（attackerとして矢を渡す）
+                    int damage = Mathf.RoundToInt(Damage);
+                    aiController.TakeDamage(damage, gameObject);
 
-                    if (healthStatID != null)
+                    // スコアを通知（MatchManagerへ）
+                    NotifyScore(Score);
+                }
+                else
+                {
+                    // Malbers MDamageableを持つオブジェクトにダメージを与える
+                    var damageable = hitObject.GetComponent<MDamageable>();
+                    if (damageable == null)
                     {
-                        // MDamageableにダメージを与える
-                        damageable.ReceiveDamage(damageDirection, gameObject, healthStatID, Damage, false, null, false);
+                        damageable = hitObject.GetComponentInParent<MDamageable>();
+                    }
+
+                    if (damageable != null)
+                    {
+                        // ダメージ方向を計算（矢の飛行方向）
+                        Vector3 damageDirection = _rigidbody != null ? _rigidbody.linearVelocity.normalized : transform.forward;
+
+                        // Health StatIDを取得
+                        var healthStatID = MTools.GetInstance<StatID>("Health");
+
+                        if (healthStatID != null)
+                        {
+                            // MDamageableにダメージを与える
+                            damageable.ReceiveDamage(damageDirection, gameObject, healthStatID, Damage, false, null, false);
+                        }
                     }
                 }
             }
@@ -279,11 +319,16 @@ namespace CavalryFight.Gameplay.Projectiles
         /// 無視対象を追加します（発射者や馬との衝突を無視するため）
         /// </summary>
         /// <param name="obj">無視対象のGameObject</param>
-        public void AddIgnoredObject(GameObject? obj)
+        /// <param name="isOwner">発射者本人の場合true（スコア通知用）</param>
+        public void AddIgnoredObject(GameObject? obj, bool isOwner = false)
         {
             if (obj != null && !_ignoredObjects.Contains(obj))
             {
                 _ignoredObjects.Add(obj);
+                if (isOwner)
+                {
+                    _ownerObject = obj;
+                }
             }
         }
 
@@ -294,7 +339,42 @@ namespace CavalryFight.Gameplay.Projectiles
         [System.Obsolete("Use AddIgnoredObject instead")]
         public void SetOwner(GameObject? owner)
         {
-            AddIgnoredObject(owner);
+            AddIgnoredObject(owner, isOwner: true);
+        }
+
+        /// <summary>
+        /// スコアをMatchManagerに通知します
+        /// </summary>
+        /// <param name="score">獲得スコア</param>
+        private void NotifyScore(int score)
+        {
+            if (MatchManager.Instance == null)
+            {
+                return;
+            }
+
+            // オーナーのクライアントIDを取得
+            ulong clientId = 0;
+            if (_ownerObject != null)
+            {
+                var networkObject = _ownerObject.GetComponent<NetworkObject>();
+                if (networkObject != null)
+                {
+                    clientId = networkObject.OwnerClientId;
+                }
+            }
+
+            // ネットワークモードかローカルモードかで処理を分岐
+            if (MatchManager.Instance.IsSpawned)
+            {
+                // ネットワークモード: RPCを使用
+                MatchManager.Instance.AddPlayerScoreRpc(clientId, score, HitLocation.Torso);
+            }
+            else
+            {
+                // ローカルモード: 直接スコアを追加
+                MatchManager.Instance.AddPlayerScoreLocal(clientId, score, HitLocation.Torso);
+            }
         }
 
         #endregion

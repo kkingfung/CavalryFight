@@ -1227,7 +1227,11 @@ namespace CavalryFight.ViewModels
                 settings.GameMode = parsedGameMode;
             }
 
-            settings.MapName = new Unity.Collections.FixedString64Bytes(MapName);
+            // MapName文字列をenumに変換
+            if (System.Enum.TryParse<MapName>(MapName, out var parsedMapName))
+            {
+                settings.MapName = parsedMapName;
+            }
             settings.TimeLimit = TimeLimit;
             settings.ArrowLimit = ArrowLimit;
 

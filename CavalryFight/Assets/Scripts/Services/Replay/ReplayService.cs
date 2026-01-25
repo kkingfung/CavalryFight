@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CavalryFight.Services.Customization;
 using UnityEngine;
 
 namespace CavalryFight.Services.Replay
@@ -382,7 +383,7 @@ namespace CavalryFight.Services.Replay
             {
                 ReplayId = metadata.ReplayId,
                 RecordedAt = metadata.RecordedAt.ToString("o"),
-                MapName = metadata.MapName,
+                MapName = Enum.TryParse<Lobby.MapName>(metadata.MapName, out var parsedMap) ? parsedMap : Lobby.MapName.Arena,
                 GameMode = metadata.GameMode,
                 PlayerName = metadata.PlayerName,
                 MatchDuration = metadata.MatchDuration,
@@ -390,7 +391,141 @@ namespace CavalryFight.Services.Replay
                 FinalEnemyScore = metadata.FinalEnemyScore
             };
 
+            // モック用のフレームデータを生成
+            GenerateMockFrames(replayData);
+
             return replayData;
+        }
+
+        /// <summary>
+        /// モック用のフレームデータを生成します
+        /// </summary>
+        /// <param name="replayData">リプレイデータ</param>
+        private void GenerateMockFrames(ReplayData replayData)
+        {
+            const float FRAME_INTERVAL = 0.1f; // 10 FPS
+            int frameCount = Mathf.CeilToInt(replayData.MatchDuration / FRAME_INTERVAL);
+
+            // 初期位置
+            Vector3 playerStartPos = new Vector3(0, 0, -10);
+            Vector3 mountStartPos = new Vector3(0, 0, -10);
+            Vector3 enemyStartPos = new Vector3(0, 0, 10);
+            Vector3 enemyMountStartPos = new Vector3(0, 0, 10);
+
+            // 移動パラメータ
+            float moveRadius = 15f;
+            float moveSpeed = 0.5f;
+
+            for (int i = 0; i < frameCount; i++)
+            {
+                float timestamp = i * FRAME_INTERVAL;
+                float angle = timestamp * moveSpeed;
+
+                var frame = new ReplayFrame(timestamp)
+                {
+                    PlayerScore = replayData.FinalPlayerScore * i / frameCount,
+                    EnemyScore = replayData.FinalEnemyScore * i / frameCount,
+                    TimeRemaining = replayData.MatchDuration - timestamp,
+                    GameState = "Playing"
+                };
+
+                // プレイヤーの馬の位置（円形に移動）
+                Vector3 mountPos = mountStartPos + new Vector3(
+                    Mathf.Sin(angle) * moveRadius,
+                    0,
+                    Mathf.Cos(angle) * moveRadius * 0.5f
+                );
+                Quaternion mountRot = Quaternion.LookRotation(new Vector3(
+                    Mathf.Cos(angle),
+                    0,
+                    -Mathf.Sin(angle) * 0.5f
+                ).normalized);
+
+                // 馬のスナップショット
+                var mountSnapshot = new EntitySnapshot
+                {
+                    EntityId = "mount_0",
+                    EntityType = EntityType.Mount,
+                    Position = mountPos,
+                    Rotation = mountRot,
+                    Velocity = new Vector3(Mathf.Cos(angle) * 5f, 0, -Mathf.Sin(angle) * 2.5f),
+                    IsAlive = true,
+                    ForwardSpeed = 5f,
+                    MalbersStateId = 2 // Locomotion
+                };
+                frame.AddEntity(mountSnapshot);
+
+                // プレイヤー騎手のスナップショット（馬に騎乗）
+                // モックデータでは IsMounted = false にして、ワールド座標で直接位置を設定
+                // （実際のリプレイデータでは IsMounted = true で正しいローカル座標が記録される）
+                var playerSnapshot = new EntitySnapshot
+                {
+                    EntityId = "player_0",
+                    EntityType = EntityType.Player,
+                    Position = mountPos + Vector3.up * 1.2f + mountRot * Vector3.forward * 0.1f,
+                    Rotation = mountRot,
+                    IsAlive = true,
+                    IsMounted = false,  // モックではワールド座標で位置指定
+                    MountedOnEntityId = string.Empty,
+                    LocalPositionOnMount = Vector3.zero,
+                    LocalRotationOnMount = Quaternion.identity
+                };
+                frame.AddEntity(playerSnapshot);
+
+                // 敵の馬の位置（反対方向に移動）
+                Vector3 enemyMountPos = enemyStartPos + new Vector3(
+                    -Mathf.Sin(angle) * moveRadius,
+                    0,
+                    -Mathf.Cos(angle) * moveRadius * 0.5f
+                );
+                Quaternion enemyMountRot = Quaternion.LookRotation(new Vector3(
+                    -Mathf.Cos(angle),
+                    0,
+                    Mathf.Sin(angle) * 0.5f
+                ).normalized);
+
+                // 敵の馬のスナップショット
+                var enemyMountSnapshot = new EntitySnapshot
+                {
+                    EntityId = "mount_enemy_0",
+                    EntityType = EntityType.Mount,
+                    Position = enemyMountPos,
+                    Rotation = enemyMountRot,
+                    Velocity = new Vector3(-Mathf.Cos(angle) * 5f, 0, Mathf.Sin(angle) * 2.5f),
+                    IsAlive = true,
+                    ForwardSpeed = 5f,
+                    MalbersStateId = 2 // Locomotion
+                };
+                frame.AddEntity(enemyMountSnapshot);
+
+                // 敵騎手のスナップショット（馬に騎乗）
+                // モックデータでは IsMounted = false にして、ワールド座標で直接位置を設定
+                var enemySnapshot = new EntitySnapshot
+                {
+                    EntityId = "enemy_0",
+                    EntityType = EntityType.Enemy,
+                    Position = enemyMountPos + Vector3.up * 1.2f + enemyMountRot * Vector3.forward * 0.1f,
+                    Rotation = enemyMountRot,
+                    IsAlive = true,
+                    IsMounted = false,  // モックではワールド座標で位置指定
+                    MountedOnEntityId = string.Empty,
+                    LocalPositionOnMount = Vector3.zero,
+                    LocalRotationOnMount = Quaternion.identity
+                };
+                frame.AddEntity(enemySnapshot);
+
+                replayData.AddFrame(frame);
+            }
+
+            // 敵のカスタマイズデータを追加（ReplayPlaybackManagerがスポーンに使用）
+            replayData.Enemies.Add(new ReplayEntityCustomization
+            {
+                EntityId = "enemy_0",
+                Character = new CharacterCustomization(),
+                Mount = new MountCustomization()
+            });
+
+            Debug.Log($"[ReplayService] Generated {frameCount} mock frames for replay.");
         }
 
         #endregion

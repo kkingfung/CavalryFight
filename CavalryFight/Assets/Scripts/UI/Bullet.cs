@@ -1,18 +1,20 @@
+#nullable enable
+
 using UnityEngine;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Audio;
 
 namespace MasterStylizedProjectile
 {
-    public class Bullet:MonoBehaviour
+    public class Bullet : MonoBehaviour
     {
         public float Speed = 5;
-        public ParticleSystem OnHitEffect;
-        public AudioClip bulletClip;
-        public AudioClip onHitClip;
+        public ParticleSystem? OnHitEffect;
+        public AudioClip? bulletClip;
+        public AudioClip? onHitClip;
 
         public bool isTargeting;
-        public Transform target;
+        public Transform? target;
         public float rotSpeed = 0;
         [Tooltip("是否平射，如果为true，子弹在y轴方向的速度为0，且不能朝上下旋转")]
         public bool isFlatShoot = false;

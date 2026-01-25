@@ -1,7 +1,9 @@
 #nullable enable
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using CavalryFight.Services.Lobby;
 using UnityEngine;
 
 namespace CavalryFight.Gameplay
@@ -12,18 +14,34 @@ namespace CavalryFight.Gameplay
     /// <remarks>
     /// シーン開始時に指定されたフィールドプレハブをインスタンス化します。
     /// ロード完了後、SpawnManagerにSpawnPointの再検索を通知します。
-    /// 複数のフィールドプレハブを登録し、名前で切り替えることができます。
+    /// MapConfigを使用してマップ情報を一元管理します。
     /// </remarks>
     public class FieldLoader : MonoBehaviour
     {
+        #region Constants
+
+        /// <summary>
+        /// ResourcesフォルダからMapConfigを読み込むパス
+        /// </summary>
+        private const string MAP_CONFIG_RESOURCE_PATH = "Settings/MapConfig";
+
+        #endregion
+
         #region Serialized Fields
 
-        [Header("Field Settings")]
-        [Tooltip("利用可能なフィールドプレハブのリスト")]
-        [SerializeField] private List<GameObject> _fieldPrefabs = new List<GameObject>();
+        [Header("Map Configuration")]
+        [Tooltip("マップ設定（MapConfig ScriptableObject）。未設定の場合はResources/Settings/MapConfigから自動読み込み")]
+        [SerializeField] private MapConfig? _mapConfig;
 
-        [Tooltip("デフォルトでロードするフィールドのインデックス（-1 = 自動ロードしない）")]
-        [SerializeField] private int _defaultFieldIndex = 0;
+        [Header("Field Settings")]
+        [Tooltip("デフォルトでロードするマップ")]
+        [SerializeField] private MapName _defaultMapName = MapName.Arena;
+
+        [Tooltip("デフォルトロードを有効にする")]
+        [SerializeField] private bool _enableDefaultLoad = false;
+
+        [Tooltip("デフォルトロードをスキップする（リプレイシーンなど外部からロードする場合）")]
+        [SerializeField] private bool _skipDefaultLoad = false;
 
         [Tooltip("フィールドをインスタンス化する親Transform（空の場合はルート）")]
         [SerializeField] private Transform? _fieldParent;
@@ -43,7 +61,8 @@ namespace CavalryFight.Gameplay
         #region Private Fields
 
         private GameObject? _loadedField;
-        private string? _currentFieldName;
+        private MapName? _currentMapName;
+        private bool _isReady = false; // NavMesh構築完了後にtrue
 
         #endregion
 
@@ -66,29 +85,34 @@ namespace CavalryFight.Gameplay
         /// <summary>
         /// フィールドがロード済みかどうかを取得します
         /// </summary>
-        public bool IsLoaded => _loadedField != null;
+        /// <remarks>
+        /// NavMesh構築が完了するまでfalseを返します。
+        /// AIスポーンはこのプロパティがtrueになるまで待つ必要があります。
+        /// </remarks>
+        public bool IsLoaded => _loadedField != null && _isReady;
 
         /// <summary>
-        /// 現在ロードされているフィールド名を取得します
+        /// 現在ロードされているマップ名を取得します
         /// </summary>
-        public string? CurrentFieldName => _currentFieldName;
+        public MapName? CurrentMapName => _currentMapName;
 
         /// <summary>
-        /// 利用可能なフィールド名のリストを取得します
+        /// マップ設定を取得します
         /// </summary>
-        public IReadOnlyList<string> AvailableFieldNames
+        public MapConfig? MapConfig => _mapConfig;
+
+        /// <summary>
+        /// 利用可能なマップ名のリストを取得します
+        /// </summary>
+        public IReadOnlyList<MapName> AvailableMapNames
         {
             get
             {
-                var names = new List<string>();
-                foreach (var prefab in _fieldPrefabs)
+                if (_mapConfig != null)
                 {
-                    if (prefab != null)
-                    {
-                        names.Add(prefab.name);
-                    }
+                    return _mapConfig.GetAllMapNames();
                 }
-                return names;
+                return new List<MapName>();
             }
         }
 
@@ -103,6 +127,8 @@ namespace CavalryFight.Gameplay
 
         private void Awake()
         {
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader.Awake() called. GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+
             if (Instance != null && Instance != this)
             {
                 Debug.LogWarning("[FieldLoader] Duplicate instance detected. Destroying this one.");
@@ -111,18 +137,62 @@ namespace CavalryFight.Gameplay
             }
 
             Instance = this;
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader.Instance set. _mapConfig assigned in Inspector: {_mapConfig != null}");
+
+            // MapConfigが未設定の場合はResourcesから読み込み
+            if (_mapConfig == null)
+            {
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: MapConfig is null, trying to load from Resources/{MAP_CONFIG_RESOURCE_PATH}");
+                _mapConfig = Resources.Load<MapConfig>(MAP_CONFIG_RESOURCE_PATH);
+
+                if (_mapConfig != null)
+                {
+                    Debug.Log($"[SPAWN-DEBUG] FieldLoader: MapConfig loaded from Resources. Maps count: {_mapConfig.Count}");
+                    if (_debugLog)
+                    {
+                        Debug.Log($"[FieldLoader] MapConfig を Resources/{MAP_CONFIG_RESOURCE_PATH} から読み込みました。");
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"[SPAWN-DEBUG] FieldLoader: FAILED to load MapConfig from Resources/{MAP_CONFIG_RESOURCE_PATH}");
+                    Debug.LogError($"[FieldLoader] MapConfig が見つかりません！Inspector で割り当てるか、Resources/{MAP_CONFIG_RESOURCE_PATH} に配置してください。");
+                }
+            }
+            else
+            {
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: MapConfig already assigned. Maps count: {_mapConfig.Count}");
+            }
         }
 
         private void Start()
         {
-            // デフォルトフィールドをロード
-            if (_defaultFieldIndex >= 0 && _defaultFieldIndex < _fieldPrefabs.Count)
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader.Start() called. _skipDefaultLoad={_skipDefaultLoad}, _enableDefaultLoad={_enableDefaultLoad}, _defaultMapName={_defaultMapName}");
+
+            // スキップフラグが設定されている場合はデフォルトロードをスキップ
+            if (_skipDefaultLoad)
             {
-                LoadFieldByIndex(_defaultFieldIndex);
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: SKIPPING default load (_skipDefaultLoad=true)");
+                if (_debugLog)
+                {
+                    Debug.Log("[FieldLoader] デフォルトロードをスキップしました（外部からのロードを待機）");
+                }
+                return;
             }
-            else if (_defaultFieldIndex >= 0)
+
+            // デフォルトフィールドをロード
+            if (_enableDefaultLoad)
             {
-                Debug.LogWarning($"[FieldLoader] デフォルトフィールドインデックス {_defaultFieldIndex} が範囲外です。");
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: Loading default map: {_defaultMapName}");
+                LoadField(_defaultMapName);
+            }
+            else
+            {
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: Default load DISABLED (_enableDefaultLoad=false)");
+                if (_debugLog)
+                {
+                    Debug.Log("[FieldLoader] デフォルトロードが無効です。");
+                }
             }
         }
 
@@ -146,59 +216,65 @@ namespace CavalryFight.Gameplay
         #region Public Methods
 
         /// <summary>
-        /// 名前でフィールドをロードします
+        /// マップ名でフィールドをロードします
         /// </summary>
-        /// <param name="fieldName">フィールドプレハブの名前</param>
+        /// <param name="mapName">マップ名</param>
         /// <returns>ロードに成功したかどうか</returns>
-        public bool LoadFieldByName(string fieldName)
+        public bool LoadField(MapName mapName)
         {
-            if (string.IsNullOrEmpty(fieldName))
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader.LoadField({mapName}) called");
+
+            if (_mapConfig == null)
             {
-                Debug.LogError("[FieldLoader] フィールド名が空です！");
+                Debug.LogError($"[SPAWN-DEBUG] FieldLoader.LoadField FAILED: MapConfig is NULL");
+                Debug.LogError("[FieldLoader] MapConfig が設定されていません！");
                 return false;
             }
 
-            // 名前でプレハブを検索
-            GameObject? prefab = null;
-            foreach (var p in _fieldPrefabs)
-            {
-                if (p != null && p.name == fieldName)
-                {
-                    prefab = p;
-                    break;
-                }
-            }
+            // MapConfigからプレハブを取得
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader: Getting prefab for map '{mapName}' from MapConfig");
+            GameObject? prefab = _mapConfig.GetPrefab(mapName);
 
             if (prefab == null)
             {
-                Debug.LogError($"[FieldLoader] フィールド '{fieldName}' が見つかりません！利用可能: {string.Join(", ", AvailableFieldNames)}");
+                Debug.LogError($"[SPAWN-DEBUG] FieldLoader.LoadField FAILED: Prefab is NULL for map '{mapName}'");
+                Debug.LogError($"[FieldLoader] マップ '{mapName}' が見つかりません！利用可能: {string.Join(", ", AvailableMapNames)}");
                 return false;
             }
 
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader: Found prefab '{prefab.name}' for map '{mapName}'");
+            _currentMapName = mapName;
             return LoadFieldInternal(prefab);
         }
 
         /// <summary>
         /// インデックスでフィールドをロードします
         /// </summary>
-        /// <param name="index">フィールドプレハブのインデックス</param>
+        /// <param name="index">マップエントリーのインデックス</param>
         /// <returns>ロードに成功したかどうか</returns>
         public bool LoadFieldByIndex(int index)
         {
-            if (index < 0 || index >= _fieldPrefabs.Count)
+            if (_mapConfig == null)
             {
-                Debug.LogError($"[FieldLoader] インデックス {index} が範囲外です！（0-{_fieldPrefabs.Count - 1}）");
+                Debug.LogError("[FieldLoader] MapConfig が設定されていません！");
                 return false;
             }
 
-            var prefab = _fieldPrefabs[index];
-            if (prefab == null)
+            if (index < 0 || index >= _mapConfig.Count)
+            {
+                Debug.LogError($"[FieldLoader] インデックス {index} が範囲外です！（0-{_mapConfig.Count - 1}）");
+                return false;
+            }
+
+            var entry = _mapConfig.Maps[index];
+            if (entry.Prefab == null)
             {
                 Debug.LogError($"[FieldLoader] インデックス {index} のプレハブが null です！");
                 return false;
             }
 
-            return LoadFieldInternal(prefab);
+            _currentMapName = entry.MapName;
+            return LoadFieldInternal(entry.Prefab);
         }
 
         /// <summary>
@@ -226,7 +302,8 @@ namespace CavalryFight.Gameplay
             {
                 Destroy(_loadedField);
                 _loadedField = null;
-                _currentFieldName = null;
+                _currentMapName = null;
+                _isReady = false;
 
                 if (_debugLog)
                 {
@@ -236,20 +313,17 @@ namespace CavalryFight.Gameplay
         }
 
         /// <summary>
-        /// フィールドプレハブを登録します
+        /// マップ名から表示名を取得します
         /// </summary>
-        /// <param name="prefab">登録するプレハブ</param>
-        public void RegisterFieldPrefab(GameObject prefab)
+        /// <param name="mapName">マップ名</param>
+        /// <returns>表示名</returns>
+        public string GetDisplayName(MapName mapName)
         {
-            if (prefab != null && !_fieldPrefabs.Contains(prefab))
+            if (_mapConfig != null)
             {
-                _fieldPrefabs.Add(prefab);
-
-                if (_debugLog)
-                {
-                    Debug.Log($"[FieldLoader] フィールドプレハブを登録しました: {prefab.name}");
-                }
+                return _mapConfig.GetDisplayName(mapName);
             }
+            return mapName.ToString();
         }
 
         #endregion
@@ -263,31 +337,95 @@ namespace CavalryFight.Gameplay
         /// <returns>ロードに成功したかどうか</returns>
         private bool LoadFieldInternal(GameObject prefab)
         {
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader.LoadFieldInternal() called with prefab: {prefab.name}");
+
             // 既存のフィールドがあれば削除
             if (_loadedField != null)
             {
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: Destroying existing field: {_loadedField.name}");
                 Destroy(_loadedField);
                 _loadedField = null;
             }
 
+            // 新しいフィールドロード開始時にリセット
+            _isReady = false;
+
             // フィールドをインスタンス化
             Quaternion rotation = Quaternion.Euler(_spawnRotation);
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader: Instantiating prefab at pos={_spawnPosition}, rot={_spawnRotation}, parent={(_fieldParent != null ? _fieldParent.name : "null")}");
             _loadedField = Instantiate(prefab, _spawnPosition, rotation, _fieldParent);
             _loadedField.name = prefab.name; // "(Clone)"を除去
-            _currentFieldName = prefab.name;
+
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader: Field instantiated successfully: {_loadedField.name}");
 
             if (_debugLog)
             {
-                Debug.Log($"[FieldLoader] フィールドをロードしました: {_loadedField.name}");
+                Debug.Log($"[FieldLoader] フィールドをロードしました: {_currentMapName} (prefab: {prefab.name})");
             }
 
+            // RuntimeNavMeshBuilderがあればNavMesh構築を待つ
+            var navMeshBuilder = _loadedField.GetComponent<RuntimeNavMeshBuilder>();
+            if (navMeshBuilder != null)
+            {
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: Found RuntimeNavMeshBuilder, waiting for NavMesh build...");
+                StartCoroutine(WaitForNavMeshAndNotify(navMeshBuilder));
+            }
+            else
+            {
+                // NavMeshBuilderがない場合は即座に通知
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: No RuntimeNavMeshBuilder found, notifying immediately...");
+                NotifyFieldLoadComplete();
+            }
+
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader.LoadFieldInternal() completed successfully. IsLoaded={IsLoaded}");
+            return true;
+        }
+
+        /// <summary>
+        /// NavMesh構築を待ってからフィールドロード完了を通知します
+        /// </summary>
+        /// <param name="navMeshBuilder">NavMeshビルダー</param>
+        private IEnumerator WaitForNavMeshAndNotify(RuntimeNavMeshBuilder navMeshBuilder)
+        {
+            // NavMesh構築完了を待つ（最大5秒）
+            float timeout = 5f;
+            float elapsed = 0f;
+
+            while (!navMeshBuilder.IsBuilt && elapsed < timeout)
+            {
+                yield return new WaitForSeconds(0.1f);
+                elapsed += 0.1f;
+            }
+
+            if (navMeshBuilder.IsBuilt)
+            {
+                Debug.Log($"[SPAWN-DEBUG] FieldLoader: NavMesh build completed, notifying...");
+            }
+            else
+            {
+                Debug.LogWarning($"[SPAWN-DEBUG] FieldLoader: NavMesh build timeout after {timeout}s, notifying anyway...");
+            }
+
+            NotifyFieldLoadComplete();
+        }
+
+        /// <summary>
+        /// フィールドロード完了を通知します
+        /// </summary>
+        private void NotifyFieldLoadComplete()
+        {
+            // NavMesh構築完了 - IsLoadedがtrueになる
+            _isReady = true;
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader: _isReady set to true. IsLoaded={IsLoaded}");
+
             // SpawnManagerにSpawnPointの再検索を通知
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader: Notifying SpawnManager...");
             NotifySpawnManager();
 
             // イベント発火
+            int listenerCount = FieldLoaded?.GetInvocationList()?.Length ?? 0;
+            Debug.Log($"[SPAWN-DEBUG] FieldLoader: Firing FieldLoaded event. Listeners: {listenerCount}");
             FieldLoaded?.Invoke(this, EventArgs.Empty);
-
-            return true;
         }
 
         /// <summary>

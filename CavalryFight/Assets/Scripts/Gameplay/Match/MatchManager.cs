@@ -2,10 +2,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using CavalryFight.Core.Services;
 using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
+using CavalryFight.Services.SceneManagement;
+using ServicesMatch = CavalryFight.Services.Match;
 using Unity.Netcode;
 using UnityEngine;
+using CavalryFight.Gameplay.Player;
 
 namespace CavalryFight.Gameplay.Match
 {
@@ -15,8 +20,9 @@ namespace CavalryFight.Gameplay.Match
     /// <remarks>
     /// ゲームモードに応じた適切なルールハンドラーを選択し、
     /// マッチの進行を管理します。
+    /// IMatchDataProviderを実装してMatchServiceにデータを提供します。
     /// </remarks>
-    public class MatchManager : NetworkBehaviour
+    public class MatchManager : NetworkBehaviour, IMatchDataProvider, ServicesMatch.IMatchReadinessProvider
     {
         #region Singleton
 
@@ -72,6 +78,13 @@ namespace CavalryFight.Gameplay.Match
 
         private IGameModeRulesHandler? _activeHandler;
         private float _countdownTimer;
+
+        // エンティティ準備状態
+        private bool _areAllEntitiesReady;
+        private float _entityLoadProgress;
+        private string _loadStatusMessage = "Initializing...";
+        private bool _playerSpawned;
+        private bool _aiSpawned;
 
         #endregion
 
@@ -163,6 +176,205 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         public event Action<ulong, ulong>? PlayerDied;
 
+        /// <summary>
+        /// すべてのエンティティの準備が完了した時に発生します（IMatchReadinessProvider実装）
+        /// </summary>
+        public event Action? AllEntitiesReady;
+
+        #endregion
+
+        #region IMatchReadinessProvider Implementation
+
+        /// <summary>
+        /// エンティティの準備が完了しているかどうかを取得します
+        /// </summary>
+        bool ServicesMatch.IMatchReadinessProvider.AreAllEntitiesReady => _areAllEntitiesReady;
+
+        /// <summary>
+        /// 現在のロード進捗を取得します
+        /// </summary>
+        float ServicesMatch.IMatchReadinessProvider.EntityLoadProgress => _entityLoadProgress;
+
+        /// <summary>
+        /// 現在のロードステータスメッセージを取得します
+        /// </summary>
+        string ServicesMatch.IMatchReadinessProvider.LoadStatusMessage => _loadStatusMessage;
+
+        /// <summary>
+        /// ロード進捗を更新します
+        /// </summary>
+        private void UpdateLoadProgress(float progress, string message)
+        {
+            _entityLoadProgress = progress;
+            _loadStatusMessage = message;
+        }
+
+        /// <summary>
+        /// すべてのエンティティの準備が完了したことを通知します
+        /// </summary>
+        private void NotifyAllEntitiesReady()
+        {
+            if (_areAllEntitiesReady)
+            {
+                return; // 既に通知済み
+            }
+
+            _areAllEntitiesReady = true;
+            _entityLoadProgress = 1f;
+            _loadStatusMessage = "Ready!";
+
+            // SceneManagementServiceにゲームプレイ準備完了を通知
+            // これによりローディング画面が閉じる
+            var sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            if (sceneService != null && sceneService.IsWaitingForGameplayReady)
+            {
+                sceneService.SignalGameplayReady();
+            }
+
+            AllEntitiesReady?.Invoke();
+        }
+
+        #endregion
+
+        #region IMatchDataProvider Implementation
+
+        /// <summary>
+        /// マッチが進行中かどうか（IMatchDataProvider実装）
+        /// </summary>
+        bool IMatchDataProvider.IsMatchInProgress => _matchState.Value == MatchState.InProgress;
+
+        /// <summary>
+        /// 現在のマッチ状態（IMatchDataProvider実装、Services.Match.MatchState型）
+        /// </summary>
+        ServicesMatch.MatchState IMatchDataProvider.CurrentMatchState => (ServicesMatch.MatchState)(int)_matchState.Value;
+
+        /// <summary>
+        /// 残り時間（IMatchDataProvider実装）
+        /// </summary>
+        float IMatchDataProvider.RemainingTime => RemainingTime;
+
+        /// <summary>
+        /// マッチ経過時間（IMatchDataProvider実装）
+        /// </summary>
+        float IMatchDataProvider.MatchTime => MatchTime;
+
+        /// <summary>
+        /// 現在のゲームモード（IMatchDataProvider実装）
+        /// </summary>
+        GameMode IMatchDataProvider.CurrentGameMode => CurrentGameMode;
+
+        // IMatchDataProvider イベント（Services.Match型を使用）
+        private event Action<ServicesMatch.MatchState>? _providerMatchStateChanged;
+        private event Action? _providerMatchStarted;
+        private event Action<ServicesMatch.MatchEndResult>? _providerMatchEnded;
+        private event Action<ulong, int, ServicesMatch.HitLocation>? _providerPlayerScored;
+
+        event Action<ServicesMatch.MatchState>? IMatchDataProvider.MatchStateChanged
+        {
+            add => _providerMatchStateChanged += value;
+            remove => _providerMatchStateChanged -= value;
+        }
+
+        event Action? IMatchDataProvider.MatchStarted
+        {
+            add => _providerMatchStarted += value;
+            remove => _providerMatchStarted -= value;
+        }
+
+        event Action<ServicesMatch.MatchEndResult>? IMatchDataProvider.MatchEnded
+        {
+            add => _providerMatchEnded += value;
+            remove => _providerMatchEnded -= value;
+        }
+
+        event Action<ulong, int, ServicesMatch.HitLocation>? IMatchDataProvider.PlayerScored
+        {
+            add => _providerPlayerScored += value;
+            remove => _providerPlayerScored -= value;
+        }
+
+        private event Action<int>? _providerCountdownUpdated;
+
+        event Action<int>? IMatchDataProvider.CountdownUpdated
+        {
+            add => _providerCountdownUpdated += value;
+            remove => _providerCountdownUpdated -= value;
+        }
+
+        /// <summary>
+        /// プレイヤースコア取得（IMatchDataProvider実装）
+        /// </summary>
+        ServicesMatch.PlayerScore? IMatchDataProvider.GetPlayerScore(ulong clientId) => GetPlayerScore(clientId);
+
+        /// <summary>
+        /// 全プレイヤースコア取得（IMatchDataProvider実装）
+        /// </summary>
+        ServicesMatch.PlayerScore[] IMatchDataProvider.GetAllPlayerScores() => GetAllPlayerScores();
+
+        /// <summary>
+        /// チームスコア取得（IMatchDataProvider実装）
+        /// </summary>
+        int IMatchDataProvider.GetTeamScore(int teamIndex) => GetTeamScore(teamIndex);
+
+        /// <summary>
+        /// プロバイダーイベントを発火します（内部で呼び出し）
+        /// </summary>
+        private void RaiseProviderMatchStateChanged(MatchState state)
+        {
+            _providerMatchStateChanged?.Invoke((ServicesMatch.MatchState)(int)state);
+        }
+
+        private void RaiseProviderMatchStarted()
+        {
+            _providerMatchStarted?.Invoke();
+        }
+
+        private void RaiseProviderMatchEnded(MatchEndResult result)
+        {
+            var servicesResult = new ServicesMatch.MatchEndResult
+            {
+                WinnerId = result.WinnerId,
+                MatchDuration = result.MatchDuration,
+                GameMode = result.GameMode,
+                IsTeamMode = result.IsTeamMode
+            };
+            _providerMatchEnded?.Invoke(servicesResult);
+        }
+
+        private void RaiseProviderPlayerScored(ulong clientId, int score, HitLocation hitLocation)
+        {
+            _providerPlayerScored?.Invoke(clientId, score, (ServicesMatch.HitLocation)(int)hitLocation);
+        }
+
+        private void RaiseProviderCountdownUpdated(int seconds)
+        {
+            _providerCountdownUpdated?.Invoke(seconds);
+        }
+
+        /// <summary>
+        /// MatchServiceにデータプロバイダーとして登録します
+        /// </summary>
+        private void RegisterWithMatchService()
+        {
+            var matchService = ServiceLocator.Instance.Get<IMatchService>();
+            if (matchService != null)
+            {
+                matchService.RegisterMatchDataProvider(this);
+            }
+        }
+
+        /// <summary>
+        /// MatchServiceからデータプロバイダー登録を解除します
+        /// </summary>
+        private void UnregisterFromMatchService()
+        {
+            var matchService = ServiceLocator.Instance.Get<IMatchService>();
+            if (matchService != null)
+            {
+                matchService.UnregisterMatchDataProvider();
+            }
+        }
+
         #endregion
 
         #region Unity Lifecycle
@@ -171,7 +383,6 @@ namespace CavalryFight.Gameplay.Match
         {
             if (_instance != null && _instance != this)
             {
-                Debug.LogWarning("[MatchManager] Instance already exists. Destroying duplicate.");
                 Destroy(gameObject);
                 return;
             }
@@ -188,11 +399,21 @@ namespace CavalryFight.Gameplay.Match
             _matchState.OnValueChanged += OnMatchStateValueChanged;
             _roomSettings.OnValueChanged += OnRoomSettingsValueChanged;
 
-            Debug.Log($"[MatchManager] Network spawned. IsServer: {IsServer}, IsClient: {IsClient}");
+            // MatchServiceにデータプロバイダーとして登録
+            RegisterWithMatchService();
+
+            // サーバーの場合、LobbyServiceからデータを取得してマッチを初期化
+            if (IsServer)
+            {
+                InitializeFromLobbyService();
+            }
         }
 
         public override void OnNetworkDespawn()
         {
+            // MatchServiceからデータプロバイダー登録を解除
+            UnregisterFromMatchService();
+
             _matchState.OnValueChanged -= OnMatchStateValueChanged;
             _roomSettings.OnValueChanged -= OnRoomSettingsValueChanged;
 
@@ -204,11 +425,281 @@ namespace CavalryFight.Gameplay.Match
 
         public override void OnDestroy()
         {
+            // ローカルテストモードの場合、ここで登録解除
+            if (!IsSpawned)
+            {
+                UnregisterFromMatchService();
+            }
+
             if (_instance == this)
             {
                 _instance = null;
             }
             base.OnDestroy();
+        }
+
+        private void Start()
+        {
+            // LobbyServiceにデータがあるかチェック（Lobbyから遷移した場合）
+            var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+            bool hasLobbyData = lobbyService != null && lobbyService.PlayerSlots.Count > 0;
+
+            // NetworkManagerが起動していない場合、またはこのNetworkBehaviourがスポーンされていない場合
+            // 開発テスト用にローカルモードで初期化
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening)
+            {
+                StartCoroutine(InitializeLocalTestMode());
+            }
+            else if (!IsSpawned)
+            {
+                // NetworkManagerは起動しているが、このオブジェクトがネットワークスポーンされていない場合
+                // LobbyServiceにデータがある場合は、すぐにローカルモードで初期化（3秒待たない）
+                if (hasLobbyData)
+                {
+                    StartCoroutine(InitializeLocalTestMode());
+                }
+                else
+                {
+                    // 少し待ってからもう一度チェック
+                    StartCoroutine(WaitForNetworkSpawnOrFallback());
+                }
+            }
+        }
+
+        /// <summary>
+        /// ネットワークスポーンを待つか、ローカルモードにフォールバックするコルーチン
+        /// </summary>
+        private System.Collections.IEnumerator WaitForNetworkSpawnOrFallback()
+        {
+            float waitTime = 0f;
+            const float maxWaitTime = 3f; // 最大3秒待機
+
+            while (!IsSpawned && waitTime < maxWaitTime)
+            {
+                yield return new WaitForSeconds(0.1f);
+                waitTime += 0.1f;
+            }
+
+            if (!IsSpawned)
+            {
+                StartCoroutine(InitializeLocalTestMode());
+            }
+        }
+
+        /// <summary>
+        /// ローカルテストモードでの初期化（シーン直接再生用、またはネットワーク非対応マッチ用）
+        /// </summary>
+        private System.Collections.IEnumerator InitializeLocalTestMode()
+        {
+            UpdateLoadProgress(0.1f, "Initializing...");
+
+            // LobbyServiceからルーム設定とプレイヤースロットを取得（Lobbyから遷移した場合）
+            var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+
+            RoomSettings settings;
+            PlayerSlot[] slots;
+
+            if (lobbyService != null && lobbyService.PlayerSlots.Count > 0)
+            {
+                // Lobbyから遷移した場合
+                settings = lobbyService.CurrentRoomSettings;
+                slots = lobbyService.PlayerSlots.ToArray();
+            }
+            else
+            {
+                // シーン直接再生の場合（デフォルト設定）
+                settings = RoomSettings.CreateDefault();
+                var localPlayerSlot = new PlayerSlot(0, 0UL, "LocalPlayer");
+                localPlayerSlot.TeamIndex = 0;
+                slots = new PlayerSlot[] { localPlayerSlot };
+            }
+
+            // マップをロード（OnNetworkSpawn経由でない場合は手動でロード）
+            UpdateLoadProgress(0.2f, "Loading field...");
+            LoadMap(settings.MapName);
+
+            // フィールドロード完了を待つ
+            float fieldLoadWaitTime = 0f;
+            const float maxFieldLoadWaitTime = 10f;
+            while ((FieldLoader.Instance == null || !FieldLoader.Instance.IsLoaded) && fieldLoadWaitTime < maxFieldLoadWaitTime)
+            {
+                yield return new WaitForSeconds(0.1f);
+                fieldLoadWaitTime += 0.1f;
+            }
+
+            if (FieldLoader.Instance == null || !FieldLoader.Instance.IsLoaded)
+            {
+                Debug.LogError("[MatchManager] FieldLoader failed to load. Aborting local test mode.");
+                yield break;
+            }
+
+            UpdateLoadProgress(0.4f, "Preparing match...");
+
+            // RulesHandlersを自動検索
+            AutoFindRulesHandlers();
+
+            // ルーム設定を適用（ローカルモードでもRoomSettingsプロパティで参照できるように）
+            _roomSettings.Value = settings;
+
+            // プレイヤースコアを初期化（ローカルテストモード用）
+            _playerScores?.Clear();
+            foreach (var slot in slots)
+            {
+                var playerScore = new Services.Match.PlayerScore
+                {
+                    ClientId = slot.PlayerId,
+                    PlayerName = slot.PlayerName,
+                    Score = 0,
+                    RemainingArrows = settings.ArrowLimit,
+                    HitCount = 0,
+                    ShotCount = 0,
+                    TeamIndex = slot.TeamIndex
+                };
+                _playerScores?.Add(playerScore);
+            }
+
+            // ゲームモードハンドラーを初期化
+            SelectHandler(settings.GameMode);
+            _activeHandler?.Initialize(this, settings);
+
+            // プレイヤーのスポーン完了を待つ
+            UpdateLoadProgress(0.5f, "Spawning player...");
+            yield return StartCoroutine(WaitForPlayerSpawn());
+
+            // AIプレイヤーをスポーン（スロットにAIがいる場合）
+            // ★重要: AIはここでスポーンするが、有効化はカウントダウン終了後
+            UpdateLoadProgress(0.7f, "Spawning opponents...");
+            int aiCount = 0;
+            if (AISpawner.Instance != null)
+            {
+                foreach (var slot in slots)
+                {
+                    if (slot.IsAI)
+                    {
+                        AISpawner.Instance.Initialize(settings.GameMode, slot.AIDifficulty);
+                        var spawnedIds = AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
+                        if (spawnedIds.Count > 0)
+                        {
+                            aiCount++;
+                        }
+                    }
+                }
+
+                // AIがスロットにいなかった場合、テスト用に1体スポーン
+                if (aiCount == 0)
+                {
+                    AISpawner.Instance.Initialize(settings.GameMode, AIDifficulty.Normal);
+                    AISpawner.Instance.SpawnAIPlayers(1, -1);
+                }
+            }
+
+            _aiSpawned = true;
+
+            // MatchServiceにデータプロバイダーとして登録（ローカルテストモード用）
+            RegisterWithMatchService();
+
+            // すべてのエンティティの準備完了を通知
+            UpdateLoadProgress(0.95f, "Finalizing...");
+            yield return new WaitForSeconds(0.2f); // 少し待ってからUIが更新される時間を確保
+
+            NotifyAllEntitiesReady();
+
+            // ローカルテストモードでカウントダウンを開始
+            StartCoroutine(RunLocalCountdown());
+        }
+
+        /// <summary>
+        /// プレイヤーのスポーン完了を待ちます
+        /// </summary>
+        private System.Collections.IEnumerator WaitForPlayerSpawn()
+        {
+            float waitTime = 0f;
+            const float maxWaitTime = 10f;
+
+            while (!_playerSpawned && waitTime < maxWaitTime)
+            {
+                // PlayerSpawnerのスポーン完了をチェック
+                if (PlayerSpawner.Instance != null && PlayerSpawner.Instance.IsSpawned)
+                {
+                    _playerSpawned = true;
+                    yield break;
+                }
+
+                yield return new WaitForSeconds(0.1f);
+                waitTime += 0.1f;
+            }
+
+            if (!_playerSpawned)
+            {
+                _playerSpawned = true; // タイムアウトでも続行
+            }
+        }
+
+        /// <summary>
+        /// ローカルテストモード用のカウントダウン処理
+        /// </summary>
+        private System.Collections.IEnumerator RunLocalCountdown()
+        {
+            // カウントダウン状態に遷移
+            _matchState.Value = MatchState.Countdown;
+
+            float countdownTimer = _countdownDuration;
+            int lastSeconds = -1;
+
+            while (countdownTimer > 0)
+            {
+                int seconds = Mathf.CeilToInt(countdownTimer);
+
+                // 秒数が変わった時だけ通知
+                if (seconds != lastSeconds)
+                {
+                    // イベントを発火
+                    CountdownUpdated?.Invoke(seconds);
+                    RaiseProviderCountdownUpdated(seconds);
+
+                    lastSeconds = seconds;
+                }
+
+                countdownTimer -= Time.deltaTime;
+                yield return null;
+            }
+
+            // マッチ開始
+            _matchState.Value = MatchState.InProgress;
+            _matchTime.Value = 0f;
+
+            _activeHandler?.OnMatchStart();
+            MatchStarted?.Invoke();
+            RaiseProviderMatchStarted();
+
+            // AIを有効化（まだ有効化されていない場合）
+            AISpawner.Instance?.EnableAllAI();
+
+            // ローカルモード用のマッチ時間更新を開始
+            StartCoroutine(RunLocalMatchTimer());
+        }
+
+        /// <summary>
+        /// ローカルテストモード用のマッチタイマー更新
+        /// </summary>
+        private System.Collections.IEnumerator RunLocalMatchTimer()
+        {
+            while (_matchState.Value == MatchState.InProgress)
+            {
+                _matchTime.Value += Time.deltaTime;
+                _activeHandler?.OnUpdate(Time.deltaTime);
+
+                // 時間制限チェック
+                if (RoomSettings.TimeLimit > 0 && _matchTime.Value >= RoomSettings.TimeLimit)
+                {
+                    // マッチ終了処理（ローカルモード用）
+                    _matchState.Value = MatchState.Ended;
+                    _activeHandler?.OnMatchEnd();
+                    break;
+                }
+
+                yield return null;
+            }
         }
 
         private void Update()
@@ -280,8 +771,6 @@ namespace CavalryFight.Gameplay.Match
 
             // 状態を更新
             _matchState.Value = MatchState.WaitingForPlayers;
-
-            Debug.Log($"[MatchManager] Match initialized. Mode: {settings.GameMode}, Players: {slots.Length}");
         }
 
         /// <summary>
@@ -301,8 +790,6 @@ namespace CavalryFight.Gameplay.Match
 
             _countdownTimer = _countdownDuration;
             _matchState.Value = MatchState.Countdown;
-
-            Debug.Log("[MatchManager] Countdown started");
         }
 
         /// <summary>
@@ -345,8 +832,6 @@ namespace CavalryFight.Gameplay.Match
 
                     // イベント発火
                     NotifyPlayerScoredClientRpc(clientId, score, hitLocation);
-
-                    Debug.Log($"[MatchManager] Player {clientId} scored {score} (total: {playerScore.Score})");
                     break;
                 }
             }
@@ -363,6 +848,61 @@ namespace CavalryFight.Gameplay.Match
                 return;
             }
 
+            RecordArrowFiredInternal(clientId);
+        }
+
+        /// <summary>
+        /// プレイヤーの矢発射を記録します（ローカルモード用）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        public void RecordArrowFiredLocal(ulong clientId)
+        {
+            if (_playerScores == null)
+            {
+                return;
+            }
+
+            RecordArrowFiredInternal(clientId);
+        }
+
+        /// <summary>
+        /// プレイヤーのスコアを追加します（ローカルモード用）
+        /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <param name="score">追加するスコア</param>
+        /// <param name="hitLocation">命中部位</param>
+        public void AddPlayerScoreLocal(ulong clientId, int score, HitLocation hitLocation)
+        {
+            if (_playerScores == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < _playerScores.Count; i++)
+            {
+                if (_playerScores[i].ClientId == clientId)
+                {
+                    var playerScore = _playerScores[i];
+                    playerScore.Score += score;
+                    playerScore.HitCount++;
+                    _playerScores[i] = playerScore;
+
+                    // ハンドラーに通知
+                    _activeHandler?.OnPlayerScored(clientId, score, hitLocation);
+
+                    // ローカルモードではイベントを直接発火
+                    PlayerScored?.Invoke(clientId, score, hitLocation);
+                    RaiseProviderPlayerScored(clientId, score, hitLocation);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 矢発射記録の内部実装
+        /// </summary>
+        private void RecordArrowFiredInternal(ulong clientId)
+        {
             for (int i = 0; i < _playerScores.Count; i++)
             {
                 if (_playerScores[i].ClientId == clientId)
@@ -405,24 +945,28 @@ namespace CavalryFight.Gameplay.Match
         private void NotifyCountdownClientRpc(int seconds)
         {
             CountdownUpdated?.Invoke(seconds);
+            RaiseProviderCountdownUpdated(seconds);
         }
 
         [ClientRpc]
         private void NotifyMatchStartedClientRpc()
         {
             MatchStarted?.Invoke();
+            RaiseProviderMatchStarted();
         }
 
         [ClientRpc]
         private void NotifyMatchEndedClientRpc(MatchEndResult result)
         {
             MatchEnded?.Invoke(result);
+            RaiseProviderMatchEnded(result);
         }
 
         [ClientRpc]
         private void NotifyPlayerScoredClientRpc(ulong clientId, int score, HitLocation hitLocation)
         {
             PlayerScored?.Invoke(clientId, score, hitLocation);
+            RaiseProviderPlayerScored(clientId, score, hitLocation);
         }
 
         [ClientRpc]
@@ -481,9 +1025,185 @@ namespace CavalryFight.Gameplay.Match
             return _activeHandler?.GetTeamScore(teamIndex) ?? 0;
         }
 
+        /// <summary>
+        /// 指定したプレイヤー/AIがリスポーン可能かどうかを取得します
+        /// </summary>
+        /// <param name="clientId">プレイヤーまたはAIのID</param>
+        /// <returns>リスポーン可能な場合はtrue</returns>
+        public bool CanRespawn(ulong clientId)
+        {
+            // マッチが進行中でない場合はリスポーン不可
+            if (_matchState.Value != MatchState.InProgress)
+            {
+                return false;
+            }
+
+            // ゲームモードハンドラーに確認
+            return _activeHandler?.CanPlayerRespawn(clientId) ?? true;
+        }
+
+        /// <summary>
+        /// リスポーン遅延時間を取得します
+        /// </summary>
+        /// <returns>リスポーン遅延（秒）</returns>
+        public float GetRespawnDelay()
+        {
+            // ルーム設定からリスポーン遅延を取得（デフォルト3秒）
+            // TODO: RoomSettingsにRespawnDelayを追加
+            return 3f;
+        }
+
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// LobbyServiceからマッチ情報を取得して初期化します
+        /// </summary>
+        private void InitializeFromLobbyService()
+        {
+            var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+            if (lobbyService == null)
+            {
+                Debug.LogError("[MatchManager] ILobbyService not found. Cannot initialize match.");
+                return;
+            }
+
+            var roomSettings = lobbyService.CurrentRoomSettings;
+            var playerSlots = lobbyService.PlayerSlots.ToArray();
+
+            // マップをロード
+            LoadMap(roomSettings.MapName);
+
+            // マッチを初期化
+            InitializeMatchInternal(roomSettings, playerSlots);
+        }
+
+        /// <summary>
+        /// マップをロードします
+        /// </summary>
+        /// <param name="mapName">マップ名</param>
+        private void LoadMap(MapName mapName)
+        {
+            if (FieldLoader.Instance != null)
+            {
+                FieldLoader.Instance.LoadField(mapName);
+            }
+        }
+
+        /// <summary>
+        /// マッチを内部的に初期化します
+        /// </summary>
+        /// <param name="settings">ルーム設定</param>
+        /// <param name="slots">プレイヤースロット</param>
+        private void InitializeMatchInternal(RoomSettings settings, PlayerSlot[] slots)
+        {
+            _roomSettings.Value = settings;
+
+            // プレイヤースロットを設定
+            _playerSlots?.Clear();
+            foreach (var slot in slots)
+            {
+                _playerSlots?.Add(slot);
+            }
+
+            // プレイヤースコアを初期化
+            _playerScores?.Clear();
+            foreach (var slot in slots)
+            {
+                _playerScores?.Add(new Services.Match.PlayerScore
+                {
+                    ClientId = slot.PlayerId,
+                    PlayerName = slot.PlayerName,
+                    Score = 0,
+                    RemainingArrows = settings.ArrowLimit,
+                    HitCount = 0,
+                    ShotCount = 0,
+                    TeamIndex = slot.TeamIndex
+                });
+            }
+
+            // RulesHandlersを自動検索
+            AutoFindRulesHandlers();
+
+            // ゲームモードに応じたハンドラーを選択
+            SelectHandler(settings.GameMode);
+
+            // ハンドラーを初期化
+            _activeHandler?.Initialize(this, settings);
+
+            // 状態を更新
+            _matchState.Value = MatchState.WaitingForPlayers;
+
+            // エンティティスポーンのコルーチンを開始
+            StartCoroutine(SpawnEntitiesAndStartCountdown(settings, slots));
+        }
+
+        /// <summary>
+        /// エンティティをスポーンしてからカウントダウンを開始します（ネットワークモード用）
+        /// </summary>
+        private System.Collections.IEnumerator SpawnEntitiesAndStartCountdown(RoomSettings settings, PlayerSlot[] slots)
+        {
+            UpdateLoadProgress(0.4f, "Preparing match...");
+
+            // プレイヤーのスポーン完了を待つ
+            UpdateLoadProgress(0.5f, "Spawning player...");
+            yield return StartCoroutine(WaitForPlayerSpawn());
+
+            // AIプレイヤーをスポーン（スロットにAIがいる場合）
+            // ★重要: AIはここでスポーンするが、有効化はカウントダウン終了後
+            UpdateLoadProgress(0.7f, "Spawning opponents...");
+
+            if (AISpawner.Instance != null)
+            {
+                foreach (var slot in slots)
+                {
+                    if (slot.IsAI)
+                    {
+                        AISpawner.Instance.Initialize(settings.GameMode, slot.AIDifficulty);
+                        AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
+                    }
+                }
+            }
+
+            _aiSpawned = true;
+
+            // すべてのエンティティの準備完了を通知
+            UpdateLoadProgress(0.95f, "Finalizing...");
+            yield return new WaitForSeconds(0.2f); // UIが更新される時間を確保
+
+            NotifyAllEntitiesReady();
+
+            // カウントダウンを開始
+            StartCountdownRpc();
+        }
+
+        /// <summary>
+        /// RulesHandlerを自動的に検索して設定します
+        /// </summary>
+        private void AutoFindRulesHandlers()
+        {
+            if (_arenaHandler == null)
+            {
+                _arenaHandler = GetComponentInChildren<ArenaRulesHandler>();
+            }
+            if (_scoreMatchHandler == null)
+            {
+                _scoreMatchHandler = GetComponentInChildren<ScoreMatchRulesHandler>();
+            }
+            if (_teamFightHandler == null)
+            {
+                _teamFightHandler = GetComponentInChildren<TeamFightRulesHandler>();
+            }
+            if (_deathmatchHandler == null)
+            {
+                _deathmatchHandler = GetComponentInChildren<DeathmatchRulesHandler>();
+            }
+            if (_huntingHandler == null)
+            {
+                _huntingHandler = GetComponentInChildren<HuntingRulesHandler>();
+            }
+        }
 
         private void SelectHandler(GameMode mode)
         {
@@ -532,16 +1252,48 @@ namespace CavalryFight.Gameplay.Match
             _matchState.Value = MatchState.InProgress;
             _matchTime.Value = 0f;
 
+            // AIがまだスポーンされていない場合のみスポーン（フォールバック）
+            if (!_aiSpawned)
+            {
+                SpawnAIPlayers();
+                _aiSpawned = true;
+            }
+
             _activeHandler?.OnMatchStart();
             NotifyMatchStartedClientRpc();
 
-            Debug.Log("[MatchManager] Match started!");
+            // AIを有効化
+            AISpawner.Instance?.EnableAllAI();
+        }
+
+        /// <summary>
+        /// PlayerSlotsに基づいてAIプレイヤーをスポーンします
+        /// </summary>
+        private void SpawnAIPlayers()
+        {
+            if (AISpawner.Instance == null || _playerSlots == null)
+            {
+                return;
+            }
+
+            foreach (var slot in _playerSlots)
+            {
+                if (slot.IsAI)
+                {
+                    AISpawner.Instance.Initialize(RoomSettings.GameMode, slot.AIDifficulty);
+                    AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
+                }
+            }
         }
 
         private void EndMatch(ulong winnerId)
         {
             _matchState.Value = MatchState.Ended;
             _activeHandler?.OnMatchEnd();
+
+            // AIを無効化・削除
+            AISpawner.Instance?.DisableAllAI();
+            AISpawner.Instance?.DespawnAllAI();
 
             var result = new MatchEndResult
             {
@@ -552,19 +1304,17 @@ namespace CavalryFight.Gameplay.Match
             };
 
             NotifyMatchEndedClientRpc(result);
-
-            Debug.Log($"[MatchManager] Match ended! Winner: {winnerId}, Duration: {_matchTime.Value:F1}s");
         }
 
         private void OnMatchStateValueChanged(MatchState previousValue, MatchState newValue)
         {
             MatchStateChanged?.Invoke(newValue);
-            Debug.Log($"[MatchManager] State changed: {previousValue} -> {newValue}");
+            RaiseProviderMatchStateChanged(newValue);
         }
 
         private void OnRoomSettingsValueChanged(RoomSettings previousValue, RoomSettings newValue)
         {
-            Debug.Log($"[MatchManager] Room settings updated. Mode: {newValue.GameMode}");
+            // 必要に応じて処理
         }
 
         private void OnHandlerMatchEndTriggered(ulong winnerId)

@@ -372,6 +372,7 @@ namespace CavalryFight.ViewModels
             _matchService.MatchStarted += OnMatchStarted;
             _matchService.MatchEndedWithResult += OnMatchEnded;
             _matchService.PlayerScored += OnPlayerScored;
+            _matchService.CountdownUpdated += OnCountdownUpdated;
         }
 
         private void UnsubscribeFromMatchService()
@@ -385,6 +386,12 @@ namespace CavalryFight.ViewModels
             _matchService.MatchStarted -= OnMatchStarted;
             _matchService.MatchEndedWithResult -= OnMatchEnded;
             _matchService.PlayerScored -= OnPlayerScored;
+            _matchService.CountdownUpdated -= OnCountdownUpdated;
+        }
+
+        private void OnCountdownUpdated(int seconds)
+        {
+            CountdownValue = seconds;
         }
 
         private void UpdateFromMatchService()

@@ -70,6 +70,9 @@ namespace CavalryFight.Views
         private VisualElement? _settingsPopup;
         private SettingsPopupController? _settingsPopupController;
 
+        // Crosshair
+        private VisualElement? _crosshair;
+
         #endregion
 
         #region Services
@@ -78,6 +81,13 @@ namespace CavalryFight.Views
         private IInputService? _inputService;
         private ISceneManagementService? _sceneService;
         private IMatchService? _matchService;
+
+        #endregion
+
+        #region Crosshair State
+
+        private GameObject? _localPlayerObject;
+        private bool _wasCharging = false;
 
         #endregion
 
@@ -121,6 +131,9 @@ namespace CavalryFight.Views
 
             // 入力処理
             HandleInput();
+
+            // クロスヘア更新（ハンターのみ）
+            UpdateCrosshair();
         }
 
         /// <summary>
@@ -209,6 +222,26 @@ namespace CavalryFight.Views
 
             // Score Popup
             _scorePopupContainer = Q<VisualElement>("ScorePopupContainer");
+
+            // Crosshair
+            _crosshair = Q<VisualElement>("Crosshair");
+            if (_crosshair != null)
+            {
+                Debug.Log("[HuntingView] Crosshair element found.");
+            }
+
+            // フルスクリーンのオーバーレイコンテナはマウスイベントを無視
+            // （設定ポップアップなど他のUIがクリックを受け取れるように）
+            var crosshairContainer = Q<VisualElement>("CrosshairContainer");
+            if (crosshairContainer != null)
+            {
+                crosshairContainer.pickingMode = PickingMode.Ignore;
+            }
+
+            if (_scorePopupContainer != null)
+            {
+                _scorePopupContainer.pickingMode = PickingMode.Ignore;
+            }
         }
 
         private void RegisterEventHandlers()
@@ -323,10 +356,18 @@ namespace CavalryFight.Views
             if (ViewModel.IsPaused)
             {
                 _settingsPopupController?.Show();
+
+                // カーソルを表示してロック解除（UIをクリック可能にする）
+                UnityEngine.Cursor.lockState = CursorLockMode.None;
+                UnityEngine.Cursor.visible = true;
             }
             else
             {
                 _settingsPopupController?.Hide();
+
+                // カーソルをロックして非表示に戻す
+                UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+                UnityEngine.Cursor.visible = false;
             }
 
             if (_hudPanel != null)
@@ -590,6 +631,7 @@ namespace CavalryFight.Views
 
                 case nameof(HuntingViewModel.CountdownValue):
                 case nameof(HuntingViewModel.IsCountingDown):
+                case nameof(HuntingViewModel.MatchState):
                     UpdateCountdownPanel();
                     break;
 
@@ -646,6 +688,114 @@ namespace CavalryFight.Views
             if (clip != null && _audioService != null)
             {
                 _audioService.PlaySfx(clip);
+            }
+        }
+
+        #endregion
+
+        #region Crosshair
+
+        /// <summary>
+        /// クロスヘアの表示/非表示を更新します（ハンターのみ）
+        /// </summary>
+        private void UpdateCrosshair()
+        {
+            // ハンターでない場合はクロスヘアを表示しない
+            if (ViewModel == null || !ViewModel.IsLocalPlayerHunter)
+            {
+                HideCrosshair();
+                return;
+            }
+
+            // ローカルプレイヤーを検索（まだ取得していない場合）
+            if (_localPlayerObject == null)
+            {
+                FindLocalPlayer();
+            }
+
+            // プレイヤーが見つからない場合は何もしない
+            if (_localPlayerObject == null)
+            {
+                return;
+            }
+
+            // チャージ状態を取得
+            bool isCharging = GetPlayerChargingState();
+            if (isCharging != _wasCharging)
+            {
+                _wasCharging = isCharging;
+                if (isCharging)
+                {
+                    ShowCrosshair();
+                }
+                else
+                {
+                    HideCrosshair();
+                }
+            }
+        }
+
+        /// <summary>
+        /// ローカルプレイヤーを検索します
+        /// </summary>
+        private void FindLocalPlayer()
+        {
+            // "PlayerController"コンポーネントを持つオブジェクトを検索
+            var playerControllers = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+            foreach (var controller in playerControllers)
+            {
+                if (controller.GetType().Name == "PlayerController")
+                {
+                    _localPlayerObject = controller.gameObject;
+                    Debug.Log($"[HuntingView] Found PlayerController: {controller.gameObject.name}");
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// プレイヤーのチャージ状態を取得します
+        /// </summary>
+        private bool GetPlayerChargingState()
+        {
+            if (_localPlayerObject == null)
+            {
+                return false;
+            }
+
+            // PlayerControllerのIsChargingプロパティをリフレクションで取得
+            var controller = _localPlayerObject.GetComponent("PlayerController");
+            if (controller != null)
+            {
+                var property = controller.GetType().GetProperty("IsCharging");
+                if (property != null)
+                {
+                    return (bool)property.GetValue(controller);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// クロスヘアを表示します
+        /// </summary>
+        private void ShowCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.RemoveFromClassList("hidden");
+            }
+        }
+
+        /// <summary>
+        /// クロスヘアを非表示にします
+        /// </summary>
+        private void HideCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.AddToClassList("hidden");
             }
         }
 

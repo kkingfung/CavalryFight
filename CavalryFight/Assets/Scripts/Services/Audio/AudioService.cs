@@ -50,9 +50,7 @@ namespace CavalryFight.Services.Audio
             get => _masterVolume;
             set
             {
-                float oldValue = _masterVolume;
                 _masterVolume = Mathf.Clamp01(value);
-                Debug.Log($"[AudioService] MasterVolume changed: {oldValue:F2} -> {_masterVolume:F2}");
                 UpdateBgmVolume();
                 VolumeChanged?.Invoke(this, new VolumeChangedEventArgs(VolumeType.Master, _masterVolume));
             }
@@ -80,9 +78,7 @@ namespace CavalryFight.Services.Audio
             get => _sfxVolume;
             set
             {
-                float oldValue = _sfxVolume;
                 _sfxVolume = Mathf.Clamp01(value);
-                Debug.Log($"[AudioService] SfxVolume changed: {oldValue:F2} -> {_sfxVolume:F2}");
                 VolumeChanged?.Invoke(this, new VolumeChangedEventArgs(VolumeType.Sfx, _sfxVolume));
             }
         }
@@ -132,8 +128,6 @@ namespace CavalryFight.Services.Audio
         /// </remarks>
         public void Initialize()
         {
-            Debug.Log("[AudioService] Initializing...");
-
             // AudioManager用のGameObjectを作成
             var managerObject = new GameObject("AudioManager");
             GameObject.DontDestroyOnLoad(managerObject);
@@ -157,8 +151,6 @@ namespace CavalryFight.Services.Audio
             }
 
             UpdateBgmVolume();
-
-            Debug.Log("[AudioService] Initialized.");
         }
 
         /// <summary>
@@ -169,8 +161,6 @@ namespace CavalryFight.Services.Audio
         /// </remarks>
         public void Dispose()
         {
-            Debug.Log("[AudioService] Disposing...");
-
             // イベントハンドラをクリア
             BgmChanged = null;
             VolumeChanged = null;
@@ -210,7 +200,6 @@ namespace CavalryFight.Services.Audio
             // 同じBGMが既に再生中の場合は、再起動せずに継続
             if (_audioManager.BgmSource.clip == clip && _audioManager.BgmSource.isPlaying)
             {
-                Debug.Log($"[AudioService] BGM '{clip.name}' is already playing. Continuing seamlessly.");
                 return;
             }
 
@@ -228,7 +217,6 @@ namespace CavalryFight.Services.Audio
             }
 
             BgmChanged?.Invoke(this, new AudioChangedEventArgs(clip.name));
-            Debug.Log($"[AudioService] BGM started: {clip.name}");
         }
 
         /// <summary>
@@ -250,8 +238,6 @@ namespace CavalryFight.Services.Audio
                 _currentBgmName = null;
                 BgmChanged?.Invoke(this, new AudioChangedEventArgs(string.Empty));
             }
-
-            Debug.Log("[AudioService] BGM stopped.");
         }
 
         /// <summary>
@@ -263,7 +249,6 @@ namespace CavalryFight.Services.Audio
                 return;
 
             _audioManager.BgmSource.Pause();
-            Debug.Log("[AudioService] BGM paused.");
         }
 
         /// <summary>
@@ -275,7 +260,6 @@ namespace CavalryFight.Services.Audio
                 return;
 
             _audioManager.BgmSource.UnPause();
-            Debug.Log("[AudioService] BGM resumed.");
         }
 
         #endregion
@@ -299,7 +283,6 @@ namespace CavalryFight.Services.Audio
             }
 
             float volume = _masterVolume * _sfxVolume * Mathf.Clamp01(volumeScale);
-            Debug.Log($"[AudioService] PlaySfx: {clip.name}, master={_masterVolume:F2}, sfx={_sfxVolume:F2}, scale={volumeScale:F2}, final={volume:F2}");
 
             // ボリュームが0の場合は再生しない
             if (volume <= 0.001f)
@@ -322,7 +305,6 @@ namespace CavalryFight.Services.Audio
                 return;
 
             float volume = _masterVolume * _sfxVolume * Mathf.Clamp01(volumeScale);
-            Debug.Log($"[AudioService] PlaySfxAtPosition: {clip.name}, master={_masterVolume:F2}, sfx={_sfxVolume:F2}, scale={volumeScale:F2}, final={volume:F2}");
 
             // ボリュームが0の場合は再生しない
             if (volume <= 0.001f)
@@ -354,7 +336,6 @@ namespace CavalryFight.Services.Audio
         {
             IsBgmMuted = true;
             IsSfxMuted = true;
-            Debug.Log("[AudioService] All audio muted.");
         }
 
         /// <summary>
@@ -364,7 +345,6 @@ namespace CavalryFight.Services.Audio
         {
             IsBgmMuted = false;
             IsSfxMuted = false;
-            Debug.Log("[AudioService] All audio unmuted.");
         }
 
         #endregion
@@ -485,8 +465,6 @@ namespace CavalryFight.Services.Audio
                 SfxSource = gameObject.AddComponent<AudioSource>();
                 SfxSource.playOnAwake = false;
                 SfxSource.loop = false;
-
-                Debug.Log("[AudioManager] Initialized.");
             }
         }
 

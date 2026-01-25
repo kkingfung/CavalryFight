@@ -54,6 +54,11 @@ namespace CavalryFight.Development.MockData.MockServices
         /// </summary>
         public ReturnDestination CurrentReturnDestination { get; private set; } = ReturnDestination.MainMenu;
 
+        /// <summary>
+        /// ゲームプレイシーンの準備完了待ちかどうかを取得します
+        /// </summary>
+        public bool IsWaitingForGameplayReady => false;
+
         #endregion
 
         #region Methods
@@ -194,6 +199,14 @@ namespace CavalryFight.Development.MockData.MockServices
         public void LoadHunting()
         {
             Debug.Log("[MockSceneManagementService] LoadHunting called");
+        }
+
+        /// <summary>
+        /// ゲームプレイシーンの準備完了を通知します
+        /// </summary>
+        public void SignalGameplayReady()
+        {
+            Debug.Log("[MockSceneManagementService] SignalGameplayReady called (no-op in mock)");
         }
 
         /// <summary>

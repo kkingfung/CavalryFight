@@ -82,6 +82,11 @@ namespace CavalryFight.Development.MockData.MockServices
         /// </summary>
         public event Action<MatchState>? MatchStateChanged;
 
+        /// <summary>
+        /// カウントダウンが更新された時に発生します
+        /// </summary>
+        public event Action<int>? CountdownUpdated;
+
         #endregion
 
         #region Properties
@@ -252,6 +257,23 @@ namespace CavalryFight.Development.MockData.MockServices
         public void UpdateScoringConfig(ScoringConfig config)
         {
             Debug.Log("[MockMatchService] UpdateScoringConfig");
+        }
+
+        /// <summary>
+        /// マッチデータプロバイダーを登録します
+        /// </summary>
+        /// <param name="provider">マッチデータプロバイダー</param>
+        public void RegisterMatchDataProvider(IMatchDataProvider provider)
+        {
+            Debug.Log("[MockMatchService] RegisterMatchDataProvider (mock - no-op)");
+        }
+
+        /// <summary>
+        /// マッチデータプロバイダーの登録を解除します
+        /// </summary>
+        public void UnregisterMatchDataProvider()
+        {
+            Debug.Log("[MockMatchService] UnregisterMatchDataProvider (mock - no-op)");
         }
 
         #endregion

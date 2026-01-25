@@ -11824,7 +11824,7 @@ MonoBehaviour:
   animator: {fileID: 1237107622787857314}
   m_rigidBody: {fileID: 0}
   m_root: {fileID: 7606234747619572220}
-  Editor_Tabs1: 2
+  Editor_Tabs1: 1
   EditOffsetReinLeft: 0
   EditOffsetReinRight: 0
   references:

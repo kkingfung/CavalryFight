@@ -177,7 +177,7 @@ namespace CavalryFight.Development.MockData
         {
             var result = new CavalryFight.Services.Match.MatchResult
             {
-                MapName = "Training Grounds",
+                MapName = "TrainingRoom",
                 GameMode = "Arena",
                 MatchDuration = 300f,
                 MaxPlayers = 4,

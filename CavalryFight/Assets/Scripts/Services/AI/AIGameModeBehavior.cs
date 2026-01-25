@@ -28,6 +28,9 @@ namespace CavalryFight.Services.AI
         [Header("デスマッチ設定")]
         [SerializeField] private DeathmatchBehavior _deathmatchBehavior = new DeathmatchBehavior();
 
+        [Header("ハンティング設定")]
+        [SerializeField] private HuntingModeBehavior _huntingBehavior = new HuntingModeBehavior();
+
         #endregion
 
         #region Public Methods
@@ -43,6 +46,7 @@ namespace CavalryFight.Services.AI
                 GameMode.ScoreMatch => _scoreMatchBehavior,
                 GameMode.TeamFight => _teamFightBehavior,
                 GameMode.Deathmatch => _deathmatchBehavior,
+                GameMode.Hunting => _huntingBehavior,
                 _ => _arenaBehavior
             };
         }
@@ -225,5 +229,50 @@ namespace CavalryFight.Services.AI
         public float SurvivalPriority => _survivalPriority;
         public float RetreatHealthThreshold => _retreatHealthThreshold;
         public float FleeFromMultipleEnemies => _fleeFromMultipleEnemies;
+    }
+
+    /// <summary>
+    /// ハンティングモードの行動設定
+    /// </summary>
+    /// <remarks>
+    /// - ハンター（騎馬弓兵）: 相手チームのウルフを狩る
+    /// - ウルフ: ハンターをスタンさせる
+    /// - チーム対抗の狩猟モード
+    /// - 役割に応じた優先度設定
+    /// </remarks>
+    [System.Serializable]
+    public class HuntingModeBehavior : IModeBehavior
+    {
+        [SerializeField] private TargetPriority _targetPriority = TargetPriority.Nearest;
+        [SerializeField, Range(0f, 1f)] private float _aggressionLevel = 0.7f;
+        [SerializeField] private bool _coordinateWithTeam = true;
+        [SerializeField, Range(0f, 1f)] private float _scoringPriority = 0.8f;
+
+        /// <summary>ウルフを優先的に狙うか（ハンター用）</summary>
+        [Tooltip("ウルフを優先的に狙う度合い（ハンター用）")]
+        [SerializeField, Range(0f, 1f)] private float _targetWolfPriority = 0.9f;
+
+        /// <summary>ハンターを優先的に狙うか（ウルフ用）</summary>
+        [Tooltip("ハンターを優先的に狙う度合い（ウルフ用）")]
+        [SerializeField, Range(0f, 1f)] private float _targetHunterPriority = 1.0f;
+
+        /// <summary>逃走時の回避行動の強さ</summary>
+        [Tooltip("逃走時の回避行動の強さ")]
+        [SerializeField, Range(0f, 1f)] private float _evasionStrength = 0.6f;
+
+        /// <summary>チームメイトとの連携距離</summary>
+        [Tooltip("チームメイトとの連携距離")]
+        [SerializeField] private float _teamCoordinationRange = 20f;
+
+        public TargetPriority TargetPriority => _targetPriority;
+        public float AggressionLevel => _aggressionLevel;
+        public bool CoordinateWithTeam => _coordinateWithTeam;
+        public float ScoringPriority => _scoringPriority;
+        public bool CanRespawn => true; // ハンティングモードはリスポーンあり
+
+        public float TargetWolfPriority => _targetWolfPriority;
+        public float TargetHunterPriority => _targetHunterPriority;
+        public float EvasionStrength => _evasionStrength;
+        public float TeamCoordinationRange => _teamCoordinationRange;
     }
 }

@@ -109,6 +109,19 @@ namespace CavalryFight.Views.Components
             _popupRoot.RemoveFromClassList("hidden");
             _popupRoot.style.display = DisplayStyle.Flex;
 
+            // オーバーレイがクリックをブロックしないように設定
+            // Match scene uses "overlay" class, Training scene uses "pause-overlay" class
+            var overlay = _popupRoot.Q<VisualElement>(className: "overlay");
+            if (overlay == null)
+            {
+                overlay = _popupRoot.Q<VisualElement>(className: "pause-overlay");
+            }
+
+            if (overlay != null)
+            {
+                overlay.pickingMode = PickingMode.Ignore;
+            }
+
             // ゲーム時間を停止
             Time.timeScale = 0f;
 
@@ -117,8 +130,6 @@ namespace CavalryFight.Views.Components
             {
                 _inputService.InputEnabled = false;
             }
-
-            Debug.Log("[SettingsPopupController] Settings popup shown.");
         }
 
         /// <summary>
@@ -137,8 +148,6 @@ namespace CavalryFight.Views.Components
             {
                 _inputService.InputEnabled = true;
             }
-
-            Debug.Log("[SettingsPopupController] Settings popup hidden.");
         }
 
         /// <summary>
@@ -175,9 +184,6 @@ namespace CavalryFight.Views.Components
             _keyBindingsButton = _popupRoot.Q<Button>("KeyBindingsButton");
             _applySettingsButton = _popupRoot.Q<Button>("ApplySettingsButton");
             _resetSettingsButton = _popupRoot.Q<Button>("ResetSettingsButton");
-
-            Debug.Log($"[SettingsPopupController] ResumeButton found: {_resumeButton != null}");
-            Debug.Log($"[SettingsPopupController] ApplySettingsButton found: {_applySettingsButton != null}");
         }
 
         private void SetupDropdowns()
@@ -388,11 +394,6 @@ namespace CavalryFight.Views.Components
             if (_keyBindingView != null)
             {
                 _keyBindingView.Show();
-                Debug.Log("[SettingsPopupController] Key Bindings popup shown.");
-            }
-            else
-            {
-                Debug.LogWarning("[SettingsPopupController] KeyBindingView is not assigned!");
             }
         }
 
@@ -400,28 +401,20 @@ namespace CavalryFight.Views.Components
         {
             PlayButtonClickSfx();
 
-            // デバッグログ
-            bool canApply = _settingsViewModel.ApplySettingsCommand.CanExecute(null);
-            Debug.Log($"[SettingsPopupController] CanApplySettings: {canApply}, HasPendingChanges: {_settingsViewModel.HasPendingChanges}");
-
-            if (canApply)
+            if (_settingsViewModel.ApplySettingsCommand.CanExecute(null))
             {
                 _settingsViewModel.ApplySettingsCommand.Execute(null);
             }
             else
             {
-                // CanExecuteがfalseの場合でも、設定を直接適用してみる
-                Debug.LogWarning("[SettingsPopupController] CanApplySettings returned false, attempting force apply...");
+                // CanExecuteがfalseの場合でも、設定を直接適用する
                 var gameSettingsService = ServiceLocator.Instance.Get<CavalryFight.Services.GameSettings.IGameSettingsService>();
                 if (gameSettingsService != null)
                 {
                     gameSettingsService.ApplySettings();
                     gameSettingsService.SaveSettings();
-                    Debug.Log("[SettingsPopupController] Force applied settings via GameSettingsService.");
                 }
             }
-
-            Debug.Log("[SettingsPopupController] Settings apply completed.");
         }
 
         private void OnResetSettingsClicked()
@@ -429,7 +422,6 @@ namespace CavalryFight.Views.Components
             PlayButtonClickSfx();
             _settingsViewModel.ResetSettingsCommand.Execute(null);
             LoadCurrentSettings();
-            Debug.Log("[SettingsPopupController] Settings reset.");
         }
 
         // Audio Change Handlers

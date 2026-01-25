@@ -479,6 +479,16 @@
     justify-content: center;
 }
 
+/* Dark overlay behind settings panel - must not block clicks on the panel */
+.full-settings-popup > .overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
 .full-settings-panel {
     background-color: rgba(30, 30, 30, 0.95);
     border-radius: 15px;
@@ -737,6 +747,50 @@
 .primary-button:active {
     background-color: rgb(50, 100, 70);
     scale: 0.98;
+}
+
+/* ==========================================
+   Crosshair
+   ========================================== */
+
+.crosshair-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.crosshair {
+    width: 80px;
+    height: 80px;
+    align-items: center;
+    justify-content: center;
+}
+
+.crosshair-line {
+    position: absolute;
+    background-color: rgb(255, 50, 50);
+}
+
+.crosshair-horizontal {
+    width: 40px;
+    height: 3px;
+}
+
+.crosshair-vertical {
+    width: 3px;
+    height: 40px;
+}
+
+.crosshair-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: rgb(255, 50, 50);
+    border-radius: 4px;
 }
 
 /* ==========================================

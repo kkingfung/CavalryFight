@@ -114,8 +114,6 @@ namespace CavalryFight.ViewModels
 
             // デフォルトカテゴリ
             CurrentCategory = CustomizationCategory.Character;
-
-            Debug.Log("[CustomizationViewModel] ViewModel initialized.");
         }
 
         #endregion
@@ -150,7 +148,6 @@ namespace CavalryFight.ViewModels
         private void ExecuteSelectCategory(CustomizationCategory category)
         {
             CurrentCategory = category;
-            Debug.Log($"[CustomizationViewModel] Category changed to: {category}");
         }
 
         /// <summary>
@@ -160,8 +157,6 @@ namespace CavalryFight.ViewModels
         {
             // サービスに現在の作業データを設定
             _customizationService.SetCustomization(_workingCharacter, _workingMount);
-
-            Debug.Log("[CustomizationViewModel] Customization applied.");
         }
 
         /// <summary>
@@ -177,8 +172,6 @@ namespace CavalryFight.ViewModels
             OnPropertyChanged(nameof(WorkingCharacter));
             OnPropertyChanged(nameof(WorkingMount));
             PreviewUpdated?.Invoke(this, EventArgs.Empty);
-
-            Debug.Log("[CustomizationViewModel] Reset to saved data.");
         }
 
         /// <summary>
@@ -189,7 +182,6 @@ namespace CavalryFight.ViewModels
             // 変更を自動的に保存
             _customizationService.SetCustomization(_workingCharacter, _workingMount);
 
-            Debug.Log("[CustomizationViewModel] Auto-saved customization and returning to menu.");
             BackToMenuRequested?.Invoke(this, EventArgs.Empty);
         }
 
@@ -233,7 +225,6 @@ namespace CavalryFight.ViewModels
             _customizationService.MountCustomizationChanged -= OnServiceMountChanged;
 
             base.OnDispose();
-            Debug.Log("[CustomizationViewModel] ViewModel disposed.");
         }
 
         #endregion

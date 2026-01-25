@@ -6,6 +6,7 @@ using CavalryFight.Core.MVVM;
 using CavalryFight.Core.Services;
 using CavalryFight.Services.Audio;
 using CavalryFight.Services.Input;
+using CavalryFight.Services.Lobby;
 using CavalryFight.Services.Match;
 using CavalryFight.Services.SceneManagement;
 using CavalryFight.Services.Training;
@@ -68,6 +69,9 @@ namespace CavalryFight.Views
         private const int MaxKillFeedEntries = 2;
         private const float KillFeedEntryDuration = 5f;
 
+        // Crosshair
+        private VisualElement? _crosshair;
+
         #endregion
 
         #region Services
@@ -75,6 +79,14 @@ namespace CavalryFight.Views
         private IAudioService? _audioService;
         private IInputService? _inputService;
         private ISceneManagementService? _sceneService;
+        private ILobbyService? _lobbyService;
+
+        #endregion
+
+        #region Crosshair State
+
+        private GameObject? _localPlayerObject;
+        private bool _wasCharging = false;
 
         #endregion
 
@@ -100,6 +112,14 @@ namespace CavalryFight.Views
             _audioService = ServiceLocator.Instance.Get<IAudioService>();
             _inputService = ServiceLocator.Instance.Get<IInputService>();
             _sceneService = ServiceLocator.Instance.Get<ISceneManagementService>();
+            _lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+
+            // ルーム復帰イベントを購読（ゲスト用：ホストがマッチを終了した時）
+            if (_lobbyService != null)
+            {
+                _lobbyService.ReturnToRoomRequested += OnReturnToRoomRequested;
+                _lobbyService.HostDisconnected += OnHostDisconnected;
+            }
 
             if (_sceneService != null)
             {
@@ -114,6 +134,9 @@ namespace CavalryFight.Views
 
             // 入力処理
             HandleInput();
+
+            // クロスヘア更新
+            UpdateCrosshair();
         }
 
         /// <summary>
@@ -204,6 +227,33 @@ namespace CavalryFight.Views
 
             // Kill Feed
             _killFeedContainer = Q<VisualElement>("KillFeedContainer");
+
+            // Crosshair
+            _crosshair = Q<VisualElement>("Crosshair");
+            if (_crosshair != null)
+            {
+                Debug.Log("[MatchView] Crosshair element found.");
+            }
+
+            // フルスクリーンのオーバーレイコンテナはマウスイベントを無視
+            // （設定ポップアップなど他のUIがクリックを受け取れるように）
+            var crosshairContainer = Q<VisualElement>("CrosshairContainer");
+            if (crosshairContainer != null)
+            {
+                crosshairContainer.pickingMode = PickingMode.Ignore;
+            }
+
+            var scorePopupContainer = Q<VisualElement>("ScorePopupContainer");
+            if (scorePopupContainer != null)
+            {
+                scorePopupContainer.pickingMode = PickingMode.Ignore;
+            }
+
+            var killFeedContainer = Q<VisualElement>("KillFeedContainer");
+            if (killFeedContainer != null)
+            {
+                killFeedContainer.pickingMode = PickingMode.Ignore;
+            }
         }
 
         private void RegisterEventHandlers()
@@ -305,10 +355,18 @@ namespace CavalryFight.Views
             if (ViewModel.IsPaused)
             {
                 _settingsPopupController?.Show();
+
+                // カーソルを表示してロック解除（UIをクリック可能にする）
+                UnityEngine.Cursor.lockState = CursorLockMode.None;
+                UnityEngine.Cursor.visible = true;
             }
             else
             {
                 _settingsPopupController?.Hide();
+
+                // カーソルをロックして非表示に戻す
+                UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+                UnityEngine.Cursor.visible = false;
             }
 
             // ポーズ時はHUDを薄くする
@@ -524,6 +582,24 @@ namespace CavalryFight.Views
             ViewModel?.LeaveMatch();
         }
 
+        /// <summary>
+        /// ルーム復帰イベントハンドラ（ホストがマッチを終了した時に呼ばれる）
+        /// </summary>
+        private void OnReturnToRoomRequested()
+        {
+            Debug.Log("[MatchView] Return to room requested by host");
+            _sceneService?.LoadMatchRoom();
+        }
+
+        /// <summary>
+        /// ホスト切断イベントハンドラ（ホストがルームを退出した時に呼ばれる）
+        /// </summary>
+        private void OnHostDisconnected()
+        {
+            Debug.Log("[MatchView] Host disconnected, returning to lobby");
+            _sceneService?.LoadLobby();
+        }
+
         private void OnContinueClicked(ClickEvent evt)
         {
             PlayButtonSound();
@@ -576,6 +652,7 @@ namespace CavalryFight.Views
 
                 case nameof(MatchViewModel.CountdownValue):
                 case nameof(MatchViewModel.IsCountingDown):
+                case nameof(MatchViewModel.MatchState):
                     UpdateCountdownPanel();
                     break;
 
@@ -708,12 +785,120 @@ namespace CavalryFight.Views
 
         #endregion
 
+        #region Crosshair
+
+        /// <summary>
+        /// クロスヘアの表示/非表示を更新します
+        /// </summary>
+        private void UpdateCrosshair()
+        {
+            // ローカルプレイヤーを検索（まだ取得していない場合）
+            if (_localPlayerObject == null)
+            {
+                FindLocalPlayer();
+            }
+
+            // プレイヤーが見つからない場合は何もしない
+            if (_localPlayerObject == null)
+            {
+                return;
+            }
+
+            // チャージ状態を取得（PlayerControllerのIsChargingプロパティを使用）
+            bool isCharging = GetPlayerChargingState();
+            if (isCharging != _wasCharging)
+            {
+                _wasCharging = isCharging;
+                if (isCharging)
+                {
+                    ShowCrosshair();
+                }
+                else
+                {
+                    HideCrosshair();
+                }
+            }
+        }
+
+        /// <summary>
+        /// ローカルプレイヤーを検索します
+        /// </summary>
+        private void FindLocalPlayer()
+        {
+            // "PlayerController"コンポーネントを持つオブジェクトを検索
+            var playerControllers = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+            foreach (var controller in playerControllers)
+            {
+                if (controller.GetType().Name == "PlayerController")
+                {
+                    _localPlayerObject = controller.gameObject;
+                    Debug.Log($"[MatchView] Found PlayerController: {controller.gameObject.name}");
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// プレイヤーのチャージ状態を取得します
+        /// </summary>
+        private bool GetPlayerChargingState()
+        {
+            if (_localPlayerObject == null)
+            {
+                return false;
+            }
+
+            // PlayerControllerのIsChargingプロパティをリフレクションで取得
+            var controller = _localPlayerObject.GetComponent("PlayerController");
+            if (controller != null)
+            {
+                var property = controller.GetType().GetProperty("IsCharging");
+                if (property != null)
+                {
+                    return (bool)property.GetValue(controller);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// クロスヘアを表示します
+        /// </summary>
+        private void ShowCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.RemoveFromClassList("hidden");
+            }
+        }
+
+        /// <summary>
+        /// クロスヘアを非表示にします
+        /// </summary>
+        private void HideCrosshair()
+        {
+            if (_crosshair != null)
+            {
+                _crosshair.AddToClassList("hidden");
+            }
+        }
+
+        #endregion
+
         #region Cleanup
 
         protected override void OnDestroy()
         {
             // TimeScaleを元に戻す
             Time.timeScale = 1f;
+
+            // LobbyServiceのイベント購読解除
+            if (_lobbyService != null)
+            {
+                _lobbyService.ReturnToRoomRequested -= OnReturnToRoomRequested;
+                _lobbyService.HostDisconnected -= OnHostDisconnected;
+            }
 
             // SettingsPopupControllerのクリーンアップ
             if (_settingsPopupController != null)

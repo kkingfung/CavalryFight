@@ -70,7 +70,7 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// マップ名
         /// </summary>
-        public FixedString64Bytes MapName;
+        public MapName MapName;
 
         #endregion
 
@@ -91,7 +91,7 @@ namespace CavalryFight.Services.Lobby
                 IsPublic = false,
                 TimeLimit = 300, // 5分
                 ArrowLimit = 0, // 無制限（Arenaモード）
-                MapName = new FixedString64Bytes("Arena") // フィールドプレハブ名と一致
+                MapName = MapName.Arena
             };
         }
 
@@ -110,7 +110,7 @@ namespace CavalryFight.Services.Lobby
             IsPublic = false;
             TimeLimit = 300;
             ArrowLimit = 0; // デフォルトは無制限
-            MapName = new FixedString64Bytes("Arena"); // フィールドプレハブ名と一致
+            MapName = MapName.Arena;
         }
 
         #endregion

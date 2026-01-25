@@ -214,6 +214,11 @@ namespace CavalryFight.Services.Lobby
         /// <summary>
         /// Relayをクリーンアップします
         /// </summary>
+        /// <remarks>
+        /// このメソッドはジョインコードのクリアのみを行います。
+        /// UnityTransportのシャットダウンはNetworkManager.Shutdown()が内部で処理するため、
+        /// ここでは呼び出しません（重複呼び出しによるNullReferenceExceptionを防止）。
+        /// </remarks>
         public void Cleanup()
         {
             _currentJoinCode = null;
