@@ -274,14 +274,21 @@ namespace CavalryFight.Services.AI
         /// </summary>
         public void EnableAllAI()
         {
+            Debug.Log($"[AI-COMBAT-DEBUG] ========== EnableAllAI() START ==========");
+            Debug.Log($"[AI-COMBAT-DEBUG] _aiPlayers.Count={_aiPlayers.Count}");
+
             _isEnabled = true;
 
+            int enabledCount = 0;
             foreach (var kvp in _aiPlayers)
             {
+                Debug.Log($"[AI-COMBAT-DEBUG] Enabling AI {kvp.Key} ({enabledCount + 1}/{_aiPlayers.Count})...");
                 EnableAI(kvp.Value);
+                enabledCount++;
             }
 
-            Debug.Log("[AICombatService] All AI enabled");
+            Debug.Log($"[AICombatService] All AI enabled ({enabledCount} total)");
+            Debug.Log($"[AI-COMBAT-DEBUG] ========== EnableAllAI() END ==========");
         }
 
         /// <summary>
@@ -625,15 +632,23 @@ namespace CavalryFight.Services.AI
             // ライダーとマウントのコライダー間の衝突を無視する（物理的な反発を防ぐ）
             IgnoreCollisionsBetweenRiderAndMount(rider, mount);
 
-            // AIPlayerControllerを取得または追加
-            AIPlayerController? aiController = rider.GetComponent<AIPlayerController>();
-            if (aiController == null)
+            // AIPlayerControllerを取得（プレハブの子オブジェクトにある場合も検索）
+            AIPlayerController? aiController = rider.GetComponentInChildren<AIPlayerController>();
+            if (aiController != null)
             {
+                Debug.Log($"[AICombatService] AIPlayerController found on: {aiController.gameObject.name}");
+            }
+            else
+            {
+                // フォールバック: ルートに追加（プレハブに設定されていない場合）
+                Debug.LogWarning("[AICombatService] AIPlayerController not found in prefab, adding to root");
                 aiController = rider.AddComponent<AIPlayerController>();
             }
 
             // AIControllerを初期化
+            Debug.Log($"[AICombatService] Calling Initialize on aiController (type={aiController.GetType().Name}, gameObject={aiController.gameObject.name})...");
             aiController.Initialize(aiId, teamIndex, _currentGameMode, _difficultySettings, mount, this);
+            Debug.Log($"[AICombatService] Initialize completed for AI {aiId}");
 
             // カスタマイズを適用
             try
@@ -1180,27 +1195,108 @@ namespace CavalryFight.Services.AI
         /// </remarks>
         private void EnableAI(AIPlayerData aiData)
         {
+            Debug.Log($"[AI-ENABLE-DEBUG] ========== EnableAI START for AI {aiData.AIId} ==========");
+
             // 重要: 馬のAI Brain関連コンポーネントを先に有効化
             // AIControllerはEnable時にMAnimalAIControlにターゲットを設定するため
             if (aiData.MountObject != null)
             {
+                Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MountObject = {aiData.MountObject.name}");
+
+                // NavMeshAgent
                 var navAgent = aiData.MountObject.GetComponentInChildren<UnityEngine.AI.NavMeshAgent>();
-                if (navAgent != null) navAgent.enabled = true;
+                if (navAgent != null)
+                {
+                    bool wasEnabled = navAgent.enabled;
+                    navAgent.enabled = true;
+                    Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: NavMeshAgent - wasEnabled={wasEnabled}, nowEnabled={navAgent.enabled}, isOnNavMesh={navAgent.isOnNavMesh}, position={navAgent.transform.position}");
 
-                var aiControl = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalAIControl>();
-                if (aiControl != null) aiControl.enabled = true;
+                    if (!navAgent.isOnNavMesh)
+                    {
+                        Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: NavMeshAgent is NOT on NavMesh! AI will NOT be able to move!");
 
-                var aiBrain = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalBrain>();
-                if (aiBrain != null) aiBrain.enabled = true;
+                        // 最寄りのNavMesh位置を検索
+                        if (UnityEngine.AI.NavMesh.SamplePosition(navAgent.transform.position, out UnityEngine.AI.NavMeshHit hit, 50f, UnityEngine.AI.NavMesh.AllAreas))
+                        {
+                            Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: Nearest NavMesh position found at {hit.position}, distance={hit.distance:F2}m. Attempting warp...");
+                            navAgent.Warp(hit.position);
+                            Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: After warp - isOnNavMesh={navAgent.isOnNavMesh}");
+                        }
+                        else
+                        {
+                            Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: No NavMesh found within 50m! Check if NavMeshSurface is baked.");
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: NavMeshAgent NOT FOUND on mount!");
+                }
+
+                // MAnimalAIControl (true = 非アクティブなGameObjectも含める)
+                var aiControl = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalAIControl>(true);
+                if (aiControl != null)
+                {
+                    // GameObjectがアクティブでない場合は先にアクティブにする
+                    if (!aiControl.gameObject.activeInHierarchy)
+                    {
+                        Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalAIControl GameObject was inactive, activating...");
+                        aiControl.gameObject.SetActive(true);
+                    }
+                    bool wasEnabled = aiControl.enabled;
+                    aiControl.enabled = true;
+                    Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalAIControl - wasEnabled={wasEnabled}, nowEnabled={aiControl.enabled}, gameObject={aiControl.gameObject.name}");
+                }
+                else
+                {
+                    Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalAIControl NOT FOUND on mount (even including inactive objects)!");
+                }
+
+                // MAnimalBrain (true = 非アクティブなGameObjectも含める)
+                var aiBrain = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalBrain>(true);
+                if (aiBrain != null)
+                {
+                    // GameObjectがアクティブでない場合は先にアクティブにする
+                    if (!aiBrain.gameObject.activeInHierarchy)
+                    {
+                        Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalBrain GameObject was inactive, activating...");
+                        aiBrain.gameObject.SetActive(true);
+                    }
+                    bool wasEnabled = aiBrain.enabled;
+                    aiBrain.enabled = true;
+                    Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalBrain - wasEnabled={wasEnabled}, nowEnabled={aiBrain.enabled}, gameObject={aiBrain.gameObject.name}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalBrain NOT FOUND on mount (may be optional)");
+                }
+
+                // MAnimal 状態確認
+                var mAnimal = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.MAnimal>();
+                if (mAnimal != null)
+                {
+                    Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimal - enabled={mAnimal.enabled}, Grounded={mAnimal.Grounded}, UseGravity={mAnimal.UseGravity}, ActiveState={mAnimal.ActiveState?.name ?? "NULL"}");
+                }
 
                 Debug.Log($"[AICombatService] Mount AI components enabled for AI {aiData.AIId}");
+            }
+            else
+            {
+                Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MountObject is NULL!");
             }
 
             // AIControllerを有効化（MAnimalAIControlが有効になった後）
             if (aiData.AIController != null)
             {
+                Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: Calling AIController.Enable()...");
                 aiData.AIController.Enable();
             }
+            else
+            {
+                Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: AIController is NULL!");
+            }
+
+            Debug.Log($"[AI-ENABLE-DEBUG] ========== EnableAI END for AI {aiData.AIId} ==========");
         }
 
         /// <summary>
@@ -1219,17 +1315,18 @@ namespace CavalryFight.Services.AI
 
             if (aiData.MountObject != null)
             {
-                // AI Brainを無効化
-                var aiBrain = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalBrain>();
+                // AI Brainを無効化 (true = 非アクティブなGameObjectも含める)
+                var aiBrain = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalBrain>(true);
                 if (aiBrain != null)
                 {
                     aiBrain.enabled = false;
                 }
 
-                // MAnimalAIControlを無効化
-                var aiControl = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalAIControl>();
+                // MAnimalAIControlを無効化 (true = 非アクティブなGameObjectも含める)
+                var aiControl = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalAIControl>(true);
                 if (aiControl != null)
                 {
+                    aiControl.Stop(); // 移動も停止
                     aiControl.enabled = false;
                 }
 

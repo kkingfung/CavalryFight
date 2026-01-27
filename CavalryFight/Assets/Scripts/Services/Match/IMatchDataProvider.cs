@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using UnityEngine;
 using CavalryFight.Services.Lobby;
 
 namespace CavalryFight.Services.Match
@@ -72,7 +73,10 @@ namespace CavalryFight.Services.Match
         /// <summary>
         /// プレイヤーがスコアを獲得した時に発生します
         /// </summary>
-        event Action<ulong, int, HitLocation>? PlayerScored;
+        /// <remarks>
+        /// パラメータ: clientId, score, hitLocation, hitPosition
+        /// </remarks>
+        event Action<ulong, int, HitLocation, Vector3>? PlayerScored;
 
         /// <summary>
         /// カウントダウンが更新された時に発生します

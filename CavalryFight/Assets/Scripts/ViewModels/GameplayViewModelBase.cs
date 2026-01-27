@@ -417,7 +417,11 @@ namespace CavalryFight.ViewModels
         /// <summary>
         /// プレイヤーがスコアを獲得した時のハンドラ（派生クラスでオーバーライド可能）
         /// </summary>
-        protected virtual void OnPlayerScored(ulong clientId, int score, HitLocation location)
+        /// <param name="clientId">クライアントID</param>
+        /// <param name="score">獲得スコア</param>
+        /// <param name="location">ヒット部位</param>
+        /// <param name="hitPosition">ヒット位置（ワールド座標）</param>
+        protected virtual void OnPlayerScored(ulong clientId, int score, HitLocation location, Vector3 hitPosition)
         {
             var localClientId = Unity.Netcode.NetworkManager.Singleton?.LocalClientId ?? 0;
 

@@ -37,7 +37,7 @@ namespace CavalryFight.Services.Match
         /// <summary>
         /// プレイヤーがスコアを獲得した時に発生します（詳細情報付き）
         /// </summary>
-        public event Action<ulong, int, HitLocation>? PlayerScored;
+        public event Action<ulong, int, HitLocation, Vector3>? PlayerScored;
 
         /// <summary>
         /// マッチが開始された時に発生します
@@ -420,9 +420,9 @@ namespace CavalryFight.Services.Match
         /// <summary>
         /// プロバイダーからプレイヤースコアが通知された時のハンドラ
         /// </summary>
-        private void OnProviderPlayerScored(ulong clientId, int score, HitLocation hitLocation)
+        private void OnProviderPlayerScored(ulong clientId, int score, HitLocation hitLocation, Vector3 hitPosition)
         {
-            PlayerScored?.Invoke(clientId, score, hitLocation);
+            PlayerScored?.Invoke(clientId, score, hitLocation, hitPosition);
         }
 
         /// <summary>
@@ -496,7 +496,7 @@ namespace CavalryFight.Services.Match
             // 有効な命中の場合、詳細スコアイベントを発火
             if (hitResult.IsValidHit && hitResult.ScoreAwarded > 0)
             {
-                PlayerScored?.Invoke(hitResult.ShooterClientId, hitResult.ScoreAwarded, hitResult.HitLocation);
+                PlayerScored?.Invoke(hitResult.ShooterClientId, hitResult.ScoreAwarded, hitResult.HitLocation, hitResult.HitPosition);
             }
         }
 

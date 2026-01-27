@@ -597,9 +597,9 @@ namespace CavalryFight.ViewModels
             MatchEnded?.Invoke(this, result);
         }
 
-        private void OnPlayerScored(ulong clientId, int score, HitLocation hitLocation)
+        private void OnPlayerScored(ulong clientId, int score, HitLocation hitLocation, Vector3 hitPosition)
         {
-            ScoreGained?.Invoke(this, new ScoreGainedEventArgs(clientId, score, hitLocation));
+            ScoreGained?.Invoke(this, new ScoreGainedEventArgs(clientId, score, hitLocation, hitPosition));
 
             // ローカルプレイヤーの場合はUIを更新
             if (clientId == _localPlayerId)

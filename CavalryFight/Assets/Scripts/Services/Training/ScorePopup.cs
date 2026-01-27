@@ -28,6 +28,7 @@ namespace CavalryFight.Services.Training
         private TextMeshPro? _textMeshPro;
         private float _elapsedTime;
         private Vector3 _startPosition;
+        private Camera? _mainCamera;
 
         #endregion
 
@@ -37,6 +38,7 @@ namespace CavalryFight.Services.Training
         {
             _textMeshPro = GetComponent<TextMeshPro>();
             _startPosition = transform.position;
+            _mainCamera = Camera.main;
         }
 
         private void Update()
@@ -45,6 +47,12 @@ namespace CavalryFight.Services.Training
 
             // 上に浮かぶアニメーション
             transform.position = _startPosition + Vector3.up * (_floatSpeed * _elapsedTime);
+
+            // カメラに向くように回転（ビルボード）
+            if (_mainCamera != null)
+            {
+                transform.rotation = _mainCamera.transform.rotation;
+            }
 
             // フェードアウト
             if (_textMeshPro != null)

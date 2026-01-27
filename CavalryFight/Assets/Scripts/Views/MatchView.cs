@@ -690,10 +690,9 @@ namespace CavalryFight.Views
         private void OnScoreGained(object? sender, ScoreGainedEventArgs e)
         {
             // ローカルプレイヤーのスコアのみポップアップ表示
-            // ワールド座標からの変換は現在未実装。スコアポップアップは画面中央に表示。
             if (ViewModel != null)
             {
-                ShowScorePopup(e.Score, Vector3.zero);
+                ShowScorePopup(e.Score, e.HitPosition);
             }
         }
 

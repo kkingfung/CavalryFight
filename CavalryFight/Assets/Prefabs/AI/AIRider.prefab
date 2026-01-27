@@ -16462,7 +16462,8 @@ MonoBehaviour:
   _minArrowSpeed: 5
   _maxArrowSpeed: 100
   _maxChargeTime: 3
-  _attackRange: 0.1
+  _attackRange: 25
+  _arrowRootPoint: {fileID: 4637479969286345230}
   _maxHealth: 100
   _enemyLayers:
     serializedVersion: 2
@@ -17054,6 +17055,11 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!4 &4637479969286345230 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6983540352480666904, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &7305638920265391115 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5031629510082423581, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}

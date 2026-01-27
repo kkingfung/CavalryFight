@@ -210,7 +210,7 @@ namespace CavalryFight.Gameplay.Projectiles
                     aiController.TakeDamage(damage, gameObject);
 
                     // スコアを通知（MatchManagerへ）
-                    NotifyScore(Score);
+                    NotifyScore(Score, hitPoint);
                 }
                 else
                 {
@@ -346,7 +346,8 @@ namespace CavalryFight.Gameplay.Projectiles
         /// スコアをMatchManagerに通知します
         /// </summary>
         /// <param name="score">獲得スコア</param>
-        private void NotifyScore(int score)
+        /// <param name="hitPosition">ヒット位置（ワールド座標）</param>
+        private void NotifyScore(int score, Vector3 hitPosition)
         {
             if (MatchManager.Instance == null)
             {
@@ -368,12 +369,12 @@ namespace CavalryFight.Gameplay.Projectiles
             if (MatchManager.Instance.IsSpawned)
             {
                 // ネットワークモード: RPCを使用
-                MatchManager.Instance.AddPlayerScoreRpc(clientId, score, HitLocation.Torso);
+                MatchManager.Instance.AddPlayerScoreRpc(clientId, score, HitLocation.Torso, hitPosition);
             }
             else
             {
                 // ローカルモード: 直接スコアを追加
-                MatchManager.Instance.AddPlayerScoreLocal(clientId, score, HitLocation.Torso);
+                MatchManager.Instance.AddPlayerScoreLocal(clientId, score, HitLocation.Torso, hitPosition);
             }
         }
 

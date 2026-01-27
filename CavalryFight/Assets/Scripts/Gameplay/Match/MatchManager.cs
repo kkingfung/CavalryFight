@@ -169,7 +169,10 @@ namespace CavalryFight.Gameplay.Match
         /// <summary>
         /// プレイヤーがスコアを獲得した時に発生します
         /// </summary>
-        public event Action<ulong, int, HitLocation>? PlayerScored;
+        /// <remarks>
+        /// パラメータ: clientId, score, hitLocation, hitPosition
+        /// </remarks>
+        public event Action<ulong, int, HitLocation, Vector3>? PlayerScored;
 
         /// <summary>
         /// プレイヤーが死亡した時に発生します
@@ -267,7 +270,7 @@ namespace CavalryFight.Gameplay.Match
         private event Action<ServicesMatch.MatchState>? _providerMatchStateChanged;
         private event Action? _providerMatchStarted;
         private event Action<ServicesMatch.MatchEndResult>? _providerMatchEnded;
-        private event Action<ulong, int, ServicesMatch.HitLocation>? _providerPlayerScored;
+        private event Action<ulong, int, ServicesMatch.HitLocation, Vector3>? _providerPlayerScored;
 
         event Action<ServicesMatch.MatchState>? IMatchDataProvider.MatchStateChanged
         {
@@ -287,7 +290,7 @@ namespace CavalryFight.Gameplay.Match
             remove => _providerMatchEnded -= value;
         }
 
-        event Action<ulong, int, ServicesMatch.HitLocation>? IMatchDataProvider.PlayerScored
+        event Action<ulong, int, ServicesMatch.HitLocation, Vector3>? IMatchDataProvider.PlayerScored
         {
             add => _providerPlayerScored += value;
             remove => _providerPlayerScored -= value;
@@ -341,9 +344,9 @@ namespace CavalryFight.Gameplay.Match
             _providerMatchEnded?.Invoke(servicesResult);
         }
 
-        private void RaiseProviderPlayerScored(ulong clientId, int score, HitLocation hitLocation)
+        private void RaiseProviderPlayerScored(ulong clientId, int score, HitLocation hitLocation, Vector3 hitPosition)
         {
-            _providerPlayerScored?.Invoke(clientId, score, (ServicesMatch.HitLocation)(int)hitLocation);
+            _providerPlayerScored?.Invoke(clientId, score, (ServicesMatch.HitLocation)(int)hitLocation, hitPosition);
         }
 
         private void RaiseProviderCountdownUpdated(int seconds)
@@ -810,8 +813,12 @@ namespace CavalryFight.Gameplay.Match
         /// <summary>
         /// プレイヤーのスコアを追加します（サーバーのみ）
         /// </summary>
+        /// <param name="clientId">クライアントID</param>
+        /// <param name="score">追加するスコア</param>
+        /// <param name="hitLocation">命中部位</param>
+        /// <param name="hitPosition">ヒット位置（ワールド座標）</param>
         [Rpc(SendTo.Server)]
-        public void AddPlayerScoreRpc(ulong clientId, int score, HitLocation hitLocation)
+        public void AddPlayerScoreRpc(ulong clientId, int score, HitLocation hitLocation, Vector3 hitPosition)
         {
             if (!IsServer || _playerScores == null)
             {
@@ -831,7 +838,7 @@ namespace CavalryFight.Gameplay.Match
                     _activeHandler?.OnPlayerScored(clientId, score, hitLocation);
 
                     // イベント発火
-                    NotifyPlayerScoredClientRpc(clientId, score, hitLocation);
+                    NotifyPlayerScoredClientRpc(clientId, score, hitLocation, hitPosition);
                     break;
                 }
             }
@@ -871,7 +878,8 @@ namespace CavalryFight.Gameplay.Match
         /// <param name="clientId">クライアントID</param>
         /// <param name="score">追加するスコア</param>
         /// <param name="hitLocation">命中部位</param>
-        public void AddPlayerScoreLocal(ulong clientId, int score, HitLocation hitLocation)
+        /// <param name="hitPosition">ヒット位置（ワールド座標）</param>
+        public void AddPlayerScoreLocal(ulong clientId, int score, HitLocation hitLocation, Vector3 hitPosition)
         {
             if (_playerScores == null)
             {
@@ -891,8 +899,8 @@ namespace CavalryFight.Gameplay.Match
                     _activeHandler?.OnPlayerScored(clientId, score, hitLocation);
 
                     // ローカルモードではイベントを直接発火
-                    PlayerScored?.Invoke(clientId, score, hitLocation);
-                    RaiseProviderPlayerScored(clientId, score, hitLocation);
+                    PlayerScored?.Invoke(clientId, score, hitLocation, hitPosition);
+                    RaiseProviderPlayerScored(clientId, score, hitLocation, hitPosition);
                     break;
                 }
             }
@@ -963,10 +971,10 @@ namespace CavalryFight.Gameplay.Match
         }
 
         [ClientRpc]
-        private void NotifyPlayerScoredClientRpc(ulong clientId, int score, HitLocation hitLocation)
+        private void NotifyPlayerScoredClientRpc(ulong clientId, int score, HitLocation hitLocation, Vector3 hitPosition)
         {
-            PlayerScored?.Invoke(clientId, score, hitLocation);
-            RaiseProviderPlayerScored(clientId, score, hitLocation);
+            PlayerScored?.Invoke(clientId, score, hitLocation, hitPosition);
+            RaiseProviderPlayerScored(clientId, score, hitLocation, hitPosition);
         }
 
         [ClientRpc]

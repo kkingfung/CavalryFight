@@ -294,12 +294,23 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         public void EnableAllAI()
         {
+            Debug.Log($"[AI-SPAWNER-DEBUG] ========== EnableAllAI() START ==========");
+            Debug.Log($"[AI-SPAWNER-DEBUG] _aiCombatService={((_aiCombatService != null) ? "exists" : "NULL")}");
+            Debug.Log($"[AI-SPAWNER-DEBUG] _spawnedAIIds.Count={_spawnedAIIds.Count}");
+
+            if (_spawnedAIIds.Count > 0)
+            {
+                Debug.Log($"[AI-SPAWNER-DEBUG] Spawned AI IDs: [{string.Join(", ", _spawnedAIIds)}]");
+            }
+
             _aiCombatService?.EnableAllAI();
 
             if (_debugLog)
             {
                 Debug.Log("[AISpawner] All AI enabled");
             }
+
+            Debug.Log($"[AI-SPAWNER-DEBUG] ========== EnableAllAI() END ==========");
         }
 
         /// <summary>
