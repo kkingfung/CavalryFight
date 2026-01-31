@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using CavalryFight.Core.Services;
 
 namespace CavalryFight.Services.Match
 {
@@ -11,8 +12,10 @@ namespace CavalryFight.Services.Match
     /// ローディング画面がマッチの準備完了を待機するために使用します。
     /// すべてのエンティティ（プレイヤー、AI）がスポーンされた後に
     /// AllEntitiesReadyイベントが発火されます。
+    /// MonoBehaviour（MatchManager等）が実装する場合、Initialize()はAwake()で、
+    /// Dispose()はOnDestroy()で呼び出してください。
     /// </remarks>
-    public interface IMatchReadinessProvider
+    public interface IMatchReadinessProvider : IService
     {
         /// <summary>
         /// すべてのエンティティの準備が完了した時に発生します

@@ -393,6 +393,26 @@ namespace CavalryFight.Gameplay.Match
 
             _playerSlots = new NetworkList<PlayerSlot>();
             _playerScores = new NetworkList<Services.Match.PlayerScore>();
+
+            // ServiceLocatorにIMatchReadinessProviderとして登録
+            ServiceLocator.Instance.Register<ServicesMatch.IMatchReadinessProvider>(this);
+        }
+
+        /// <summary>
+        /// IService.Initialize の実装（MonoBehaviourのためAwakeで初期化済み）
+        /// </summary>
+        public void Initialize()
+        {
+            // MonoBehaviourのため、Awake()で初期化済み
+        }
+
+        /// <summary>
+        /// IService.Dispose の実装（MonoBehaviourのためOnDestroyで解放）
+        /// </summary>
+        public void Dispose()
+        {
+            // MonoBehaviourのため、OnDestroy()で解放される
+            // 手動でDisposeが呼ばれた場合は何もしない
         }
 
         public override void OnNetworkSpawn()
@@ -428,6 +448,9 @@ namespace CavalryFight.Gameplay.Match
 
         public override void OnDestroy()
         {
+            // ServiceLocatorから解除
+            ServiceLocator.Instance.Unregister<ServicesMatch.IMatchReadinessProvider>();
+
             // ローカルテストモードの場合、ここで登録解除
             if (!IsSpawned)
             {

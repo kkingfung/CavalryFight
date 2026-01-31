@@ -16433,6 +16433,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3172638082541525861, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7101342932398230895}
+    - targetCorrespondingSourceObject: {fileID: 3172638082541525861, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4261396369246695278}
     - targetCorrespondingSourceObject: {fileID: 1699141397005813762, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1152538882772149726}
@@ -16472,6 +16475,25 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   _shootSfx: {fileID: 8300000, guid: 2bc518febeebe50429f452204a9faf5d, type: 3}
+  _spineTransform: {fileID: 5175799897692454777}
+--- !u!114 &4261396369246695278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 916022944293563507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 042473bc2ae9dcb47a7786ecb81d82b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CavalryFight.Services::CavalryFight.Services.AI.AIAimingDebugGizmos
+  _enableGizmos: 1
+  _showShootingArc: 1
+  _showAimDirections: 1
+  _showPrediction: 1
+  _showInfoText: 1
+  _arcRadius: 8
 --- !u!95 &1237107622787857314 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 3574223480302374068, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
@@ -17058,6 +17080,11 @@ AudioSource:
 --- !u!4 &4637479969286345230 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6983540352480666904, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
+  m_PrefabInstance: {fileID: 2355707534129116950}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5175799897692454777 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7450366728926398575, guid: d2dd2ddc3af840641b1ca0f5dc830b7b, type: 3}
   m_PrefabInstance: {fileID: 2355707534129116950}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &7305638920265391115 stripped

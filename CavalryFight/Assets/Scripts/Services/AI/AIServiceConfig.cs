@@ -125,6 +125,22 @@ namespace CavalryFight.Services.AI
             {
                 Debug.LogWarning("[AIServiceConfig] Game Mode Behavior is not assigned!");
             }
+
+            // チャージエフェクトスケールの検証
+            if (_chargingEffectMinScale <= 0f)
+            {
+                Debug.LogWarning("[AIServiceConfig] Charging Effect Min Scale should be greater than 0!");
+            }
+
+            if (_chargingEffectMaxScale <= 0f)
+            {
+                Debug.LogWarning("[AIServiceConfig] Charging Effect Max Scale should be greater than 0!");
+            }
+
+            if (_chargingEffectMinScale > _chargingEffectMaxScale)
+            {
+                Debug.LogWarning("[AIServiceConfig] Charging Effect Min Scale is greater than Max Scale!");
+            }
         }
 
         #endregion

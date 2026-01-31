@@ -632,8 +632,8 @@ namespace CavalryFight.Services.AI
             // ライダーとマウントのコライダー間の衝突を無視する（物理的な反発を防ぐ）
             IgnoreCollisionsBetweenRiderAndMount(rider, mount);
 
-            // AIPlayerControllerを取得（プレハブの子オブジェクトにある場合も検索）
-            AIPlayerController? aiController = rider.GetComponentInChildren<AIPlayerController>();
+            // AIPlayerControllerを取得（プレハブの子オブジェクトにある場合も検索、非アクティブも含む）
+            AIPlayerController? aiController = rider.GetComponentInChildren<AIPlayerController>(true);
             if (aiController != null)
             {
                 Debug.Log($"[AICombatService] AIPlayerController found on: {aiController.gameObject.name}");
@@ -901,6 +901,18 @@ namespace CavalryFight.Services.AI
                 SetupBowForAI(riderTarget, randomCharacter.BowId);
             }
 
+            // AIPlayerControllerに矢タイプを設定（カスタマイズと同じ矢プレハブを使用）
+            var aiController = rider.GetComponentInChildren<AIPlayerController>(true);
+            if (aiController != null)
+            {
+                aiController.SetArrowType(randomCharacter.ArrowType);
+                Debug.Log($"[AI-VISIBILITY] Set ArrowType to {randomCharacter.ArrowType} for AI");
+            }
+            else
+            {
+                Debug.LogWarning("[AI-VISIBILITY] AIPlayerController not found on rider, cannot set ArrowType");
+            }
+
             if (mountApplier != null)
             {
                 GameObject mountTarget = FindHorseRealisticInChildren(mount) ?? mount;
@@ -1147,6 +1159,9 @@ namespace CavalryFight.Services.AI
         /// </remarks>
         private CharacterCustomization GenerateRandomCharacterCustomization()
         {
+            // ArrowType enumの数を取得
+            int arrowTypeCount = System.Enum.GetValues(typeof(ArrowType)).Length;
+
             var customization = new CharacterCustomization
             {
                 Gender = (Gender)UnityEngine.Random.Range(0, 2),
@@ -1162,7 +1177,8 @@ namespace CavalryFight.Services.AI
                 ArmsArmorId = UnityEngine.Random.Range(0, 13),   // 0-12 (0=素体)
                 WaistArmorId = UnityEngine.Random.Range(1, 13),  // 1-12
                 LegsArmorId = UnityEngine.Random.Range(0, 13),   // 0-12 (0=素体)
-                BowId = UnityEngine.Random.Range(10, 14)         // 10-13 (弓のWeapon ID)
+                BowId = UnityEngine.Random.Range(10, 14),        // 10-13 (弓のWeapon ID)
+                ArrowType = (ArrowType)UnityEngine.Random.Range(0, arrowTypeCount)  // ランダムな矢タイプ
             };
             return customization;
         }
@@ -1377,6 +1393,7 @@ namespace CavalryFight.Services.AI
             {
                 AIDifficulty.Easy => new DifficultySettings
                 {
+                    // 基本パラメータ
                     ReactionTime = 1.5f,
                     AimAccuracy = 0.3f,
                     AttackInterval = new Vector2(3f, 5f),
@@ -1386,10 +1403,22 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 3f,
                     ChargeTimeMultiplier = 0.5f,
                     MissChance = 0.4f,
-                    StrafeChance = 0.2f
+                    StrafeChance = 0.2f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.1f,
+                    FeintChance = 0f,
+                    DodgeEffectiveness = 0.2f,
+                    DodgeTriggerDistance = 5f,
+                    MaxSimultaneousTargets = 1,
+                    ThreatAssessmentInterval = 2.0f,
+                    CounterPlayChance = 0f,
+                    MinFireCharge = 0.2f,
+                    TerrainAwarenessChance = 0f,
+                    CoverUsageChance = 0f
                 },
                 AIDifficulty.Normal => new DifficultySettings
                 {
+                    // 基本パラメータ
                     ReactionTime = 1.0f,
                     AimAccuracy = 0.5f,
                     AttackInterval = new Vector2(2f, 4f),
@@ -1399,10 +1428,22 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 4f,
                     ChargeTimeMultiplier = 0.7f,
                     MissChance = 0.25f,
-                    StrafeChance = 0.4f
+                    StrafeChance = 0.4f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.4f,
+                    FeintChance = 0.1f,
+                    DodgeEffectiveness = 0.4f,
+                    DodgeTriggerDistance = 10f,
+                    MaxSimultaneousTargets = 2,
+                    ThreatAssessmentInterval = 1.0f,
+                    CounterPlayChance = 0.2f,
+                    MinFireCharge = 0.3f,
+                    TerrainAwarenessChance = 0.2f,
+                    CoverUsageChance = 0.15f
                 },
                 AIDifficulty.Hard => new DifficultySettings
                 {
+                    // 基本パラメータ
                     ReactionTime = 0.5f,
                     AimAccuracy = 0.75f,
                     AttackInterval = new Vector2(1f, 3f),
@@ -1412,10 +1453,22 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 5f,
                     ChargeTimeMultiplier = 0.85f,
                     MissChance = 0.1f,
-                    StrafeChance = 0.6f
+                    StrafeChance = 0.6f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.7f,
+                    FeintChance = 0.25f,
+                    DodgeEffectiveness = 0.7f,
+                    DodgeTriggerDistance = 15f,
+                    MaxSimultaneousTargets = 3,
+                    ThreatAssessmentInterval = 0.5f,
+                    CounterPlayChance = 0.5f,
+                    MinFireCharge = 0.5f,
+                    TerrainAwarenessChance = 0.5f,
+                    CoverUsageChance = 0.4f
                 },
                 AIDifficulty.Expert => new DifficultySettings
                 {
+                    // 基本パラメータ
                     ReactionTime = 0.2f,
                     AimAccuracy = 0.95f,
                     AttackInterval = new Vector2(0.5f, 2f),
@@ -1425,10 +1478,22 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 6f,
                     ChargeTimeMultiplier = 1.0f,
                     MissChance = 0.02f,
-                    StrafeChance = 0.8f
+                    StrafeChance = 0.8f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.95f,
+                    FeintChance = 0.4f,
+                    DodgeEffectiveness = 0.9f,
+                    DodgeTriggerDistance = 20f,
+                    MaxSimultaneousTargets = 5,
+                    ThreatAssessmentInterval = 0.2f,
+                    CounterPlayChance = 0.8f,
+                    MinFireCharge = 0.6f,
+                    TerrainAwarenessChance = 0.8f,
+                    CoverUsageChance = 0.7f
                 },
                 _ => new DifficultySettings
                 {
+                    // 基本パラメータ（Normal相当）
                     ReactionTime = 1.0f,
                     AimAccuracy = 0.5f,
                     AttackInterval = new Vector2(2f, 4f),
@@ -1438,7 +1503,18 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 4f,
                     ChargeTimeMultiplier = 0.7f,
                     MissChance = 0.25f,
-                    StrafeChance = 0.4f
+                    StrafeChance = 0.4f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.4f,
+                    FeintChance = 0.1f,
+                    DodgeEffectiveness = 0.4f,
+                    DodgeTriggerDistance = 10f,
+                    MaxSimultaneousTargets = 2,
+                    ThreatAssessmentInterval = 1.0f,
+                    CounterPlayChance = 0.2f,
+                    MinFireCharge = 0.3f,
+                    TerrainAwarenessChance = 0.2f,
+                    CoverUsageChance = 0.15f
                 }
             };
         }

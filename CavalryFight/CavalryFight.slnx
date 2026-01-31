@@ -1,9 +1,9 @@
 ﻿<Solution>
   <Project Path="CavalryFight.Core.csproj" />
+  <Project Path="CavalryFight.Services.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="MalbersAnimations.csproj" />
   <Project Path="P09.ModularHumanoid.csproj" />
-  <Project Path="CavalryFight.Services.csproj" />
   <Project Path="BlazeAI.csproj" />
   <Project Path="CavalryFight.Tests.EditMode.csproj" />
   <Project Path="CavalryFight.Development.csproj" />

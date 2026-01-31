@@ -147,7 +147,7 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 1
-    - _DstBlendAlpha: 0
+    - _DstBlendAlpha: 1
     - _EDGEFADE: 0
     - _EdgeFadeMax: 0.502
     - _EdgeFadeMin: 1

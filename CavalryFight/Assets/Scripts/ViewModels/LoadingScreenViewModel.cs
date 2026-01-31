@@ -184,33 +184,27 @@ namespace CavalryFight.ViewModels
                 return;
             }
 
-            Debug.Log("[LoadingScreenViewModel] Searching for IMatchReadinessProvider...");
+            Debug.Log("[LoadingScreenViewModel] Getting IMatchReadinessProvider from ServiceLocator...");
 
-            // シーン内のIMatchReadinessProviderを実装するMonoBehaviourを探す
-            // （MatchManagerなど）
-            var allMonoBehaviours = Object.FindObjectsOfType<MonoBehaviour>();
-            Debug.Log($"[LoadingScreenViewModel] Found {allMonoBehaviours.Length} MonoBehaviours in scene");
-
-            foreach (var monoBehaviour in allMonoBehaviours)
+            // ServiceLocatorからIMatchReadinessProviderを取得
+            var provider = ServiceLocator.Instance.Get<IMatchReadinessProvider>();
+            if (provider != null)
             {
-                if (monoBehaviour is IMatchReadinessProvider provider)
-                {
-                    _matchReadinessProvider = provider;
-                    _matchReadinessProvider.AllEntitiesReady += OnAllEntitiesReady;
-                    Debug.Log($"[LoadingScreenViewModel] Subscribed to {monoBehaviour.GetType().Name}'s AllEntitiesReady event. AreAllEntitiesReady={provider.AreAllEntitiesReady}");
+                _matchReadinessProvider = provider;
+                _matchReadinessProvider.AllEntitiesReady += OnAllEntitiesReady;
+                Debug.Log($"[LoadingScreenViewModel] Subscribed to IMatchReadinessProvider. AreAllEntitiesReady={provider.AreAllEntitiesReady}");
 
-                    // 既に準備完了している場合は即座に非表示
-                    if (_matchReadinessProvider.AreAllEntitiesReady)
-                    {
-                        Debug.Log("[LoadingScreenViewModel] Entities already ready! Hiding loading screen.");
-                        OnAllEntitiesReady();
-                    }
-                    else
-                    {
-                        Debug.Log($"[LoadingScreenViewModel] Waiting for AllEntitiesReady event. Progress={provider.EntityLoadProgress:P0}, Status={provider.LoadStatusMessage}");
-                    }
-                    return;
+                // 既に準備完了している場合は即座に非表示
+                if (_matchReadinessProvider.AreAllEntitiesReady)
+                {
+                    Debug.Log("[LoadingScreenViewModel] Entities already ready! Hiding loading screen.");
+                    OnAllEntitiesReady();
                 }
+                else
+                {
+                    Debug.Log($"[LoadingScreenViewModel] Waiting for AllEntitiesReady event. Progress={provider.EntityLoadProgress:P0}, Status={provider.LoadStatusMessage}");
+                }
+                return;
             }
 
             // 見つからない場合はログを出力（タイムアウトでフォールバック）

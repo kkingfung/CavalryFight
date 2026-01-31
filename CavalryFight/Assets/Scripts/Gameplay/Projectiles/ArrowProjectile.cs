@@ -2,8 +2,10 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using CavalryFight.Core.Services;
 using CavalryFight.Gameplay.Training;
 using CavalryFight.Gameplay.Match;
+using CavalryFight.Services.Combat;
 using CavalryFight.Services.Training;
 using CavalryFight.Services.AI;
 using MalbersAnimations;
@@ -61,8 +63,17 @@ namespace CavalryFight.Gameplay.Projectiles
 
         private void Start()
         {
+            // ArrowTrackerServiceに登録
+            ServiceLocator.Instance.Get<IArrowTrackerService>()?.RegisterArrow(transform);
+
             // 寿命後に自動破壊をスケジュール（バックアップ）
             Destroy(gameObject, _lifetime);
+        }
+
+        private void OnDestroy()
+        {
+            // ArrowTrackerServiceから解除
+            ServiceLocator.Instance.Get<IArrowTrackerService>()?.UnregisterArrow(transform);
         }
 
         private void Update()
@@ -205,9 +216,9 @@ namespace CavalryFight.Gameplay.Projectiles
 
                 if (aiController != null)
                 {
-                    // AIにダメージを与える（attackerとして矢を渡す）
+                    // AIにダメージを与える（attackerとして発射者を渡す、なければ矢自身）
                     int damage = Mathf.RoundToInt(Damage);
-                    aiController.TakeDamage(damage, gameObject);
+                    aiController.TakeDamage(damage, _ownerObject ?? gameObject);
 
                     // スコアを通知（MatchManagerへ）
                     NotifyScore(Score, hitPoint);
@@ -231,8 +242,34 @@ namespace CavalryFight.Gameplay.Projectiles
 
                         if (healthStatID != null)
                         {
+                            float damageToApply = Damage;
+
+                            // ゲームモードで死亡が許可されていない場合、致命的なダメージを防ぐ
+                            var matchManager = Match.MatchManager.Instance;
+                            bool canDie = matchManager?.ActiveHandler?.CanPlayersDie ?? true;
+
+                            if (!canDie)
+                            {
+                                // 現在の体力を取得
+                                var stats = damageable.GetComponent<Stats>();
+                                if (stats != null)
+                                {
+                                    var healthStat = stats.Stat_Get(healthStatID);
+                                    if (healthStat != null)
+                                    {
+                                        float currentHealth = healthStat.Value;
+                                        // ダメージが体力を下回る場合、体力を1残すようにダメージを調整
+                                        if (damageToApply >= currentHealth)
+                                        {
+                                            damageToApply = Mathf.Max(0, currentHealth - 1f);
+                                            Debug.Log($"[ArrowProjectile] Capped damage to {damageToApply} to prevent death in {matchManager?.CurrentGameMode} mode (current health: {currentHealth})");
+                                        }
+                                    }
+                                }
+                            }
+
                             // MDamageableにダメージを与える
-                            damageable.ReceiveDamage(damageDirection, gameObject, healthStatID, Damage, false, null, false);
+                            damageable.ReceiveDamage(damageDirection, gameObject, healthStatID, damageToApply, false, null, false);
                         }
                     }
                 }
