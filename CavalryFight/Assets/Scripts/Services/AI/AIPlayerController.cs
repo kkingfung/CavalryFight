@@ -239,9 +239,18 @@ namespace CavalryFight.Services.AI
 
         private void Start()
         {
-            // Servicesを取得
-            _audioService = ServiceLocator.Instance.Get<IAudioService>();
-            _arrowTrackerService = ServiceLocator.Instance.Get<IArrowTrackerService>();
+            // Servicesを取得（TryGetで安全に取得）
+            _audioService = ServiceLocator.Instance.TryGet<IAudioService>();
+            if (_audioService == null)
+            {
+                Debug.LogWarning($"[AI-INIT] AI {_aiId}: IAudioService not found. Audio features will be disabled.");
+            }
+
+            _arrowTrackerService = ServiceLocator.Instance.TryGet<IArrowTrackerService>();
+            if (_arrowTrackerService == null)
+            {
+                Debug.LogWarning($"[AI-INIT] AI {_aiId}: IArrowTrackerService not found. Arrow tracking will be disabled.");
+            }
         }
 
         /// <summary>
@@ -3548,8 +3557,10 @@ namespace CavalryFight.Services.AI
             Debug.Log($"[AI-ARROW-DIR] AI {_aiId}: firePoint={_bowFirePoint.position}, rootPoint={(_arrowRootPoint != null ? _arrowRootPoint.position.ToString() : "NULL")}, dir={direction}");
 
             // === 予測射撃（LeadTargetFactor）===
+            // ★FIX: 0.1f→1.0f に変更（0.1f = 0.316m/s は低すぎる、1.0f = 1.0m/s に引き上げ）
+            // プレイヤーが実際に移動している時のみ予測射撃を適用
             float leadFactor = _difficultySettings.LeadTargetFactor;
-            if (leadFactor > 0f && _targetVelocity.sqrMagnitude > 0.1f)
+            if (leadFactor > 0f && _targetVelocity.sqrMagnitude > 1.0f)
             {
                 // 矢の速度から到達時間を推定
                 float estimatedArrowSpeed = Mathf.Lerp(_minArrowSpeed, _maxArrowSpeed, _currentCharge);
