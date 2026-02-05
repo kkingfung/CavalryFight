@@ -638,8 +638,10 @@ namespace CavalryFight.Services.AI
             // 戦闘中は上半身をターゲット方向に回転
             // チャージ中、Attack状態、またはStrafe状態でターゲットがいる場合にエイム
             // ★重要: _isChargingフラグを追加 - チャージ中は常にターゲットを狙う
+            // ★FIX: ターゲットが物理的な回転範囲外の場合はエイムしない（スパインをリセット）
             bool shouldAim = _currentTarget != null &&
-                (_isCharging || _currentState == AIState.Attack || _currentState == AIState.Strafe);
+                (_isCharging || _currentState == AIState.Attack || _currentState == AIState.Strafe) &&
+                IsTargetWithinPhysicalArc();
 
             // デバッグログ（2秒ごと）
             _lateUpdateLogTimer += Time.deltaTime;
@@ -658,6 +660,47 @@ namespace CavalryFight.Services.AI
                 // 非エイム時は徐々にリセット
                 ResetSpineRotation();
             }
+        }
+
+        /// <summary>
+        /// ターゲットが物理的な回転範囲内にあるかチェックします
+        /// </summary>
+        /// <returns>ターゲットが-45°〜125°の範囲内にある場合はtrue</returns>
+        /// <remarks>
+        /// この範囲外の場合、スパインを回転させても届かないため、
+        /// スパインをリセットして馬を回転させる必要があります。
+        /// </remarks>
+        private bool IsTargetWithinPhysicalArc()
+        {
+            if (_currentTarget == null || _mountObject == null)
+            {
+                return false;
+            }
+
+            Vector3 toTarget = _currentTarget.transform.position - _mountObject.transform.position;
+            toTarget.y = 0;
+            if (toTarget.sqrMagnitude < 0.01f)
+            {
+                return false;
+            }
+
+            Vector3 mountForward = _mountObject.transform.forward;
+            mountForward.y = 0;
+            mountForward.Normalize();
+            toTarget.Normalize();
+
+            float currentAngle = Vector3.SignedAngle(mountForward, toTarget, Vector3.up);
+
+            // 物理的な回転範囲: -45°（右）〜 +125°（左）
+            bool inPhysicalArc = currentAngle >= MinHorizontalRotation && currentAngle <= MaxHorizontalRotation;
+
+            // デバッグログ（2秒ごと）
+            if (Time.frameCount % 120 == 0)
+            {
+                Debug.Log($"[AI-SPINE-ARC] AI {_aiId}: angle={currentAngle:F1}°, inPhysicalArc={inPhysicalArc} (range: {MinHorizontalRotation}°〜{MaxHorizontalRotation}°)");
+            }
+
+            return inPhysicalArc;
         }
 
         /// <summary>
@@ -764,21 +807,10 @@ namespace CavalryFight.Services.AI
             _currentSpineYRotation = Mathf.LerpAngle(_currentSpineYRotation, targetAngleY, SpineRotationSpeed * Time.deltaTime);
             _currentSpineXRotation = Mathf.LerpAngle(_currentSpineXRotation, targetAngleX, SpineRotationSpeed * Time.deltaTime);
 
-            // ★ワールドY軸で水平回転、spineのright軸で垂直回転
-            // これにより、キャラクターの向きに関係なく正しくエイムできる
-            // ★修正: _currentAppliedSpineRotationを使用（LateUpdate開始時に保存したAnimatorの回転）
-            // これにより前フレームの修正が累積することを防ぐ
-            Quaternion baseRotation = _currentAppliedSpineRotation;
-
-            // 水平回転: ワールドY軸（垂直軸）周りに回転
-            Quaternion yawRotation = Quaternion.AngleAxis(_currentSpineYRotation, Vector3.up);
-
-            // 垂直回転: spineのright軸周りに回転（上下を向く）
-            Vector3 spineRight = baseRotation * Vector3.right;
-            Quaternion pitchRotation = Quaternion.AngleAxis(_currentSpineXRotation, spineRight);
-
-            // 回転を適用: pitch * yaw * base
-            _spineTransform.rotation = pitchRotation * yawRotation * baseRotation;
+            // ★FIX: PlayerControllerと同じ方式でローカル回転を適用
+            // アニメーションの回転に追加の回転を乗せる（Y軸とX軸）
+            Quaternion additionalRotation = Quaternion.Euler(_currentSpineXRotation, _currentSpineYRotation, 0f);
+            _spineTransform.rotation = _spineTransform.rotation * additionalRotation;
 
             // 2秒ごとに回転状態をログ出力
             if (Time.frameCount % 120 == 0)
@@ -787,6 +819,15 @@ namespace CavalryFight.Services.AI
                 Debug.Log($"[AI-SPINE] AI {_aiId}: rawY={rawAngleY:F1}°, targetY={targetAngleY:F1}°, currentY={_currentSpineYRotation:F1}°");
                 Debug.Log($"[AI-SPINE] AI {_aiId}: targetX={targetAngleX:F1}°, currentX={_currentSpineXRotation:F1}°, heightDiff={heightDiff:F2}m");
                 Debug.Log($"[AI-SPINE] AI {_aiId}: worldRot=({worldRot.x:F0},{worldRot.y:F0},{worldRot.z:F0}), additionalRot=({_currentSpineXRotation:F1},{_currentSpineYRotation:F1})");
+
+                // ★DEBUG: 弓の向きをチェック
+                if (_bowFirePoint != null && _arrowRootPoint != null)
+                {
+                    Vector3 bowDir = (_bowFirePoint.position - _arrowRootPoint.position).normalized;
+                    Vector3 targetDir = (targetChestPos - _bowFirePoint.position).normalized;
+                    float bowToTargetAngle = Vector3.Angle(bowDir, targetDir);
+                    Debug.Log($"[AI-SPINE] AI {_aiId}: bowDir={bowDir}, targetDir={targetDir}, angleDiff={bowToTargetAngle:F1}°");
+                }
             }
         }
 
@@ -807,21 +848,12 @@ namespace CavalryFight.Services.AI
             _currentSpineYRotation = Mathf.LerpAngle(_currentSpineYRotation, 0f, SpineRotationSpeed * 2f * Time.deltaTime);
             _currentSpineXRotation = Mathf.LerpAngle(_currentSpineXRotation, 0f, SpineRotationSpeed * 2f * Time.deltaTime);
 
-            // ★RotateSpineTowardTargetと同じ方式でリセット
+            // ★FIX: PlayerControllerと同じ方式でローカル回転を適用
             // 角度が0に近づくと追加回転も0に近づき、自然にAnimatorの回転のみになる
             if (Mathf.Abs(_currentSpineYRotation) > 0.1f || Mathf.Abs(_currentSpineXRotation) > 0.1f)
             {
-                // ★修正: _currentAppliedSpineRotationを使用（前フレームの修正累積を防ぐ）
-                Quaternion baseRotation = _currentAppliedSpineRotation;
-
-                // 水平回転: ワールドY軸周りに回転
-                Quaternion yawRotation = Quaternion.AngleAxis(_currentSpineYRotation, Vector3.up);
-
-                // 垂直回転: spineのright軸周りに回転
-                Vector3 spineRight = baseRotation * Vector3.right;
-                Quaternion pitchRotation = Quaternion.AngleAxis(_currentSpineXRotation, spineRight);
-
-                _spineTransform.rotation = pitchRotation * yawRotation * baseRotation;
+                Quaternion additionalRotation = Quaternion.Euler(_currentSpineXRotation, _currentSpineYRotation, 0f);
+                _spineTransform.rotation = _spineTransform.rotation * additionalRotation;
             }
             // 角度が十分小さければ何もしない（Animatorの回転をそのまま使用）
         }
@@ -861,6 +893,10 @@ namespace CavalryFight.Services.AI
 
             // MAnimal/MAnimalAIControlを取得（馬の移動制御用）
             TryGetMAnimalComponents();
+
+            // ★FIX: NavMeshAgentの設定を修正（滑り防止）
+            // updatePosition/updateRotationをfalseにして、アニメーションが馬を動かすようにする
+            ConfigureNavMeshAgent();
 
             // MAnimalBrainを検出（マウントに存在する場合、移動を委譲）
             TryGetMAnimalBrain();
@@ -969,6 +1005,38 @@ namespace CavalryFight.Services.AI
             else
             {
                 Debug.LogWarning($"[AIPlayerController] AI {_aiId}: NavMeshAgent NOT FOUND on mount!");
+            }
+        }
+
+        /// <summary>
+        /// NavMeshAgentの設定を行います（滑り防止）
+        /// </summary>
+        /// <remarks>
+        /// updatePositionとupdateRotationをfalseに設定することで、
+        /// NavMeshAgentはパス計算のみを行い、実際の移動はMAnimalのアニメーションが行います。
+        /// これにより、滑らない自然な移動が実現されます。
+        /// </remarks>
+        private void ConfigureNavMeshAgent()
+        {
+            if (_mountObject == null)
+            {
+                return;
+            }
+
+            var navAgent = _mountObject.GetComponentInChildren<NavMeshAgent>(true);
+            if (navAgent != null)
+            {
+                // ★重要: updatePosition/updateRotationをfalseにする
+                // これにより、NavMeshAgentはパス計算のみを行い、
+                // 実際の移動・回転はMAnimalのアニメーションが行う
+                navAgent.updatePosition = false;
+                navAgent.updateRotation = false;
+
+                Debug.Log($"[AI-INIT] AI {_aiId}: NavMeshAgent configured - updatePosition=false, updateRotation=false (prevents sliding)");
+            }
+            else
+            {
+                Debug.LogWarning($"[AI-INIT] AI {_aiId}: NavMeshAgent not found on mount, cannot configure!");
             }
         }
 
@@ -2762,13 +2830,13 @@ namespace CavalryFight.Services.AI
                 Debug.Log($"[AI-COMBAT] AI {_aiId}: StartAttack - Destroyed search/retreat waypoint");
             }
 
-            // ★FIX: ウェイポイント破棄後、即座にプレイヤーをターゲットに設定
-            // これにより、破棄されたウェイポイントを参照し続けることを防ぐ
-            if (_currentTarget != null)
-            {
-                SetMAnimalBrainTarget(_currentTarget);
-                Debug.Log($"[AI-COMBAT] AI {_aiId}: StartAttack - Set target to player: {_currentTarget.name}");
-            }
+            // ★FIX: プレイヤーを直接ターゲットに設定しない！
+            // LookAtTarget()が適切なウェイポイントを作成して位置取りをするため、
+            // ここで直接プレイヤーをターゲットに設定すると、すぐにウェイポイントに切り替わり
+            // 馬が混乱してerratic movementになる。
+            // 代わりに、nullを設定して一旦停止させ、UpdateAttack()のLookAtTarget()に任せる
+            SetMAnimalBrainTarget(null);
+            Debug.Log($"[AI-COMBAT] AI {_aiId}: StartAttack - Cleared target, will position via LookAtTarget()");
 
             Debug.Log($"[AI-COMBAT] AI {_aiId} StartAttack: ReactionTime={_difficultySettings.ReactionTime:F2}s");
         }
@@ -2853,12 +2921,15 @@ namespace CavalryFight.Services.AI
                 }
                 else
                 {
-                    // 射撃角度は良い → 直接近づく
-                    SetMAnimalBrainTarget(_currentTarget);
+                    // ★FIX: 射撃角度は良い → 直接近づく
+                    // SetMAnimalBrainTargetはAttack状態に入った時に一度だけ呼ばれるべき
+                    // 毎フレーム呼ぶとパスがリセットされて移動できない
+                    // ここではLookAtTargetで位置調整しながら近づく
+                    LookAtTarget();
 
                     if (Time.frameCount % 60 == 0)
                     {
-                        Debug.Log($"[AI-COMBAT] AI {_aiId}: Too far ({distanceToTarget:F1}m > {optimalMaxDistance:F1}m), approaching directly (angle good)");
+                        Debug.Log($"[AI-COMBAT] AI {_aiId}: Too far ({distanceToTarget:F1}m > {optimalMaxDistance:F1}m), approaching with position adjustment");
                     }
                 }
             }
@@ -3200,24 +3271,9 @@ namespace CavalryFight.Services.AI
                             }
                         }
 
-                        // ★重要: MAnimalに直接移動を指示（AIControlが機能しない場合のフォールバック）
-                        if (_mAnimal != null && actualDist > _mAnimalAIControl.StoppingDistance)
-                        {
-                            // MAnimalが Idle 状態で HSpeed=0 の場合、強制的に移動させる
-                            if (_mAnimal.HorizontalSpeed < 0.1f && _mAnimal.ActiveState != null &&
-                                _mAnimal.ActiveState.name.Contains("Idle"))
-                            {
-                                // Locomotion状態に遷移させる（歩行を開始）
-                                if (Time.frameCount % 60 == 0)
-                                {
-                                    Debug.LogWarning($"[AI-MOVE] AI {_aiId}: ★ MAnimal stuck in Idle! Forcing movement...");
-                                }
-
-                                // MAnimal.Move(Vector3) を呼んで移動を強制
-                                Vector3 direction = (target.transform.position - _mountObject.transform.position).normalized;
-                                _mAnimal.Move(direction);
-                            }
-                        }
+                        // ★REMOVED: 直接MAnimal.Move()を呼ぶと滑る動きになる
+                        // MAnimalAIControlが自動的にNavMeshAgentのパスを読んで
+                        // 適切な入力に変換してくれるため、直接制御は不要
                         if (navAgent == null)
                         {
                             Debug.LogError($"[AI-MOVE] AI {_aiId}: ★★★ NavMeshAgent NOT FOUND on mount! Cannot move!");
@@ -3266,36 +3322,9 @@ namespace CavalryFight.Services.AI
                             Debug.Log($"[AI-MOVE] AI {_aiId}: MAnimalAIControl reset complete, target={target.name}");
                         }
 
-                        // ★追加チェック: NavMeshAgentが実際にパスを持っているか確認
-                        if (navAgent != null && navAgent.isOnNavMesh)
-                        {
-                            // NavMeshAgentにパスがない場合、直接SetDestinationを呼ぶ
-                            if (!navAgent.hasPath && !navAgent.pathPending)
-                            {
-                                Debug.LogWarning($"[AI-MOVE] AI {_aiId}: NavMeshAgent has no path! Calling SetDestination directly");
-
-                                // ★FIX: ターゲット位置がNavMesh上にない可能性があるため、
-                                // NavMesh.SamplePositionで有効な位置を取得してから設定
-                                Vector3 targetPos = target.transform.position;
-                                if (UnityEngine.AI.NavMesh.SamplePosition(targetPos, out var hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
-                                {
-                                    targetPos = hit.position;
-                                    navAgent.SetDestination(targetPos);
-
-                                    // MAnimalAIControlも更新
-                                    _mAnimalAIControl.Stop();
-                                    _mAnimalAIControl.ClearTarget();
-                                    _mAnimalAIControl.SetTarget(target.transform);
-                                    _mAnimalAIControl.Move();
-
-                                    Debug.Log($"[AI-MOVE] AI {_aiId}: NavMeshAgent.SetDestination({targetPos}) called (sampled from {target.transform.position})");
-                                }
-                                else
-                                {
-                                    Debug.LogError($"[AI-MOVE] AI {_aiId}: Failed to find valid NavMesh position near target {target.name} at {target.transform.position}");
-                                }
-                            }
-                        }
+                        // ★REMOVED: NavMeshAgent.SetDestination()を直接呼ぶと滑る動きになる
+                        // MAnimalAIControlが自動的にNavMeshAgentにSetDestinationを呼ぶため、
+                        // ここで直接呼ぶ必要はない（むしろ二重設定で問題が起きる）
                     }
                     else
                     {
@@ -4283,6 +4312,45 @@ namespace CavalryFight.Services.AI
                     _bowFirePoint = firePoint;
                 }
                 Debug.Log($"[AIPlayerController] AI {_aiId}: BowFirePoint auto-detected: {_bowFirePoint.name}");
+            }
+
+            // ★FIX: ArrowRootPointを自動設定（未設定の場合）
+            // 弓のグリップ部分を探す。プレイヤーと同じ2点法で矢の方向を決定するために必要。
+            if (_arrowRootPoint == null)
+            {
+                // 弓から根元位置を探す（子オブジェクトに"Root"や"Grip"があれば使用）
+                Transform? rootPoint = bowObject.transform.Find("ArrowRoot");
+                if (rootPoint == null)
+                {
+                    rootPoint = bowObject.transform.Find("Root");
+                }
+                if (rootPoint == null)
+                {
+                    rootPoint = bowObject.transform.Find("Grip");
+                }
+                if (rootPoint == null)
+                {
+                    // 子オブジェクトから"Root"や"Grip"を含む名前を探す
+                    foreach (Transform child in bowObject.GetComponentsInChildren<Transform>(true))
+                    {
+                        if (child.name.Contains("Root") || child.name.Contains("Grip"))
+                        {
+                            rootPoint = child;
+                            break;
+                        }
+                    }
+                }
+                if (rootPoint == null)
+                {
+                    // なければ弓の位置を使用（ただし警告を出す）
+                    Debug.LogWarning($"[AIPlayerController] AI {_aiId}: ArrowRootPoint not found in bow hierarchy, using bow object. Arrow direction may be incorrect!");
+                    _arrowRootPoint = bowObject.transform;
+                }
+                else
+                {
+                    _arrowRootPoint = rootPoint;
+                }
+                Debug.Log($"[AIPlayerController] AI {_aiId}: ArrowRootPoint auto-detected: {_arrowRootPoint.name}");
             }
 
             // 弓が左手の下にない場合は移動

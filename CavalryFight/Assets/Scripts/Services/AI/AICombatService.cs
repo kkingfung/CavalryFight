@@ -119,11 +119,40 @@ namespace CavalryFight.Services.AI
         /// <param name="difficulty">AI難易度</param>
         public void Initialize(GameMode gameMode, AIDifficulty difficulty)
         {
+            // 既に初期化済みで、設定が変わらない場合はスキップ
+            if (_isInitialized && _currentGameMode == gameMode && _currentDifficulty == difficulty && _serviceConfig != null)
+            {
+                Debug.Log($"[AICombatService] Already initialized with same settings. Skipping re-initialization.");
+                return;
+            }
+
             _currentGameMode = gameMode;
             _currentDifficulty = difficulty;
 
-            // サービス設定をロード
-            LoadServiceConfig();
+            // サービス設定をロード（初回のみ、または失敗後の再試行）
+            if (_serviceConfig == null)
+            {
+                LoadServiceConfig();
+            }
+
+            // 設定の検証（初期化時に早期に失敗させる）
+            if (_serviceConfig == null)
+            {
+                Debug.LogError("[AICombatService] Initialize FAILED: AIServiceConfig could not be loaded from Resources/Settings/AIServiceConfig");
+                Debug.LogError("[AICombatService] Please create the AIServiceConfig asset at: Assets/Resources/Settings/AIServiceConfig.asset");
+                _isInitialized = false;
+                return;
+            }
+
+            if (!_serviceConfig.IsValid)
+            {
+                Debug.LogError($"[AICombatService] Initialize FAILED: AIServiceConfig is invalid!");
+                Debug.LogError($"[AICombatService] AIRiderPrefab: {(_serviceConfig.AIRiderPrefab != null ? _serviceConfig.AIRiderPrefab.name : "NULL")}");
+                Debug.LogError($"[AICombatService] AIMountPrefab: {(_serviceConfig.AIMountPrefab != null ? _serviceConfig.AIMountPrefab.name : "NULL")}");
+                Debug.LogError("[AICombatService] Please assign both AIRiderPrefab and AIMountPrefab in the AIServiceConfig asset.");
+                _isInitialized = false;
+                return;
+            }
 
             // 難易度設定を適用
             LoadDifficultySettings();
@@ -131,7 +160,8 @@ namespace CavalryFight.Services.AI
             _isInitialized = true;
             _isEnabled = false;
 
-            Debug.Log($"[AICombatService] Initialized. GameMode: {gameMode}, Difficulty: {difficulty}");
+            Debug.Log($"[AICombatService] Initialized successfully. GameMode: {gameMode}, Difficulty: {difficulty}");
+            Debug.Log($"[AICombatService] Config: RiderPrefab={_serviceConfig.AIRiderPrefab!.name}, MountPrefab={_serviceConfig.AIMountPrefab!.name}");
         }
 
         /// <summary>
@@ -162,23 +192,33 @@ namespace CavalryFight.Services.AI
 
             if (!_isInitialized)
             {
-                Debug.LogError("[AICombatService] Service not initialized!");
+                Debug.LogError("[AICombatService] SpawnAIPlayer FAILED: Service not initialized! Call Initialize() first.");
                 return null;
             }
 
             if (_aiPlayers.ContainsKey(aiId))
             {
-                Debug.LogWarning($"[AICombatService] AI with ID {aiId} already exists!");
+                Debug.LogWarning($"[AICombatService] SpawnAIPlayer FAILED: AI with ID {aiId} already exists!");
                 return null;
             }
 
-            Debug.Log($"[AI-SPAWN-DEBUG] _serviceConfig={((_serviceConfig != null) ? "exists" : "NULL")}, IsValid={(_serviceConfig?.IsValid ?? false)}");
-            Debug.Log($"[AI-SPAWN-DEBUG] RiderPrefab={(_serviceConfig?.AIRiderPrefab != null ? _serviceConfig.AIRiderPrefab.name : "NULL")}, MountPrefab={(_serviceConfig?.AIMountPrefab != null ? _serviceConfig.AIMountPrefab.name : "NULL")}");
+            // 設定の最終確認（Initialize後でも何らかの理由でnullになっている可能性）
+            if (_serviceConfig == null || !_serviceConfig.IsValid)
+            {
+                Debug.LogError($"[AICombatService] SpawnAIPlayer FAILED: Config is invalid!");
+                Debug.LogError($"[AI-SPAWN-DEBUG] _serviceConfig={((_serviceConfig != null) ? "exists" : "NULL")}, IsValid={(_serviceConfig?.IsValid ?? false)}");
+                Debug.LogError($"[AI-SPAWN-DEBUG] RiderPrefab={(_serviceConfig?.AIRiderPrefab != null ? _serviceConfig.AIRiderPrefab.name : "NULL")}, MountPrefab={(_serviceConfig?.AIMountPrefab != null ? _serviceConfig.AIMountPrefab.name : "NULL")}");
+                Debug.LogError("[AICombatService] This should not happen if Initialize() succeeded. Check if the config asset or prefabs were destroyed.");
+                return null;
+            }
+
+            Debug.Log($"[AI-SPAWN-DEBUG] Config OK: RiderPrefab={_serviceConfig.AIRiderPrefab!.name}, MountPrefab={_serviceConfig.AIMountPrefab!.name}");
 
             // AIプレイヤーを作成
             AIPlayerData? aiData = CreateAIPlayer(spawnPoint, rotation, teamIndex, aiId);
             if (aiData == null)
             {
+                Debug.LogError($"[AICombatService] SpawnAIPlayer FAILED: CreateAIPlayer returned null for aiId {aiId}");
                 return null;
             }
 
@@ -243,6 +283,9 @@ namespace CavalryFight.Services.AI
         /// </summary>
         public void DespawnAllAIPlayers()
         {
+            int count = _aiPlayers.Count;
+            Debug.Log($"[AICombatService] DespawnAllAIPlayers called. Despawning {count} AI players.");
+
             List<ulong> aiIds = new List<ulong>(_aiPlayers.Keys);
             foreach (ulong aiId in aiIds)
             {
@@ -251,6 +294,8 @@ namespace CavalryFight.Services.AI
 
             _aiPlayers.Clear();
             _teamAIPlayers.Clear();
+
+            Debug.Log($"[AICombatService] All AI players despawned. _aiPlayers.Count={_aiPlayers.Count}");
         }
 
         /// <summary>

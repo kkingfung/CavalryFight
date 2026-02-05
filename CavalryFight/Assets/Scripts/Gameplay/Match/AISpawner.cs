@@ -119,6 +119,14 @@ namespace CavalryFight.Gameplay.Match
                 Debug.Log($"[AI-SPAWN] AISpawner: Created and registered new AICombatService");
             }
 
+            // シーンが再ロードされた際、AICombatServiceは永続化されているが、
+            // 古いAI GameObjectは破棄されている可能性がある。辞書をクリアして同期する。
+            if (_aiCombatService != null)
+            {
+                Debug.Log($"[AI-SPAWN] Cleaning up any orphaned AI from previous match...");
+                _aiCombatService.DespawnAllAIPlayers();
+            }
+
             // MatchManagerを取得
             _matchManager = MatchManager.Instance;
             Debug.Log($"[AI-SPAWN] AISpawner: MatchManager.Instance={(_matchManager != null ? "found" : "NULL")}");
