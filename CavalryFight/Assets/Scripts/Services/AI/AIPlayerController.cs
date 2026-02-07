@@ -93,7 +93,7 @@ namespace CavalryFight.Services.AI
         // PlayerControllerと同じ方式: 角度値でスムーズに補間
         private float _currentSpineYRotation = 0f;  // 現在のY軸回転角度（追加回転、0で元ポーズ維持）
         private float _currentSpineXRotation = 0f;  // 現在のX軸回転角度（垂直）
-        private const float SpineRotationSpeed = 5f;  // 角度補間速度
+        private const float SpineRotationSpeed = 20f;  // 角度補間速度（AIは動的ターゲットを追うため高速化: 5f→20f）
 
         private bool _hairReparented = false;
 
@@ -106,15 +106,15 @@ namespace CavalryFight.Services.AI
         // 上半身の回転制限（PlayerCameraControllerのAim角度に合わせる）
         // 水平は非対称: SignedAngle正=左(counterclockwise), 負=右(clockwise)
         // 左側射撃なので左方向を大きく、右方向を小さく
-        private const float MinHorizontalRotation = -45f;   // 右方向の制限 (45° clockwise)
-        private const float MaxHorizontalRotation = 125f;   // 左方向の制限 (125° counterclockwise)
+        // ★FIX: 水平回転制限を反転
+        private const float MinHorizontalRotation = -135f;  // 制限最小値
+        private const float MaxHorizontalRotation = 70f;    // 制限最大値
         // 垂直は非対称: -30（下）〜 +60（上）
         private const float MinVerticalRotation = -30f;     // 下方向の制限
         private const float MaxVerticalRotation = 60f;      // 上方向の制限
 
-        // 騎馬弓兵の理想的な射撃角度（ターゲットが馬の左側にいる状態）
-        // SignedAngle正=左なので、+60°〜+90°がスイートスポット
-        private const float IdealShootingAngle = 75f;       // 理想的な角度（左75°）
+        // 騎馬弓兵の理想的な射撃角度
+        private const float IdealShootingAngle = 75f;       // 理想的な角度
         private const float ShootingAngleMargin = 30f;      // 許容マージン（±30°）
 
         // 状態
@@ -629,10 +629,10 @@ namespace CavalryFight.Services.AI
 
             // ★重要: Animatorが設定した回転を保存（累積を防ぐ）
             // Animatorは自身のLateUpdateで_spineTransformを更新済み
-            // この時点での回転をベースとして使用し、前フレームの修正は含めない
+            // この時点での「ローカル回転」をベースとして使用し、前フレームの修正は含めない
             if (_spineTransform != null)
             {
-                _currentAppliedSpineRotation = _spineTransform.rotation;
+                _originalSpineRotation = _spineTransform.localRotation;
             }
 
             // 戦闘中は上半身をターゲット方向に回転
@@ -654,11 +654,51 @@ namespace CavalryFight.Services.AI
             if (shouldAim)
             {
                 RotateSpineTowardTarget();
+
+                // ★弓の補正はRotateSpineTowardTarget内で行うため、ここでは不要
+                // AlignBowToTarget();
             }
             else
             {
                 // 非エイム時は徐々にリセット
                 ResetSpineRotation();
+            }
+        }
+
+        /// <summary>
+        /// 弓の向きをターゲットに向けて調整します
+        /// </summary>
+        /// <remarks>
+        /// スパイン回転後に矢のジオメトリの向きを測定し、
+        /// ターゲット方向との誤差を弓のローカル回転に適用します。
+        /// </remarks>
+        private void AlignBowToTarget()
+        {
+            if (_p09BowObject == null || _currentTarget == null || _bowFirePoint == null || _arrowRootPoint == null)
+            {
+                return;
+            }
+
+            // ターゲット方向を計算
+            Vector3 targetPos = _currentTarget.transform.position + Vector3.up * 0.5f;
+            Vector3 toTarget = (targetPos - _bowFirePoint.position).normalized;
+
+            // 現在の矢の向き（弓のジオメトリ）
+            Vector3 currentArrowDir = (_bowFirePoint.position - _arrowRootPoint.position).normalized;
+
+            // 現在の矢の向きからターゲット方向への回転を計算
+            Quaternion errorRotation = Quaternion.FromToRotation(currentArrowDir, toTarget);
+
+            // この回転を弓に適用（ワールド空間で回転してからローカル空間に変換）
+            Quaternion newWorldRotation = errorRotation * _p09BowObject.transform.rotation;
+            _p09BowObject.transform.rotation = newWorldRotation;
+
+            // デバッグ
+            if (Time.frameCount % 60 == 0)
+            {
+                Vector3 finalArrowDir = (_bowFirePoint.position - _arrowRootPoint.position).normalized;
+                float finalError = Vector3.Angle(finalArrowDir, toTarget);
+                Debug.Log($"[AI-BOW-ALIGN] AI {_aiId}: initialError={Vector3.Angle(currentArrowDir, toTarget):F1}°, finalError={finalError:F1}°, bowLocal={_p09BowObject.transform.localEulerAngles}");
             }
         }
 
@@ -677,19 +717,23 @@ namespace CavalryFight.Services.AI
                 return false;
             }
 
-            Vector3 toTarget = _currentTarget.transform.position - _mountObject.transform.position;
+            // ★FIX: MAnimalのtransformを使用（実際の馬の位置と向き）
+            Transform actualMount = _mAnimal != null ? _mAnimal.transform : _mountObject.transform;
+
+            Vector3 toTarget = _currentTarget.transform.position - actualMount.position;
             toTarget.y = 0;
             if (toTarget.sqrMagnitude < 0.01f)
             {
                 return false;
             }
 
-            Vector3 mountForward = _mountObject.transform.forward;
+            Vector3 mountForward = actualMount.forward;
             mountForward.y = 0;
             mountForward.Normalize();
             toTarget.Normalize();
 
-            float currentAngle = Vector3.SignedAngle(mountForward, toTarget, Vector3.up);
+            // ★FIX: 符号を反転（右=負、左=正になるように）
+            float currentAngle = -Vector3.SignedAngle(mountForward, toTarget, Vector3.up);
 
             // 物理的な回転範囲: -45°（右）〜 +125°（左）
             bool inPhysicalArc = currentAngle >= MinHorizontalRotation && currentAngle <= MaxHorizontalRotation;
@@ -761,8 +805,11 @@ namespace CavalryFight.Services.AI
             // ========== localRotationベースの回転 ==========
             // _originalSpineRotationを基準に追加回転を適用（累積を防ぐ）
 
+            // ★FIX: MAnimalのtransformを使用（実際の馬の位置と向き）
+            Transform actualMount = _mAnimal != null ? _mAnimal.transform : _mountObject.transform;
+
             // ★水平方向: 馬の位置を基準にして角度計算（LookAtTargetと一致させる）
-            Vector3 mountPos = _mountObject.transform.position;
+            Vector3 mountPos = actualMount.position;
             Vector3 targetRootPos = _currentTarget.transform.position;
             Vector3 horizontalDir = targetRootPos - mountPos;
             horizontalDir.y = 0;
@@ -781,17 +828,28 @@ namespace CavalryFight.Services.AI
             horizontalDir.Normalize();
 
             // 馬の向きを取得
-            Vector3 mountForward = _mountObject.transform.forward;
+            Vector3 mountForward = actualMount.forward;
             mountForward.y = 0;
             mountForward.Normalize();
 
             // 馬の向きとターゲットの向きの角度差を計算
-            float rawAngleY = Vector3.SignedAngle(mountForward, horizontalDir, Vector3.up);
+            // ★FIX: 符号を反転（右=負、左=正になるように）
+            float rawAngleY = -Vector3.SignedAngle(mountForward, horizontalDir, Vector3.up);
 
-            // 制限を適用（非対称: 右-45° 〜 左+125°）
+            // rawAngleY: 正=左, 負=右
+            // SignedAngleは馬の前方(0°)から測定: 左=正, 右=負
+            // 左側射撃なので、理想角度は+45°〜+105°の範囲
+
+            // ★DEBUG: 簡略化（2秒ごと）
+            if (Time.frameCount % 120 == 0)
+            {
+                Debug.Log($"[AI-AIM] AI {_aiId}: Target={_currentTarget.name}, rawAngle={rawAngleY:F1}°");
+            }
+
+            // 制限を適用（物理限界: 右-70° 〜 左+135°）
             float clampedAngleY = Mathf.Clamp(rawAngleY, MinHorizontalRotation, MaxHorizontalRotation);
 
-            // ターゲット角度（オフセットなし - 直接の角度差を使用）
+            // ターゲット角度
             float targetAngleY = clampedAngleY;
 
             // 垂直角度を計算（spineからターゲットへの高低差）
@@ -807,26 +865,25 @@ namespace CavalryFight.Services.AI
             _currentSpineYRotation = Mathf.LerpAngle(_currentSpineYRotation, targetAngleY, SpineRotationSpeed * Time.deltaTime);
             _currentSpineXRotation = Mathf.LerpAngle(_currentSpineXRotation, targetAngleX, SpineRotationSpeed * Time.deltaTime);
 
-            // ★FIX: PlayerControllerと同じ方式でローカル回転を適用
-            // アニメーションの回転に追加の回転を乗せる（Y軸とX軸）
-            Quaternion additionalRotation = Quaternion.Euler(_currentSpineXRotation, _currentSpineYRotation, 0f);
-            _spineTransform.rotation = _spineTransform.rotation * additionalRotation;
+            // ★FIX: RiderArcherControllerと完全に同じ方式を使用
+            // AngleAxis + Quaternion乗算を使用（Eulerではなく）
+            Quaternion horizontalRot = Quaternion.AngleAxis(_currentSpineYRotation, Vector3.up);
+            Quaternion verticalRot = Quaternion.AngleAxis(_currentSpineXRotation, Vector3.right);
+            Quaternion targetRotation = horizontalRot * verticalRot;
+            _spineTransform.localRotation = _originalSpineRotation * targetRotation;
 
             // 2秒ごとに回転状態をログ出力
             if (Time.frameCount % 120 == 0)
             {
-                var worldRot = _spineTransform.rotation.eulerAngles;
-                Debug.Log($"[AI-SPINE] AI {_aiId}: rawY={rawAngleY:F1}°, targetY={targetAngleY:F1}°, currentY={_currentSpineYRotation:F1}°");
-                Debug.Log($"[AI-SPINE] AI {_aiId}: targetX={targetAngleX:F1}°, currentX={_currentSpineXRotation:F1}°, heightDiff={heightDiff:F2}m");
-                Debug.Log($"[AI-SPINE] AI {_aiId}: worldRot=({worldRot.x:F0},{worldRot.y:F0},{worldRot.z:F0}), additionalRot=({_currentSpineXRotation:F1},{_currentSpineYRotation:F1})");
+                Debug.Log($"[AI-SPINE] AI {_aiId}: targetAngle={rawAngleY:F1}°, spineRotation={_currentSpineYRotation:F1}°");
 
                 // ★DEBUG: 弓の向きをチェック
                 if (_bowFirePoint != null && _arrowRootPoint != null)
                 {
                     Vector3 bowDir = (_bowFirePoint.position - _arrowRootPoint.position).normalized;
-                    Vector3 targetDir = (targetChestPos - _bowFirePoint.position).normalized;
+                    Vector3 targetDir = (targetChestPos - _arrowRootPoint.position).normalized;
                     float bowToTargetAngle = Vector3.Angle(bowDir, targetDir);
-                    Debug.Log($"[AI-SPINE] AI {_aiId}: bowDir={bowDir}, targetDir={targetDir}, angleDiff={bowToTargetAngle:F1}°");
+                    Debug.Log($"[AI-SPINE] AI {_aiId}: bowDir={bowDir}, targetDir={targetDir}, error={bowToTargetAngle:F1}°");
                 }
             }
         }
@@ -848,14 +905,19 @@ namespace CavalryFight.Services.AI
             _currentSpineYRotation = Mathf.LerpAngle(_currentSpineYRotation, 0f, SpineRotationSpeed * 2f * Time.deltaTime);
             _currentSpineXRotation = Mathf.LerpAngle(_currentSpineXRotation, 0f, SpineRotationSpeed * 2f * Time.deltaTime);
 
-            // ★FIX: PlayerControllerと同じ方式でローカル回転を適用
-            // 角度が0に近づくと追加回転も0に近づき、自然にAnimatorの回転のみになる
+            // ★FIX: ローカル回転を使用（RotateSpineTowardTargetと同じ方式）
             if (Mathf.Abs(_currentSpineYRotation) > 0.1f || Mathf.Abs(_currentSpineXRotation) > 0.1f)
             {
-                Quaternion additionalRotation = Quaternion.Euler(_currentSpineXRotation, _currentSpineYRotation, 0f);
-                _spineTransform.rotation = _spineTransform.rotation * additionalRotation;
+                Quaternion horizontalRot = Quaternion.AngleAxis(_currentSpineYRotation, Vector3.up);
+                Quaternion verticalRot = Quaternion.AngleAxis(_currentSpineXRotation, Vector3.right);
+                Quaternion targetRotation = horizontalRot * verticalRot;
+                _spineTransform.localRotation = _originalSpineRotation * targetRotation;
             }
-            // 角度が十分小さければ何もしない（Animatorの回転をそのまま使用）
+            else
+            {
+                // 角度が十分小さければアニメーションの回転に戻す
+                _spineTransform.localRotation = _originalSpineRotation;
+            }
         }
 
         #endregion
@@ -3569,8 +3631,7 @@ namespace CavalryFight.Services.AI
             // ミス判定
             bool isMiss = UnityEngine.Random.value < _difficultySettings.MissChance;
 
-            // 発射方向を計算
-            // 2点法（root→fire）で矢の物理的な向きを使用
+            // 発射方向を弓のジオメトリから取得
             Vector3 direction;
             if (_arrowRootPoint != null)
             {
@@ -3578,12 +3639,19 @@ namespace CavalryFight.Services.AI
             }
             else
             {
-                // フォールバック: ターゲット方向を使用
+                // フォールバック: ターゲット方向
                 Vector3 targetAimPos = _currentTarget.transform.position + Vector3.up * 0.5f;
                 direction = (targetAimPos - _bowFirePoint.position).normalized;
             }
 
-            Debug.Log($"[AI-ARROW-DIR] AI {_aiId}: firePoint={_bowFirePoint.position}, rootPoint={(_arrowRootPoint != null ? _arrowRootPoint.position.ToString() : "NULL")}, dir={direction}");
+            // ★DEBUG: ターゲット方向と比較
+            Vector3 targetAimPos2 = _currentTarget.transform.position + Vector3.up * 0.5f;
+            Vector3 idealDirection = (targetAimPos2 - _bowFirePoint.position).normalized;
+            float angleError = Vector3.Angle(direction, idealDirection);
+
+            Debug.Log($"[AI-ARROW-DIR] AI {_aiId}: Using bow geometry direction");
+            Debug.Log($"[AI-ARROW-DIR] AI {_aiId}: bowGeometryDir={direction}, idealDir={idealDirection}, angleError={angleError:F1}°");
+            Debug.Log($"[AI-ARROW-DIR] AI {_aiId}: TargetVelocity={_targetVelocity.magnitude:F2}m/s (threshold=1.0m/s), LeadFactor={_difficultySettings.LeadTargetFactor:F2}");
 
             // === 予測射撃（LeadTargetFactor）===
             // ★FIX: 0.1f→1.0f に変更（0.1f = 0.316m/s は低すぎる、1.0f = 1.0m/s に引き上げ）
@@ -3609,6 +3677,7 @@ namespace CavalryFight.Services.AI
             }
 
             // 精度に応じてブレを追加
+            Vector3 directionBeforeSpread = direction;
             if (!isMiss)
             {
                 float maxAngleOffset = (1f - _difficultySettings.AimAccuracy) * 10f;
@@ -3616,6 +3685,7 @@ namespace CavalryFight.Services.AI
                 float angleY = UnityEngine.Random.Range(-maxAngleOffset, maxAngleOffset);
                 Quaternion rotation = Quaternion.Euler(angleX, angleY, 0);
                 direction = rotation * direction;
+                Debug.Log($"[AI-ARROW-DIR] AI {_aiId}: Spread applied - maxOffset={maxAngleOffset:F2}°, actualOffset=({angleX:F2},{angleY:F2})");
             }
             else
             {
@@ -3623,9 +3693,11 @@ namespace CavalryFight.Services.AI
                 float angleY = UnityEngine.Random.Range(-30f, 30f);
                 Quaternion rotation = Quaternion.Euler(angleX, angleY, 0);
                 direction = rotation * direction;
+                Debug.Log($"[AI-ARROW-DIR] AI {_aiId}: MISS spread applied - offset=({angleX:F2},{angleY:F2})");
             }
 
-            Debug.Log($"[AI-ARROW-DIR] AI {_aiId}: FINAL dir={direction}, miss={isMiss}");
+            float spreadAngleChange = Vector3.Angle(directionBeforeSpread, direction);
+            Debug.Log($"[AI-ARROW-DIR] AI {_aiId}: FINAL dir={direction}, miss={isMiss}, spreadChange={spreadAngleChange:F2}°");
 
             // 矢の速度
             float arrowSpeed = Mathf.Lerp(_minArrowSpeed, _maxArrowSpeed, _currentCharge);
@@ -3862,20 +3934,32 @@ namespace CavalryFight.Services.AI
             }
             _lastLookAtTargetFrame = Time.frameCount;
 
+            // ★FIX: MAnimalのtransformを使用（実際の馬の位置と向き）
+            Transform actualMount = _mAnimal != null ? _mAnimal.transform : _mountObject.transform;
+
             // 現在のターゲット角度を計算
-            Vector3 toTarget = _currentTarget.transform.position - _mountObject.transform.position;
+            Vector3 targetPos = _currentTarget.transform.position + Vector3.up * 0.5f;
+            Vector3 toTarget = targetPos - actualMount.position;  // ★FIX: 馬の実際の位置から計算
             toTarget.y = 0;
             if (toTarget.sqrMagnitude < 0.01f)
             {
                 return;
             }
-
-            Vector3 mountForward = _mountObject.transform.forward;
+            Vector3 mountForward = actualMount.forward;
             mountForward.y = 0;
             mountForward.Normalize();
             toTarget.Normalize();
 
-            float currentAngle = Vector3.SignedAngle(mountForward, toTarget, Vector3.up);
+            // ★FIX: 符号を反転（右=負、左=正になるように）
+            float currentAngle = -Vector3.SignedAngle(mountForward, toTarget, Vector3.up);
+
+            // ★DEBUG: 角度計算の検証
+            if (Time.frameCount % 120 == 0)
+            {
+                Vector3 mountRot = actualMount.eulerAngles;
+                Debug.Log($"[AI-ANGLE] AI {_aiId}: using={actualMount.name}, rot={mountRot}, forward={mountForward}");
+                Debug.Log($"[AI-ANGLE] AI {_aiId}: toTarget={toTarget}, angle={currentAngle:F1}°");
+            }
 
             // 理想角度範囲: IdealShootingAngle ± ShootingAngleMargin (45°〜105°)
             float minIdealAngle = IdealShootingAngle - ShootingAngleMargin; // 45°
@@ -3901,6 +3985,11 @@ namespace CavalryFight.Services.AI
                 {
                     Debug.Log($"[AI-POS] AI {_aiId}: Target in ideal arc ({currentAngle:F1}°), already stopped");
                 }
+
+                // ★NOTE: 理想角度(75°)からの微調整は不要
+                // スパイン回転の範囲(-70°〜+135°)が広いため、45°〜105°の範囲内なら
+                // スパインだけで十分にターゲットを狙える
+                // 馬を動かすと射撃タイミングが遅れるため、停止して即座に射撃する
             }
             else
             {
@@ -3926,27 +4015,35 @@ namespace CavalryFight.Services.AI
                 return false;
             }
 
-            Vector3 toTarget = _currentTarget.transform.position - _mountObject.transform.position;
+            // ★FIX: MAnimalのtransformを使用（実際の馬の位置と向き）
+            Transform actualMount = _mAnimal != null ? _mAnimal.transform : _mountObject.transform;
+
+            Vector3 toTarget = _currentTarget.transform.position - actualMount.position;
             toTarget.y = 0;
             if (toTarget.sqrMagnitude < 0.01f)
             {
                 return false;
             }
 
-            Vector3 mountForward = _mountObject.transform.forward;
+            Vector3 mountForward = actualMount.forward;
             mountForward.y = 0;
             mountForward.Normalize();
             toTarget.Normalize();
 
-            float currentAngle = Vector3.SignedAngle(mountForward, toTarget, Vector3.up);
+            // ★FIX: 符号を反転（右=負、左=正になるように）
+            float currentAngle = -Vector3.SignedAngle(mountForward, toTarget, Vector3.up);
 
-            // 射撃可能範囲: 物理的な回転限界内（-45°〜+125°）
-            // この範囲内であれば上半身がターゲットを向けるので射撃可能
-            bool inArc = currentAngle >= MinHorizontalRotation && currentAngle <= MaxHorizontalRotation;
+            // ★FIX: 射撃可能範囲を物理限界より広めに設定（-70°〜+135°）
+            // AIは移動しながら射撃できる（パルティアンショット）ため、
+            // 多少角度が悪くても射撃を開始し、移動しながら調整する
+            // 物理的な回転限界（-45°〜+125°）より余裕を持たせる
+            const float ShootingArcMin = -70f;  // 物理限界-45°より25°広い
+            const float ShootingArcMax = 135f;  // 物理限界+125°より10°広い
+            bool inArc = currentAngle >= ShootingArcMin && currentAngle <= ShootingArcMax;
 
             if (Time.frameCount % 120 == 0)
             {
-                Debug.Log($"[AI-ARC] AI {_aiId}: angle={currentAngle:F1}°, inArc={inArc} (physical: {MinHorizontalRotation}°〜{MaxHorizontalRotation}°)");
+                Debug.Log($"[AI-ARC] AI {_aiId}: angle={currentAngle:F1}°, inArc={inArc} (shooting: {ShootingArcMin}°〜{ShootingArcMax}°, physical: {MinHorizontalRotation}°〜{MaxHorizontalRotation}°)");
             }
 
             return inArc;
@@ -4450,8 +4547,7 @@ namespace CavalryFight.Services.AI
                 }
             }
 
-            // Bowの位置を(0,0,0)、回転を(0, 90, -90)に設定
-            // これによりアニメーションによる位置/回転の変化を打ち消す
+            // Bowの位置と回転を設定（PlayerControllerと同じ）
             if (_p09BowObject != null)
             {
                 _p09BowObject.transform.localPosition = Vector3.zero;
