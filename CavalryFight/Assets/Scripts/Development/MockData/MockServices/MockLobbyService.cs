@@ -962,6 +962,13 @@ namespace CavalryFight.Development.MockData.MockServices
             return null;
         }
 
+        /// <inheritdoc />
+        public void RefreshHostStatus()
+        {
+            // モックサービスでは何もしない（NetworkManagerを使わないため）
+            Debug.Log($"[MockLobbyService] RefreshHostStatus called: IsHost={_isHost}, IsInRoom={_isInRoom}");
+        }
+
         #endregion
 
         #region Mock Event Triggers

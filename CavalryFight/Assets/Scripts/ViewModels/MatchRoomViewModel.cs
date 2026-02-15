@@ -701,6 +701,11 @@ namespace CavalryFight.ViewModels
             Debug.Log($"[MatchRoomViewModel] InitializeRoomData: IsInRoom={_lobbyService.IsInRoom}");
             if (_lobbyService.IsInRoom)
             {
+                // NetworkManagerの状態とホスト/ゲストステータスを同期
+                Debug.Log($"[MatchRoomViewModel] Before RefreshHostStatus: IsHost={_lobbyService.IsHost}, LocalPlayerInfo={_lobbyService.LocalPlayerInfo?.PlayerId}");
+                _lobbyService.RefreshHostStatus();
+                Debug.Log($"[MatchRoomViewModel] After RefreshHostStatus: IsHost={_lobbyService.IsHost}");
+
                 var settings = _lobbyService.CurrentRoomSettings;
 
                 RoomName = settings.RoomName.ToString();
@@ -713,6 +718,7 @@ namespace CavalryFight.ViewModels
                 ArrowLimit = settings.ArrowLimit;
                 JoinCode = _lobbyService.CurrentJoinCode ?? "";
                 IsHost = _lobbyService.IsHost;
+                Debug.Log($"[MatchRoomViewModel] ViewModel IsHost set to: {IsHost}, LocalPlayerInfo: {_lobbyService.LocalPlayerInfo?.PlayerName}, PlayerId: {_lobbyService.LocalPlayerInfo?.PlayerId}");
 
                 // ホスト名を設定（ローカルプレイヤーがホストの場合）
                 if (_lobbyService.LocalPlayerInfo != null)

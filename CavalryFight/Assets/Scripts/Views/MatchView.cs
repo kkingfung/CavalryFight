@@ -981,6 +981,10 @@ namespace CavalryFight.Views
             // TimeScaleを元に戻す
             Time.timeScale = 1f;
 
+            // カーソルを解放（Results画面などでクリック可能にする）
+            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            UnityEngine.Cursor.visible = true;
+
             // LobbyServiceのイベント購読解除
             if (_lobbyService != null)
             {

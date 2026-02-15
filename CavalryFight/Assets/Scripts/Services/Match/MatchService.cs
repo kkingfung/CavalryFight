@@ -626,6 +626,19 @@ namespace CavalryFight.Services.Match
                 && Unity.Netcode.NetworkManager.Singleton.IsConnectedClient;
             result.CurrentPlayerCount = allScores.Length;
 
+            // リプレイデータの有無を確認（ReplayRecorderから取得）
+            var replayRecorder = ServiceLocator.Instance.Get<Replay.IReplayRecorder>();
+            if (replayRecorder != null)
+            {
+                result.HasReplayData = replayRecorder.CurrentRecording != null;
+                Debug.Log($"[MatchService] Replay data available: {result.HasReplayData}, CurrentRecording ReplayId: {replayRecorder.CurrentRecording?.ReplayId ?? "null"}");
+            }
+            else
+            {
+                result.HasReplayData = false;
+                Debug.LogWarning("[MatchService] ReplayRecorder not available, replay data unavailable");
+            }
+
             Debug.Log($"[MatchService] Match result created: {result.ResultText} ({result.ScoreText}), Map={result.MapName}, Duration={result.DurationText}");
 
             return result;

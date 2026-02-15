@@ -490,7 +490,7 @@ namespace CavalryFight.ViewModels
             }
 
             Debug.Log($"[ResultsViewModel] Returning to room: {MatchResult.OriginalRoomId}");
-            HandleLocalPlayerLeaving();
+            HandleLocalPlayerLeaving(leaveRoom: false); // 投票キャンセルのみ、ルームには残る
             _sceneManagementService.LoadMatchRoom();
         }
 
@@ -683,7 +683,8 @@ namespace CavalryFight.ViewModels
         /// <remarks>
         /// MainMenu, Lobby, ReturnToRoomボタン押下時に呼ばれ、投票取り消しとして扱われます
         /// </remarks>
-        public void HandleLocalPlayerLeaving()
+        /// <param name="leaveRoom">実際にルームから退出するかどうか（falseの場合は投票キャンセルのみ）</param>
+        public void HandleLocalPlayerLeaving(bool leaveRoom = true)
         {
             // ローカルプレイヤーの投票をキャンセル
             if (HasVotedRematch)
@@ -693,12 +694,20 @@ namespace CavalryFight.ViewModels
                 Debug.Log($"[ResultsViewModel] Local player leaving, vote cancelled ({RematchVoteCount}/{ActivePlayerCount})");
             }
 
-            // ネットワークに退出を通知
-            var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
-            if (lobbyService != null && lobbyService.IsInRoom)
+            // ルームから退出する場合のみLeaveRoom()を呼ぶ
+            if (leaveRoom)
             {
-                Debug.Log("[ResultsViewModel] Notifying lobby service of player leaving");
-                lobbyService.LeaveRoom();
+                // ネットワークに退出を通知
+                var lobbyService = ServiceLocator.Instance.Get<ILobbyService>();
+                if (lobbyService != null && lobbyService.IsInRoom)
+                {
+                    Debug.Log("[ResultsViewModel] Notifying lobby service of player leaving");
+                    lobbyService.LeaveRoom();
+                }
+            }
+            else
+            {
+                Debug.Log("[ResultsViewModel] Keeping room connection (returning to room)");
             }
         }
 

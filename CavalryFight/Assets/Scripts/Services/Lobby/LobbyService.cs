@@ -266,6 +266,9 @@ namespace CavalryFight.Services.Lobby
                 Debug.LogWarning("[LobbyService] NetworkLobbyManager not found. Please ensure NetworkLobbyManager is in the Startup scene.");
             }
 
+            // NetworkManagerのステータスと同期
+            SyncHostStatusWithNetwork();
+
             _initialized = true;
             Debug.Log("[LobbyService] Initialization complete.");
         }
@@ -453,6 +456,10 @@ namespace CavalryFight.Services.Lobby
         private void OnNetworkReturnToRoomRequested()
         {
             Debug.Log("[LobbyService] Return to room requested");
+
+            // NetworkManagerの状態と同期
+            SyncHostStatusWithNetwork();
+
             ReturnToRoomRequested?.Invoke();
         }
 
@@ -473,6 +480,47 @@ namespace CavalryFight.Services.Lobby
                 // ホスト切断イベントを発火
                 HostDisconnected?.Invoke();
             }
+        }
+
+        /// <summary>
+        /// NetworkManagerのホスト/サーバー状態と_isLocalHostフラグを同期します
+        /// </summary>
+        /// <remarks>
+        /// マッチから戻った際など、NetworkManagerは接続状態を維持しているが
+        /// LobbyServiceの_isLocalHostフラグが同期していない場合に使用します。
+        /// </remarks>
+        private void SyncHostStatusWithNetwork()
+        {
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            {
+                bool wasHost = _isLocalHost;
+                bool isNetworkHost = NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost;
+
+                // ルームに参加中でネットワークがホスト/サーバーの場合
+                if (_isInRoom && isNetworkHost && !_isLocalHost)
+                {
+                    _isLocalHost = true;
+                    Debug.Log($"[LobbyService] Synced host status with NetworkManager: was={wasHost}, now={_isLocalHost}, IsServer={NetworkManager.Singleton.IsServer}");
+                }
+                // ルームに参加中でネットワークがクライアントの場合
+                else if (_isInRoom && !isNetworkHost && _isLocalHost)
+                {
+                    _isLocalHost = false;
+                    Debug.Log($"[LobbyService] Synced guest status with NetworkManager: was={wasHost}, now={_isLocalHost}, IsServer={NetworkManager.Singleton.IsServer}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// ホスト/ゲストステータスを手動で同期します
+        /// </summary>
+        /// <remarks>
+        /// ルームシーンに戻った際など、NetworkManagerとの同期が必要な場合に呼び出します。
+        /// </remarks>
+        public void RefreshHostStatus()
+        {
+            SyncHostStatusWithNetwork();
+            Debug.Log($"[LobbyService] Host status refreshed: IsHost={IsHost}, IsInRoom={IsInRoom}");
         }
 
         #endregion
