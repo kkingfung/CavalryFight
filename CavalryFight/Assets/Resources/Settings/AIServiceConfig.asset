@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: CavalryFight.Services::CavalryFight.Services.AI.AIServiceConfig
   _aiRiderPrefab: {fileID: 6323270240798960294, guid: 1926c3068fcfba347812f4100dc9c602, type: 3}
   _aiMountPrefab: {fileID: 5522642034731160747, guid: 8a81899a665c6d64fb173b3b6a010319, type: 3}
+  _arrowPrefab: {fileID: 0}
+  _chargingEffectPrefab: {fileID: 1091566395842728, guid: 16364e7ab3d3ec94f9793edb2d2ccdb8, type: 3}
+  _chargingEffectMinScale: 0
+  _chargingEffectMaxScale: 0.5
   _difficultyConfig: {fileID: 11400000, guid: 10dd71f2a5d9b38499d600af5b4398da, type: 2}
   _gameModeBehavior: {fileID: 11400000, guid: b96a7aca794533847beae32bb4daf67d, type: 2}

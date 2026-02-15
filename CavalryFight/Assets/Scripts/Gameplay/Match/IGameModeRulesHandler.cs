@@ -102,6 +102,12 @@ namespace CavalryFight.Gameplay.Match
         /// <returns>チームの合計スコア</returns>
         int GetTeamScore(int teamIndex);
 
+        /// <summary>
+        /// 最高スコアのプレイヤーを取得します
+        /// </summary>
+        /// <returns>最高スコアのプレイヤーのClientId（引き分けの場合はulong.MaxValue、スコアが0の場合は0）</returns>
+        ulong GetHighestScoringPlayer();
+
         #endregion
 
         #region Player Events

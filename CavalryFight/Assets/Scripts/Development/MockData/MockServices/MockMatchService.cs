@@ -60,7 +60,7 @@ namespace CavalryFight.Development.MockData.MockServices
         /// <summary>
         /// プレイヤーがスコアを獲得した時に発生します（詳細情報付き）
         /// </summary>
-        public event Action<ulong, int, HitLocation>? PlayerScored;
+        public event Action<ulong, int, HitLocation, Vector3>? PlayerScored;
 
         /// <summary>
         /// マッチが開始された時に発生します
@@ -314,9 +314,10 @@ namespace CavalryFight.Development.MockData.MockServices
         /// <param name="clientId">クライアントID</param>
         /// <param name="score">スコア</param>
         /// <param name="hitLocation">命中箇所</param>
-        public void TriggerPlayerScored(ulong clientId, int score, HitLocation hitLocation)
+        /// <param name="hitPosition">ヒット位置（ワールド座標）</param>
+        public void TriggerPlayerScored(ulong clientId, int score, HitLocation hitLocation, Vector3 hitPosition = default)
         {
-            PlayerScored?.Invoke(clientId, score, hitLocation);
+            PlayerScored?.Invoke(clientId, score, hitLocation, hitPosition);
         }
 
         /// <summary>

@@ -34,6 +34,7 @@ namespace CavalryFight.Views
         private Label? _scoreLabel;
         private Label? _timerLabel;
         private Label? _arrowsLabel;
+        private VisualElement? _arrowWarning;
         private Label? _hitsLabel;
         private Label? _accuracyLabel;
         private Label? _gameModeBadge;
@@ -61,6 +62,7 @@ namespace CavalryFight.Views
         private VisualElement? _matchEndPanel;
         private Label? _matchResultLabel;
         private Label? _finalScoreLabel;
+        private Label? _transitioningLabel;
         private Button? _continueButton;
 
         // Kill Feed
@@ -144,7 +146,13 @@ namespace CavalryFight.Views
         /// </summary>
         private void HandleInput()
         {
-            if (_inputService == null)
+            if (_inputService == null || ViewModel == null)
+            {
+                return;
+            }
+
+            // マッチが終了している場合は入力を無視
+            if (ViewModel.IsMatchEnded)
             {
                 return;
             }
@@ -152,17 +160,17 @@ namespace CavalryFight.Views
             // スコアボード表示切り替え（Tabキー）
             if (_inputService.GetScoreboardButtonDown())
             {
-                ViewModel?.ShowScoreboard();
+                ViewModel.ShowScoreboard();
             }
             else if (_inputService.GetScoreboardButtonUp())
             {
-                ViewModel?.HideScoreboard();
+                ViewModel.HideScoreboard();
             }
 
             // ポーズ切り替え（Escapeキー）
             if (_inputService.GetMenuButtonDown())
             {
-                ViewModel?.TogglePause();
+                ViewModel.TogglePause();
             }
         }
 
@@ -186,6 +194,7 @@ namespace CavalryFight.Views
             _scoreLabel = Q<Label>("ScoreLabel");
             _timerLabel = Q<Label>("TimerLabel");
             _arrowsLabel = Q<Label>("ArrowsLabel");
+            _arrowWarning = Q<VisualElement>("ArrowWarning");
             _hitsLabel = Q<Label>("HitsLabel");
             _accuracyLabel = Q<Label>("AccuracyLabel");
             _gameModeBadge = Q<Label>("GameModeBadge");
@@ -223,6 +232,7 @@ namespace CavalryFight.Views
             _matchEndPanel = Q<VisualElement>("MatchEndPanel");
             _matchResultLabel = Q<Label>("MatchResultLabel");
             _finalScoreLabel = Q<Label>("FinalScoreLabel");
+            _transitioningLabel = Q<Label>("TransitioningLabel");
             _continueButton = Q<Button>("ContinueButton");
 
             // Kill Feed
@@ -318,6 +328,24 @@ namespace CavalryFight.Views
             if (_arrowsLabel != null)
             {
                 _arrowsLabel.text = ViewModel.ArrowsText;
+
+                // 矢が0の場合は赤色で表示
+                if (!ViewModel.IsUnlimitedArrows && ViewModel.LocalPlayerRemainingArrows == 0)
+                {
+                    _arrowsLabel.AddToClassList("stat-value--warning");
+                }
+                else
+                {
+                    _arrowsLabel.RemoveFromClassList("stat-value--warning");
+                }
+            }
+
+            // 矢の警告表示を更新
+            if (_arrowWarning != null)
+            {
+                // 矢が0本で、かつ無制限ではない場合に警告を表示
+                bool showWarning = !ViewModel.IsUnlimitedArrows && ViewModel.LocalPlayerRemainingArrows == 0;
+                _arrowWarning.style.display = showWarning ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
             if (_hitsLabel != null)
@@ -398,14 +426,18 @@ namespace CavalryFight.Views
         {
             if (_scoreboardPanel == null || _scoreboardContainer == null || ViewModel == null)
             {
+                Debug.LogWarning($"[MatchView] UpdateScoreboard: NULL checks failed - Panel={_scoreboardPanel != null}, Container={_scoreboardContainer != null}, ViewModel={ViewModel != null}");
                 return;
             }
 
-            _scoreboardPanel.style.display = ViewModel.IsScoreboardVisible
+            bool shouldBeVisible = ViewModel.IsScoreboardVisible;
+            _scoreboardPanel.style.display = shouldBeVisible
                 ? DisplayStyle.Flex
                 : DisplayStyle.None;
 
-            if (!ViewModel.IsScoreboardVisible)
+            Debug.Log($"[MatchView] UpdateScoreboard: IsScoreboardVisible={shouldBeVisible}, PlayerCount={ViewModel.PlayerScores.Count}");
+
+            if (!shouldBeVisible)
             {
                 return;
             }
@@ -417,7 +449,10 @@ namespace CavalryFight.Views
             {
                 var row = CreateScoreboardRow(player);
                 _scoreboardContainer.Add(row);
+                Debug.Log($"[MatchView] Added scoreboard row: {player.PlayerName}, Score={player.Score}");
             }
+
+            Debug.Log($"[MatchView] Scoreboard UI updated with {ViewModel.PlayerScores.Count} rows");
         }
 
         private VisualElement CreateScoreboardRow(PlayerScoreInfo player)
@@ -469,10 +504,35 @@ namespace CavalryFight.Views
         {
             if (_matchEndPanel == null || _matchResultLabel == null || _finalScoreLabel == null)
             {
+                Debug.LogError("[MatchView] ShowMatchResult: UI elements are null!");
                 return;
             }
 
+            // スコア表示前にViewModelのスコアが最新であることを確認
+            // ネットワーク同期の遅延対策として、表示直前にもう一度更新を試みる
+            if (ViewModel != null)
+            {
+                // ViewModelのUpdateLocalPlayerScore()が呼ばれているはずだが、
+                // プロパティ値を読み取る前にプロパティ変更通知をトリガー
+                var currentScore = ViewModel.LocalPlayerScore;
+                Debug.Log($"[MatchView] ShowMatchResult: Current LocalPlayerScore={currentScore}, LocalClientId={ViewModel.LocalClientId}");
+            }
+            else
+            {
+                Debug.LogError("[MatchView] ShowMatchResult: ViewModel is null!");
+            }
+
             _matchEndPanel.style.display = DisplayStyle.Flex;
+
+            // Continue buttonを非表示し、Transitioning labelを表示（自動遷移があるため）
+            if (_continueButton != null)
+            {
+                _continueButton.style.display = DisplayStyle.None;
+            }
+            if (_transitioningLabel != null)
+            {
+                _transitioningLabel.style.display = DisplayStyle.Flex;
+            }
 
             // 結果テキストを設定
             ulong localClientId = 0;
@@ -500,6 +560,8 @@ namespace CavalryFight.Views
             }
 
             _finalScoreLabel.text = $"Score: {ViewModel?.LocalPlayerScore ?? 0}";
+
+            Debug.Log($"[MatchView] ShowMatchResult: Score={ViewModel?.LocalPlayerScore ?? 0}, Winner={result.WinnerId}, LocalClient={localClientId}");
         }
 
         #endregion
@@ -685,15 +747,41 @@ namespace CavalryFight.Views
         private void OnMatchEnded(object? sender, MatchEndResult result)
         {
             ShowMatchResult(result);
+
+            // プレイヤー入力を無効化
+            if (_inputService != null)
+            {
+                _inputService.DisableInput();
+            }
+
+            // 自動的にリザルト画面に遷移（3秒後）
+            if (_sceneService != null)
+            {
+                StartCoroutine(TransitionToResultsAfterDelay(3f));
+            }
+            else
+            {
+                Debug.LogError("[MatchView] Cannot auto-transition: Scene service is NULL!");
+            }
+        }
+
+        /// <summary>
+        /// 指定秒数待機後にリザルト画面に遷移します
+        /// </summary>
+        private System.Collections.IEnumerator TransitionToResultsAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            Debug.Log("[MatchView] Auto-transitioning to Results scene...");
+            _sceneService?.LoadResults();
         }
 
         private void OnScoreGained(object? sender, ScoreGainedEventArgs e)
         {
             // ローカルプレイヤーのスコアのみポップアップ表示
-            // ワールド座標からの変換は現在未実装。スコアポップアップは画面中央に表示。
             if (ViewModel != null)
             {
-                ShowScorePopup(e.Score, Vector3.zero);
+                ShowScorePopup(e.Score, e.HitPosition);
             }
         }
 

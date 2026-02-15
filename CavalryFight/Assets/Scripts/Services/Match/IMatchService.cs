@@ -50,7 +50,7 @@ namespace CavalryFight.Services.Match
         /// <summary>
         /// プレイヤーがスコアを獲得した時に発生します（詳細情報付き）
         /// </summary>
-        event Action<ulong, int, HitLocation>? PlayerScored; // clientId, score, hitLocation
+        event Action<ulong, int, HitLocation, Vector3>? PlayerScored; // clientId, score, hitLocation, hitPosition
 
         /// <summary>
         /// マッチが開始された時に発生します

@@ -119,6 +119,15 @@ namespace CavalryFight.Gameplay.Match
                 Debug.Log($"[AI-SPAWN] AISpawner: Created and registered new AICombatService");
             }
 
+            // ★FIX: 前のマッチから残っている可能性のあるAIをクリーンアップ
+            // シーンが再ロードされた際、AICombatServiceは永続化されているが、
+            // 古いAI GameObjectは破棄されている可能性がある。辞書をクリアして同期する。
+            if (_aiCombatService != null)
+            {
+                Debug.Log($"[AI-SPAWN] Cleaning up any orphaned AI from previous match...");
+                _aiCombatService.DespawnAllAIPlayers();
+            }
+
             // MatchManagerを取得
             _matchManager = MatchManager.Instance;
             Debug.Log($"[AI-SPAWN] AISpawner: MatchManager.Instance={(_matchManager != null ? "found" : "NULL")}");
@@ -294,12 +303,23 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         public void EnableAllAI()
         {
+            Debug.Log($"[AI-SPAWNER-DEBUG] ========== EnableAllAI() START ==========");
+            Debug.Log($"[AI-SPAWNER-DEBUG] _aiCombatService={((_aiCombatService != null) ? "exists" : "NULL")}");
+            Debug.Log($"[AI-SPAWNER-DEBUG] _spawnedAIIds.Count={_spawnedAIIds.Count}");
+
+            if (_spawnedAIIds.Count > 0)
+            {
+                Debug.Log($"[AI-SPAWNER-DEBUG] Spawned AI IDs: [{string.Join(", ", _spawnedAIIds)}]");
+            }
+
             _aiCombatService?.EnableAllAI();
 
             if (_debugLog)
             {
                 Debug.Log("[AISpawner] All AI enabled");
             }
+
+            Debug.Log($"[AI-SPAWNER-DEBUG] ========== EnableAllAI() END ==========");
         }
 
         /// <summary>

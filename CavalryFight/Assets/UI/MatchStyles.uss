@@ -59,6 +59,27 @@
     color: rgb(255, 215, 0);
 }
 
+.stat-value--warning {
+    color: rgb(255, 80, 80);
+}
+
+/* Arrow Warning */
+.arrow-warning {
+    background-color: rgba(255, 50, 50, 0.8);
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-top: 10px;
+    border-width: 2px;
+    border-color: rgb(255, 100, 100);
+}
+
+.arrow-warning-text {
+    font-size: 16px;
+    color: rgb(255, 255, 255);
+    -unity-font-definition: resource('FlatSkin/Font/Roboto-Bold');
+    -unity-text-align: middle-center;
+}
+
 /* Center Panel */
 .center-panel {
     position: absolute;

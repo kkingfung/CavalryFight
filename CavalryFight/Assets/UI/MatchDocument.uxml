@@ -23,6 +23,10 @@
                     <ui:Label text="Arrows" class="stat-label" />
                     <ui:Label name="ArrowsLabel" text="∞" class="stat-value" />
                 </ui:VisualElement>
+                <!-- Arrow Warning (shown when out of arrows) -->
+                <ui:VisualElement name="ArrowWarning" class="arrow-warning" style="display: none;">
+                    <ui:Label text="⚠ OUT OF ARROWS!" class="arrow-warning-text" />
+                </ui:VisualElement>
                 <ui:VisualElement class="stat-row">
                     <ui:Label text="Hits" class="stat-label" />
                     <ui:Label name="HitsLabel" text="0" class="stat-value" />
@@ -155,6 +159,7 @@
             <ui:VisualElement class="match-end-content">
                 <ui:Label name="MatchResultLabel" text="VICTORY" class="match-result-label result-victory" />
                 <ui:Label name="FinalScoreLabel" text="Score: 0" class="final-score-label" />
+                <ui:Label name="TransitioningLabel" text="Transitioning to results..." class="transitioning-label" style="display: none;" />
                 <ui:Button name="ContinueButton" text="Continue" class="continue-button" />
             </ui:VisualElement>
         </ui:VisualElement>

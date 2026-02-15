@@ -119,11 +119,40 @@ namespace CavalryFight.Services.AI
         /// <param name="difficulty">AI難易度</param>
         public void Initialize(GameMode gameMode, AIDifficulty difficulty)
         {
+            // 既に初期化済みで、設定が変わらない場合はスキップ
+            if (_isInitialized && _currentGameMode == gameMode && _currentDifficulty == difficulty && _serviceConfig != null)
+            {
+                Debug.Log($"[AICombatService] Already initialized with same settings. Skipping re-initialization.");
+                return;
+            }
+
             _currentGameMode = gameMode;
             _currentDifficulty = difficulty;
 
-            // サービス設定をロード
-            LoadServiceConfig();
+            // サービス設定をロード（初回のみ、または失敗後の再試行）
+            if (_serviceConfig == null)
+            {
+                LoadServiceConfig();
+            }
+
+            // 設定の検証（初期化時に早期に失敗させる）
+            if (_serviceConfig == null)
+            {
+                Debug.LogError("[AICombatService] Initialize FAILED: AIServiceConfig could not be loaded from Resources/Settings/AIServiceConfig");
+                Debug.LogError("[AICombatService] Please create the AIServiceConfig asset at: Assets/Resources/Settings/AIServiceConfig.asset");
+                _isInitialized = false;
+                return;
+            }
+
+            if (!_serviceConfig.IsValid)
+            {
+                Debug.LogError($"[AICombatService] Initialize FAILED: AIServiceConfig is invalid!");
+                Debug.LogError($"[AICombatService] AIRiderPrefab: {(_serviceConfig.AIRiderPrefab != null ? _serviceConfig.AIRiderPrefab.name : "NULL")}");
+                Debug.LogError($"[AICombatService] AIMountPrefab: {(_serviceConfig.AIMountPrefab != null ? _serviceConfig.AIMountPrefab.name : "NULL")}");
+                Debug.LogError("[AICombatService] Please assign both AIRiderPrefab and AIMountPrefab in the AIServiceConfig asset.");
+                _isInitialized = false;
+                return;
+            }
 
             // 難易度設定を適用
             LoadDifficultySettings();
@@ -131,7 +160,8 @@ namespace CavalryFight.Services.AI
             _isInitialized = true;
             _isEnabled = false;
 
-            Debug.Log($"[AICombatService] Initialized. GameMode: {gameMode}, Difficulty: {difficulty}");
+            Debug.Log($"[AICombatService] Initialized successfully. GameMode: {gameMode}, Difficulty: {difficulty}");
+            Debug.Log($"[AICombatService] Config: RiderPrefab={_serviceConfig.AIRiderPrefab!.name}, MountPrefab={_serviceConfig.AIMountPrefab!.name}");
         }
 
         /// <summary>
@@ -162,23 +192,33 @@ namespace CavalryFight.Services.AI
 
             if (!_isInitialized)
             {
-                Debug.LogError("[AICombatService] Service not initialized!");
+                Debug.LogError("[AICombatService] SpawnAIPlayer FAILED: Service not initialized! Call Initialize() first.");
                 return null;
             }
 
             if (_aiPlayers.ContainsKey(aiId))
             {
-                Debug.LogWarning($"[AICombatService] AI with ID {aiId} already exists!");
+                Debug.LogWarning($"[AICombatService] SpawnAIPlayer FAILED: AI with ID {aiId} already exists!");
                 return null;
             }
 
-            Debug.Log($"[AI-SPAWN-DEBUG] _serviceConfig={((_serviceConfig != null) ? "exists" : "NULL")}, IsValid={(_serviceConfig?.IsValid ?? false)}");
-            Debug.Log($"[AI-SPAWN-DEBUG] RiderPrefab={(_serviceConfig?.AIRiderPrefab != null ? _serviceConfig.AIRiderPrefab.name : "NULL")}, MountPrefab={(_serviceConfig?.AIMountPrefab != null ? _serviceConfig.AIMountPrefab.name : "NULL")}");
+            // 設定の最終確認（Initialize後でも何らかの理由でnullになっている可能性）
+            if (_serviceConfig == null || !_serviceConfig.IsValid)
+            {
+                Debug.LogError($"[AICombatService] SpawnAIPlayer FAILED: Config is invalid!");
+                Debug.LogError($"[AI-SPAWN-DEBUG] _serviceConfig={((_serviceConfig != null) ? "exists" : "NULL")}, IsValid={(_serviceConfig?.IsValid ?? false)}");
+                Debug.LogError($"[AI-SPAWN-DEBUG] RiderPrefab={(_serviceConfig?.AIRiderPrefab != null ? _serviceConfig.AIRiderPrefab.name : "NULL")}, MountPrefab={(_serviceConfig?.AIMountPrefab != null ? _serviceConfig.AIMountPrefab.name : "NULL")}");
+                Debug.LogError("[AICombatService] This should not happen if Initialize() succeeded. Check if the config asset or prefabs were destroyed.");
+                return null;
+            }
+
+            Debug.Log($"[AI-SPAWN-DEBUG] Config OK: RiderPrefab={_serviceConfig.AIRiderPrefab!.name}, MountPrefab={_serviceConfig.AIMountPrefab!.name}");
 
             // AIプレイヤーを作成
             AIPlayerData? aiData = CreateAIPlayer(spawnPoint, rotation, teamIndex, aiId);
             if (aiData == null)
             {
+                Debug.LogError($"[AICombatService] SpawnAIPlayer FAILED: CreateAIPlayer returned null for aiId {aiId}");
                 return null;
             }
 
@@ -243,6 +283,9 @@ namespace CavalryFight.Services.AI
         /// </summary>
         public void DespawnAllAIPlayers()
         {
+            int count = _aiPlayers.Count;
+            Debug.Log($"[AICombatService] DespawnAllAIPlayers called. Despawning {count} AI players.");
+
             List<ulong> aiIds = new List<ulong>(_aiPlayers.Keys);
             foreach (ulong aiId in aiIds)
             {
@@ -251,6 +294,8 @@ namespace CavalryFight.Services.AI
 
             _aiPlayers.Clear();
             _teamAIPlayers.Clear();
+
+            Debug.Log($"[AICombatService] All AI players despawned. _aiPlayers.Count={_aiPlayers.Count}");
         }
 
         /// <summary>
@@ -274,14 +319,21 @@ namespace CavalryFight.Services.AI
         /// </summary>
         public void EnableAllAI()
         {
+            Debug.Log($"[AI-COMBAT-DEBUG] ========== EnableAllAI() START ==========");
+            Debug.Log($"[AI-COMBAT-DEBUG] _aiPlayers.Count={_aiPlayers.Count}");
+
             _isEnabled = true;
 
+            int enabledCount = 0;
             foreach (var kvp in _aiPlayers)
             {
+                Debug.Log($"[AI-COMBAT-DEBUG] Enabling AI {kvp.Key} ({enabledCount + 1}/{_aiPlayers.Count})...");
                 EnableAI(kvp.Value);
+                enabledCount++;
             }
 
-            Debug.Log("[AICombatService] All AI enabled");
+            Debug.Log($"[AICombatService] All AI enabled ({enabledCount} total)");
+            Debug.Log($"[AI-COMBAT-DEBUG] ========== EnableAllAI() END ==========");
         }
 
         /// <summary>
@@ -562,6 +614,10 @@ namespace CavalryFight.Services.AI
                 Debug.Log($"[AICombatService] Moved mount to scene: {_targetScene.name}");
             }
 
+            // 注意: ネットワークスポーンはここでは行わない
+            // ライダーが馬にマウントされた後に行う
+            // これにより、ライダーが既に馬の子階層にある状態でスポーンされる
+
             // MAnimalを取得（AI Brain関連コンポーネントは無効化しない - 浮遊の原因になる可能性）
             var mAnimal = mount.GetComponentInChildren<MalbersAnimations.Controller.MAnimal>();
             // 注意: NavMeshAgent, MAnimalBrain, MAnimalAIControl の無効化は削除
@@ -584,6 +640,17 @@ namespace CavalryFight.Services.AI
             {
                 SceneManager.MoveGameObjectToScene(rider, _targetScene);
                 Debug.Log($"[AICombatService] Moved rider to scene: {_targetScene.name}");
+            }
+
+            // 注意: ライダーのNetworkObjectコンポーネントを削除
+            // Unity Netcodeでは、NetworkObjectを持つオブジェクトは親子関係を変更できない
+            // ライダーは常に馬の子なので、独自のNetworkObjectは不要
+            // 馬のNetworkObjectの一部として同期される
+            var riderNetworkObject = rider.GetComponent<Unity.Netcode.NetworkObject>();
+            if (riderNetworkObject != null)
+            {
+                UnityEngine.Object.Destroy(riderNetworkObject);
+                Debug.Log($"[AICombatService] Removed NetworkObject from AI rider {aiId} (will be synced as child of mount)");
             }
 
             // MRider用のRigidbodyを追加（PlayerSpawnerと同様、Awake前に追加）
@@ -625,15 +692,23 @@ namespace CavalryFight.Services.AI
             // ライダーとマウントのコライダー間の衝突を無視する（物理的な反発を防ぐ）
             IgnoreCollisionsBetweenRiderAndMount(rider, mount);
 
-            // AIPlayerControllerを取得または追加
-            AIPlayerController? aiController = rider.GetComponent<AIPlayerController>();
-            if (aiController == null)
+            // AIPlayerControllerを取得（プレハブの子オブジェクトにある場合も検索、非アクティブも含む）
+            AIPlayerController? aiController = rider.GetComponentInChildren<AIPlayerController>(true);
+            if (aiController != null)
             {
+                Debug.Log($"[AICombatService] AIPlayerController found on: {aiController.gameObject.name}");
+            }
+            else
+            {
+                // フォールバック: ルートに追加（プレハブに設定されていない場合）
+                Debug.LogWarning("[AICombatService] AIPlayerController not found in prefab, adding to root");
                 aiController = rider.AddComponent<AIPlayerController>();
             }
 
             // AIControllerを初期化
+            Debug.Log($"[AICombatService] Calling Initialize on aiController (type={aiController.GetType().Name}, gameObject={aiController.gameObject.name})...");
             aiController.Initialize(aiId, teamIndex, _currentGameMode, _difficultySettings, mount, this);
+            Debug.Log($"[AICombatService] Initialize completed for AI {aiId}");
 
             // カスタマイズを適用
             try
@@ -661,6 +736,19 @@ namespace CavalryFight.Services.AI
                 AIController = aiController,
                 IsAlive = true
             };
+
+            // ネットワークスポーン（ライダーがマウントされた後に実行）
+            // これにより、ライダーが既に馬の子階層にある状態でネットワークスポーンされる
+            var mountNetworkObject = mount.GetComponent<Unity.Netcode.NetworkObject>();
+            if (mountNetworkObject != null && Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening)
+            {
+                // サーバーのみがスポーンを行う
+                if (Unity.Netcode.NetworkManager.Singleton.IsServer)
+                {
+                    mountNetworkObject.SpawnWithOwnership(aiId); // AI IDで所有権を設定
+                    Debug.Log($"[AICombatService] AI Mount spawned with ownership (after rider mounted): aiId={aiId}, ClientId={mountNetworkObject.OwnerClientId}");
+                }
+            }
 
             return aiData;
         }
@@ -884,6 +972,18 @@ namespace CavalryFight.Services.AI
 
                 // 弓オブジェクトをセットアップ
                 SetupBowForAI(riderTarget, randomCharacter.BowId);
+            }
+
+            // AIPlayerControllerに矢タイプを設定（カスタマイズと同じ矢プレハブを使用）
+            var aiController = rider.GetComponentInChildren<AIPlayerController>(true);
+            if (aiController != null)
+            {
+                aiController.SetArrowType(randomCharacter.ArrowType);
+                Debug.Log($"[AI-VISIBILITY] Set ArrowType to {randomCharacter.ArrowType} for AI");
+            }
+            else
+            {
+                Debug.LogWarning("[AI-VISIBILITY] AIPlayerController not found on rider, cannot set ArrowType");
             }
 
             if (mountApplier != null)
@@ -1132,6 +1232,9 @@ namespace CavalryFight.Services.AI
         /// </remarks>
         private CharacterCustomization GenerateRandomCharacterCustomization()
         {
+            // ArrowType enumの数を取得
+            int arrowTypeCount = System.Enum.GetValues(typeof(ArrowType)).Length;
+
             var customization = new CharacterCustomization
             {
                 Gender = (Gender)UnityEngine.Random.Range(0, 2),
@@ -1147,7 +1250,8 @@ namespace CavalryFight.Services.AI
                 ArmsArmorId = UnityEngine.Random.Range(0, 13),   // 0-12 (0=素体)
                 WaistArmorId = UnityEngine.Random.Range(1, 13),  // 1-12
                 LegsArmorId = UnityEngine.Random.Range(0, 13),   // 0-12 (0=素体)
-                BowId = UnityEngine.Random.Range(10, 14)         // 10-13 (弓のWeapon ID)
+                BowId = UnityEngine.Random.Range(10, 14),        // 10-13 (弓のWeapon ID)
+                ArrowType = (ArrowType)UnityEngine.Random.Range(0, arrowTypeCount)  // ランダムな矢タイプ
             };
             return customization;
         }
@@ -1180,27 +1284,108 @@ namespace CavalryFight.Services.AI
         /// </remarks>
         private void EnableAI(AIPlayerData aiData)
         {
+            Debug.Log($"[AI-ENABLE-DEBUG] ========== EnableAI START for AI {aiData.AIId} ==========");
+
             // 重要: 馬のAI Brain関連コンポーネントを先に有効化
             // AIControllerはEnable時にMAnimalAIControlにターゲットを設定するため
             if (aiData.MountObject != null)
             {
+                Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MountObject = {aiData.MountObject.name}");
+
+                // NavMeshAgent
                 var navAgent = aiData.MountObject.GetComponentInChildren<UnityEngine.AI.NavMeshAgent>();
-                if (navAgent != null) navAgent.enabled = true;
+                if (navAgent != null)
+                {
+                    bool wasEnabled = navAgent.enabled;
+                    navAgent.enabled = true;
+                    Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: NavMeshAgent - wasEnabled={wasEnabled}, nowEnabled={navAgent.enabled}, isOnNavMesh={navAgent.isOnNavMesh}, position={navAgent.transform.position}");
 
-                var aiControl = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalAIControl>();
-                if (aiControl != null) aiControl.enabled = true;
+                    if (!navAgent.isOnNavMesh)
+                    {
+                        Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: NavMeshAgent is NOT on NavMesh! AI will NOT be able to move!");
 
-                var aiBrain = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalBrain>();
-                if (aiBrain != null) aiBrain.enabled = true;
+                        // 最寄りのNavMesh位置を検索
+                        if (UnityEngine.AI.NavMesh.SamplePosition(navAgent.transform.position, out UnityEngine.AI.NavMeshHit hit, 50f, UnityEngine.AI.NavMesh.AllAreas))
+                        {
+                            Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: Nearest NavMesh position found at {hit.position}, distance={hit.distance:F2}m. Attempting warp...");
+                            navAgent.Warp(hit.position);
+                            Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: After warp - isOnNavMesh={navAgent.isOnNavMesh}");
+                        }
+                        else
+                        {
+                            Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: No NavMesh found within 50m! Check if NavMeshSurface is baked.");
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: NavMeshAgent NOT FOUND on mount!");
+                }
+
+                // MAnimalAIControl (true = 非アクティブなGameObjectも含める)
+                var aiControl = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalAIControl>(true);
+                if (aiControl != null)
+                {
+                    // GameObjectがアクティブでない場合は先にアクティブにする
+                    if (!aiControl.gameObject.activeInHierarchy)
+                    {
+                        Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalAIControl GameObject was inactive, activating...");
+                        aiControl.gameObject.SetActive(true);
+                    }
+                    bool wasEnabled = aiControl.enabled;
+                    aiControl.enabled = true;
+                    Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalAIControl - wasEnabled={wasEnabled}, nowEnabled={aiControl.enabled}, gameObject={aiControl.gameObject.name}");
+                }
+                else
+                {
+                    Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalAIControl NOT FOUND on mount (even including inactive objects)!");
+                }
+
+                // MAnimalBrain (true = 非アクティブなGameObjectも含める)
+                var aiBrain = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalBrain>(true);
+                if (aiBrain != null)
+                {
+                    // GameObjectがアクティブでない場合は先にアクティブにする
+                    if (!aiBrain.gameObject.activeInHierarchy)
+                    {
+                        Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalBrain GameObject was inactive, activating...");
+                        aiBrain.gameObject.SetActive(true);
+                    }
+                    bool wasEnabled = aiBrain.enabled;
+                    aiBrain.enabled = true;
+                    Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalBrain - wasEnabled={wasEnabled}, nowEnabled={aiBrain.enabled}, gameObject={aiBrain.gameObject.name}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimalBrain NOT FOUND on mount (may be optional)");
+                }
+
+                // MAnimal 状態確認
+                var mAnimal = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.MAnimal>();
+                if (mAnimal != null)
+                {
+                    Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MAnimal - enabled={mAnimal.enabled}, Grounded={mAnimal.Grounded}, UseGravity={mAnimal.UseGravity}, ActiveState={mAnimal.ActiveState?.name ?? "NULL"}");
+                }
 
                 Debug.Log($"[AICombatService] Mount AI components enabled for AI {aiData.AIId}");
+            }
+            else
+            {
+                Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: MountObject is NULL!");
             }
 
             // AIControllerを有効化（MAnimalAIControlが有効になった後）
             if (aiData.AIController != null)
             {
+                Debug.Log($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: Calling AIController.Enable()...");
                 aiData.AIController.Enable();
             }
+            else
+            {
+                Debug.LogError($"[AI-ENABLE-DEBUG] AI {aiData.AIId}: AIController is NULL!");
+            }
+
+            Debug.Log($"[AI-ENABLE-DEBUG] ========== EnableAI END for AI {aiData.AIId} ==========");
         }
 
         /// <summary>
@@ -1219,17 +1404,18 @@ namespace CavalryFight.Services.AI
 
             if (aiData.MountObject != null)
             {
-                // AI Brainを無効化
-                var aiBrain = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalBrain>();
+                // AI Brainを無効化 (true = 非アクティブなGameObjectも含める)
+                var aiBrain = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalBrain>(true);
                 if (aiBrain != null)
                 {
                     aiBrain.enabled = false;
                 }
 
-                // MAnimalAIControlを無効化
-                var aiControl = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalAIControl>();
+                // MAnimalAIControlを無効化 (true = 非アクティブなGameObjectも含める)
+                var aiControl = aiData.MountObject.GetComponentInChildren<MalbersAnimations.Controller.AI.MAnimalAIControl>(true);
                 if (aiControl != null)
                 {
+                    aiControl.Stop(); // 移動も停止
                     aiControl.enabled = false;
                 }
 
@@ -1280,6 +1466,7 @@ namespace CavalryFight.Services.AI
             {
                 AIDifficulty.Easy => new DifficultySettings
                 {
+                    // 基本パラメータ
                     ReactionTime = 1.5f,
                     AimAccuracy = 0.3f,
                     AttackInterval = new Vector2(3f, 5f),
@@ -1289,10 +1476,22 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 3f,
                     ChargeTimeMultiplier = 0.5f,
                     MissChance = 0.4f,
-                    StrafeChance = 0.2f
+                    StrafeChance = 0.2f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.1f,
+                    FeintChance = 0f,
+                    DodgeEffectiveness = 0.2f,
+                    DodgeTriggerDistance = 5f,
+                    MaxSimultaneousTargets = 1,
+                    ThreatAssessmentInterval = 2.0f,
+                    CounterPlayChance = 0f,
+                    MinFireCharge = 0.2f,
+                    TerrainAwarenessChance = 0f,
+                    CoverUsageChance = 0f
                 },
                 AIDifficulty.Normal => new DifficultySettings
                 {
+                    // 基本パラメータ
                     ReactionTime = 1.0f,
                     AimAccuracy = 0.5f,
                     AttackInterval = new Vector2(2f, 4f),
@@ -1302,10 +1501,22 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 4f,
                     ChargeTimeMultiplier = 0.7f,
                     MissChance = 0.25f,
-                    StrafeChance = 0.4f
+                    StrafeChance = 0.4f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.4f,
+                    FeintChance = 0.1f,
+                    DodgeEffectiveness = 0.4f,
+                    DodgeTriggerDistance = 10f,
+                    MaxSimultaneousTargets = 2,
+                    ThreatAssessmentInterval = 1.0f,
+                    CounterPlayChance = 0.2f,
+                    MinFireCharge = 0.3f,
+                    TerrainAwarenessChance = 0.2f,
+                    CoverUsageChance = 0.15f
                 },
                 AIDifficulty.Hard => new DifficultySettings
                 {
+                    // 基本パラメータ
                     ReactionTime = 0.5f,
                     AimAccuracy = 0.75f,
                     AttackInterval = new Vector2(1f, 3f),
@@ -1315,10 +1526,22 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 5f,
                     ChargeTimeMultiplier = 0.85f,
                     MissChance = 0.1f,
-                    StrafeChance = 0.6f
+                    StrafeChance = 0.6f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.7f,
+                    FeintChance = 0.25f,
+                    DodgeEffectiveness = 0.7f,
+                    DodgeTriggerDistance = 15f,
+                    MaxSimultaneousTargets = 3,
+                    ThreatAssessmentInterval = 0.5f,
+                    CounterPlayChance = 0.5f,
+                    MinFireCharge = 0.5f,
+                    TerrainAwarenessChance = 0.5f,
+                    CoverUsageChance = 0.4f
                 },
                 AIDifficulty.Expert => new DifficultySettings
                 {
+                    // 基本パラメータ
                     ReactionTime = 0.2f,
                     AimAccuracy = 0.95f,
                     AttackInterval = new Vector2(0.5f, 2f),
@@ -1328,10 +1551,22 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 6f,
                     ChargeTimeMultiplier = 1.0f,
                     MissChance = 0.02f,
-                    StrafeChance = 0.8f
+                    StrafeChance = 0.8f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.95f,
+                    FeintChance = 0.4f,
+                    DodgeEffectiveness = 0.9f,
+                    DodgeTriggerDistance = 20f,
+                    MaxSimultaneousTargets = 5,
+                    ThreatAssessmentInterval = 0.2f,
+                    CounterPlayChance = 0.8f,
+                    MinFireCharge = 0.6f,
+                    TerrainAwarenessChance = 0.8f,
+                    CoverUsageChance = 0.7f
                 },
                 _ => new DifficultySettings
                 {
+                    // 基本パラメータ（Normal相当）
                     ReactionTime = 1.0f,
                     AimAccuracy = 0.5f,
                     AttackInterval = new Vector2(2f, 4f),
@@ -1341,7 +1576,18 @@ namespace CavalryFight.Services.AI
                     TurnSpeed = 4f,
                     ChargeTimeMultiplier = 0.7f,
                     MissChance = 0.25f,
-                    StrafeChance = 0.4f
+                    StrafeChance = 0.4f,
+                    // 拡張パラメータ
+                    LeadTargetFactor = 0.4f,
+                    FeintChance = 0.1f,
+                    DodgeEffectiveness = 0.4f,
+                    DodgeTriggerDistance = 10f,
+                    MaxSimultaneousTargets = 2,
+                    ThreatAssessmentInterval = 1.0f,
+                    CounterPlayChance = 0.2f,
+                    MinFireCharge = 0.3f,
+                    TerrainAwarenessChance = 0.2f,
+                    CoverUsageChance = 0.15f
                 }
             };
         }

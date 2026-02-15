@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CavalryFight.Services.Lobby;
 using UnityEngine;
 
@@ -21,6 +22,7 @@ namespace CavalryFight.Gameplay.Match
         protected RoomSettings _settings;
         protected float _remainingTime;
         protected bool _isMatchStarted;
+        protected bool _matchEnded;
         protected Dictionary<ulong, int> _playerArrows = new Dictionary<ulong, int>();
         protected Dictionary<ulong, int> _playerDeaths = new Dictionary<ulong, int>();
 
@@ -94,6 +96,7 @@ namespace CavalryFight.Gameplay.Match
             _settings = settings;
             _remainingTime = settings.TimeLimit;
             _isMatchStarted = false;
+            _matchEnded = false;
             _playerArrows.Clear();
             _playerDeaths.Clear();
 
@@ -153,9 +156,10 @@ namespace CavalryFight.Gameplay.Match
                 }
             }
 
-            // 勝利条件チェック
-            if (CheckWinCondition(out ulong winnerId))
+            // 勝利条件チェック（まだマッチが終了していない場合のみ）
+            if (!_matchEnded && CheckWinCondition(out ulong winnerId))
             {
+                _matchEnded = true;
                 OnWinConditionMet(winnerId);
             }
         }
@@ -166,6 +170,7 @@ namespace CavalryFight.Gameplay.Match
         public virtual void OnMatchEnd()
         {
             _isMatchStarted = false;
+            _matchEnded = true;
             Debug.Log($"[{GetType().Name}] Match ended");
         }
 
@@ -318,27 +323,36 @@ namespace CavalryFight.Gameplay.Match
         /// <summary>
         /// 最高スコアのプレイヤーIDを取得します
         /// </summary>
-        protected ulong GetHighestScoringPlayer()
+        public ulong GetHighestScoringPlayer()
         {
             if (_manager == null)
             {
+                Debug.LogWarning($"[{GetType().Name}] GetHighestScoringPlayer: Manager is null!");
                 return 0;
             }
 
-            ulong highestPlayerId = 0;
-            int highestScore = -1;
-
             var allScores = _manager.GetAllPlayerScores();
-            foreach (var score in allScores)
+            if (allScores.Length == 0)
             {
-                if (score.Score > highestScore)
-                {
-                    highestScore = score.Score;
-                    highestPlayerId = score.ClientId;
-                }
+                Debug.LogWarning($"[{GetType().Name}] GetHighestScoringPlayer: No scores available!");
+                return 0;
             }
 
-            return highestPlayerId;
+            // スコア順にソート
+            var sortedScores = allScores.OrderByDescending(s => s.Score).ToArray();
+
+            int highestScore = sortedScores[0].Score;
+
+            // 同じスコアのプレイヤーが複数いる場合（引き分け）
+            int playersWithHighestScore = sortedScores.Count(s => s.Score == highestScore);
+            if (playersWithHighestScore > 1)
+            {
+                // 引き分け
+                Debug.Log($"[{GetType().Name}] DRAW - {playersWithHighestScore} players have the same highest score");
+                return ulong.MaxValue;
+            }
+
+            return sortedScores[0].ClientId;
         }
 
         /// <summary>

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using CavalryFight.Core.Services;
 using CavalryFight.Services.Lobby;
 using Unity.Netcode;
 using UnityEngine;
@@ -37,7 +38,7 @@ namespace CavalryFight.Services.Match
         /// <summary>
         /// プレイヤーがスコアを獲得した時に発生します（詳細情報付き）
         /// </summary>
-        public event Action<ulong, int, HitLocation>? PlayerScored;
+        public event Action<ulong, int, HitLocation, Vector3>? PlayerScored;
 
         /// <summary>
         /// マッチが開始された時に発生します
@@ -322,8 +323,6 @@ namespace CavalryFight.Services.Match
         /// <param name="provider">マッチデータプロバイダー</param>
         public void RegisterMatchDataProvider(IMatchDataProvider provider)
         {
-            Debug.Log($"[SCORE-DEBUG] MatchService.RegisterMatchDataProvider called. MatchService instance: {GetHashCode()}");
-
             if (_matchDataProvider != null)
             {
                 Debug.LogWarning("[MatchService] Match data provider already registered. Unregistering previous provider.");
@@ -359,7 +358,6 @@ namespace CavalryFight.Services.Match
         {
             if (_matchDataProvider == null)
             {
-                Debug.LogWarning("[COUNTDOWN-DEBUG] SubscribeToProviderEvents: _matchDataProvider is null!");
                 return;
             }
 
@@ -368,7 +366,6 @@ namespace CavalryFight.Services.Match
             _matchDataProvider.MatchEnded += OnProviderMatchEnded;
             _matchDataProvider.PlayerScored += OnProviderPlayerScored;
             _matchDataProvider.CountdownUpdated += OnProviderCountdownUpdated;
-            Debug.Log("[COUNTDOWN-DEBUG] SubscribeToProviderEvents: Subscribed to all provider events including CountdownUpdated");
         }
 
         /// <summary>
@@ -420,9 +417,9 @@ namespace CavalryFight.Services.Match
         /// <summary>
         /// プロバイダーからプレイヤースコアが通知された時のハンドラ
         /// </summary>
-        private void OnProviderPlayerScored(ulong clientId, int score, HitLocation hitLocation)
+        private void OnProviderPlayerScored(ulong clientId, int score, HitLocation hitLocation, Vector3 hitPosition)
         {
-            PlayerScored?.Invoke(clientId, score, hitLocation);
+            PlayerScored?.Invoke(clientId, score, hitLocation, hitPosition);
         }
 
         /// <summary>
@@ -430,7 +427,6 @@ namespace CavalryFight.Services.Match
         /// </summary>
         private void OnProviderCountdownUpdated(int seconds)
         {
-            Debug.Log($"[COUNTDOWN-DEBUG] MatchService.OnProviderCountdownUpdated: seconds={seconds}");
             CountdownUpdated?.Invoke(seconds);
         }
 
@@ -496,7 +492,7 @@ namespace CavalryFight.Services.Match
             // 有効な命中の場合、詳細スコアイベントを発火
             if (hitResult.IsValidHit && hitResult.ScoreAwarded > 0)
             {
-                PlayerScored?.Invoke(hitResult.ShooterClientId, hitResult.ScoreAwarded, hitResult.HitLocation);
+                PlayerScored?.Invoke(hitResult.ShooterClientId, hitResult.ScoreAwarded, hitResult.HitLocation, hitResult.HitPosition);
             }
         }
 
@@ -545,6 +541,37 @@ namespace CavalryFight.Services.Match
             result.GameMode = _currentGameMode.ToString();
             result.MatchDuration = MatchTime;
             result.FinishedAt = System.DateTime.Now;
+
+            // ルーム設定を取得（LobbyServiceから）
+            var lobbyService = ServiceLocator.Instance.Get<Lobby.ILobbyService>();
+            if (lobbyService != null)
+            {
+                var roomSettings = lobbyService.CurrentRoomSettings;
+                result.MapName = roomSettings.MapName.ToString();
+                result.MaxPlayers = roomSettings.MaxPlayers;
+                result.TimeLimit = roomSettings.TimeLimit;
+                result.ArrowLimit = roomSettings.ArrowLimit;
+                result.IsRoomStillOpen = lobbyService.IsInRoom;
+                result.OriginalRoomId = lobbyService.CurrentJoinCode ?? "";
+
+                Debug.Log($"[MatchService] Room settings applied to result: Map={result.MapName}, MaxPlayers={result.MaxPlayers}, TimeLimit={result.TimeLimit}, ArrowLimit={result.ArrowLimit}");
+            }
+            else
+            {
+                Debug.LogWarning("[MatchService] LobbyService not available, using default values for room settings");
+                result.MapName = "Arena";
+                result.MaxPlayers = 8;
+                result.TimeLimit = 300;
+                result.ArrowLimit = 0;
+            }
+
+            // チーム情報
+            result.IsTeamMatch = _currentGameMode == GameMode.TeamFight || _currentGameMode == GameMode.Hunting;
+            if (result.IsTeamMatch)
+            {
+                result.TeamAName = "Team A";
+                result.TeamBName = "Team B";
+            }
 
             // ローカルプレイヤーのスコア情報を取得
             ulong localClientId = 0;
@@ -599,7 +626,7 @@ namespace CavalryFight.Services.Match
                 && Unity.Netcode.NetworkManager.Singleton.IsConnectedClient;
             result.CurrentPlayerCount = allScores.Length;
 
-            Debug.Log($"[MatchService] Match result created: {result.PlayerScore} vs {result.EnemyScore}, Duration: {result.DurationText}");
+            Debug.Log($"[MatchService] Match result created: {result.ResultText} ({result.ScoreText}), Map={result.MapName}, Duration={result.DurationText}");
 
             return result;
         }
@@ -668,26 +695,12 @@ namespace CavalryFight.Services.Match
             // IMatchDataProviderを優先（MatchManagerがローカルモードで動作している場合）
             if (_matchDataProvider != null)
             {
-                var score = _matchDataProvider.GetPlayerScore(clientId);
-                if (shouldLog)
-                {
-                    Debug.Log($"[SCORE-DEBUG] MatchService.GetPlayerScore({clientId}): _matchDataProvider exists, score.HasValue={score.HasValue}");
-                }
-                return score;
+                return _matchDataProvider.GetPlayerScore(clientId);
             }
 
             if (_networkMatchManager != null)
             {
-                if (shouldLog)
-                {
-                    Debug.Log($"[SCORE-DEBUG] MatchService.GetPlayerScore({clientId}): Using _networkMatchManager");
-                }
                 return _networkMatchManager.GetPlayerScore(clientId);
-            }
-
-            if (shouldLog)
-            {
-                Debug.Log($"[SCORE-DEBUG] MatchService.GetPlayerScore({clientId}): Both providers are NULL!");
             }
 
             // マッチ外では正常な状態

@@ -484,7 +484,7 @@ namespace CavalryFight.ViewModels
             MatchEnded?.Invoke(this, result);
         }
 
-        private void OnPlayerScored(ulong clientId, int score, HitLocation location)
+        private void OnPlayerScored(ulong clientId, int score, HitLocation location, Vector3 hitPosition)
         {
             var localClientId = Unity.Netcode.NetworkManager.Singleton?.LocalClientId ?? 0;
 
@@ -497,7 +497,8 @@ namespace CavalryFight.ViewModels
                 {
                     ClientId = clientId,
                     Score = score,
-                    Location = location
+                    Location = location,
+                    HitPosition = hitPosition
                 });
             }
 

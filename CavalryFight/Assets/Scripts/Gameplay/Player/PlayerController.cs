@@ -1362,5 +1362,33 @@ namespace CavalryFight.Gameplay.Player
         }
 
         #endregion
+
+        #region Editor Validation
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// Inspectorで値が変更されたときに検証を行います
+        /// </summary>
+        private void OnValidate()
+        {
+            // チャージエフェクトスケールの検証
+            if (_chargingEffectMinScale <= 0f)
+            {
+                Debug.LogWarning("[PlayerController] Charging Effect Min Scale should be greater than 0!");
+            }
+
+            if (_chargingEffectMaxScale <= 0f)
+            {
+                Debug.LogWarning("[PlayerController] Charging Effect Max Scale should be greater than 0!");
+            }
+
+            if (_chargingEffectMinScale > _chargingEffectMaxScale)
+            {
+                Debug.LogWarning("[PlayerController] Charging Effect Min Scale is greater than Max Scale!");
+            }
+        }
+#endif
+
+        #endregion
     }
 }

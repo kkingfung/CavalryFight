@@ -27,6 +27,16 @@ namespace CavalryFight.Services.AI
         [Tooltip("AI用の矢プレハブ")]
         [SerializeField] private GameObject? _arrowPrefab;
 
+        [Header("Visual Effects")]
+        [Tooltip("チャージエフェクトプレハブ（プレイヤーと同じものを設定）")]
+        [SerializeField] private GameObject? _chargingEffectPrefab;
+
+        [Tooltip("チャージエフェクトの最小スケール")]
+        [SerializeField] private float _chargingEffectMinScale = 0.1f;
+
+        [Tooltip("チャージエフェクトの最大スケール")]
+        [SerializeField] private float _chargingEffectMaxScale = 1.0f;
+
         #endregion
 
         #region Config Assets
@@ -56,6 +66,21 @@ namespace CavalryFight.Services.AI
         /// AI用の矢プレハブ
         /// </summary>
         public GameObject? ArrowPrefab => _arrowPrefab;
+
+        /// <summary>
+        /// チャージエフェクトプレハブ
+        /// </summary>
+        public GameObject? ChargingEffectPrefab => _chargingEffectPrefab;
+
+        /// <summary>
+        /// チャージエフェクトの最小スケール
+        /// </summary>
+        public float ChargingEffectMinScale => _chargingEffectMinScale;
+
+        /// <summary>
+        /// チャージエフェクトの最大スケール
+        /// </summary>
+        public float ChargingEffectMaxScale => _chargingEffectMaxScale;
 
         /// <summary>
         /// 難易度設定
@@ -99,6 +124,22 @@ namespace CavalryFight.Services.AI
             if (_gameModeBehavior == null)
             {
                 Debug.LogWarning("[AIServiceConfig] Game Mode Behavior is not assigned!");
+            }
+
+            // チャージエフェクトスケールの検証
+            if (_chargingEffectMinScale <= 0f)
+            {
+                Debug.LogWarning("[AIServiceConfig] Charging Effect Min Scale should be greater than 0!");
+            }
+
+            if (_chargingEffectMaxScale <= 0f)
+            {
+                Debug.LogWarning("[AIServiceConfig] Charging Effect Max Scale should be greater than 0!");
+            }
+
+            if (_chargingEffectMinScale > _chargingEffectMaxScale)
+            {
+                Debug.LogWarning("[AIServiceConfig] Charging Effect Min Scale is greater than Max Scale!");
             }
         }
 

@@ -3,6 +3,7 @@
 using CavalryFight.Core.Services;
 using CavalryFight.Services.AI;
 using CavalryFight.Services.Audio;
+using CavalryFight.Services.Combat;
 using CavalryFight.Services.Customization;
 using CavalryFight.Services.GameSettings;
 using CavalryFight.Services.GameState;
@@ -138,6 +139,7 @@ namespace CavalryFight.Core.Bootstrap
             // Infrastructure services
             ServiceLocator.Instance.Register<IAudioService>(new AudioService());
             ServiceLocator.Instance.Register<IGameSettingsService>(new GameSettingsService());
+            ServiceLocator.Instance.Register<IArrowTrackerService>(new ArrowTrackerService());
             ServiceLocator.Instance.Register<ISceneManagementService>(new SceneManagementService());
             ServiceLocator.Instance.Register<IGameStateService>(new GameStateService());
             ServiceLocator.Instance.Register<IPerformanceMonitor>(new PerformanceMonitor());
@@ -197,6 +199,7 @@ namespace CavalryFight.Core.Bootstrap
             // Infrastructure services
             InitializeService<IAudioService>();
             InitializeService<IGameSettingsService>();
+            InitializeService<IArrowTrackerService>();
             InitializeService<ISceneManagementService>();
             ConfigureSceneManagementService();
             InitializeService<IGameStateService>();
@@ -361,6 +364,7 @@ namespace CavalryFight.Core.Bootstrap
             DisposeService<IPerformanceMonitor>("PerformanceMonitor");
             DisposeService<IGameStateService>("GameStateService");
             DisposeService<ISceneManagementService>("SceneManagementService");
+            DisposeService<IArrowTrackerService>("ArrowTrackerService");
             DisposeService<IGameSettingsService>("GameSettingsService");
             DisposeService<IAudioService>("AudioService");
 
