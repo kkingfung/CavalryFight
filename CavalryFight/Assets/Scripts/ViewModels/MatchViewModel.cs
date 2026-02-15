@@ -411,7 +411,6 @@ namespace CavalryFight.ViewModels
                 MatchState = _matchService.CurrentState;
             }
 
-            Debug.Log($"[SCORE-DEBUG] MatchViewModel initialized. _matchService instance: {_matchService?.GetHashCode() ?? 0}");
             Debug.Log("[MatchViewModel] Initialized");
         }
 
@@ -485,40 +484,19 @@ namespace CavalryFight.ViewModels
             _sceneService?.LoadMatchRoom();
         }
 
-        // デバッグ用のフレームカウンター
-        private int _debugUpdateCounter = 0;
-
         /// <summary>
         /// 毎フレーム更新
         /// </summary>
         public void Update()
         {
-            _debugUpdateCounter++;
-
-            // 最初の数フレームと、その後100フレームごとにログ出力
-            bool shouldLog = _debugUpdateCounter <= 5 || _debugUpdateCounter % 100 == 0;
-
             if (_matchService == null)
             {
-                if (shouldLog)
-                {
-                    Debug.Log($"[TIMER-DEBUG] MatchViewModel.Update: _matchService is NULL! Frame={_debugUpdateCounter}");
-                }
                 return;
             }
 
             // 時間の更新
-            float newMatchTime = _matchService.MatchTime;
-            float newRemainingTime = _matchService.RemainingTime;
-
-            // 定期的にログ出力（値の変化に関係なく）
-            if (shouldLog)
-            {
-                Debug.Log($"[TIMER-DEBUG] MatchViewModel.Update: Frame={_debugUpdateCounter}, MatchTime={newMatchTime:F1}, RemainingTime={newRemainingTime:F1}, HasTimeLimit={HasTimeLimit}, RemainingTimeText={RemainingTimeText}");
-            }
-
-            MatchTime = newMatchTime;
-            RemainingTime = newRemainingTime;
+            MatchTime = _matchService.MatchTime;
+            RemainingTime = _matchService.RemainingTime;
 
             // ローカルプレイヤーのスコアを更新
             UpdateLocalPlayerScore();
@@ -548,7 +526,6 @@ namespace CavalryFight.ViewModels
         {
             if (_matchService == null)
             {
-                Debug.LogWarning("[COUNTDOWN-DEBUG] MatchViewModel.SubscribeToMatchService: IMatchService is null!");
                 return;
             }
 
@@ -558,7 +535,6 @@ namespace CavalryFight.ViewModels
             _matchService.PlayerScored += OnPlayerScored;
             _matchService.HitRegistered += OnHitRegistered;
             _matchService.CountdownUpdated += OnCountdownUpdated;
-            Debug.Log("[COUNTDOWN-DEBUG] MatchViewModel.SubscribeToMatchService: Subscribed to CountdownUpdated event");
         }
 
         private void UnsubscribeFromMatchService()
@@ -583,7 +559,6 @@ namespace CavalryFight.ViewModels
 
         private void OnCountdownUpdated(int seconds)
         {
-            Debug.Log($"[COUNTDOWN-DEBUG] MatchViewModel.OnCountdownUpdated: seconds={seconds}");
             CountdownValue = seconds;
         }
 
@@ -594,6 +569,13 @@ namespace CavalryFight.ViewModels
 
         private void OnMatchEnded(MatchEndResult result)
         {
+            // マッチ終了時に最終スコアを同期
+            // Update()のUpdateLocalPlayerScore()は継続して呼ばれるが、
+            // ネットワーク同期の遅延を考慮して明示的に更新する
+            UpdateLocalPlayerScore();
+
+            Debug.Log($"[MatchViewModel] OnMatchEnded: LocalPlayerScore={LocalPlayerScore}, WinnerId={result.WinnerId}");
+
             MatchEnded?.Invoke(this, result);
         }
 
@@ -657,22 +639,18 @@ namespace CavalryFight.ViewModels
 
             var playerScore = _matchService.GetPlayerScore(_localPlayerId);
 
-            // 最初の数フレームだけログ出力
-            if (_debugUpdateCounter <= 5)
-            {
-                Debug.Log($"[ARROW-DEBUG] UpdateLocalPlayerScore: _localPlayerId={_localPlayerId}, playerScore.HasValue={playerScore.HasValue}");
-                if (playerScore.HasValue)
-                {
-                    Debug.Log($"[ARROW-DEBUG] PlayerScore - Score={playerScore.Value.Score}, RemainingArrows={playerScore.Value.RemainingArrows}, Hits={playerScore.Value.HitCount}, Shots={playerScore.Value.ShotCount}");
-                }
-            }
-
             if (playerScore.HasValue)
             {
                 LocalPlayerScore = playerScore.Value.Score;
                 LocalPlayerRemainingArrows = playerScore.Value.RemainingArrows;
                 LocalPlayerHits = playerScore.Value.HitCount;
                 LocalPlayerShots = playerScore.Value.ShotCount;
+
+                // Debug.Log($"[MatchViewModel] UpdateLocalPlayerScore: ClientId={_localPlayerId}, Score={playerScore.Value.Score}, Hits={playerScore.Value.HitCount}, Shots={playerScore.Value.ShotCount}");
+            }
+            else
+            {
+                // Debug.LogWarning($"[MatchViewModel] UpdateLocalPlayerScore: No score found for ClientId={_localPlayerId}");
             }
         }
 

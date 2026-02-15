@@ -100,8 +100,6 @@ namespace CavalryFight.Gameplay.Player
 
         private void Awake()
         {
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.Awake() called. GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
-
             if (Instance != null && Instance != this)
             {
                 Debug.LogWarning("[PlayerSpawner] Duplicate instance detected. Destroying this one.");
@@ -110,12 +108,9 @@ namespace CavalryFight.Gameplay.Player
             }
 
             Instance = this;
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.Instance set. _mountPrefab={_mountPrefab != null}, _riderPrefab={_riderPrefab != null}");
 
             _customizationService = ServiceLocator.Instance.Get<ICustomizationService>();
             _replayRecorder = ServiceLocator.Instance.Get<IReplayRecorder>();
-
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: CustomizationService={_customizationService != null}, ReplayRecorder={_replayRecorder != null}");
 
             if (_customizationService == null)
             {
@@ -125,16 +120,9 @@ namespace CavalryFight.Gameplay.Player
 
         private void Start()
         {
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.Start() called. _autoSpawnOnStart={_autoSpawnOnStart}, _waitForFieldLoader={_waitForFieldLoader}");
-
             if (_autoSpawnOnStart)
             {
-                Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Auto spawn enabled, calling TrySpawnPlayer()");
                 TrySpawnPlayer();
-            }
-            else
-            {
-                Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Auto spawn DISABLED (_autoSpawnOnStart=false)");
             }
         }
 
@@ -172,28 +160,21 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void TrySpawnPlayer()
         {
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.TrySpawnPlayer() called. _waitForFieldLoader={_waitForFieldLoader}, FieldLoader.Instance={FieldLoader.Instance != null}");
-
             // FieldLoaderがない、または待機しない設定の場合は即座にスポーン
             if (!_waitForFieldLoader || FieldLoader.Instance == null)
             {
-                Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Not waiting for FieldLoader. Spawning immediately.");
                 SpawnPlayer();
                 return;
             }
 
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: FieldLoader.Instance.IsLoaded={FieldLoader.Instance.IsLoaded}");
-
             // フィールドが既にロード済みの場合
             if (FieldLoader.Instance.IsLoaded)
             {
-                Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Field already loaded. Spawning immediately.");
                 SpawnPlayer();
                 return;
             }
 
             // フィールドのロード完了を待つ
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Field NOT loaded. Subscribing to FieldLoaded event and waiting...");
             FieldLoader.Instance.FieldLoaded += OnFieldLoaded;
 
             if (_debugLog)
@@ -207,8 +188,6 @@ namespace CavalryFight.Gameplay.Player
         /// </summary>
         private void OnFieldLoaded(object? sender, EventArgs e)
         {
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.OnFieldLoaded() callback received!");
-
             if (FieldLoader.Instance != null)
             {
                 FieldLoader.Instance.FieldLoaded -= OnFieldLoaded;
@@ -219,7 +198,6 @@ namespace CavalryFight.Gameplay.Player
                 Debug.Log("[PlayerSpawner] FieldLoader のロードが完了しました。プレイヤーをスポーンします。");
             }
 
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Calling SpawnPlayer() after field load");
             SpawnPlayer();
         }
 
@@ -239,37 +217,27 @@ namespace CavalryFight.Gameplay.Player
         /// <returns>スポーンに成功したかどうか</returns>
         public bool SpawnPlayer(SpawnPoint? spawnPoint)
         {
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner.SpawnPlayer() called. spawnPoint param={spawnPoint != null}");
-
             // プレハブのチェック
             if (_mountPrefab == null)
             {
-                Debug.LogError("[SPAWN-DEBUG] PlayerSpawner.SpawnPlayer FAILED: _mountPrefab is NULL");
                 Debug.LogError("[PlayerSpawner] MountPrefab が設定されていません！");
                 return false;
             }
 
             if (_riderPrefab == null)
             {
-                Debug.LogError("[SPAWN-DEBUG] PlayerSpawner.SpawnPlayer FAILED: _riderPrefab is NULL");
                 Debug.LogError("[PlayerSpawner] RiderPrefab が設定されていません！");
                 return false;
             }
 
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Prefabs OK. _mountPrefab={_mountPrefab.name}, _riderPrefab={_riderPrefab.name}");
-
             // スポーンポイントを取得
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: Getting spawn point. _spawnPoint={_spawnPoint != null}, SpawnManager.Instance={SpawnManager.Instance != null}");
             SpawnPoint? targetSpawnPoint = spawnPoint ?? _spawnPoint ?? GetSpawnPointFromManager();
 
             if (targetSpawnPoint == null)
             {
-                Debug.LogError("[SPAWN-DEBUG] PlayerSpawner.SpawnPlayer FAILED: No spawn point found!");
                 Debug.LogError("[PlayerSpawner] スポーンポイントが見つかりません！");
                 return false;
             }
-
-            Debug.Log($"[SPAWN-DEBUG] PlayerSpawner: SpawnPoint found: {targetSpawnPoint.name}, Position={targetSpawnPoint.Position}");
 
             // 既存のスポーンオブジェクトを削除
             CleanupSpawnedObjects();
@@ -288,6 +256,22 @@ namespace CavalryFight.Gameplay.Player
                 Destroy(_spawnedMount);
                 _spawnedMount = null;
                 return false;
+            }
+
+            // ネットワークスポーン（ライダーがマウントされた後に実行）
+            // これにより、ライダーが既に馬の子階層にある状態でネットワークスポーンされる
+            var mountNetworkObject = _spawnedMount.GetComponent<Unity.Netcode.NetworkObject>();
+            if (mountNetworkObject != null && Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening)
+            {
+                // サーバーのみがスポーンを行う
+                if (Unity.Netcode.NetworkManager.Singleton.IsServer)
+                {
+                    mountNetworkObject.Spawn(true); // 所有権を持ってスポーン
+                    if (_debugLog)
+                    {
+                        Debug.Log($"[PlayerSpawner] 馬をネットワークスポーン（ライダー乗車後）: ClientId={mountNetworkObject.OwnerClientId}");
+                    }
+                }
             }
 
             // カスタマイズを適用
@@ -376,6 +360,10 @@ namespace CavalryFight.Gameplay.Player
             // （LoadingScreen等の一時シーンでスポーンされた場合の対策）
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(mount, gameObject.scene);
 
+            // 注意: ネットワークスポーンはここでは行わない
+            // ライダーが馬にマウントされた後にSpawnPlayer()で行う
+            // これにより、ライダーが既に馬の子階層にある状態でスポーンされる
+
             if (_debugLog)
             {
                 Debug.Log($"[PlayerSpawner] 馬をスポーン: {position} (Scene: {gameObject.scene.name})");
@@ -448,6 +436,20 @@ namespace CavalryFight.Gameplay.Player
             // 注意: RiderはMountの子になるので、Mountが正しいシーンにあれば自動的に移動される
             // ただし、MountTo()前に明示的に移動しておく
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(rider, gameObject.scene);
+
+            // 注意: ライダーのNetworkObjectコンポーネントを削除
+            // Unity Netcodeでは、NetworkObjectを持つオブジェクトは親子関係を変更できない
+            // ライダーは常に馬の子なので、独自のNetworkObjectは不要
+            // 馬のNetworkObjectの一部として同期される
+            var riderNetworkObject = rider.GetComponent<Unity.Netcode.NetworkObject>();
+            if (riderNetworkObject != null)
+            {
+                Destroy(riderNetworkObject);
+                if (_debugLog)
+                {
+                    Debug.Log("[PlayerSpawner] Removed NetworkObject from rider (will be synced as child of mount)");
+                }
+            }
 
             // RiderControllerを使用して騎乗
             var riderController = rider.GetComponent<RiderController>();

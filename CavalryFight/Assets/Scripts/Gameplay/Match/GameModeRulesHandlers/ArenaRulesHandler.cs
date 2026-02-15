@@ -44,8 +44,9 @@ namespace CavalryFight.Gameplay.Match
             }
 
             // 最高スコアのプレイヤーが勝者
+            // GetHighestScoringPlayer() は引き分けの場合 ulong.MaxValue を返す
             winnerId = GetHighestScoringPlayer();
-            return winnerId != 0;
+            return true; // 勝者が決定（引き分けの場合も含む）
         }
 
         #endregion

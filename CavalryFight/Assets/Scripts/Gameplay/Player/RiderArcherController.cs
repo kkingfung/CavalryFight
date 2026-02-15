@@ -289,9 +289,8 @@ namespace CavalryFight.Gameplay.Player
             verticalAngle = Mathf.Clamp(verticalAngle, -_maxVerticalRotation, _maxVerticalRotation);
 
             // 目標回転を計算（脊椎のローカル空間で）
-            Quaternion horizontalRot = Quaternion.AngleAxis(horizontalAngle * 0.5f, Vector3.up);
-            Quaternion verticalRot = Quaternion.AngleAxis(verticalAngle * 0.3f, Vector3.right);
-            _targetSpineRotation = horizontalRot * verticalRot;
+            // ワールド軸ではなくローカル空間で回転を構築することで、馬が回転していても正しく動作
+            _targetSpineRotation = Quaternion.Euler(verticalAngle * 0.3f, horizontalAngle * 0.5f, 0f);
 
             // スムーズに回転を適用
             _spineTransform.localRotation = Quaternion.Slerp(

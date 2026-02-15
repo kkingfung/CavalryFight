@@ -47,6 +47,11 @@ namespace CavalryFight.Gameplay.Match
         [Header("Match Settings")]
         [SerializeField] private float _countdownDuration = 3f;
 
+#if UNITY_EDITOR
+        [Header("Debug Settings")]
+        [SerializeField] private KeyCode _debugEndMatchKey = KeyCode.F12;
+#endif
+
         #endregion
 
         #region Network Variables
@@ -576,7 +581,7 @@ namespace CavalryFight.Gameplay.Match
                     ClientId = slot.PlayerId,
                     PlayerName = slot.PlayerName,
                     Score = 0,
-                    RemainingArrows = settings.ArrowLimit,
+                    RemainingArrows = settings.ArrowLimit == 0 ? -1 : settings.ArrowLimit,
                     HitCount = 0,
                     ShotCount = 0,
                     TeamIndex = slot.TeamIndex
@@ -596,19 +601,37 @@ namespace CavalryFight.Gameplay.Match
             // ★重要: AIはここでスポーンするが、有効化はカウントダウン終了後
             UpdateLoadProgress(0.7f, "Spawning opponents...");
             int aiCount = 0;
-            if (AISpawner.Instance != null)
+            if (AISpawner.Instance != null && _playerScores != null)
             {
+                int slotIndex = 0;
                 foreach (var slot in slots)
                 {
                     if (slot.IsAI)
                     {
                         AISpawner.Instance.Initialize(settings.GameMode, slot.AIDifficulty);
                         var spawnedIds = AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
+
+                        // スポーンされたAIのClientIdでスコアエントリを更新
                         if (spawnedIds.Count > 0)
                         {
+                            ulong realAIId = spawnedIds[0];
+
+                            // _playerScores内の対応するエントリを探してClientIdを更新
+                            for (int i = 0; i < _playerScores.Count; i++)
+                            {
+                                if (_playerScores[i].ClientId == slot.PlayerId)
+                                {
+                                    var scoreEntry = _playerScores[i];
+                                    scoreEntry.ClientId = realAIId; // プレースホルダーIDを実際のAI IDに置き換え
+                                    _playerScores[i] = scoreEntry;
+                                    break;
+                                }
+                            }
+
                             aiCount++;
                         }
                     }
+                    slotIndex++;
                 }
 
                 // AIがスロットにいなかった場合、テスト用に1体スポーン
@@ -730,6 +753,24 @@ namespace CavalryFight.Gameplay.Match
 
         private void Update()
         {
+#if UNITY_EDITOR
+            // デバッグキーでマッチを強制終了
+            if (Input.GetKeyDown(_debugEndMatchKey))
+            {
+                Debug.Log($"[MatchManager] DEBUG: {_debugEndMatchKey} key pressed! MatchState={_matchState.Value}, IsServer={IsServer}, IsHost={IsHost}");
+
+                if (_matchState.Value == MatchState.InProgress)
+                {
+                    Debug.Log($"[MatchManager] DEBUG: Calling DebugForceEndMatch()...");
+                    DebugForceEndMatch();
+                }
+                else
+                {
+                    Debug.LogWarning($"[MatchManager] DEBUG: Cannot end match - state is {_matchState.Value}, not InProgress");
+                }
+            }
+#endif
+
             if (!IsServer)
             {
                 return;
@@ -782,7 +823,7 @@ namespace CavalryFight.Gameplay.Match
                     ClientId = slot.PlayerId,
                     PlayerName = slot.PlayerName,
                     Score = 0,
-                    RemainingArrows = settings.ArrowLimit,
+                    RemainingArrows = settings.ArrowLimit == 0 ? -1 : settings.ArrowLimit,
                     HitCount = 0,
                     ShotCount = 0,
                     TeamIndex = slot.TeamIndex
@@ -848,6 +889,7 @@ namespace CavalryFight.Gameplay.Match
                 return;
             }
 
+            bool found = false;
             for (int i = 0; i < _playerScores.Count; i++)
             {
                 if (_playerScores[i].ClientId == clientId)
@@ -862,8 +904,14 @@ namespace CavalryFight.Gameplay.Match
 
                     // イベント発火
                     NotifyPlayerScoredClientRpc(clientId, score, hitLocation, hitPosition);
+                    found = true;
                     break;
                 }
+            }
+
+            if (!found)
+            {
+                Debug.LogError($"[MatchManager] AddPlayerScoreRpc: ClientId={clientId} NOT FOUND in _playerScores!");
             }
         }
 
@@ -906,9 +954,11 @@ namespace CavalryFight.Gameplay.Match
         {
             if (_playerScores == null)
             {
+                Debug.LogWarning($"[MatchManager] AddPlayerScoreLocal - _playerScores is NULL!");
                 return;
             }
 
+            bool found = false;
             for (int i = 0; i < _playerScores.Count; i++)
             {
                 if (_playerScores[i].ClientId == clientId)
@@ -924,8 +974,14 @@ namespace CavalryFight.Gameplay.Match
                     // ローカルモードではイベントを直接発火
                     PlayerScored?.Invoke(clientId, score, hitLocation, hitPosition);
                     RaiseProviderPlayerScored(clientId, score, hitLocation, hitPosition);
+                    found = true;
                     break;
                 }
+            }
+
+            if (!found)
+            {
+                Debug.LogError($"[MatchManager] AddPlayerScoreLocal: ClientId={clientId} NOT FOUND in _playerScores!");
             }
         }
 
@@ -1147,7 +1203,7 @@ namespace CavalryFight.Gameplay.Match
                     ClientId = slot.PlayerId,
                     PlayerName = slot.PlayerName,
                     Score = 0,
-                    RemainingArrows = settings.ArrowLimit,
+                    RemainingArrows = settings.ArrowLimit == 0 ? -1 : settings.ArrowLimit,
                     HitCount = 0,
                     ShotCount = 0,
                     TeamIndex = slot.TeamIndex
@@ -1185,15 +1241,35 @@ namespace CavalryFight.Gameplay.Match
             // ★重要: AIはここでスポーンするが、有効化はカウントダウン終了後
             UpdateLoadProgress(0.7f, "Spawning opponents...");
 
-            if (AISpawner.Instance != null)
+            if (AISpawner.Instance != null && _playerScores != null)
             {
+                int slotIndex = 0;
                 foreach (var slot in slots)
                 {
                     if (slot.IsAI)
                     {
                         AISpawner.Instance.Initialize(settings.GameMode, slot.AIDifficulty);
-                        AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
+                        var spawnedIds = AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
+
+                        // スポーンされたAIのClientIdでスコアエントリを更新
+                        if (spawnedIds.Count > 0)
+                        {
+                            ulong realAIId = spawnedIds[0];
+
+                            // _playerScores内の対応するエントリを探してClientIdを更新
+                            for (int i = 0; i < _playerScores.Count; i++)
+                            {
+                                if (_playerScores[i].ClientId == slot.PlayerId)
+                                {
+                                    var scoreEntry = _playerScores[i];
+                                    scoreEntry.ClientId = realAIId; // プレースホルダーIDを実際のAI IDに置き換え
+                                    _playerScores[i] = scoreEntry;
+                                    break;
+                                }
+                            }
+                        }
                     }
+                    slotIndex++;
                 }
             }
 
@@ -1302,18 +1378,38 @@ namespace CavalryFight.Gameplay.Match
         /// </summary>
         private void SpawnAIPlayers()
         {
-            if (AISpawner.Instance == null || _playerSlots == null)
+            if (AISpawner.Instance == null || _playerSlots == null || _playerScores == null)
             {
                 return;
             }
 
+            int slotIndex = 0;
             foreach (var slot in _playerSlots)
             {
                 if (slot.IsAI)
                 {
                     AISpawner.Instance.Initialize(RoomSettings.GameMode, slot.AIDifficulty);
-                    AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
+                    var spawnedIds = AISpawner.Instance.SpawnAIPlayers(1, slot.TeamIndex);
+
+                    // スポーンされたAIのClientIdでスコアエントリを更新
+                    if (spawnedIds.Count > 0)
+                    {
+                        ulong realAIId = spawnedIds[0];
+
+                        // _playerScores内の対応するエントリを探してClientIdを更新
+                        for (int i = 0; i < _playerScores.Count; i++)
+                        {
+                            if (_playerScores[i].ClientId == slot.PlayerId)
+                            {
+                                var scoreEntry = _playerScores[i];
+                                scoreEntry.ClientId = realAIId; // プレースホルダーIDを実際のAI IDに置き換え
+                                _playerScores[i] = scoreEntry;
+                                break;
+                            }
+                        }
+                    }
                 }
+                slotIndex++;
             }
         }
 
@@ -1334,7 +1430,28 @@ namespace CavalryFight.Gameplay.Match
                 IsTeamMode = _activeHandler?.IsTeamMode ?? false
             };
 
-            NotifyMatchEndedClientRpc(result);
+            // ネットワークモードの場合はRPCで通知、ローカルモードの場合は直接イベント発火
+            if (IsSpawned)
+            {
+                try
+                {
+                    NotifyMatchEndedClientRpc(result);
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"[MatchManager] Failed to send NotifyMatchEndedClientRpc: {ex.Message}");
+                    Debug.LogError($"[MatchManager] Falling back to local event invocation");
+                    // RPC失敗時はローカルで直接イベントを発火
+                    MatchEnded?.Invoke(result);
+                    RaiseProviderMatchEnded(result);
+                }
+            }
+            else
+            {
+                // ネットワーク未使用時はローカルでイベント発火
+                MatchEnded?.Invoke(result);
+                RaiseProviderMatchEnded(result);
+            }
         }
 
         private void OnMatchStateValueChanged(MatchState previousValue, MatchState newValue)
@@ -1357,6 +1474,90 @@ namespace CavalryFight.Gameplay.Match
         }
 
         #endregion
+
+#if UNITY_EDITOR
+        #region Debug Methods
+
+        /// <summary>
+        /// デバッグ用：マッチを強制終了します（最高スコアのプレイヤーを勝者とする）
+        /// </summary>
+        [ContextMenu("Debug: Force End Match (Highest Score Wins)")]
+        public void DebugForceEndMatch()
+        {
+            Debug.Log($"[MatchManager] DEBUG: DebugForceEndMatch called. MatchState={_matchState.Value}, IsSpawned={IsSpawned}, IsServer={IsServer}, IsHost={IsHost}");
+
+            if (_matchState.Value != MatchState.InProgress)
+            {
+                Debug.LogWarning($"[MatchManager] DEBUG: Cannot force end match - match state is {_matchState.Value}, not InProgress");
+                return;
+            }
+
+            // ネットワークモードの場合、サーバーである必要がある
+            if (IsSpawned && !IsServer)
+            {
+                Debug.LogWarning("[MatchManager] DEBUG: Cannot force end match - not server in network mode");
+                return;
+            }
+
+            // 最高スコアのプレイヤーを取得
+            ulong winnerId = _activeHandler?.GetHighestScoringPlayer() ?? 0;
+
+            // マッチを終了
+            EndMatch(winnerId);
+        }
+
+        /// <summary>
+        /// デバッグ用：マッチを強制終了します（引き分けとして）
+        /// </summary>
+        [ContextMenu("Debug: Force End Match (Draw)")]
+        public void DebugForceEndMatchAsDraw()
+        {
+            if (_matchState.Value != MatchState.InProgress)
+            {
+                Debug.LogWarning($"[MatchManager] DEBUG: Cannot force end match - match state is {_matchState.Value}, not InProgress");
+                return;
+            }
+
+            // ネットワークモードの場合、サーバーである必要がある
+            if (IsSpawned && !IsServer)
+            {
+                Debug.LogWarning("[MatchManager] DEBUG: Cannot force end match - not server in network mode");
+                return;
+            }
+
+            Debug.Log("[MatchManager] DEBUG: Force ending match as DRAW...");
+
+            // 引き分けとして終了
+            EndMatch(ulong.MaxValue);
+        }
+
+        /// <summary>
+        /// デバッグ用：指定したプレイヤーを勝者としてマッチを強制終了します
+        /// </summary>
+        /// <param name="winnerId">勝者のClientId</param>
+        public void DebugForceEndMatchWithWinner(ulong winnerId)
+        {
+            if (_matchState.Value != MatchState.InProgress)
+            {
+                Debug.LogWarning($"[MatchManager] DEBUG: Cannot force end match - match state is {_matchState.Value}, not InProgress");
+                return;
+            }
+
+            // ネットワークモードの場合、サーバーである必要がある
+            if (IsSpawned && !IsServer)
+            {
+                Debug.LogWarning("[MatchManager] DEBUG: Cannot force end match - not server in network mode");
+                return;
+            }
+
+            Debug.Log($"[MatchManager] DEBUG: Force ending match with winner ClientId={winnerId}");
+
+            // 指定したプレイヤーを勝者として終了
+            EndMatch(winnerId);
+        }
+
+        #endregion
+#endif
     }
 
     /// <summary>

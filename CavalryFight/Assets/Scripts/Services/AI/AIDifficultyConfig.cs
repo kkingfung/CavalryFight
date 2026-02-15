@@ -47,27 +47,27 @@ namespace CavalryFight.Services.AI
         [SerializeField] private DifficultySettings _normalSettings = new DifficultySettings
         {
             // 基本パラメータ
-            ReactionTime = 1.0f,
-            AimAccuracy = 0.5f,
-            AttackInterval = new Vector2(2f, 4f),
+            ReactionTime = 0.7f,  // 1.0f → 0.7f（より素早い反応）
+            AimAccuracy = 0.65f,  // 0.5f → 0.65f（精度向上）
+            AttackInterval = new Vector2(1.5f, 3.5f),  // 2f-4f → 1.5f-3.5f（より頻繁に攻撃）
             VisionRange = 35f,  // 20f → 35f に増加（より広い視界範囲）
-            VisionAngle = 80f,
-            MoveSpeed = 4f,
-            TurnSpeed = 4f,
-            ChargeTimeMultiplier = 0.7f,
-            MissChance = 0.25f,
-            StrafeChance = 0.4f,
+            VisionAngle = 90f,  // 80f → 90f（視野角拡大）
+            MoveSpeed = 4.5f,  // 4f → 4.5f（移動速度向上）
+            TurnSpeed = 4.5f,  // 4f → 4.5f（旋回速度向上）
+            ChargeTimeMultiplier = 0.8f,  // 0.7f → 0.8f（より強いショット）
+            MissChance = 0.15f,  // 0.25f → 0.15f（ミス率低下）
+            StrafeChance = 0.5f,  // 0.4f → 0.5f（より頻繁に回避移動）
             // 拡張パラメータ
-            LeadTargetFactor = 0.4f,
-            FeintChance = 0.1f,
-            DodgeEffectiveness = 0.4f,
-            DodgeTriggerDistance = 10f,
+            LeadTargetFactor = 0.5f,  // 0.4f → 0.5f（予測射撃向上）
+            FeintChance = 0.15f,  // 0.1f → 0.15f
+            DodgeEffectiveness = 0.5f,  // 0.4f → 0.5f（回避性能向上）
+            DodgeTriggerDistance = 12f,  // 10f → 12f
             MaxSimultaneousTargets = 2,
-            ThreatAssessmentInterval = 1.0f,
-            CounterPlayChance = 0.2f,
-            MinFireCharge = 0.3f,
-            TerrainAwarenessChance = 0.2f,
-            CoverUsageChance = 0.15f
+            ThreatAssessmentInterval = 0.8f,  // 1.0f → 0.8f（より頻繁に脅威評価）
+            CounterPlayChance = 0.3f,  // 0.2f → 0.3f
+            MinFireCharge = 0.4f,  // 0.3f → 0.4f（より良いタイミングで射撃）
+            TerrainAwarenessChance = 0.3f,  // 0.2f → 0.3f
+            CoverUsageChance = 0.2f  // 0.15f → 0.2f
         };
 
         [SerializeField] private DifficultySettings _hardSettings = new DifficultySettings

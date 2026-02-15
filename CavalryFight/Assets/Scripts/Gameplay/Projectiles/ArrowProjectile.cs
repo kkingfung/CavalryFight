@@ -220,8 +220,11 @@ namespace CavalryFight.Gameplay.Projectiles
                     int damage = Mathf.RoundToInt(Damage);
                     aiController.TakeDamage(damage, _ownerObject ?? gameObject);
 
+                    // ヒット部位を検出
+                    HitLocation hitLocation = DetectHitLocation(hitObject);
+
                     // スコアを通知（MatchManagerへ）
-                    NotifyScore(Score, hitPoint);
+                    NotifyScore(hitLocation, hitPoint);
                 }
                 else
                 {
@@ -270,6 +273,12 @@ namespace CavalryFight.Gameplay.Projectiles
 
                             // MDamageableにダメージを与える
                             damageable.ReceiveDamage(damageDirection, gameObject, healthStatID, damageToApply, false, null, false);
+
+                            // ヒット部位を検出
+                            HitLocation hitLocation = DetectHitLocation(hitObject);
+
+                            // スコアを通知（MatchManagerへ）
+                            NotifyScore(hitLocation, hitPoint);
                         }
                     }
                 }
@@ -299,6 +308,13 @@ namespace CavalryFight.Gameplay.Projectiles
                 _rigidbody.linearVelocity = Vector3.zero;
                 _rigidbody.angularVelocity = Vector3.zero;
                 _rigidbody.isKinematic = true;
+            }
+
+            // Colliderを無効化して物理的な衝突を防ぐ（プレイヤー/AIが矢に押されるのを防ぐ）
+            var colliders = GetComponents<Collider>();
+            foreach (var collider in colliders)
+            {
+                collider.enabled = false;
             }
 
             // ターゲットの子オブジェクトにする
@@ -382,12 +398,13 @@ namespace CavalryFight.Gameplay.Projectiles
         /// <summary>
         /// スコアをMatchManagerに通知します
         /// </summary>
-        /// <param name="score">獲得スコア</param>
+        /// <param name="hitLocation">命中部位</param>
         /// <param name="hitPosition">ヒット位置（ワールド座標）</param>
-        private void NotifyScore(int score, Vector3 hitPosition)
+        private void NotifyScore(HitLocation hitLocation, Vector3 hitPosition)
         {
             if (MatchManager.Instance == null)
             {
+                Debug.LogWarning($"[ArrowProjectile] MatchManager.Instance is NULL!");
                 return;
             }
 
@@ -395,24 +412,112 @@ namespace CavalryFight.Gameplay.Projectiles
             ulong clientId = 0;
             if (_ownerObject != null)
             {
+                // NetworkObjectから取得（プレイヤーとAIの両方に対応）
+                // 注意: ライダーは馬の子なので、ライダー自身にはNetworkObjectがない場合がある
+                // その場合は親階層をチェックして馬のNetworkObjectを取得する
                 var networkObject = _ownerObject.GetComponent<NetworkObject>();
-                if (networkObject != null)
+                if (networkObject == null)
+                {
+                    // ライダーにない場合、親（馬）から取得
+                    networkObject = _ownerObject.GetComponentInParent<NetworkObject>();
+                }
+
+                if (networkObject != null && networkObject.IsSpawned)
                 {
                     clientId = networkObject.OwnerClientId;
                 }
+                else if (networkObject != null)
+                {
+                    Debug.LogWarning($"[ArrowProjectile] NetworkObject NOT spawned! Owner={_ownerObject.name}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[ArrowProjectile] NetworkObject NOT FOUND! Owner={_ownerObject.name}");
+                }
             }
+            else
+            {
+                Debug.LogWarning($"[ArrowProjectile] _ownerObject is NULL!");
+            }
+
+            // ヒット部位に基づいてスコアを計算
+            int score = GetScoreForHitLocation(hitLocation);
 
             // ネットワークモードかローカルモードかで処理を分岐
             if (MatchManager.Instance.IsSpawned)
             {
                 // ネットワークモード: RPCを使用
-                MatchManager.Instance.AddPlayerScoreRpc(clientId, score, HitLocation.Torso, hitPosition);
+                MatchManager.Instance.AddPlayerScoreRpc(clientId, score, hitLocation, hitPosition);
             }
             else
             {
                 // ローカルモード: 直接スコアを追加
-                MatchManager.Instance.AddPlayerScoreLocal(clientId, score, HitLocation.Torso, hitPosition);
+                MatchManager.Instance.AddPlayerScoreLocal(clientId, score, hitLocation, hitPosition);
             }
+        }
+
+        /// <summary>
+        /// ヒット部位に基づいてスコアを計算します
+        /// </summary>
+        /// <param name="hitLocation">命中部位</param>
+        /// <returns>獲得スコア</returns>
+        private int GetScoreForHitLocation(HitLocation hitLocation)
+        {
+            // 基本スコア = ベーススコア * チャージ量
+            float baseScore = _baseScore * _chargeAmount;
+
+            // 部位ごとのスコア倍率
+            float multiplier = hitLocation switch
+            {
+                HitLocation.Heart => 3.0f,   // 心臓: 3倍
+                HitLocation.Head => 2.0f,    // 頭部: 2倍
+                HitLocation.Torso => 1.0f,   // 胴体: 1倍（標準）
+                HitLocation.Arm => 0.5f,     // 腕: 0.5倍
+                HitLocation.Leg => 0.5f,     // 脚: 0.5倍
+                HitLocation.Mount => 0.3f,   // 馬: 0.3倍
+                _ => 1.0f                     // その他: 1倍
+            };
+
+            return Mathf.RoundToInt(baseScore * multiplier);
+        }
+
+        /// <summary>
+        /// 衝突したコライダーの名前からヒット部位を判定します
+        /// </summary>
+        /// <param name="hitObject">衝突したGameObject</param>
+        /// <returns>命中部位</returns>
+        private HitLocation DetectHitLocation(GameObject hitObject)
+        {
+            string name = hitObject.name.ToLower();
+
+            // コライダー名に基づいて部位を判定
+            if (name.Contains("heart") || name.Contains("chest"))
+            {
+                return HitLocation.Heart;
+            }
+            else if (name.Contains("head") || name.Contains("skull"))
+            {
+                return HitLocation.Head;
+            }
+            else if (name.Contains("torso") || name.Contains("body") || name.Contains("spine"))
+            {
+                return HitLocation.Torso;
+            }
+            else if (name.Contains("arm") || name.Contains("hand") || name.Contains("shoulder"))
+            {
+                return HitLocation.Arm;
+            }
+            else if (name.Contains("leg") || name.Contains("foot") || name.Contains("thigh") || name.Contains("calf"))
+            {
+                return HitLocation.Leg;
+            }
+            else if (name.Contains("horse") || name.Contains("mount"))
+            {
+                return HitLocation.Mount;
+            }
+
+            // デフォルトは胴体
+            return HitLocation.Torso;
         }
 
         #endregion

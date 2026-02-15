@@ -614,6 +614,10 @@ namespace CavalryFight.Services.AI
                 Debug.Log($"[AICombatService] Moved mount to scene: {_targetScene.name}");
             }
 
+            // 注意: ネットワークスポーンはここでは行わない
+            // ライダーが馬にマウントされた後に行う
+            // これにより、ライダーが既に馬の子階層にある状態でスポーンされる
+
             // MAnimalを取得（AI Brain関連コンポーネントは無効化しない - 浮遊の原因になる可能性）
             var mAnimal = mount.GetComponentInChildren<MalbersAnimations.Controller.MAnimal>();
             // 注意: NavMeshAgent, MAnimalBrain, MAnimalAIControl の無効化は削除
@@ -636,6 +640,17 @@ namespace CavalryFight.Services.AI
             {
                 SceneManager.MoveGameObjectToScene(rider, _targetScene);
                 Debug.Log($"[AICombatService] Moved rider to scene: {_targetScene.name}");
+            }
+
+            // 注意: ライダーのNetworkObjectコンポーネントを削除
+            // Unity Netcodeでは、NetworkObjectを持つオブジェクトは親子関係を変更できない
+            // ライダーは常に馬の子なので、独自のNetworkObjectは不要
+            // 馬のNetworkObjectの一部として同期される
+            var riderNetworkObject = rider.GetComponent<Unity.Netcode.NetworkObject>();
+            if (riderNetworkObject != null)
+            {
+                UnityEngine.Object.Destroy(riderNetworkObject);
+                Debug.Log($"[AICombatService] Removed NetworkObject from AI rider {aiId} (will be synced as child of mount)");
             }
 
             // MRider用のRigidbodyを追加（PlayerSpawnerと同様、Awake前に追加）
@@ -721,6 +736,19 @@ namespace CavalryFight.Services.AI
                 AIController = aiController,
                 IsAlive = true
             };
+
+            // ネットワークスポーン（ライダーがマウントされた後に実行）
+            // これにより、ライダーが既に馬の子階層にある状態でネットワークスポーンされる
+            var mountNetworkObject = mount.GetComponent<Unity.Netcode.NetworkObject>();
+            if (mountNetworkObject != null && Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening)
+            {
+                // サーバーのみがスポーンを行う
+                if (Unity.Netcode.NetworkManager.Singleton.IsServer)
+                {
+                    mountNetworkObject.SpawnWithOwnership(aiId); // AI IDで所有権を設定
+                    Debug.Log($"[AICombatService] AI Mount spawned with ownership (after rider mounted): aiId={aiId}, ClientId={mountNetworkObject.OwnerClientId}");
+                }
+            }
 
             return aiData;
         }

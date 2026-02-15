@@ -946,15 +946,35 @@ namespace CavalryFight.Views
 
             // IMatchServiceから最後のマッチ結果を取得
             var matchService = ServiceLocator.Instance.Get<IMatchService>();
-            var result = matchService?.GetLastMatchResult();
+
+            if (matchService == null)
+            {
+                Debug.LogError("[ResultsView] IMatchService is NULL! ServiceLocator did not return the service.");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning("[ResultsView] Falling back to mock data (development only)");
+                return CreateMockResult();
+#else
+                return new MatchResult
+                {
+                    MapName = "Unknown",
+                    GameMode = "Unknown",
+                    MatchDuration = 0f,
+                    PlayerScore = 0,
+                    EnemyScore = 0,
+                    AllPlayerStats = new System.Collections.Generic.List<PlayerStatistics>()
+                };
+#endif
+            }
+
+            var result = matchService.GetLastMatchResult();
             if (result != null)
             {
-                Debug.Log("[ResultsView] Using match result from IMatchService");
                 return result;
             }
 
+            Debug.LogError("[ResultsView] IMatchService.GetLastMatchResult() returned NULL! Match result was not created.");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.LogWarning("[ResultsView] Match result not available from service, using fallback mock data (development only)");
+            Debug.LogWarning("[ResultsView] Match result not available, using fallback mock data (development only)");
             return CreateMockResult();
 #else
             // 本番ビルドではサービスからの結果を使用
