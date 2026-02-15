@@ -151,6 +151,10 @@ namespace CavalryFight.Views
 
         protected override void OnDisable()
         {
+            // カーソルを解放（メニュー画面などでクリック可能にする）
+            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            UnityEngine.Cursor.visible = true;
+
             // TrainingManagerイベント購読解除
             if (TrainingManager.Instance != null)
             {

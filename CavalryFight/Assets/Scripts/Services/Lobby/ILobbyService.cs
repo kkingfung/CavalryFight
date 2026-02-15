@@ -293,6 +293,14 @@ namespace CavalryFight.Services.Lobby
         /// <returns>保存されたプレイヤー名（存在しない場合はnull）</returns>
         string? LoadPlayerName();
 
+        /// <summary>
+        /// ホスト/ゲストステータスを手動で同期します
+        /// </summary>
+        /// <remarks>
+        /// ルームシーンに戻った際など、NetworkManagerとの同期が必要な場合に呼び出します。
+        /// </remarks>
+        void RefreshHostStatus();
+
         #endregion
     }
 }

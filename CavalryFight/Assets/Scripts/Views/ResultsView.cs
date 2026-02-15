@@ -118,6 +118,11 @@ namespace CavalryFight.Views
         protected override void OnEnable()
         {
             base.OnEnable();
+
+            // カーソルを必ず表示・解放（前のシーンでロックされている可能性があるため）
+            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            UnityEngine.Cursor.visible = true;
+
             PlayResultBGM();
         }
 
